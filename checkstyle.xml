@@ -108,7 +108,11 @@ page at http://checkstyle.sf.net/config.html -->
 
     <!-- Checks for naming. -->
     <module name="MethodName">
-      <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9_]*)?$"/>
+      <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9_]*)?_?$"/>
+    </module>
+
+    <module name="ParameterName">
+      <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9_]*)?_?$"/>
     </module>
 
     <module name="PackageName">
@@ -116,7 +120,6 @@ page at http://checkstyle.sf.net/config.html -->
     </module>
 
     <module name="TypeName" />
-    <module name="ParameterName" />
     <module name="LocalFinalVariableName" />
     <module name="LocalVariableName" />
 

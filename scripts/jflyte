@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -uea -o pipefail
+
+CUSTOM_FLYTE_INTERNAL_IMAGE="$(cat jflyte-build/target/docker/image-name)"
+
+if [ -e ".env.local" ]; then
+    source ".env.local"
+fi
+
+FLYTE_INTERNAL_IMAGE=${FLYTE_INTERNAL_IMAGE:-$CUSTOM_FLYTE_INTERNAL_IMAGE}
+
+docker run -it \
+    -e "FLYTE_INTERNAL_IMAGE=${FLYTE_INTERNAL_IMAGE}" \
+    -e "FLYTE_PLATFORM_URL=${FLYTE_PLATFORM_URL}" \
+    -e "FLYTE_STAGING_LOCATION=${FLYTE_STAGING_LOCATION}" \
+    -e "FLYTE_PLATFORM_INSECURE=${FLYTE_PLATFORM_INSECURE}" \
+    -v "$(pwd):/workdir:ro" \
+    -v "$HOME/.config/gcloud/:/root/.config/gcloud:ro" \
+    -w "/workdir" \
+    "$FLYTE_INTERNAL_IMAGE" \
+    jflyte $*

@@ -14,14 +14,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte.gcp;
 
-import java.util.Map;
+import com.google.auto.service.AutoService;
+import java.util.Collections;
+import org.flyte.jflyte.FileSystem;
+import org.flyte.jflyte.FileSystemRegistrar;
 
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
-
-  TypedInterface inputs();
-
-  void run(Map<String, Literal> inputs);
+/** Registrar for {@link GcsFileSystem}. */
+@AutoService(FileSystemRegistrar.class)
+public class GcsFileSystemRegistrar extends FileSystemRegistrar {
+  @Override
+  public Iterable<FileSystem> load(ClassLoader classLoader) {
+    return Collections.singletonList(new GcsFileSystem());
+  }
 }

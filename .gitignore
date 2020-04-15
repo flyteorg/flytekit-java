@@ -1,3 +1,5 @@
+.env.local
+
 # Compiled class file
 target
 *.class

@@ -14,14 +14,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte;
 
-import java.util.Map;
+import com.google.auto.value.AutoValue;
 
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
+/** Manifest of resource on {@link FileSystem}. */
+@AutoValue
+public abstract class Manifest {
+  // TODO put different checksums here, e.g., crc32c
 
-  TypedInterface inputs();
-
-  void run(Map<String, Literal> inputs);
+  public static Manifest create() {
+    return new AutoValue_Manifest();
+  }
 }

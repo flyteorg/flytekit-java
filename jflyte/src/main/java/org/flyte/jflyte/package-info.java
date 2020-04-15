@@ -14,14 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
 
-import java.util.Map;
-
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
-
-  TypedInterface inputs();
-
-  void run(Map<String, Literal> inputs);
-}
+/** jflyte registers workflows and tasks, and part of the container runtime. */
+package org.flyte.jflyte;

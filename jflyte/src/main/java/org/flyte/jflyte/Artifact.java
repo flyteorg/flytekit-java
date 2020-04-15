@@ -14,14 +14,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte;
 
-import java.util.Map;
+import com.google.auto.value.AutoValue;
 
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
+/** Represents artifact to stage to {@link FileSystem}. */
+@AutoValue
+public abstract class Artifact {
 
-  TypedInterface inputs();
+  public abstract String location();
 
-  void run(Map<String, Literal> inputs);
+  public abstract String name();
+
+  public abstract long size();
+
+  public static Artifact create(String location, String name, long size) {
+    return new AutoValue_Artifact(location, name, size);
+  }
 }

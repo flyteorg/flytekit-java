@@ -37,6 +37,8 @@ public abstract class RunnableTaskRegistrar {
     Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
 
     for (RunnableTaskRegistrar registrar : loader) {
+      LOG.debug("Discovered [{}]", registrar.getClass().getName());
+
       for (Map.Entry<TaskIdentifier, RunnableTask> entry : registrar.load(classLoader).entrySet()) {
         RunnableTask previous = tasks.put(entry.getKey(), entry.getValue());
 

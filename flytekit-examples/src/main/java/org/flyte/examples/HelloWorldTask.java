@@ -14,14 +14,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.examples;
 
+import com.google.auto.service.AutoService;
+import java.util.Collections;
 import java.util.Map;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.TypedInterface;
 
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
+/** Hello World in Flyte. */
+@AutoService(RunnableTask.class)
+public class HelloWorldTask implements RunnableTask {
 
-  TypedInterface inputs();
+  @Override
+  public TypedInterface inputs() {
+    return TypedInterface.create(Collections.emptyMap());
+  }
 
-  void run(Map<String, Literal> inputs);
+  @Override
+  public void run(Map<String, Literal> inputs) {
+    System.out.println("Hello World");
+  }
 }

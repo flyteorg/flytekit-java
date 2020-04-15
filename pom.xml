@@ -31,6 +31,7 @@
     <auto-service.version>1.0-rc5</auto-service.version>
     <auto-value.version>1.7</auto-value.version>
     <grpc.version>1.27.2</grpc.version>
+    <picocli.version>4.2.0</picocli.version>
     <protobuf.version>3.11.4</protobuf.version>
     <sl4j.version>1.7.30</sl4j.version>
     <spotless.version>1.30.0</spotless.version>
@@ -50,6 +51,10 @@
   <modules>
     <module>flytekit-admin</module>
     <module>flytekit-api</module>
+    <module>flytekit-examples</module>
+    <module>jflyte</module>
+    <module>jflyte-build</module>
+    <module>jflyte-google-cloud</module>
   </modules>
 
   <licenses>
@@ -113,6 +118,11 @@
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
         <version>${auto-service.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>${picocli.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>

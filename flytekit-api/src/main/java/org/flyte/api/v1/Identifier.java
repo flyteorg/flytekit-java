@@ -16,13 +16,14 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
+/** Encapsulation of fields that uniquely identifies a Flyte resource. */
+public interface Identifier {
 
-/** Encapsulation of fields that uniquely identifies a task. */
-@AutoValue
-public abstract class TaskIdentifier implements Identifier {
+  String domain();
 
-  public static TaskIdentifier create(String domain, String project, String name, String version) {
-    return new AutoValue_TaskIdentifier(domain, project, name, version);
-  }
+  String project();
+
+  String name();
+
+  String version();
 }

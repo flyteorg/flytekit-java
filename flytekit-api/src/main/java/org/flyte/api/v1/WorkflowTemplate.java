@@ -26,14 +26,11 @@ import java.util.List;
 @AutoValue
 public abstract class WorkflowTemplate {
 
-  public abstract WorkflowIdentifier id();
-
   public abstract List<Node> nodes();
 
   public abstract WorkflowMetadata metadata();
 
-  public static WorkflowTemplate create(
-      WorkflowIdentifier id, List<Node> nodes, WorkflowMetadata metadata) {
-    return new AutoValue_WorkflowTemplate(id, nodes, metadata);
+  public static WorkflowTemplate create(List<Node> nodes, WorkflowMetadata metadata) {
+    return new AutoValue_WorkflowTemplate(nodes, metadata);
   }
 }

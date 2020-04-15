@@ -14,15 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
-
-/** Encapsulation of fields that uniquely identifies a task. */
-@AutoValue
-public abstract class TaskIdentifier implements Identifier {
-
-  public static TaskIdentifier create(String domain, String project, String name, String version) {
-    return new AutoValue_TaskIdentifier(domain, project, name, version);
-  }
-}
+/** Classes for communicating with the admin service. */
+package org.flyte.admin.client;

@@ -26,15 +26,12 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class TaskTemplate {
 
-  public abstract TaskIdentifier id();
-
   @Nullable
   public abstract Container container();
 
   public abstract TypedInterface interface_();
 
-  public static TaskTemplate create(
-      TaskIdentifier id, Container container, TypedInterface interface_) {
-    return new AutoValue_TaskTemplate(id, container, interface_);
+  public static TaskTemplate create(Container container, TypedInterface interface_) {
+    return new AutoValue_TaskTemplate(container, interface_);
   }
 }

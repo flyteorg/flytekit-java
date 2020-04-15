@@ -20,15 +20,7 @@ import com.google.auto.value.AutoValue;
 
 /** Encapsulation of fields that uniquely identifies a launch plan. */
 @AutoValue
-public abstract class LaunchPlanIdentifier {
-
-  public abstract String domain();
-
-  public abstract String project();
-
-  public abstract String name();
-
-  public abstract String version();
+public abstract class LaunchPlanIdentifier implements Identifier {
 
   public static LaunchPlanIdentifier create(
       String domain, String project, String name, String version) {

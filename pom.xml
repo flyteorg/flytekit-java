@@ -34,11 +34,13 @@
     <protobuf.version>3.11.4</protobuf.version>
     <sl4j.version>1.7.30</sl4j.version>
     <spotless.version>1.30.0</spotless.version>
+    <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
 
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <modules>
+    <module>flytekit-admin</module>
     <module>flytekit-api</module>
   </modules>
 

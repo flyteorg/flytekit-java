@@ -20,15 +20,7 @@ import com.google.auto.value.AutoValue;
 
 /** Encapsulation of fields that uniquely identifies a workflow. */
 @AutoValue
-public abstract class WorkflowIdentifier {
-
-  public abstract String domain();
-
-  public abstract String project();
-
-  public abstract String name();
-
-  public abstract String version();
+public abstract class WorkflowIdentifier implements Identifier {
 
   public static WorkflowIdentifier create(
       String domain, String project, String name, String version) {

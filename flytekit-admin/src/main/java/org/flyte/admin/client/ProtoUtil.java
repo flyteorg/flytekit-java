@@ -147,7 +147,8 @@ class ProtoUtil {
     return builder.build();
   }
 
-  private static Workflow.WorkflowMetadata serialize(WorkflowMetadata metadata) {
+  private static Workflow.WorkflowMetadata serialize(
+      @SuppressWarnings("UnusedVariable") WorkflowMetadata metadata) {
     return Workflow.WorkflowMetadata.newBuilder().build();
   }
 

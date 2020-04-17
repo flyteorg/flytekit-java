@@ -48,6 +48,10 @@ import org.flyte.api.v1.WorkflowTemplate;
 /** Utility to serialize flytekit-api into flyteidl proto. */
 class ProtoUtil {
 
+  static final String TASK_TYPE = "java-task";
+  static final String RUNTIME_FLAVOR = "java";
+  static final String RUNTIME_VERSION = "0.0.1";
+
   public static IdentifierOuterClass.Identifier serialize(Identifier id) {
     ResourceType type = getResourceType(id);
 
@@ -75,8 +79,8 @@ class ProtoUtil {
     Tasks.RuntimeMetadata runtime =
         Tasks.RuntimeMetadata.newBuilder()
             .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
-            .setFlavor("java")
-            .setVersion("0.0.1")
+            .setFlavor(RUNTIME_FLAVOR)
+            .setVersion(RUNTIME_VERSION)
             .build();
 
     Tasks.TaskMetadata metadata = Tasks.TaskMetadata.newBuilder().setRuntime(runtime).build();
@@ -88,7 +92,7 @@ class ProtoUtil {
         .setContainer(serialize(container))
         .setMetadata(metadata)
         .setInterface(serialize(taskTemplate.interface_()))
-        .setType("java-task")
+        .setType(TASK_TYPE)
         .build();
   }
 
@@ -96,7 +100,7 @@ class ProtoUtil {
     return Interface.TypedInterface.newBuilder().setInputs(serialize(interface_.inputs())).build();
   }
 
-  public static Interface.VariableMap serialize(Map<String, Variable> inputs) {
+  private static Interface.VariableMap serialize(Map<String, Variable> inputs) {
     Interface.VariableMap.Builder builder = Interface.VariableMap.newBuilder();
 
     inputs.forEach((key, value) -> builder.putVariables(key, serialize(value)));
@@ -104,19 +108,24 @@ class ProtoUtil {
     return builder.build();
   }
 
-  public static Interface.Variable serialize(Variable value) {
-    return Interface.Variable.newBuilder()
-        .setDescription(value.description())
-        .setType(serialize(value.literalType()))
-        .build();
+  private static Interface.Variable serialize(Variable value) {
+    Interface.Variable.Builder builder =
+        Interface.Variable.newBuilder().setType(serialize(value.literalType()));
+
+    String description = value.description();
+    if (description != null) {
+      builder.setDescription(description);
+    }
+
+    return builder.build();
   }
 
-  public static Types.LiteralType serialize(LiteralType literalType) {
+  private static Types.LiteralType serialize(LiteralType literalType) {
     return Types.LiteralType.newBuilder().setSimple(serialize(literalType.simpleType())).build();
   }
 
   @Nullable
-  public static Types.SimpleType serialize(@Nullable SimpleType simpleType) {
+  private static Types.SimpleType serialize(@Nullable SimpleType simpleType) {
     if (simpleType == null) {
       return null;
     }
@@ -130,7 +139,7 @@ class ProtoUtil {
     }
   }
 
-  public static Tasks.Container serialize(Container container) {
+  private static Tasks.Container serialize(Container container) {
     return Tasks.Container.newBuilder()
         .setImage(container.image())
         .addAllCommand(container.command())
@@ -166,18 +175,18 @@ class ProtoUtil {
     return builder.build();
   }
 
-  public static Literals.Binding serialize(Binding input) {
+  private static Literals.Binding serialize(Binding input) {
     return Literals.Binding.newBuilder()
         .setVar(input.var_())
         .setBinding(serialize(input.binding()))
         .build();
   }
 
-  public static Literals.BindingData serialize(BindingData binding) {
+  private static Literals.BindingData serialize(BindingData binding) {
     return Literals.BindingData.newBuilder().setScalar(serialize(binding.scalar())).build();
   }
 
-  public static Literals.Scalar serialize(@Nullable Scalar scalar) {
+  private static Literals.Scalar serialize(@Nullable Scalar scalar) {
     if (scalar == null) {
       return null;
     }

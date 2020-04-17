@@ -18,6 +18,7 @@ package org.flyte.admin.client;
 
 import static com.google.common.base.Verify.verifyNotNull;
 
+import com.google.common.annotations.VisibleForTesting;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
@@ -40,10 +41,13 @@ import org.slf4j.LoggerFactory;
 public class FlyteAdminClient implements AutoCloseable {
 
   private static final Logger LOG = LoggerFactory.getLogger(FlyteAdminClient.class);
+  static final String TRIGGERING_PRINCIPAL = "sdk";
+  static final int USER_TRIGGERED_EXECUTION_NESTING = 0;
 
   private final AdminServiceGrpc.AdminServiceBlockingStub stub;
   private final ManagedChannel channel;
 
+  @VisibleForTesting
   FlyteAdminClient(AdminServiceGrpc.AdminServiceBlockingStub stub, ManagedChannel channel) {
     this.stub = stub;
     this.channel = channel;
@@ -119,8 +123,8 @@ public class FlyteAdminClient implements AutoCloseable {
     ExecutionOuterClass.ExecutionMetadata metadata =
         ExecutionOuterClass.ExecutionMetadata.newBuilder()
             .setMode(ExecutionOuterClass.ExecutionMetadata.ExecutionMode.MANUAL)
-            .setPrincipal("sdk")
-            .setNesting(0)
+            .setPrincipal(TRIGGERING_PRINCIPAL)
+            .setNesting(USER_TRIGGERED_EXECUTION_NESTING)
             .build();
 
     ExecutionOuterClass.ExecutionSpec spec =

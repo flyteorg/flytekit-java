@@ -38,6 +38,7 @@
     <error_prone.version>2.3.4</error_prone.version>
     <!-- Using the error-prone-javac is required when running on JDK 8 -->
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
+    <junit.version>5.4.2</junit.version>
 
     <maven.deploy.skip>true</maven.deploy.skip>
 
@@ -112,6 +113,21 @@
         <groupId>com.google.auto.service</groupId>
         <artifactId>auto-service</artifactId>
         <version>${auto-service.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-library</artifactId>
+        <version>2.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

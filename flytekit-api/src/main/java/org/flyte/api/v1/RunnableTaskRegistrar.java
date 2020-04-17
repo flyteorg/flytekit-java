@@ -26,20 +26,20 @@ import org.slf4j.LoggerFactory;
 public abstract class RunnableTaskRegistrar {
   private static final Logger LOG = LoggerFactory.getLogger(RunnableTaskRegistrar.class);
 
-  public abstract Map<TaskIdentifier, RunnableTask> load(ClassLoader classLoader);
+  public abstract Map<String, RunnableTask> load(ClassLoader classLoader);
 
-  public static Map<TaskIdentifier, RunnableTask> loadAll(ClassLoader classLoader) {
+  public static Map<String, RunnableTask> loadAll(ClassLoader classLoader) {
     ServiceLoader<RunnableTaskRegistrar> loader =
         ServiceLoader.load(RunnableTaskRegistrar.class, classLoader);
 
     LOG.debug("Discovering RunnableTaskRegistrar");
 
-    Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
+    Map<String, RunnableTask> tasks = new HashMap<>();
 
     for (RunnableTaskRegistrar registrar : loader) {
       LOG.debug("Discovered [{}]", registrar.getClass().getName());
 
-      for (Map.Entry<TaskIdentifier, RunnableTask> entry : registrar.load(classLoader).entrySet()) {
+      for (Map.Entry<String, RunnableTask> entry : registrar.load(classLoader).entrySet()) {
         RunnableTask previous = tasks.put(entry.getKey(), entry.getValue());
 
         if (previous != null) {

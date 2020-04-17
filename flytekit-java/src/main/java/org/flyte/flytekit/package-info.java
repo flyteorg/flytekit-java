@@ -14,20 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.examples;
 
-import com.google.auto.service.AutoService;
-import org.flyte.api.v1.RunnableTask;
-import org.flyte.flytekit.SdkRunnableTask;
-
-/** Hello World in Flyte. */
-@AutoService(RunnableTask.class)
-public class HelloWorldTask extends SdkRunnableTask<Void, Void> {
-
-  @Override
-  public Void run(Void input) {
-    System.out.println("Hello World");
-
-    return null;
-  }
-}
+/** flytekit Java SDK. */
+package org.flyte.flytekit;

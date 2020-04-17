@@ -123,7 +123,7 @@ public class RegisterWorkflows implements Callable<Integer> {
                 "--indexFileLocation",
                 indexFileLocation),
             image),
-        task.inputs());
+        task.interface_());
   }
 
   private void registerAll(ArtifactStager stager, String image, FlyteAdminClient adminClient) {
@@ -132,12 +132,18 @@ public class RegisterWorkflows implements Callable<Integer> {
     List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
     Artifact indexFile = stageIndexFile(stager, artifacts);
 
-    Map<TaskIdentifier, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
+    Map<String, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
     Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();
 
-    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
+    for (Map.Entry<String, RunnableTask> entry : tasks.entrySet()) {
       RunnableTask task = entry.getValue();
-      TaskIdentifier taskId = entry.getKey();
+      TaskIdentifier taskId =
+          TaskIdentifier.create(
+              /* domain= */ domain,
+              /* project= */ project,
+              /* name= */ entry.getKey(),
+              /* version= */ version);
+
       TaskTemplate taskTemplate =
           createTaskTemplate(
               task, /* indexFileLocation= */ indexFile.location(), /* image= */ image);

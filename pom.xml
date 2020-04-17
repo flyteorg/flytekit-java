@@ -49,6 +49,7 @@
 
   <modules>
     <module>flytekit-api</module>
+    <module>flytekit-java</module>
     <module>flytekit-examples</module>
     <module>jflyte</module>
     <module>jflyte-build</module>

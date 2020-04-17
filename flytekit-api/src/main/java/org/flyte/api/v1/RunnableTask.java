@@ -21,7 +21,7 @@ import java.util.Map;
 /** Building block for tasks that execute Java code. */
 public interface RunnableTask {
 
-  TypedInterface inputs();
+  TypedInterface interface_();
 
   void run(Map<String, Literal> inputs);
 }

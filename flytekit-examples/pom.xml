@@ -30,7 +30,7 @@
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
+      <artifactId>flytekit-java</artifactId>
       <version>${project.version}</version>
     </dependency>
 

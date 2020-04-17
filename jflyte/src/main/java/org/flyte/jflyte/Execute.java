@@ -32,7 +32,6 @@ import java.util.concurrent.Callable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
-import org.flyte.api.v1.TaskIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -98,10 +97,10 @@ public class Execute implements Callable<Integer> {
   }
 
   private static RunnableTask getTask(String name, ClassLoader packageClassLoader) {
-    Map<TaskIdentifier, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
+    Map<String, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
 
-    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
-      if (entry.getKey().name().equals(name)) {
+    for (Map.Entry<String, RunnableTask> entry : tasks.entrySet()) {
+      if (entry.getKey().equals(name)) {
         return entry.getValue();
       }
     }

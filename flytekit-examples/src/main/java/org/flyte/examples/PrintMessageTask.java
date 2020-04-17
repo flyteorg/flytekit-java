@@ -17,16 +17,22 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.api.v1.RunnableTask;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRunnableTask;
 
-/** Hello World in Flyte. */
-@AutoService(RunnableTask.class)
-public class HelloWorldTask extends SdkRunnableTask<Void, Void> {
+/** Receives message as an input, and prints its. */
+@AutoService(SdkRunnableTask.class)
+public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Void> {
+
+  /** Input for {@link PrintMessageTask}. */
+  @AutoValue
+  public abstract static class Input {
+    public abstract String message();
+  }
 
   @Override
-  public Void run(Void input) {
-    System.out.println("Hello World");
+  public Void run(Input input) {
+    System.out.println(input.message());
 
     return null;
   }

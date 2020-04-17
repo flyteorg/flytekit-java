@@ -16,7 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import com.google.common.base.Verify;
+import flyteidl.core.Literals;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -25,11 +25,11 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -80,11 +80,21 @@ public class Execute implements Callable<Integer> {
 
     FileSystem inputFs =
         FileSystemRegistrar.getFileSystem(URI.create(inputs).getScheme(), pluginClassLoader);
-    Verify.verifyNotNull(inputFs); // TODO the rest of reading input proto isn't implemented yet
+    Map<String, Literal> input = getInput(inputFs, inputs);
 
     RunnableTask runnableTask = getTask(task, packageClassLoader);
 
-    runnableTask.run(Collections.emptyMap());
+    runnableTask.run(input);
+  }
+
+  private static Map<String, Literal> getInput(FileSystem fs, String uri) {
+    try (ReadableByteChannel channel = fs.reader(uri)) {
+      Literals.LiteralMap proto = Literals.LiteralMap.parseFrom(Channels.newInputStream(channel));
+
+      return ProtoUtil.deserialize(proto);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private static RunnableTask getTask(String name, ClassLoader packageClassLoader) {

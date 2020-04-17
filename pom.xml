@@ -49,7 +49,6 @@
   </properties>
 
   <modules>
-    <module>flytekit-admin</module>
     <module>flytekit-api</module>
     <module>flytekit-examples</module>
     <module>jflyte</module>

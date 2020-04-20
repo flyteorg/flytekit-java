@@ -27,6 +27,11 @@
 
   <artifactId>jflyte-build</artifactId>
 
+  <properties>
+    <!-- skip docker unless explicitly enabled -->
+    <maven.docker.skip>true</maven.docker.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>

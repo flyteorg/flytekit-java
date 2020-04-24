@@ -31,13 +31,16 @@ import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
 import flyteidl.core.Types;
 import flyteidl.core.Workflow;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LiteralType;
@@ -48,6 +51,7 @@ import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
+import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -55,6 +59,9 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ProtoUtilTest {
 
@@ -250,6 +257,44 @@ class ProtoUtilTest {
                                                 .build())
                                         .build())
                                 .build())
+                        .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createSerializePrimitivesArguments")
+  void shouldSerializePrimitives(Primitive input, Literals.Primitive expected) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createSerializePrimitivesArguments() {
+    Instant now = Instant.now();
+    long seconds = now.getEpochSecond();
+    int nanos = now.getNano();
+
+    return Stream.of(
+        Arguments.of(Primitive.of(123), Literals.Primitive.newBuilder().setInteger(123).build()),
+        Arguments.of(
+            Primitive.of(123.0), Literals.Primitive.newBuilder().setFloatValue(123.0).build()),
+        Arguments.of(
+            Primitive.of("123"), Literals.Primitive.newBuilder().setStringValue("123").build()),
+        Arguments.of(Primitive.of(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
+        Arguments.of(
+            Primitive.of(Timestamp.create(seconds, nanos)),
+            Literals.Primitive.newBuilder()
+                .setDatetime(
+                    com.google.protobuf.Timestamp.newBuilder()
+                        .setSeconds(seconds)
+                        .setNanos(nanos)
+                        .build())
+                .build()),
+        Arguments.of(
+            Primitive.of(Duration.create(seconds, nanos)),
+            Literals.Primitive.newBuilder()
+                .setDuration(
+                    com.google.protobuf.Duration.newBuilder()
+                        .setSeconds(seconds)
+                        .setNanos(nanos)
                         .build())
                 .build()));
   }

@@ -19,9 +19,11 @@ package org.flyte.jflyte;
 import flyteidl.core.Literals;
 import java.util.HashMap;
 import java.util.Map;
+import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Timestamp;
 
 class ProtoUtil {
 
@@ -51,9 +53,25 @@ class ProtoUtil {
     throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
   }
 
+  @SuppressWarnings("fallthrough")
   static Primitive deserialize(Literals.Primitive primitive) {
-    if (primitive.getStringValue() != null) {
-      return Primitive.of(primitive.getStringValue());
+    switch (primitive.getValueCase()) {
+      case INTEGER:
+        return Primitive.of(primitive.getInteger());
+      case FLOAT_VALUE:
+        return Primitive.of(primitive.getFloatValue());
+      case STRING_VALUE:
+        return Primitive.of(primitive.getStringValue());
+      case BOOLEAN:
+        return Primitive.of(primitive.getBoolean());
+      case DATETIME:
+        com.google.protobuf.Timestamp datetime = primitive.getDatetime();
+        return Primitive.of(Timestamp.create(datetime.getSeconds(), datetime.getNanos()));
+      case DURATION:
+        com.google.protobuf.Duration duration = primitive.getDuration();
+        return Primitive.of(Duration.create(duration.getSeconds(), duration.getNanos()));
+      case VALUE_NOT_SET:
+        // fallthrough
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));

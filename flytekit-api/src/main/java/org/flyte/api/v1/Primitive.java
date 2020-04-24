@@ -16,17 +16,46 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
+import com.google.auto.value.AutoOneOf;
 
 /** A simple value. Primitive can be: string, ... . */
-@AutoValue
+@AutoOneOf(SimpleType.class)
 public abstract class Primitive {
+  public abstract SimpleType type();
 
-  @Nullable
+  public abstract long integer();
+
+  public abstract double float_();
+
   public abstract String string();
 
+  public abstract boolean boolean_();
+
+  public abstract Timestamp datetime();
+
+  public abstract Duration duration();
+
+  public static Primitive of(long integer) {
+    return AutoOneOf_Primitive.integer(integer);
+  }
+
+  public static Primitive of(double float_) {
+    return AutoOneOf_Primitive.float_(float_);
+  }
+
   public static Primitive of(String string) {
-    return new AutoValue_Primitive(string);
+    return AutoOneOf_Primitive.string(string);
+  }
+
+  public static Primitive of(boolean boolean_) {
+    return AutoOneOf_Primitive.boolean_(boolean_);
+  }
+
+  public static Primitive of(Timestamp datetime) {
+    return AutoOneOf_Primitive.datetime(datetime);
+  }
+
+  public static Primitive of(Duration duration) {
+    return AutoOneOf_Primitive.duration(duration);
   }
 }

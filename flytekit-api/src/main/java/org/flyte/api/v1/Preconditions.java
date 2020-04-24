@@ -16,12 +16,19 @@
  */
 package org.flyte.api.v1;
 
-/** Defines a set of simple types. */
-public enum SimpleType {
-  INTEGER,
-  FLOAT,
-  STRING,
-  BOOLEAN,
-  DATETIME,
-  DURATION
+/** Utility class to verify preconditions. */
+class Preconditions {
+
+  private static final int MIN_NANOS = -999_999_999;
+  private static final int MAX_NANOS = 999_999_999;
+
+  static void checkRange(String param, int value, int min, int max) {
+    if (value < min || value > max) {
+      throw new IllegalArgumentException(param + " out of range: " + value);
+    }
+  }
+
+  static void checkNanosInRange(int value) {
+    checkRange("nanos", value, MIN_NANOS, MAX_NANOS);
+  }
 }

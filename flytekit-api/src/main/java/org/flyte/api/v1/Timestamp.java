@@ -16,12 +16,25 @@
  */
 package org.flyte.api.v1;
 
-/** Defines a set of simple types. */
-public enum SimpleType {
-  INTEGER,
-  FLOAT,
-  STRING,
-  BOOLEAN,
-  DATETIME,
-  DURATION
+import static org.flyte.api.v1.Preconditions.checkNanosInRange;
+
+import com.google.auto.value.AutoValue;
+
+/**
+ * A Timestamp represents a point in time independent of any time zone or calendar, represented as
+ * seconds and fractions of seconds at nanosecond resolution in UTC Epoch time.
+ */
+@AutoValue
+public abstract class Timestamp {
+
+  public static final Timestamp EPOCH = create(0L, 0);
+
+  public abstract long seconds();
+
+  public abstract int nanos();
+
+  public static Timestamp create(long seconds, int nanos) {
+    checkNanosInRange(nanos);
+    return new AutoValue_Timestamp(seconds, nanos);
+  }
 }

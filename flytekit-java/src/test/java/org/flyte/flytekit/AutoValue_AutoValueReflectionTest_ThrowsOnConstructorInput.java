@@ -14,14 +14,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
-/** Defines a set of simple types. */
-public enum SimpleType {
-  INTEGER,
-  FLOAT,
-  STRING,
-  BOOLEAN,
-  DATETIME,
-  DURATION
+/**
+ * Pretends to be the generated AutoValue class of {@link
+ * AutoValueReflectionTest.ThrowsOnConstructorInput}
+ */
+class AutoValue_AutoValueReflectionTest_ThrowsOnConstructorInput
+    extends AutoValueReflectionTest.ThrowsOnConstructorInput {
+  AutoValue_AutoValueReflectionTest_ThrowsOnConstructorInput() {
+    throw new RuntimeException("Throws on purpose");
+  }
 }

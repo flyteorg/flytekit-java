@@ -18,6 +18,7 @@ package org.flyte.admin.client;
 
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.annotations.VisibleForTesting;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.IdentifierOuterClass.ResourceType;
 import flyteidl.core.Interface;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LiteralType;
@@ -39,6 +41,7 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
+import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -131,12 +134,21 @@ class ProtoUtil {
     }
 
     switch (simpleType) {
+      case INTEGER:
+        return Types.SimpleType.INTEGER;
+      case FLOAT:
+        return Types.SimpleType.FLOAT;
       case STRING:
         return Types.SimpleType.STRING;
-      default:
-        // FIXME
-        return Types.SimpleType.UNRECOGNIZED;
+      case BOOLEAN:
+        return Types.SimpleType.BOOLEAN;
+      case DATETIME:
+        return Types.SimpleType.DATETIME;
+      case DURATION:
+        return Types.SimpleType.DURATION;
     }
+
+    return Types.SimpleType.UNRECOGNIZED;
   }
 
   private static Tasks.Container serialize(Container container) {
@@ -195,7 +207,40 @@ class ProtoUtil {
     return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
   }
 
-  private static Literals.Primitive serialize(Primitive primitive) {
-    return Literals.Primitive.newBuilder().setStringValue(primitive.string()).build();
+  @VisibleForTesting
+  static Literals.Primitive serialize(Primitive primitive) {
+    Literals.Primitive.Builder builder = Literals.Primitive.newBuilder();
+
+    switch (primitive.type()) {
+      case INTEGER:
+        builder.setInteger(primitive.integer());
+        break;
+      case FLOAT:
+        builder.setFloatValue(primitive.float_());
+        break;
+      case STRING:
+        builder.setStringValue(primitive.string());
+        break;
+      case BOOLEAN:
+        builder.setBoolean(primitive.boolean_());
+        break;
+      case DATETIME:
+        Timestamp datetime = primitive.datetime();
+        builder.setDatetime(
+            com.google.protobuf.Timestamp.newBuilder()
+                .setSeconds(datetime.seconds())
+                .setNanos(datetime.nanos())
+                .build());
+        break;
+      case DURATION:
+        Duration duration = primitive.duration();
+        builder.setDuration(
+            com.google.protobuf.Duration.newBuilder()
+                .setSeconds(duration.seconds())
+                .setNanos(duration.nanos())
+                .build());
+        break;
+    }
+    return builder.build();
   }
 }

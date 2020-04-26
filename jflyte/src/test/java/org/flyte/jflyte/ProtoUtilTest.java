@@ -22,6 +22,7 @@ import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableMap;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
@@ -40,6 +41,7 @@ import org.flyte.api.v1.Container;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.LaunchPlanIdentifier;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Primitive;
@@ -54,6 +56,7 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -101,6 +104,24 @@ class ProtoUtilTest {
                         .build())
                 .build(),
             Primitive.of(Duration.create(seconds, nanos))));
+  }
+
+  @Test
+  void shouldSerializeLiteralMap() {
+    Map<String, Literal> input =
+        ImmutableMap.of("a", Literal.of(Scalar.create(Primitive.of(1337L))));
+    Literals.Primitive expectedPrimitive =
+        Literals.Primitive.newBuilder().setInteger(1337L).build();
+    Literals.Scalar expectedScalar =
+        Literals.Scalar.newBuilder().setPrimitive(expectedPrimitive).build();
+    Literals.LiteralMap expected =
+        Literals.LiteralMap.newBuilder()
+            .putLiterals("a", Literals.Literal.newBuilder().setScalar(expectedScalar).build())
+            .build();
+
+    Literals.LiteralMap output = ProtoUtil.serializeLiteralMap(input);
+
+    Assert.assertEquals(expected, output);
   }
 
   @Test
@@ -173,11 +194,12 @@ class ProtoUtilTest {
     List<String> commands = Collections.singletonList("echo");
     List<String> args = Collections.singletonList("hello world");
     Container container = Container.create(commands, args, image);
-    String varName = "x";
-    Variable varValue = Variable.create(LiteralType.create(SimpleType.STRING), null);
+    Variable stringVar = Variable.create(LiteralType.create(SimpleType.STRING), null);
+    Variable integerVar = Variable.create(LiteralType.create(SimpleType.INTEGER), null);
 
-    Map<String, Variable> inputs = Collections.singletonMap(varName, varValue);
-    TypedInterface interface_ = TypedInterface.create(inputs);
+    TypedInterface interface_ =
+        TypedInterface.create(ImmutableMap.of("x", stringVar), ImmutableMap.of("y", integerVar));
+
     TaskTemplate template = TaskTemplate.create(container, interface_);
 
     Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
@@ -206,12 +228,22 @@ class ProtoUtilTest {
                         .setInputs(
                             Interface.VariableMap.newBuilder()
                                 .putVariables(
-                                    varName,
+                                    "x",
                                     Interface.Variable.newBuilder()
-                                        // .setDescription(null)
                                         .setType(
                                             Types.LiteralType.newBuilder()
                                                 .setSimple(Types.SimpleType.STRING)
+                                                .build())
+                                        .build())
+                                .build())
+                        .setOutputs(
+                            Interface.VariableMap.newBuilder()
+                                .putVariables(
+                                    "y",
+                                    Interface.Variable.newBuilder()
+                                        .setType(
+                                            Types.LiteralType.newBuilder()
+                                                .setSimple(Types.SimpleType.INTEGER)
                                                 .build())
                                         .build())
                                 .build())

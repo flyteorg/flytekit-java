@@ -142,7 +142,7 @@ class AutoValueReflectionTest {
   }
 
   private static Literal literalOf(Primitive primitive) {
-    return Literal.create(Scalar.create(primitive));
+    return Literal.of(Scalar.create(primitive));
   }
 
   @AutoValue

@@ -18,16 +18,25 @@ package org.flyte.flytekit;
 
 /** Building block for tasks that execute Java code. */
 public abstract class SdkRunnableTask<InputT, OutputT> {
+
+  private final SdkType<InputT> inputType;
+  private final SdkType<OutputT> outputType;
+
+  protected SdkRunnableTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+    this.inputType = inputType;
+    this.outputType = outputType;
+  }
+
   public String getName() {
     return getClass().getName();
   }
 
-  public TypeDescriptor<InputT> getInputTypeDescriptor() {
-    return new TypeDescriptor<InputT>(getClass()) {};
+  public SdkType<InputT> getInputType() {
+    return inputType;
   }
 
-  public TypeDescriptor<OutputT> getOutputTypeDescriptor() {
-    return new TypeDescriptor<OutputT>(getClass()) {};
+  public SdkType<OutputT> getOutputType() {
+    return outputType;
   }
 
   public abstract OutputT run(InputT input);

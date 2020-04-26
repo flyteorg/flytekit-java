@@ -23,5 +23,5 @@ public interface RunnableTask {
 
   TypedInterface interface_();
 
-  void run(Map<String, Literal> inputs);
+  Map<String, Literal> run(Map<String, Literal> inputs);
 }

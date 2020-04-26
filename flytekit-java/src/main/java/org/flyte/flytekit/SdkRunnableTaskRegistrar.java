@@ -41,19 +41,16 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
     @Override
     public TypedInterface interface_() {
-      // TODO support output interface
       return TypedInterface.create(
-          AutoValueReflection.interfaceOf(sdkTask.getInputTypeDescriptor()));
+          sdkTask.getInputType().getVariableMap(), sdkTask.getOutputType().getVariableMap());
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void run(Map<String, Literal> inputs) {
-      Class<InputT> inputCls = (Class<InputT>) sdkTask.getInputTypeDescriptor().getRawType();
-      InputT value = AutoValueReflection.readValue(inputs, inputCls);
+    public Map<String, Literal> run(Map<String, Literal> inputs) {
+      InputT value = sdkTask.getInputType().fromLiteralMap(inputs);
+      OutputT output = sdkTask.run(value);
 
-      // TODO handle output
-      /* OutputT output = */ sdkTask.run(value);
+      return sdkTask.getOutputType().toLiteralMap(output);
     }
   }
 

@@ -14,26 +14,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
-import com.google.auto.value.AutoOneOf;
+import java.util.Map;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Variable;
 
-/**
- * A simple value. This supports any level of nesting (e.g. array of array of array of Blobs) as
- * well as simple primitives.
- */
-@AutoOneOf(Literal.Kind.class)
-public abstract class Literal {
+public abstract class SdkType<T> {
 
-  public enum Kind {
-    SCALAR
-  }
+  public abstract Map<String, Literal> toLiteralMap(T value);
 
-  public abstract Kind kind();
+  public abstract T fromLiteralMap(Map<String, Literal> value);
 
-  public abstract Scalar scalar();
-
-  public static Literal of(Scalar scalar) {
-    return AutoOneOf_Literal.scalar(scalar);
-  }
+  public abstract Map<String, Variable> getVariableMap();
 }

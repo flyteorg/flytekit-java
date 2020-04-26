@@ -21,6 +21,7 @@ import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableMap;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
@@ -106,7 +107,8 @@ public class FlyteAdminClientTest {
                 Collections.singletonList(COMMAND), Collections.emptyList(), IMAGE_NAME),
             TypedInterface.create(
                 Collections.singletonMap(
-                    "x", Variable.create(LiteralType.create(SimpleType.STRING), null))));
+                    "x", Variable.create(LiteralType.create(SimpleType.STRING), null)),
+                ImmutableMap.of()));
 
     client.createTask(identifier, template);
 
@@ -226,6 +228,7 @@ public class FlyteAdminClientTest {
                                                 .build())
                                         .build())
                                 .build())
+                        .setOutputs(Interface.VariableMap.newBuilder().build())
                         .build())
                 .setType(ProtoUtil.TASK_TYPE)
                 .build())

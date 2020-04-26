@@ -25,7 +25,9 @@ public abstract class TypedInterface {
 
   public abstract Map<String, Variable> inputs();
 
-  public static TypedInterface create(Map<String, Variable> inputs) {
-    return new AutoValue_TypedInterface(inputs);
+  public abstract Map<String, Variable> outputs();
+
+  public static TypedInterface create(Map<String, Variable> inputs, Map<String, Variable> outputs) {
+    return new AutoValue_TypedInterface(inputs, outputs);
   }
 }

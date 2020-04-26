@@ -67,7 +67,7 @@ class ProtoUtil {
 
   static Literal deserialize(Literals.Literal literal) {
     if (literal.getScalar() != null) {
-      return Literal.create(deserialize(literal.getScalar()));
+      return Literal.of(deserialize(literal.getScalar()));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
@@ -152,7 +152,10 @@ class ProtoUtil {
   }
 
   private static Interface.TypedInterface serialize(TypedInterface interface_) {
-    return Interface.TypedInterface.newBuilder().setInputs(serialize(interface_.inputs())).build();
+    return Interface.TypedInterface.newBuilder()
+        .setInputs(serialize(interface_.inputs()))
+        .setOutputs(serialize(interface_.outputs()))
+        .build();
   }
 
   private static Interface.VariableMap serialize(Map<String, Variable> inputs) {
@@ -296,5 +299,26 @@ class ProtoUtil {
     }
 
     return builder.build();
+  }
+
+  static Literals.LiteralMap serializeLiteralMap(Map<String, Literal> outputs) {
+    Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
+
+    outputs.forEach((key, value) -> builder.putLiterals(key, serialize(value)));
+
+    return builder.build();
+  }
+
+  private static Literals.Literal serialize(Literal value) {
+    Literals.Literal.Builder builder = Literals.Literal.newBuilder();
+
+    switch (value.kind()) {
+      case SCALAR:
+        builder.setScalar(serialize(value.scalar()));
+
+        return builder.build();
+    }
+
+    throw new AssertionError("unexpected Literal.Kind: " + value.kind());
   }
 }

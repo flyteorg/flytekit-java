@@ -22,6 +22,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import picocli.CommandLine.Option;
 public class Execute implements Callable<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
+  private static final String OUTPUTS_PB = "outputs.pb";
 
   @Option(
       names = {"--task"},
@@ -79,11 +81,32 @@ public class Execute implements Callable<Integer> {
 
     FileSystem inputFs =
         FileSystemRegistrar.getFileSystem(URI.create(inputs).getScheme(), pluginClassLoader);
+    FileSystem outputFs =
+        FileSystemRegistrar.getFileSystem(URI.create(outputPrefix).getScheme(), pluginClassLoader);
     Map<String, Literal> input = getInput(inputFs, inputs);
-
     RunnableTask runnableTask = getTask(task, packageClassLoader);
 
-    runnableTask.run(input);
+    Map<String, Literal> outputs = runnableTask.run(input);
+
+    writeOutputs(outputFs, outputPrefix, outputs);
+  }
+
+  private static void writeOutputs(
+      FileSystem fs, String outputPrefix, Map<String, Literal> outputs) {
+    String outputUri;
+    if (outputPrefix.endsWith("/")) {
+      outputUri = outputPrefix + OUTPUTS_PB;
+    } else {
+      outputUri = outputPrefix + "/" + OUTPUTS_PB;
+    }
+
+    try (WritableByteChannel channel = fs.writer(outputUri)) {
+      Literals.LiteralMap proto = ProtoUtil.serializeLiteralMap(outputs);
+
+      proto.writeTo(Channels.newOutputStream(channel));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private static Map<String, Literal> getInput(FileSystem fs, String uri) {

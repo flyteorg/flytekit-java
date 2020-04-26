@@ -19,10 +19,15 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTypes;
 
 /** Receives message as an input, and prints its. */
 @AutoService(SdkRunnableTask.class)
 public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Void> {
+
+  public PrintMessageTask() {
+    super(SdkTypes.autoValue(Input.class), SdkTypes.nulls());
+  }
 
   /** Input for {@link PrintMessageTask}. */
   @AutoValue

@@ -14,10 +14,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.admin.client;
+package org.flyte.jflyte;
 
-import static org.flyte.admin.client.FlyteAdminClient.TRIGGERING_PRINCIPAL;
-import static org.flyte.admin.client.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
+import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
+import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

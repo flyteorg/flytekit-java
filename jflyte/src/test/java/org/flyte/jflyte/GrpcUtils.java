@@ -14,6 +14,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.flyte.jflyte;
 
-/** Classes for communicating with the admin service. */
-package org.flyte.admin.client;
+import io.grpc.BindableService;
+import io.grpc.ManagedChannel;
+import io.grpc.Server;
+import io.grpc.inprocess.InProcessChannelBuilder;
+import io.grpc.inprocess.InProcessServerBuilder;
+
+public class GrpcUtils {
+
+  static Server buildServer(String serverName, BindableService stubService) {
+    return InProcessServerBuilder.forName(serverName)
+        .directExecutor()
+        .addService(stubService)
+        .build();
+  }
+
+  static ManagedChannel buildChannel(String serverName) {
+    return InProcessChannelBuilder.forName(serverName).directExecutor().build();
+  }
+}

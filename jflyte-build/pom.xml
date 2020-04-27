@@ -30,6 +30,8 @@
   <properties>
     <!-- skip docker unless explicitly enabled -->
     <maven.docker.skip>true</maven.docker.skip>
+    <docker.image>${env.FLYTE_INTERNAL_IMAGE}</docker.image>
+    <docker.tag>${project.version}</docker.tag>
   </properties>
 
   <dependencies>
@@ -86,7 +88,7 @@
         <artifactId>dockerfile-maven-plugin</artifactId>
         <configuration>
           <repository>${docker.image}</repository>
-          <tag>latest</tag>
+          <tag>${docker.tag}</tag>
         </configuration>
       </plugin>
     </plugins>

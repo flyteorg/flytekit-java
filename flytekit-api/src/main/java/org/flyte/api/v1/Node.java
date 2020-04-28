@@ -32,7 +32,18 @@ public abstract class Node {
 
   public abstract List<Binding> inputs();
 
-  public static Node create(String id, TaskNode taskNode, List<Binding> inputs) {
-    return new AutoValue_Node(id, taskNode, inputs);
+  public static Builder builder() {
+    return new AutoValue_Node.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder id(String id);
+
+    public abstract Builder taskNode(TaskNode taskNode);
+
+    public abstract Builder inputs(List<Binding> inputs);
+
+    public abstract Node build();
   }
 }

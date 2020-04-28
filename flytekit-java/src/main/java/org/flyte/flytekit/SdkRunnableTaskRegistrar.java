@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
+import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
 
     @Override
-    public TypedInterface interface_() {
+    public TypedInterface getInterface() {
       return TypedInterface.create(
           sdkTask.getInputType().getVariableMap(), sdkTask.getOutputType().getVariableMap());
     }
@@ -52,24 +53,36 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
       return sdkTask.getOutputType().toLiteralMap(output);
     }
+
+    @Override
+    public String getName() {
+      return sdkTask.getName();
+    }
   }
 
   @Override
   @SuppressWarnings("rawtypes")
-  public Map<String, RunnableTask> load(ClassLoader classLoader) {
+  public Map<TaskIdentifier, RunnableTask> load(ClassLoader classLoader, Map<String, String> env) {
     ServiceLoader<SdkRunnableTask> loader = ServiceLoader.load(SdkRunnableTask.class, classLoader);
 
     LOG.debug("Discovering SdkRunnableTask");
 
-    Map<String, RunnableTask> tasks = new HashMap<>();
+    Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
+    SdkConfig sdkConfig = SdkConfig.load(env);
 
     for (SdkRunnableTask<?, ?> sdkTask : loader) {
       String name = sdkTask.getName();
+      TaskIdentifier taskId =
+          TaskIdentifier.create(
+              /* domain= */ sdkConfig.domain(),
+              /* project= */ sdkConfig.project(),
+              /* name= */ name,
+              /* version= */ sdkConfig.version());
 
       LOG.debug("Discovered [{}]", name);
 
       RunnableTask task = new RunnableTaskImpl<>(sdkTask);
-      RunnableTask previous = tasks.put(name, task);
+      RunnableTask previous = tasks.put(taskId, task);
 
       if (previous != null) {
         throw new IllegalArgumentException(

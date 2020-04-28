@@ -16,41 +16,5 @@
  */
 package org.flyte.api.v1;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /** A registrar that creates {@link RunnableTask} instances. */
-public abstract class RunnableTaskRegistrar {
-  private static final Logger LOG = LoggerFactory.getLogger(RunnableTaskRegistrar.class);
-
-  public abstract Map<String, RunnableTask> load(ClassLoader classLoader);
-
-  public static Map<String, RunnableTask> loadAll(ClassLoader classLoader) {
-    ServiceLoader<RunnableTaskRegistrar> loader =
-        ServiceLoader.load(RunnableTaskRegistrar.class, classLoader);
-
-    LOG.debug("Discovering RunnableTaskRegistrar");
-
-    Map<String, RunnableTask> tasks = new HashMap<>();
-
-    for (RunnableTaskRegistrar registrar : loader) {
-      LOG.debug("Discovered [{}]", registrar.getClass().getName());
-
-      for (Map.Entry<String, RunnableTask> entry : registrar.load(classLoader).entrySet()) {
-        RunnableTask previous = tasks.put(entry.getKey(), entry.getValue());
-
-        if (previous != null) {
-          throw new IllegalArgumentException(
-              String.format(
-                  "Discovered a duplicate task [%s] [%s] [%s]",
-                  entry.getKey(), entry.getValue(), previous));
-        }
-      }
-    }
-
-    return tasks;
-  }
-}
+public abstract class RunnableTaskRegistrar implements Registrar<TaskIdentifier, RunnableTask> {}

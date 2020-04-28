@@ -18,6 +18,7 @@ package org.flyte.jflyte;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,23 +28,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
-import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Registrars;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
-import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
-import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -106,23 +106,27 @@ public class RegisterWorkflows implements Callable<Integer> {
   }
 
   private TaskTemplate createTaskTemplate(
-      RunnableTask task, String indexFileLocation, String image) {
-    return TaskTemplate.create(
-        Container.create(
-            /* command= */ ImmutableList.of(),
-            /* args= */ ImmutableList.of(
-                "jflyte",
-                "execute",
-                "--task",
-                task.getClass().getName(),
-                "--inputs",
-                "{{.input}}",
-                "--outputPrefix",
-                "{{.outputPrefix}}",
-                "--indexFileLocation",
-                indexFileLocation),
-            image),
-        task.interface_());
+      RunnableTask task, String indexFileLocation, String image, List<KeyValuePair> env) {
+    Container container =
+        Container.builder()
+            .command(ImmutableList.of())
+            .args(
+                ImmutableList.of(
+                    "jflyte",
+                    "execute",
+                    "--task",
+                    task.getName(),
+                    "--inputs",
+                    "{{.input}}",
+                    "--outputPrefix",
+                    "{{.outputPrefix}}",
+                    "--indexFileLocation",
+                    indexFileLocation))
+            .image(image)
+            .env(env)
+            .build();
+
+    return TaskTemplate.create(container, task.getInterface());
   }
 
   private void registerAll(ArtifactStager stager, String image, FlyteAdminClient adminClient) {
@@ -131,38 +135,34 @@ public class RegisterWorkflows implements Callable<Integer> {
     List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
     Artifact indexFile = stageIndexFile(stager, artifacts);
 
-    Map<String, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
-    Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", domain,
+            "JFLYTE_PROJECT", project,
+            "JFLYTE_VERSION", version);
 
-    for (Map.Entry<String, RunnableTask> entry : tasks.entrySet()) {
+    List<KeyValuePair> envList =
+        env.entrySet().stream()
+            .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
+    Map<TaskIdentifier, RunnableTask> tasks =
+        Registrars.loadAll(RunnableTaskRegistrar.class, packageClassLoader, env);
+    Map<WorkflowIdentifier, WorkflowTemplate> workflows =
+        Registrars.loadAll(WorkflowTemplateRegistrar.class, packageClassLoader, env);
+
+    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
+      TaskIdentifier taskId = entry.getKey();
       RunnableTask task = entry.getValue();
-      TaskIdentifier taskId =
-          TaskIdentifier.create(
-              /* domain= */ domain,
-              /* project= */ project,
-              /* name= */ entry.getKey(),
-              /* version= */ version);
 
       TaskTemplate taskTemplate =
           createTaskTemplate(
-              task, /* indexFileLocation= */ indexFile.location(), /* image= */ image);
+              task,
+              /* indexFileLocation= */ indexFile.location(),
+              /* image= */ image,
+              /* env= */ envList);
 
       adminClient.createTask(taskId, taskTemplate);
-
-      // for tasks with no inputs create mock workflows before we can define them using SDK
-      if (taskTemplate.interface_().inputs().isEmpty()) {
-        WorkflowIdentifier workflowId =
-            WorkflowIdentifier.create(
-                taskId.domain(), taskId.project(), taskId.name(), taskId.version());
-
-        TaskNode taskNode = TaskNode.create(taskId);
-        Node node0 = Node.create("node-0", taskNode, ImmutableList.of());
-
-        WorkflowTemplate template =
-            WorkflowTemplate.create(ImmutableList.of(node0), WorkflowMetadata.create());
-
-        workflows.put(workflowId, template);
-      }
     }
 
     for (Map.Entry<WorkflowIdentifier, WorkflowTemplate> entry : workflows.entrySet()) {

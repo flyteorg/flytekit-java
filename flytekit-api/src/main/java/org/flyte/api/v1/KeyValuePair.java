@@ -17,34 +17,17 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import java.util.List;
+import javax.annotation.Nullable;
 
-/** Defines properties for a container. */
 @AutoValue
-public abstract class Container {
+public abstract class KeyValuePair {
 
-  public abstract List<String> command();
+  public abstract String key();
 
-  public abstract List<String> args();
+  @Nullable
+  public abstract String value();
 
-  public abstract String image();
-
-  public abstract List<KeyValuePair> env();
-
-  public static Builder builder() {
-    return new AutoValue_Container.Builder();
-  }
-
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder command(List<String> command);
-
-    public abstract Builder args(List<String> args);
-
-    public abstract Builder image(String image);
-
-    public abstract Builder env(List<KeyValuePair> env);
-
-    public abstract Container build();
+  public static KeyValuePair of(String key, String value) {
+    return new AutoValue_KeyValuePair(key, value);
   }
 }

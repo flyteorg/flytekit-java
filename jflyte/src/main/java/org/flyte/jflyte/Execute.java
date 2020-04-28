@@ -30,9 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Registrars;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
+import org.flyte.api.v1.TaskIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -120,10 +123,17 @@ public class Execute implements Callable<Integer> {
   }
 
   private static RunnableTask getTask(String name, ClassLoader packageClassLoader) {
-    Map<String, RunnableTask> tasks = RunnableTaskRegistrar.loadAll(packageClassLoader);
+    // be careful not to pass extra
+    Map<String, String> env =
+        System.getenv().entrySet().stream()
+            .filter(x -> x.getKey().startsWith("JFLYTE_"))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    for (Map.Entry<String, RunnableTask> entry : tasks.entrySet()) {
-      if (entry.getKey().equals(name)) {
+    Map<TaskIdentifier, RunnableTask> tasks =
+        Registrars.loadAll(RunnableTaskRegistrar.class, packageClassLoader, env);
+
+    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
+      if (entry.getKey().name().equals(name)) {
         return entry.getValue();
       }
     }

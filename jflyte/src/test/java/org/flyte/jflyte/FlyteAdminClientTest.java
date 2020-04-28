@@ -21,6 +21,7 @@ import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
@@ -39,10 +40,10 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
-import java.util.Collections;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
@@ -101,14 +102,21 @@ public class FlyteAdminClientTest {
   @Test
   public void shouldPropagateCreateTaskToStub() {
     TaskIdentifier identifier = TaskIdentifier.create(DOMAIN, PROJECT, TASK_NAME, TASK_VERSION);
-    TaskTemplate template =
-        TaskTemplate.create(
-            Container.create(
-                Collections.singletonList(COMMAND), Collections.emptyList(), IMAGE_NAME),
-            TypedInterface.create(
-                Collections.singletonMap(
-                    "x", Variable.create(LiteralType.create(SimpleType.STRING), null)),
-                ImmutableMap.of()));
+
+    TypedInterface interface_ =
+        TypedInterface.create(
+            ImmutableMap.of("x", Variable.create(LiteralType.create(SimpleType.STRING), null)),
+            ImmutableMap.of("y", Variable.create(LiteralType.create(SimpleType.INTEGER), null)));
+
+    Container container =
+        Container.builder()
+            .command(ImmutableList.of(COMMAND))
+            .args(ImmutableList.of())
+            .image(IMAGE_NAME)
+            .env(ImmutableList.of(KeyValuePair.of("key", "value")))
+            .build();
+
+    TaskTemplate template = TaskTemplate.create(container, interface_);
 
     client.createTask(identifier, template);
 
@@ -125,17 +133,19 @@ public class FlyteAdminClientTest {
   public void shouldPropagateCreateWorkflowToStub() {
     String nodeId = "node";
     WorkflowIdentifier identifier = WorkflowIdentifier.create(DOMAIN, PROJECT, WF_NAME, WF_VERSION);
+
+    Node node =
+        Node.builder()
+            .id(nodeId)
+            .taskNode(
+                TaskNode.create(TaskIdentifier.create(DOMAIN, PROJECT, TASK_NAME, TASK_VERSION)))
+            .inputs(
+                ImmutableList.of(
+                    Binding.create(VAR_NAME, BindingData.of(Scalar.create(Primitive.of(SCALAR))))))
+            .build();
+
     WorkflowTemplate template =
-        WorkflowTemplate.create(
-            Collections.singletonList(
-                Node.create(
-                    nodeId,
-                    TaskNode.create(
-                        TaskIdentifier.create(DOMAIN, PROJECT, TASK_NAME, TASK_VERSION)),
-                    Collections.singletonList(
-                        Binding.create(
-                            VAR_NAME, BindingData.create(Scalar.create(Primitive.of(SCALAR))))))),
-            WorkflowMetadata.create());
+        WorkflowTemplate.create(ImmutableList.of(node), WorkflowMetadata.create());
 
     client.createWorkflow(identifier, template);
 
@@ -205,6 +215,11 @@ public class FlyteAdminClientTest {
                     Tasks.Container.newBuilder()
                         .setImage(FlyteAdminClientTest.IMAGE_NAME)
                         .addCommand(COMMAND)
+                        .addEnv(
+                            Literals.KeyValuePair.newBuilder()
+                                .setKey("key")
+                                .setValue("value")
+                                .build())
                         .build())
                 .setMetadata(
                     Tasks.TaskMetadata.newBuilder()
@@ -228,7 +243,17 @@ public class FlyteAdminClientTest {
                                                 .build())
                                         .build())
                                 .build())
-                        .setOutputs(Interface.VariableMap.newBuilder().build())
+                        .setOutputs(
+                            Interface.VariableMap.newBuilder()
+                                .putVariables(
+                                    "y",
+                                    Interface.Variable.newBuilder()
+                                        .setType(
+                                            Types.LiteralType.newBuilder()
+                                                .setSimple(Types.SimpleType.INTEGER)
+                                                .build())
+                                        .build())
+                                .build())
                         .build())
                 .setType(ProtoUtil.TASK_TYPE)
                 .build())

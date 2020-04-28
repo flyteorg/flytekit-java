@@ -16,27 +16,6 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoOneOf;
-
-/** Specifies either a simple value or a reference to another output. */
-@AutoOneOf(BindingData.Kind.class)
-public abstract class BindingData {
-  public enum Kind {
-    SCALAR,
-    PROMISE;
-  }
-
-  public abstract Kind kind();
-
-  public abstract Scalar scalar();
-
-  public abstract OutputReference promise();
-
-  public static BindingData of(Scalar scalar) {
-    return AutoOneOf_BindingData.scalar(scalar);
-  }
-
-  public static BindingData of(OutputReference outputReference) {
-    return AutoOneOf_BindingData.promise(outputReference);
-  }
-}
+/** A registrar that creates {@link WorkflowTemplate} instances. */
+public abstract class WorkflowTemplateRegistrar
+    implements Registrar<WorkflowIdentifier, WorkflowTemplate> {}

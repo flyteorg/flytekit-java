@@ -14,37 +14,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
-import java.util.List;
+import java.util.Map;
 
-/** Defines properties for a container. */
 @AutoValue
-public abstract class Container {
+public abstract class SdkConfig {
 
-  public abstract List<String> command();
+  public abstract String project();
 
-  public abstract List<String> args();
+  public abstract String domain();
 
-  public abstract String image();
-
-  public abstract List<KeyValuePair> env();
+  public abstract String version();
 
   public static Builder builder() {
-    return new AutoValue_Container.Builder();
+    return new AutoValue_SdkConfig.Builder();
+  }
+
+  public static SdkConfig load(Map<String, String> env) {
+    return SdkConfig.builder()
+        .domain(env.get("JFLYTE_DOMAIN"))
+        .project(env.get("JFLYTE_PROJECT"))
+        .version(env.get("JFLYTE_VERSION"))
+        .build();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder command(List<String> command);
+    public abstract Builder project(String project);
 
-    public abstract Builder args(List<String> args);
+    public abstract Builder domain(String domain);
 
-    public abstract Builder image(String image);
+    public abstract Builder version(String version);
 
-    public abstract Builder env(List<KeyValuePair> env);
-
-    public abstract Container build();
+    public abstract SdkConfig build();
   }
 }

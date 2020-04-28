@@ -74,6 +74,10 @@ public class AutoValueReflection {
             .map(param -> getParamValue(inputValues, param))
             .toArray();
     try {
+      if (!constructor.isAccessible()) {
+        constructor.setAccessible(true);
+      }
+
       return constructor.newInstance(paramValues);
     } catch (Exception e) {
       throw new IllegalArgumentException(

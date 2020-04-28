@@ -17,34 +17,14 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import java.util.List;
 
-/** Defines properties for a container. */
 @AutoValue
-public abstract class Container {
+public abstract class OutputReference {
+  public abstract String nodeId();
 
-  public abstract List<String> command();
+  public abstract String var();
 
-  public abstract List<String> args();
-
-  public abstract String image();
-
-  public abstract List<KeyValuePair> env();
-
-  public static Builder builder() {
-    return new AutoValue_Container.Builder();
-  }
-
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder command(List<String> command);
-
-    public abstract Builder args(List<String> args);
-
-    public abstract Builder image(String image);
-
-    public abstract Builder env(List<KeyValuePair> env);
-
-    public abstract Container build();
+  public static OutputReference create(String nodeId, String var) {
+    return new AutoValue_OutputReference(nodeId, var);
   }
 }

@@ -22,6 +22,7 @@ import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -40,10 +41,12 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -125,6 +128,32 @@ class ProtoUtilTest {
   }
 
   @Test
+  void shouldSerializeOutputReference() {
+    OutputReference input = OutputReference.create("node-id", "var");
+    Types.OutputReference expected =
+        Types.OutputReference.newBuilder().setNodeId("node-id").setVar("var").build();
+
+    Types.OutputReference output = ProtoUtil.serialize(input);
+
+    Assert.assertEquals(expected, output);
+  }
+
+  @Test
+  void shouldSerializeBindingData() {
+    BindingData input = BindingData.of(Scalar.create(Primitive.of(1337L)));
+    Literals.Scalar expectedScalar =
+        Literals.Scalar.newBuilder()
+            .setPrimitive(Literals.Primitive.newBuilder().setInteger(1337L).build())
+            .build();
+    Literals.BindingData expected =
+        Literals.BindingData.newBuilder().setScalar(expectedScalar).build();
+
+    Literals.BindingData output = ProtoUtil.serialize(input);
+
+    Assert.assertEquals(expected, output);
+  }
+
+  @Test
   void shouldSerializeLaunchPlanIdentifiers() {
     String name = "launch-plan-a";
     LaunchPlanIdentifier id = LaunchPlanIdentifier.create(DOMAIN, PROJECT, name, VERSION);
@@ -190,10 +219,14 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeTaskTemplate() {
-    String image = "alpine:3.7";
-    List<String> commands = Collections.singletonList("echo");
-    List<String> args = Collections.singletonList("hello world");
-    Container container = Container.create(commands, args, image);
+    Container container =
+        Container.builder()
+            .command(ImmutableList.of("echo"))
+            .args(ImmutableList.of("hello world"))
+            .env(ImmutableList.of(KeyValuePair.of("key", "value")))
+            .image("alpine:3.7")
+            .build();
+
     Variable stringVar = Variable.create(LiteralType.create(SimpleType.STRING), null);
     Variable integerVar = Variable.create(LiteralType.create(SimpleType.INTEGER), null);
 
@@ -210,9 +243,14 @@ class ProtoUtilTest {
             Tasks.TaskTemplate.newBuilder()
                 .setContainer(
                     Tasks.Container.newBuilder()
-                        .setImage(image)
-                        .addAllCommand(commands)
-                        .addAllArgs(args)
+                        .setImage("alpine:3.7")
+                        .addCommand("echo")
+                        .addArgs("hello world")
+                        .addEnv(
+                            Literals.KeyValuePair.newBuilder()
+                                .setKey("key")
+                                .setValue("value")
+                                .build())
                         .build())
                 .setMetadata(
                     Tasks.TaskMetadata.newBuilder()
@@ -369,18 +407,18 @@ class ProtoUtilTest {
                 .build()));
   }
 
-  private Node createNode(String name) {
-    String taskName = "task-" + name;
-    String version = "version-" + name;
-    String input_name = "input-name-" + name;
-    String input_scalar = "input-scalar-" + name;
+  private Node createNode(String id) {
+    String taskName = "task-" + id;
+    String version = "version-" + id;
+    String input_name = "input-name-" + id;
+    String input_scalar = "input-scalar-" + id;
 
     TaskNode taskNode = TaskNode.create(TaskIdentifier.create(DOMAIN, PROJECT, taskName, version));
     List<Binding> inputs =
         Collections.singletonList(
-            Binding.create(
-                input_name, BindingData.create(Scalar.create(Primitive.of(input_scalar)))));
-    return Node.create(name, taskNode, inputs);
+            Binding.create(input_name, BindingData.of(Scalar.create(Primitive.of(input_scalar)))));
+
+    return Node.builder().id(id).taskNode(taskNode).inputs(inputs).build();
   }
 
   private static class UnknownIdentifier implements Identifier {

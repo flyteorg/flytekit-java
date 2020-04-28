@@ -14,29 +14,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
-import com.google.auto.value.AutoOneOf;
+public abstract class SdkWorkflow {
 
-/** Specifies either a simple value or a reference to another output. */
-@AutoOneOf(BindingData.Kind.class)
-public abstract class BindingData {
-  public enum Kind {
-    SCALAR,
-    PROMISE;
+  public String getName() {
+    return getClass().getName();
   }
 
-  public abstract Kind kind();
-
-  public abstract Scalar scalar();
-
-  public abstract OutputReference promise();
-
-  public static BindingData of(Scalar scalar) {
-    return AutoOneOf_BindingData.scalar(scalar);
-  }
-
-  public static BindingData of(OutputReference outputReference) {
-    return AutoOneOf_BindingData.promise(outputReference);
-  }
+  public abstract void expand(SdkWorkflowBuilder builder);
 }

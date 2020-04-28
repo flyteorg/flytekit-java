@@ -33,10 +33,12 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -153,12 +155,12 @@ class ProtoUtil {
 
   private static Interface.TypedInterface serialize(TypedInterface interface_) {
     return Interface.TypedInterface.newBuilder()
-        .setInputs(serialize(interface_.inputs()))
-        .setOutputs(serialize(interface_.outputs()))
+        .setInputs(serializeVariableMap(interface_.inputs()))
+        .setOutputs(serializeVariableMap(interface_.outputs()))
         .build();
   }
 
-  private static Interface.VariableMap serialize(Map<String, Variable> inputs) {
+  private static Interface.VariableMap serializeVariableMap(Map<String, Variable> inputs) {
     Interface.VariableMap.Builder builder = Interface.VariableMap.newBuilder();
 
     inputs.forEach((key, value) -> builder.putVariables(key, serialize(value)));
@@ -207,11 +209,27 @@ class ProtoUtil {
   }
 
   private static Tasks.Container serialize(Container container) {
-    return Tasks.Container.newBuilder()
-        .setImage(container.image())
-        .addAllCommand(container.command())
-        .addAllArgs(container.args())
-        .build();
+    Tasks.Container.Builder builder =
+        Tasks.Container.newBuilder()
+            .setImage(container.image())
+            .addAllCommand(container.command())
+            .addAllArgs(container.args());
+
+    container.env().forEach(pair -> builder.addEnv(serialize(pair)));
+
+    return builder.build();
+  }
+
+  private static Literals.KeyValuePair serialize(KeyValuePair pair) {
+    Literals.KeyValuePair.Builder builder = Literals.KeyValuePair.newBuilder();
+
+    builder.setKey(pair.key());
+
+    if (pair.value() != null) {
+      builder.setValue(pair.value());
+    }
+
+    return builder.build();
   }
 
   public static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
@@ -249,8 +267,28 @@ class ProtoUtil {
         .build();
   }
 
-  private static Literals.BindingData serialize(BindingData binding) {
-    return Literals.BindingData.newBuilder().setScalar(serialize(binding.scalar())).build();
+  static Literals.BindingData serialize(BindingData binding) {
+    Literals.BindingData.Builder builder = Literals.BindingData.newBuilder();
+
+    switch (binding.kind()) {
+      case SCALAR:
+        return builder.setScalar(serialize(binding.scalar())).build();
+      case PROMISE:
+        return builder.setPromise(serialize(binding.promise())).build();
+    }
+
+    throw new AssertionError("unexpected BindingData.Kind: " + binding.kind());
+  }
+
+  static Types.OutputReference serialize(@Nullable OutputReference promise) {
+    if (promise == null) {
+      return null;
+    }
+
+    return Types.OutputReference.newBuilder()
+        .setNodeId(promise.nodeId())
+        .setVar(promise.var())
+        .build();
   }
 
   private static Literals.Scalar serialize(@Nullable Scalar scalar) {

@@ -144,6 +144,19 @@
     </dependencies>
   </dependencyManagement>
 
+  <distributionManagement>
+    <repository>
+      <id>repo</id>
+      <name>repo</name>
+      <url>${env.RELEASE_REPOSITORY_URL}</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshots</id>
+      <name>snapshots</name>
+      <url>${env.SNAPSHOTS_REPOSITORY_URL}</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <build>
     <plugins>
       <plugin>

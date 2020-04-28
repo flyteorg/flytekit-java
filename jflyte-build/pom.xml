@@ -28,10 +28,10 @@
   <artifactId>jflyte-build</artifactId>
 
   <properties>
-    <!-- skip docker unless explicitly enabled -->
-    <maven.docker.skip>true</maven.docker.skip>
     <docker.image>${env.FLYTE_INTERNAL_IMAGE}</docker.image>
     <docker.tag>${project.version}</docker.tag>
+
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencies>

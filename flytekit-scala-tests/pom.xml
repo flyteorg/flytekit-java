@@ -35,6 +35,8 @@
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.10</scala.version>
+
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencies>

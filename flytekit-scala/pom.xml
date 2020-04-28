@@ -32,6 +32,8 @@
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.10</scala.version>
     <magnolia.version>0.15.0</magnolia.version>
+
+    <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 
   <dependencyManagement>

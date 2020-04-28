@@ -15,5 +15,5 @@
  * under the License.
  */
 
-/** Flyte examples for Java. */
-package org.flyte.examples;
+/** Flyte examples for Scala. */
+package org.flyte.examples.flytekitscala;

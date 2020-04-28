@@ -22,7 +22,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> {
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
 
-  protected SdkRunnableTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+  public SdkRunnableTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
   }

@@ -25,26 +25,21 @@
     <version>0.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>flytekit-examples</artifactId>
+  <artifactId>flytekit-examples-scala</artifactId>
+
+  <properties>
+    <scala.baseVersion>2.12</scala.baseVersion>
+    <scala.version>2.12.10</scala.version>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-java</artifactId>
+      <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <!-- provided -->
-    <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value-annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
@@ -80,7 +75,13 @@
         </executions>
       </plugin>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <configuration>
+          <args>
+            <arg>-language:experimental.macros</arg>
+          </args>
+        </configuration>
       </plugin>
     </plugins>
   </build>

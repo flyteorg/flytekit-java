@@ -14,6 +14,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.flyte.examples.flytekitscala
 
-/** Flyte examples for Java. */
-package org.flyte.examples;
+import com.google.auto.service.AutoService
+import org.flyte.flytekit.SdkRunnableTask
+import org.flyte.flytekitscala.SdkScalaType
+
+case class Input(message: String)
+
+@AutoService(Array(classOf[SdkRunnableTask[_, _]]))
+object HelloWorldTask
+    extends SdkRunnableTask(SdkScalaType[Input], SdkScalaType.unit) {
+
+  override def run(input: Input): Unit = {
+    println(input.message)
+  }
+}

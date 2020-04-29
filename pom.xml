@@ -40,7 +40,8 @@
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
     <junit.version>5.4.2</junit.version>
 
-    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- need to deploy parent pom because it's referenced from other poms -->
+    <maven.deploy.skip>false</maven.deploy.skip>
 
     <!-- has to be one liner, or errorprone doesn't work -->
     <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>

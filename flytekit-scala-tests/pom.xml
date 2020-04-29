@@ -30,7 +30,8 @@
     tests are separate from flytekit-scala because we want to test macro expansion that can't be done
     in the same module.
   -->
-  <artifactId>flytekit-scala-tests_${scala.baseVersion}</artifactId>
+  <!-- can't use properties, artifact name should be constant -->
+  <artifactId>flytekit-scala-tests_2.12</artifactId>
 
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>

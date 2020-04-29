@@ -26,14 +26,17 @@
     <version>0.2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
+  <!-- can't use properties, artifact name should be constant -->
+  <artifactId>flytekit-scala_2.12</artifactId>
 
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.10</scala.version>
+    <scala.version>2.12.11</scala.version>
     <magnolia.version>0.15.0</magnolia.version>
 
     <maven.deploy.skip>false</maven.deploy.skip>
+    <!-- spotbugs doesn't understand Scala code -->
+    <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
   <dependencyManagement>
@@ -100,11 +103,14 @@
         <executions>
           <execution>
             <goals>
-              <goal>add-source</goal>
-              <goal>doc-jar</goal>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

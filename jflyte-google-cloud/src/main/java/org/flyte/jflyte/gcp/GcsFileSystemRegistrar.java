@@ -18,8 +18,8 @@ package org.flyte.jflyte.gcp;
 
 import com.google.auto.service.AutoService;
 import java.util.Collections;
-import org.flyte.jflyte.FileSystem;
-import org.flyte.jflyte.FileSystemRegistrar;
+import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.FileSystemRegistrar;
 
 /** Registrar for {@link GcsFileSystem}. */
 @AutoService(FileSystemRegistrar.class)

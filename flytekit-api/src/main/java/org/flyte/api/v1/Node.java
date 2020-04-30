@@ -32,6 +32,8 @@ public abstract class Node {
 
   public abstract List<Binding> inputs();
 
+  public abstract Builder toBuilder();
+
   public static Builder builder() {
     return new AutoValue_Node.Builder();
   }

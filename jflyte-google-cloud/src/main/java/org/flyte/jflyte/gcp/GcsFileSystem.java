@@ -32,8 +32,8 @@ import java.nio.channels.WritableByteChannel;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.flyte.jflyte.FileSystem;
-import org.flyte.jflyte.Manifest;
+import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.Manifest;
 
 /** Implementation of {@link FileSystem} for Google Cloud Storage. */
 public class GcsFileSystem implements FileSystem {

@@ -210,6 +210,8 @@
               <!-- disable not helpful warnings to fail on warnings -->
               <arg>-Xlint:-path</arg>
               <arg>-Xlint:-processing</arg>
+              <!-- we don't care about classes being deserialized with different classpath -->
+              <arg>-Xlint:-serial</arg>
               <arg>-implicit:class</arg>
             </compilerArgs>
             <annotationProcessorPaths>
@@ -323,7 +325,8 @@
             <formats>
               <format>
                 <includes>
-                  <include>**.xml</include>
+                  <include>**/pom.xml</include>
+                  <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
                 <endWithNewline />
@@ -452,6 +455,10 @@
               <include>**/*.java</include>
               <include>**/*.xml</include>
             </includes>
+            <excludes>
+              <!-- Generated during build to shade dependencies -->
+              <exclude>**/dependency-reduced-pom.xml</exclude>
+            </excludes>
           </configuration>
           <executions>
             <execution>
@@ -466,6 +473,10 @@
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
           <version>4.3.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.2.3</version>
         </plugin>
       </plugins>
     </pluginManagement>

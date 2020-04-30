@@ -14,20 +14,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
+package org.flyte.jflyte.api;
 
-import java.util.Map;
+import com.google.auto.value.AutoValue;
 
-public class SdkBinding {
-  private final SdkWorkflowBuilder builder;
-  private final Map<String, SdkBindingData> bindingData;
+/** Manifest of resource on {@link FileSystem}. */
+@AutoValue
+public abstract class Manifest {
+  // TODO put different checksums here, e.g., crc32c
 
-  SdkBinding(SdkWorkflowBuilder builder, Map<String, SdkBindingData> bindingData) {
-    this.builder = builder;
-    this.bindingData = bindingData;
-  }
-
-  public SdkNode apply(String nodeId, SdkTransform transform) {
-    return builder.apply(nodeId, transform, bindingData);
+  public static Manifest create() {
+    return new AutoValue_Manifest();
   }
 }

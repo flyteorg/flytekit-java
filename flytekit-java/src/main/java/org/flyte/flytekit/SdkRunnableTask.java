@@ -16,15 +16,31 @@
  */
 package org.flyte.flytekit;
 
-/** Building block for tasks that execute Java code. */
-public abstract class SdkRunnableTask<InputT, OutputT> {
+import java.io.Serializable;
+import java.util.Map;
+import org.flyte.api.v1.PartialTaskIdentifier;
 
-  private final SdkType<InputT> inputType;
-  private final SdkType<OutputT> outputType;
+/** Building block for tasks that execute Java code. */
+public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
+    implements Serializable {
+
+  static final long serialVersionUID = 42L;
+
+  private final transient SdkType<InputT> inputType;
+  private final transient SdkType<OutputT> outputType;
 
   public SdkRunnableTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
+  }
+
+  // constructor used for serialization
+  //
+  // we want to make class serializable because big data processing frameworks
+  // tend to capture outer classes into closures, and serialize them
+  private SdkRunnableTask() {
+    this.inputType = null;
+    this.outputType = null;
   }
 
   public String getName() {
@@ -37,6 +53,16 @@ public abstract class SdkRunnableTask<InputT, OutputT> {
 
   public SdkType<OutputT> getOutputType() {
     return outputType;
+  }
+
+  @Override
+  public SdkNode apply(
+      SdkWorkflowBuilder builder, String nodeId, Map<String, SdkBindingData> inputs) {
+    PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
+
+    // TODO put type checking here
+
+    return new SdkTaskNode(builder, nodeId, taskId, inputs, outputType.getVariableMap());
   }
 
   public abstract OutputT run(InputT input);

@@ -22,9 +22,9 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class TaskNode {
 
-  public abstract TaskIdentifier referenceId();
+  public abstract PartialTaskIdentifier referenceId();
 
-  public static TaskNode create(TaskIdentifier referenceId) {
+  public static TaskNode create(PartialTaskIdentifier referenceId) {
     return new AutoValue_TaskNode(referenceId);
   }
 }

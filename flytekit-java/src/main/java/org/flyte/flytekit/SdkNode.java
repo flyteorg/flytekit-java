@@ -20,6 +20,7 @@ import com.google.common.base.Verify;
 import java.util.Map;
 import org.flyte.api.v1.Node;
 
+/** Represent a node in the workflow DAG. */
 public abstract class SdkNode {
 
   protected final SdkWorkflowBuilder builder;
@@ -40,7 +41,7 @@ public abstract class SdkNode {
 
   public abstract String getNodeId();
 
-  public abstract Node toIdl(SdkConfig config);
+  public abstract Node toIdl();
 
   public SdkNode apply(String id, SdkRunnableTask<?, ?> task) {
     return builder.apply(id, task, getOutputs());

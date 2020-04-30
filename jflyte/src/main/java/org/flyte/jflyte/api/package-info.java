@@ -14,20 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
 
-import java.util.Map;
-
-public class SdkBinding {
-  private final SdkWorkflowBuilder builder;
-  private final Map<String, SdkBindingData> bindingData;
-
-  SdkBinding(SdkWorkflowBuilder builder, Map<String, SdkBindingData> bindingData) {
-    this.builder = builder;
-    this.bindingData = bindingData;
-  }
-
-  public SdkNode apply(String nodeId, SdkTransform transform) {
-    return builder.apply(nodeId, transform, bindingData);
-  }
-}
+/** Interface for jflyte plugins. */
+package org.flyte.jflyte.api;

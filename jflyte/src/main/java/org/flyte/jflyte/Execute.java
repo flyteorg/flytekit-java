@@ -16,8 +16,12 @@
  */
 package org.flyte.jflyte;
 
+import flyteidl.core.Errors;
 import flyteidl.core.Literals;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.Channels;
@@ -36,6 +40,8 @@ import org.flyte.api.v1.Registrars;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.FileSystemRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -47,6 +53,7 @@ public class Execute implements Callable<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
   private static final String OUTPUTS_PB = "outputs.pb";
+  private static final String ERROR_PB = "error.pb";
 
   @Option(
       names = {"--task"},
@@ -86,30 +93,80 @@ public class Execute implements Callable<Integer> {
         FileSystemRegistrar.getFileSystem(URI.create(inputs).getScheme(), pluginClassLoader);
     FileSystem outputFs =
         FileSystemRegistrar.getFileSystem(URI.create(outputPrefix).getScheme(), pluginClassLoader);
-    Map<String, Literal> input = getInput(inputFs, inputs);
-    RunnableTask runnableTask = getTask(task, packageClassLoader);
 
-    Map<String, Literal> outputs = runnableTask.run(input);
+    try {
+      Map<String, Literal> input = getInput(inputFs, inputs);
+      RunnableTask runnableTask = getTask(task, packageClassLoader);
 
-    writeOutputs(outputFs, outputPrefix, outputs);
+      // before we run anything, switch class loader, otherwise,
+      // ServiceLoaders and other things wouldn't work, for instance,
+      // FileSystemRegister in Apache Beam
+      Thread.currentThread().setContextClassLoader(packageClassLoader);
+
+      Map<String, Literal> outputs = runnableTask.run(input);
+
+      writeOutputs(outputFs, outputPrefix, outputs);
+    } catch (Throwable e) {
+      LOG.error("failed to run task", e);
+
+      writeError(outputFs, outputPrefix, e);
+    }
   }
 
   private static void writeOutputs(
       FileSystem fs, String outputPrefix, Map<String, Literal> outputs) {
-    String outputUri;
-    if (outputPrefix.endsWith("/")) {
-      outputUri = outputPrefix + OUTPUTS_PB;
-    } else {
-      outputUri = outputPrefix + "/" + OUTPUTS_PB;
-    }
+    String outputUri = normalizeUri(outputPrefix, OUTPUTS_PB);
 
-    try (WritableByteChannel channel = fs.writer(outputUri)) {
-      Literals.LiteralMap proto = ProtoUtil.serializeLiteralMap(outputs);
+    writeTo(
+        fs,
+        outputUri,
+        outputStream -> {
+          Literals.LiteralMap proto = ProtoUtil.serializeLiteralMap(outputs);
+          proto.writeTo(outputStream);
+        });
+  }
 
-      proto.writeTo(Channels.newOutputStream(channel));
+  private static void writeError(FileSystem fs, String outputPrefix, Throwable error) {
+    String outputUri = normalizeUri(outputPrefix, ERROR_PB);
+
+    writeTo(
+        fs,
+        outputUri,
+        outputStream -> {
+          StringWriter sw = new StringWriter();
+          error.printStackTrace(new PrintWriter(sw));
+
+          Errors.ErrorDocument errorDocument =
+              Errors.ErrorDocument.newBuilder()
+                  .setError(
+                      Errors.ContainerError.newBuilder()
+                          .setCode("SYSTEM:Unknown")
+                          .setKind(Errors.ContainerError.Kind.NON_RECOVERABLE)
+                          .setMessage(sw.toString())
+                          .build())
+                  .build();
+
+          errorDocument.writeTo(outputStream);
+        });
+  }
+
+  private static void writeTo(FileSystem fs, String uri, Writer writer) {
+    try (WritableByteChannel channel = fs.writer(uri);
+        OutputStream os = Channels.newOutputStream(channel)) {
+      writer.write(os);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  private static String normalizeUri(String prefix, String fileName) {
+    String uri;
+    if (prefix.endsWith("/")) {
+      uri = prefix + fileName;
+    } else {
+      uri = prefix + "/" + fileName;
+    }
+    return uri;
   }
 
   private static Map<String, Literal> getInput(FileSystem fs, String uri) {
@@ -179,7 +236,9 @@ public class Execute implements Callable<Integer> {
 
       for (String stagedFile : stagedFiles) {
         try (ReadableByteChannel reader = fileSystem.reader(stagedFile)) {
-          String name = stagedFile.substring(stagedFile.lastIndexOf("/") + 1);
+          // FIXME beam doesn't like = in jar names
+          // we should preserve original jar name, for now, just remove "="
+          String name = stagedFile.substring(stagedFile.lastIndexOf("/") + 1).replace("=", "");
           Path path = tmp.resolve(name);
 
           if (path.toFile().exists()) {
@@ -198,5 +257,9 @@ public class Execute implements Callable<Integer> {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  private interface Writer {
+    void write(OutputStream os) throws IOException;
   }
 }

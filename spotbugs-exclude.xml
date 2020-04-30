@@ -26,4 +26,10 @@
     <Package name="~flyteidl\b.*"/>
   </Match>
 
+  <!-- Don't need serialVersionUID in examples -->
+  <Match>
+    <Package name="~.*examples.*"/>
+    <Bug pattern="SE_NO_SERIALVERSIONID"/>
+  </Match>
+
 </FindBugsFilter>

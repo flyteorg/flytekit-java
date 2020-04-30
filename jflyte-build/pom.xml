@@ -42,13 +42,19 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
       <artifactId>jflyte-google-cloud</artifactId>
       <version>${project.version}</version>
-      <scope>runtime</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <finalName>jflyte</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -64,21 +70,89 @@
               <useBaseVersion>false</useBaseVersion>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>runtime</includeScope>
+              <includeScope>compile</includeScope>
             </configuration>
           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
           <execution>
-            <id>copy-compile</id>
-            <phase>prepare-package</phase>
+            <phase>package</phase>
             <goals>
-              <goal>copy-dependencies</goal>
+              <goal>shade</goal>
             </goals>
             <configuration>
+              <shadeTestJar>false</shadeTestJar>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <useBaseVersion>false</useBaseVersion>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>compile</includeScope>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+              <relocations>
+                <relocation>
+                  <pattern>com.google.guava</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.guava</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.thirdparty</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.thirdparty</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.protobuf</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.protobuf</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.inject</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.inject</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.api</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.api</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.gson</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.gson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.logging</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.com.google.logging</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>picocli</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.picocli</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>io.grpc</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.grpc</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>io.opencensus</pattern>
+                  <shadedPattern>org.flyte.jflyte.shaded.opencensus</shadedPattern>
+                </relocation>
+              </relocations>
+              <artifactSet>
+                <includes>
+                  <include>*</include>
+                </includes>
+                <excludes>
+                  <exclude>com.google.auto.value:auto-value-annotations</exclude>
+                  <exclude>com.google.auto.value:auto-value</exclude>
+                  <exclude>com.google.code.findbugs:annotations</exclude>
+                  <exclude>com.google.code.findbugs:jsr250</exclude>
+                  <exclude>findbugs:annotations</exclude>
+                  <exclude>javax.activation:activation</exclude>
+                  <exclude>javax.annotation:jsr250-api</exclude>
+                  <exclude>com.google.errorprone:error_prone_annotations</exclude>
+                  <exclude>com.google.j2objc:j2objc-annotations</exclude>
+                  <exclude>org.codehaus.mojo:animal-sniffer-annotations</exclude>
+                </excludes>
+              </artifactSet>
             </configuration>
           </execution>
         </executions>

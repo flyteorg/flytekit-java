@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static com.google.common.base.Verify.verifyNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import flyteidl.admin.Common;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
@@ -26,7 +27,10 @@ import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.LaunchPlanIdentifier;
+import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -147,6 +151,28 @@ public class FlyteAdminClient implements AutoCloseable {
         launchPlanId,
         project,
         domain);
+  }
+
+  @Nullable
+  public TaskIdentifier fetchLatestTaskId(NamedEntityIdentifier taskId) {
+    Common.ResourceListRequest request =
+        Common.ResourceListRequest.newBuilder()
+            .setLimit(1)
+            .setId(ProtoUtil.serialize(taskId))
+            .setSortBy(
+                Common.Sort.newBuilder()
+                    .setKey("created_at")
+                    .setDirection(Common.Sort.Direction.DESCENDING)
+                    .build())
+            .build();
+
+    List<TaskOuterClass.Task> list = stub.listTasks(request).getTasksList();
+
+    if (list.isEmpty()) {
+      return null;
+    }
+
+    return ProtoUtil.deserializeTaskId(list.get(0).getId());
   }
 
   @Override

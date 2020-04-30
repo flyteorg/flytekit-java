@@ -62,9 +62,7 @@ object SdkScalaLiteralType {
 object SdkScalaType {
   type Typeclass[T] = SdkScalaType[T]
 
-  private[flytekitscala] def combine[T](
-      ctx: CaseClass[SdkScalaType, T]
-  ): SdkScalaProductType[T] = {
+  def combine[T](ctx: CaseClass[SdkScalaType, T]): SdkScalaProductType[T] = {
     // throwing an exception will abort implicit resolution for this case
     // very dirty down casting, but we need some evidence that all parameters are TypedLiterals
     // and that's the best we can do with magnolia unless we want to play with phantom types
@@ -143,9 +141,9 @@ object SdkScalaType {
     )
 
   @implicitNotFound("Cannot derive SdkScalaType for sealed trait")
-  private sealed trait Dispatchable[T]
+  sealed trait Dispatchable[T]
 
-  private[flytekitscala] def dispatch[T: Dispatchable](
+  def dispatch[T: Dispatchable](
       sealedTrait: SealedTrait[SdkScalaProductType, T]
   ): SdkScalaProductType[T] =
     sys.error("Cannot derive SdkScalaType for sealed trait")

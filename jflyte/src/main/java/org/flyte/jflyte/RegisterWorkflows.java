@@ -44,6 +44,8 @@ import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
+import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.FileSystemRegistrar;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -151,6 +153,14 @@ public class RegisterWorkflows implements Callable<Integer> {
     Map<WorkflowIdentifier, WorkflowTemplate> workflows =
         Registrars.loadAll(WorkflowTemplateRegistrar.class, packageClassLoader, env);
 
+    IdentifierRewrite identifierRewrite =
+        IdentifierRewrite.builder()
+            .adminClient(adminClient)
+            .domain(domain)
+            .project(project)
+            .version(version)
+            .build();
+
     for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
       TaskIdentifier taskId = entry.getKey();
       RunnableTask task = entry.getValue();
@@ -167,8 +177,9 @@ public class RegisterWorkflows implements Callable<Integer> {
 
     for (Map.Entry<WorkflowIdentifier, WorkflowTemplate> entry : workflows.entrySet()) {
       WorkflowIdentifier workflowId = entry.getKey();
+      WorkflowTemplate workflowTemplate = identifierRewrite.apply(entry.getValue());
 
-      adminClient.createWorkflow(workflowId, entry.getValue());
+      adminClient.createWorkflow(workflowId, workflowTemplate);
 
       // for each workflow, create default launch plan
       LaunchPlanIdentifier launchPlanId =

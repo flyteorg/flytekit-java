@@ -14,16 +14,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.jflyte;
+package org.flyte.flytekit;
 
-import com.google.auto.value.AutoValue;
+import java.util.Map;
 
-/** Manifest of resource on {@link FileSystem}. */
-@AutoValue
-public abstract class Manifest {
-  // TODO put different checksums here, e.g., crc32c
-
-  public static Manifest create() {
-    return new AutoValue_Manifest();
-  }
+/** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
+public abstract class SdkTransform {
+  public abstract SdkNode apply(
+      SdkWorkflowBuilder builder, String nodeId, Map<String, SdkBindingData> inputs);
 }

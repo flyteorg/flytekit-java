@@ -14,29 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.jflyte;
+package org.flyte.api.v1;
 
-import com.google.errorprone.annotations.MustBeClosed;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import javax.annotation.Nullable;
+import com.google.auto.value.AutoValue;
 
 /**
- * File system interface for jflyte.
- *
- * <p>Defines APIs for file system agnostic code.
+ * Encapsulation of fields that identifies a Flyte resource. A resource can internally have multiple
+ * versions.
  */
-public interface FileSystem {
+@AutoValue
+public abstract class NamedEntityIdentifier {
+  public abstract String domain();
 
-  String getScheme();
+  public abstract String project();
 
-  @MustBeClosed
-  ReadableByteChannel reader(String uri);
+  public abstract String name();
 
-  @MustBeClosed
-  WritableByteChannel writer(String uri);
-
-  /** Returns Manifest for given resource, or null if it doesn't exist. */
-  @Nullable
-  Manifest getManifest(String uri);
+  public static NamedEntityIdentifier create(String domain, String project, String name) {
+    return new AutoValue_NamedEntityIdentifier(domain, project, name);
+  }
 }

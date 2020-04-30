@@ -16,6 +16,9 @@
  */
 package org.flyte.flytekit;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.OutputReference;
@@ -45,6 +48,12 @@ public class SdkBindingData {
 
   public static SdkBindingData ofBoolean(boolean value) {
     return ofScalar(Scalar.create(Primitive.of(value)));
+  }
+
+  public static SdkBindingData ofDatetime(int year, int month, int day) {
+    Instant instant = LocalDate.of(year, month, day).atStartOfDay().toInstant(ZoneOffset.UTC);
+
+    return ofDatetime(Timestamp.create(instant.getEpochSecond(), 0));
   }
 
   public static SdkBindingData ofDatetime(Timestamp value) {

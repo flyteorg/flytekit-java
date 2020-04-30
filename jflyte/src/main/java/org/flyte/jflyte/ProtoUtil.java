@@ -19,6 +19,8 @@ package org.flyte.jflyte;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import flyteidl.admin.Common;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
@@ -37,6 +39,7 @@ import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
@@ -247,10 +250,15 @@ class ProtoUtil {
   }
 
   private static Workflow.Node serialize(Node node) {
+    TaskIdentifier taskIdentifier =
+        TaskIdentifier.create(
+            /* domain= */ node.taskNode().referenceId().domain(),
+            /* project= */ node.taskNode().referenceId().project(),
+            /* name= */ node.taskNode().referenceId().name(),
+            /* version= */ node.taskNode().referenceId().version());
+
     Workflow.TaskNode taskNode =
-        Workflow.TaskNode.newBuilder()
-            .setReferenceId(serialize(node.taskNode().referenceId()))
-            .build();
+        Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
 
     Workflow.Node.Builder builder =
         Workflow.Node.newBuilder().setId(node.id()).setTaskNode(taskNode);
@@ -358,5 +366,26 @@ class ProtoUtil {
     }
 
     throw new AssertionError("unexpected Literal.Kind: " + value.kind());
+  }
+
+  static Common.NamedEntityIdentifier serialize(NamedEntityIdentifier taskId) {
+    return Common.NamedEntityIdentifier.newBuilder()
+        .setDomain(taskId.domain())
+        .setProject(taskId.project())
+        .setName(taskId.name())
+        .build();
+  }
+
+  static TaskIdentifier deserializeTaskId(IdentifierOuterClass.Identifier id) {
+    Preconditions.checkArgument(
+        id.getResourceType() == IdentifierOuterClass.ResourceType.TASK,
+        "isn't ResourceType.TASK, got [%s]",
+        id.getResourceType());
+
+    return TaskIdentifier.create(
+        /* domain= */ id.getDomain(),
+        /* project= */ id.getProject(),
+        /* name= */ id.getName(),
+        /* version= */ id.getVersion());
   }
 }

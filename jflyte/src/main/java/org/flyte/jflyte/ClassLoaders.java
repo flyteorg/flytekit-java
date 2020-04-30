@@ -20,7 +20,6 @@ import com.google.common.base.Preconditions;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.stream.Stream;
@@ -34,7 +33,7 @@ class ClassLoaders {
 
   public static ClassLoader forDirectory(String dir) {
     return AccessController.doPrivileged(
-        (PrivilegedAction<ClassLoader>) () -> new URLClassLoader(getClassLoaderUrls(dir)));
+        (PrivilegedAction<ClassLoader>) () -> new ChildFirstClassLoader(getClassLoaderUrls(dir)));
   }
 
   public static URL[] getClassLoaderUrls(String dir) {

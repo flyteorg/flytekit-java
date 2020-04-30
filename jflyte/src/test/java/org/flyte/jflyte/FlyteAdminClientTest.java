@@ -47,6 +47,7 @@ import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -133,12 +134,19 @@ public class FlyteAdminClientTest {
   public void shouldPropagateCreateWorkflowToStub() {
     String nodeId = "node";
     WorkflowIdentifier identifier = WorkflowIdentifier.create(DOMAIN, PROJECT, WF_NAME, WF_VERSION);
+    TaskNode taskNode =
+        TaskNode.create(
+            PartialTaskIdentifier.builder()
+                .domain(DOMAIN)
+                .project(PROJECT)
+                .name(TASK_NAME)
+                .version(TASK_VERSION)
+                .build());
 
     Node node =
         Node.builder()
             .id(nodeId)
-            .taskNode(
-                TaskNode.create(TaskIdentifier.create(DOMAIN, PROJECT, TASK_NAME, TASK_VERSION)))
+            .taskNode(taskNode)
             .inputs(
                 ImmutableList.of(
                     Binding.create(VAR_NAME, BindingData.of(Scalar.create(Primitive.of(SCALAR))))))

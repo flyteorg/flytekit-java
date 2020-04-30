@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.jflyte;
+package org.flyte.jflyte.api;
 
 import java.util.ServiceLoader;
 import org.slf4j.Logger;

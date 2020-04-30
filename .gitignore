@@ -21,6 +21,7 @@ target
 *.zip
 *.tar.gz
 *.rar
+dependency-reduced-pom.xml
 
 # IDEA files
 *.iml

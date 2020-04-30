@@ -22,29 +22,34 @@ import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.Immutabl
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
-import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.TaskNode;
+import org.flyte.api.v1.Variable;
 
+/** Represent a {@link org.flyte.flytekit.SdkRunnableTask} in a workflow DAG. */
 public class SdkTaskNode extends SdkNode {
   private final String nodeId;
-  private final SdkRunnableTask<?, ?> task;
+  private final PartialTaskIdentifier taskId;
   private final Map<String, SdkBindingData> inputs;
+  private final Map<String, Variable> outputs;
 
   SdkTaskNode(
       SdkWorkflowBuilder builder,
       String nodeId,
-      SdkRunnableTask<?, ?> task,
-      Map<String, SdkBindingData> inputs) {
+      PartialTaskIdentifier taskId,
+      Map<String, SdkBindingData> inputs,
+      Map<String, Variable> outputs) {
     super(builder);
 
     this.nodeId = nodeId;
-    this.task = task;
+    this.taskId = taskId;
     this.inputs = inputs;
+    this.outputs = outputs;
   }
 
   @Override
   public Map<String, SdkBindingData> getOutputs() {
-    return task.getOutputType().getVariableMap().entrySet().stream()
+    return this.outputs.entrySet().stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Map.Entry::getKey,
@@ -57,14 +62,8 @@ public class SdkTaskNode extends SdkNode {
   }
 
   @Override
-  public Node toIdl(SdkConfig config) {
-    TaskNode taskNode =
-        TaskNode.create(
-            TaskIdentifier.create(
-                /* domain= */ config.domain(),
-                /* project= */ config.project(),
-                /* name= */ task.getName(),
-                /* version= */ config.version()));
+  public Node toIdl() {
+    TaskNode taskNode = TaskNode.create(taskId);
 
     List<Binding> bindings =
         inputs.entrySet().stream()

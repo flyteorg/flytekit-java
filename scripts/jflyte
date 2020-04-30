@@ -2,10 +2,11 @@
 
 set -uea -o pipefail
 
-CUSTOM_FLYTE_INTERNAL_IMAGE="$(cat jflyte-build/target/docker/image-name)"
+DIR="$(dirname $0)/../"
+CUSTOM_FLYTE_INTERNAL_IMAGE="$(cat $DIR/jflyte-build/target/docker/image-name)"
 
-if [ -e ".env.local" ]; then
-    source ".env.local"
+if [ -e "$DIR/.env.local" ]; then
+    source "$DIR/.env.local"
 fi
 
 FLYTE_INTERNAL_IMAGE=${FLYTE_INTERNAL_IMAGE:-$CUSTOM_FLYTE_INTERNAL_IMAGE}

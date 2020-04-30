@@ -33,6 +33,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.Manifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -40,9 +40,8 @@ public class SdkWorkflowBuilder {
     return apply(nodeId, task, ImmutableMap.of());
   }
 
-  public SdkNode apply(
-      String nodeId, SdkRunnableTask<?, ?> task, Map<String, SdkBindingData> inputs) {
-    SdkTaskNode sdkNode = new SdkTaskNode(this, nodeId, task, inputs);
+  public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
+    SdkNode sdkNode = transform.apply(this, nodeId, inputs);
     applyInternal(sdkNode);
 
     return sdkNode;
@@ -72,9 +71,23 @@ public class SdkWorkflowBuilder {
     return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
   }
 
+  public SdkBinding mapOf(String name1, SdkBindingData value1) {
+    return new SdkBinding(this, ImmutableMap.of(name1, value1));
+  }
+
   public SdkBinding mapOf(
       String name1, SdkBindingData value1, String name2, SdkBindingData value2) {
     return new SdkBinding(this, ImmutableMap.of(name1, value1, name2, value2));
+  }
+
+  public SdkBinding mapOf(
+      String name1,
+      SdkBindingData value1,
+      String name2,
+      SdkBindingData value2,
+      String name3,
+      SdkBindingData value3) {
+    return new SdkBinding(this, ImmutableMap.of(name1, value1, name2, value2, name3, value3));
   }
 
   public SdkBinding tupleOf(SdkNode... nodes) {
@@ -90,9 +103,7 @@ public class SdkWorkflowBuilder {
     allNodes.put(node.getNodeId(), node);
   }
 
-  public List<Node> toIdl(SdkConfig config) {
-    return allNodes.values().stream()
-        .map(x -> x.toIdl(config))
-        .collect(ImmutableList.toImmutableList());
+  public List<Node> toIdl() {
+    return allNodes.values().stream().map(SdkNode::toIdl).collect(ImmutableList.toImmutableList());
   }
 }

@@ -14,22 +14,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.jflyte;
+package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import org.flyte.jflyte.api.FileSystem;
+import javax.annotation.Nullable;
 
-/** Represents artifact to stage to {@link FileSystem}. */
 @AutoValue
-public abstract class Artifact {
+public abstract class PartialTaskIdentifier {
+  @Nullable
+  public abstract String domain();
 
-  public abstract String location();
+  @Nullable
+  public abstract String project();
 
   public abstract String name();
 
-  public abstract long size();
+  @Nullable
+  public abstract String version();
 
-  public static Artifact create(String location, String name, long size) {
-    return new AutoValue_Artifact(location, name, size);
+  public static Builder builder() {
+    return new AutoValue_PartialTaskIdentifier.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder domain(String domain);
+
+    public abstract Builder project(String project);
+
+    public abstract Builder name(String name);
+
+    public abstract Builder version(String version);
+
+    public abstract PartialTaskIdentifier build();
   }
 }

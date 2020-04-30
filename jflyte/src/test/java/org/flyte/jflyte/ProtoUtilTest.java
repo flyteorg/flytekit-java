@@ -20,10 +20,12 @@ import static flyteidl.core.IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.TASK;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
@@ -406,6 +408,21 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build()));
+  }
+
+  @Test
+  void shouldSerializeThrowable() {
+    // for now, we have very simple implementation
+    // proto for ErrorDocument isn't well documented as well
+
+    Throwable e = new RuntimeException("oops");
+
+    Errors.ErrorDocument errorDocument = ProtoUtil.serialize(e);
+    Errors.ContainerError error = errorDocument.getError();
+
+    assertThat(error.getKind(), equalTo(Errors.ContainerError.Kind.NON_RECOVERABLE));
+    assertThat(error.getMessage(), containsString(e.getMessage()));
+    assertThat(error.getCode(), equalTo("SYSTEM:Unknown"));
   }
 
   private Node createNode(String id) {

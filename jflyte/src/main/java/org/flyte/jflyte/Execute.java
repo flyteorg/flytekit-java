@@ -20,8 +20,6 @@ import flyteidl.core.Errors;
 import flyteidl.core.Literals;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.Channels;
@@ -133,18 +131,7 @@ public class Execute implements Callable<Integer> {
         fs,
         outputUri,
         outputStream -> {
-          StringWriter sw = new StringWriter();
-          error.printStackTrace(new PrintWriter(sw));
-
-          Errors.ErrorDocument errorDocument =
-              Errors.ErrorDocument.newBuilder()
-                  .setError(
-                      Errors.ContainerError.newBuilder()
-                          .setCode("SYSTEM:Unknown")
-                          .setKind(Errors.ContainerError.Kind.NON_RECOVERABLE)
-                          .setMessage(sw.toString())
-                          .build())
-                  .build();
+          Errors.ErrorDocument errorDocument = ProtoUtil.serialize(error);
 
           errorDocument.writeTo(outputStream);
         });

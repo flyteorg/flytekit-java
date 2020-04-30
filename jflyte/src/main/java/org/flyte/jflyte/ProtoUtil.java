@@ -21,12 +21,15 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import flyteidl.admin.Common;
+import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
 import flyteidl.core.Types;
 import flyteidl.core.Workflow;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -387,5 +390,19 @@ class ProtoUtil {
         /* project= */ id.getProject(),
         /* name= */ id.getName(),
         /* version= */ id.getVersion());
+  }
+
+  static Errors.ErrorDocument serialize(Throwable e) {
+    StringWriter sw = new StringWriter();
+    e.printStackTrace(new PrintWriter(sw));
+
+    return Errors.ErrorDocument.newBuilder()
+        .setError(
+            Errors.ContainerError.newBuilder()
+                .setCode("SYSTEM:Unknown")
+                .setKind(Errors.ContainerError.Kind.NON_RECOVERABLE)
+                .setMessage(sw.toString())
+                .build())
+        .build();
   }
 }

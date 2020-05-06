@@ -42,8 +42,14 @@
 
     <!-- provided -->
     <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
+      <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -70,7 +76,7 @@
               <useBaseVersion>false</useBaseVersion>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>compile</includeScope>
+              <includeScope>runtime</includeScope>
             </configuration>
           </execution>
         </executions>
@@ -83,7 +89,19 @@
             <arg>-language:experimental.macros</arg>
           </args>
         </configuration>
+<!-- FIXME: enable those after fixing code -->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <goals>-->
+<!--              <goal>compile</goal>-->
+<!--              <goal>testCompile</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
       </plugin>
+<!--      <plugin>-->
+<!--        <artifactId>maven-jar-plugin</artifactId>-->
+<!--      </plugin>-->
     </plugins>
   </build>
 </project>

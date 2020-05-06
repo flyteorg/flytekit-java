@@ -16,12 +16,17 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.singletonMap;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableList;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Primitive;
@@ -37,7 +42,7 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkNode apply(String nodeId, SdkRunnableTask<?, ?> task) {
-    return apply(nodeId, task, ImmutableMap.of());
+    return apply(nodeId, task, Collections.emptyMap());
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
@@ -72,12 +77,15 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {
-    return new SdkBinding(this, ImmutableMap.of(name1, value1));
+    return new SdkBinding(this, singletonMap(name1, value1));
   }
 
   public SdkBinding mapOf(
       String name1, SdkBindingData value1, String name2, SdkBindingData value2) {
-    return new SdkBinding(this, ImmutableMap.of(name1, value1, name2, value2));
+    Map<String, SdkBindingData> map = new HashMap<>();
+    map.put(name1, value1);
+    map.put(name2, value2);
+    return new SdkBinding(this, unmodifiableMap(map));
   }
 
   public SdkBinding mapOf(
@@ -87,14 +95,20 @@ public class SdkWorkflowBuilder {
       SdkBindingData value2,
       String name3,
       SdkBindingData value3) {
-    return new SdkBinding(this, ImmutableMap.of(name1, value1, name2, value2, name3, value3));
+    Map<String, SdkBindingData> map = new HashMap<>();
+    map.put(name1, value1);
+    map.put(name2, value2);
+    map.put(name3, value3);
+    return new SdkBinding(this, unmodifiableMap(map));
   }
 
   public SdkBinding tupleOf(SdkNode... nodes) {
     Map<String, SdkBindingData> inputs =
         Stream.of(nodes)
             .flatMap(x -> x.getOutputs().entrySet().stream())
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(
+                collectingAndThen(
+                    toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
 
     return new SdkBinding(this, inputs);
   }
@@ -104,6 +118,8 @@ public class SdkWorkflowBuilder {
   }
 
   public List<Node> toIdl() {
-    return allNodes.values().stream().map(SdkNode::toIdl).collect(ImmutableList.toImmutableList());
+    return allNodes.values().stream()
+        .map(SdkNode::toIdl)
+        .collect(collectingAndThen(toList(), Collections::unmodifiableList));
   }
 }

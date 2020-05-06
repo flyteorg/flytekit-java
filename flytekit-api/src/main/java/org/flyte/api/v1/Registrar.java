@@ -20,5 +20,9 @@ import java.util.Map;
 
 /** A registrar interface to load elements from a class loader. */
 public interface Registrar<K, T> {
-  Map<K, T> load(ClassLoader classLoader, Map<String, String> env);
+  default Map<K, T> load(Map<String, String> env) {
+    return load(env, Thread.currentThread().getContextClassLoader());
+  }
+
+  Map<K, T> load(Map<String, String> env, ClassLoader classLoader);
 }

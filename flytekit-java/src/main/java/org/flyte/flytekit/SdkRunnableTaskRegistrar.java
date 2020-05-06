@@ -20,18 +20,23 @@ import com.google.auto.service.AutoService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** A registrar that creates {@link SdkRunnableTask} instances. */
 @AutoService(RunnableTaskRegistrar.class)
 public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
-  private static final Logger LOG = LoggerFactory.getLogger(SdkRunnableTaskRegistrar.class);
+  private static final Logger LOG = Logger.getLogger(SdkRunnableTaskRegistrar.class.getName());
+
+  static {
+    // enable all levels for the actual handler to pick up
+    LOG.setLevel(Level.ALL);
+  }
 
   private static class RunnableTaskImpl<InputT, OutputT> implements RunnableTask {
     private final SdkRunnableTask<InputT, OutputT> sdkTask;
@@ -62,10 +67,10 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
   @Override
   @SuppressWarnings("rawtypes")
-  public Map<TaskIdentifier, RunnableTask> load(ClassLoader classLoader, Map<String, String> env) {
+  public Map<TaskIdentifier, RunnableTask> load(Map<String, String> env, ClassLoader classLoader) {
     ServiceLoader<SdkRunnableTask> loader = ServiceLoader.load(SdkRunnableTask.class, classLoader);
 
-    LOG.debug("Discovering SdkRunnableTask");
+    LOG.fine("Discovering SdkRunnableTask");
 
     Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
@@ -78,8 +83,7 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
               /* project= */ sdkConfig.project(),
               /* name= */ name,
               /* version= */ sdkConfig.version());
-
-      LOG.debug("Discovered [{}]", name);
+      LOG.fine(String.format("Discovered [%s]", name));
 
       RunnableTask task = new RunnableTaskImpl<>(sdkTask);
       RunnableTask previous = tasks.put(taskId, task);

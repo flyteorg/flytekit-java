@@ -14,21 +14,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import org.flyte.api.v1.Registrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** This class consists exclusively of static methods that operate on {@link Registrar}. */
-public class Registrars {
+class Registrars {
   private static final Logger LOG = LoggerFactory.getLogger(Registrars.class);
 
   public static <K, V, T extends Registrar<K, V>> Map<K, V> loadAll(
-      Class<T> registrarClass, ClassLoader classLoader, Map<String, String> env) {
-    ServiceLoader<T> loader = ServiceLoader.load(registrarClass, classLoader);
+      Class<T> registrarClass, Map<String, String> env) {
+    ServiceLoader<T> loader = ServiceLoader.load(registrarClass);
 
     LOG.debug("Discovering " + registrarClass.getSimpleName());
 
@@ -37,7 +38,7 @@ public class Registrars {
     for (T registrar : loader) {
       LOG.debug("Discovered [{}]", registrar.getClass().getName());
 
-      for (Map.Entry<K, V> entry : registrar.load(classLoader, env).entrySet()) {
+      for (Map.Entry<K, V> entry : registrar.load(env).entrySet()) {
         V previous = items.put(entry.getKey(), entry.getValue());
 
         if (previous != null) {

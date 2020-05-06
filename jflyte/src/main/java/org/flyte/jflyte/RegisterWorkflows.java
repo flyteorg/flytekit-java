@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
-import org.flyte.api.v1.Registrars;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -148,10 +147,19 @@ public class RegisterWorkflows implements Callable<Integer> {
             .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
 
-    Map<TaskIdentifier, RunnableTask> tasks =
-        Registrars.loadAll(RunnableTaskRegistrar.class, packageClassLoader, env);
-    Map<WorkflowIdentifier, WorkflowTemplate> workflows =
-        Registrars.loadAll(WorkflowTemplateRegistrar.class, packageClassLoader, env);
+    // before we run anything, switch class loader, because we will be touching user classes;
+    // setting it in thread context will give us access to the right class loader
+    ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(packageClassLoader);
+
+    Map<TaskIdentifier, RunnableTask> tasks;
+    Map<WorkflowIdentifier, WorkflowTemplate> workflows;
+    try {
+      tasks = Registrars.loadAll(RunnableTaskRegistrar.class, env);
+      workflows = Registrars.loadAll(WorkflowTemplateRegistrar.class, env);
+    } finally {
+      Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+    }
 
     IdentifierRewrite identifierRewrite =
         IdentifierRewrite.builder()

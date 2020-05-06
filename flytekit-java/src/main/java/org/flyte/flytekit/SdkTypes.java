@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
@@ -41,7 +41,7 @@ public class SdkTypes {
 
     @Override
     public Map<String, Literal> toLiteralMap(T value) {
-      throw new UnsupportedOperationException("not implemented");
+      return AutoValueReflection.toLiteralMap(value, cls);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class SdkTypes {
 
     @Override
     public Map<String, Literal> toLiteralMap(Void value) {
-      return ImmutableMap.of();
+      return Collections.emptyMap();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SdkTypes {
 
     @Override
     public Map<String, Variable> getVariableMap() {
-      return ImmutableMap.of();
+      return Collections.emptyMap();
     }
   }
 }

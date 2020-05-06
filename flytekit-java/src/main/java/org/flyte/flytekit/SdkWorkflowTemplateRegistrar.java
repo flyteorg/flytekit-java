@@ -21,24 +21,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoService(WorkflowTemplateRegistrar.class)
 public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
-  private static final Logger LOG = LoggerFactory.getLogger(SdkRunnableTaskRegistrar.class);
+  private static final Logger LOG = Logger.getLogger(SdkWorkflowTemplateRegistrar.class.getName());
+
+  static {
+    // enable all levels for the actual handler to pick up
+    LOG.setLevel(Level.ALL);
+  }
 
   @Override
   public Map<WorkflowIdentifier, WorkflowTemplate> load(
-      ClassLoader classLoader, Map<String, String> env) {
+      Map<String, String> env, ClassLoader classLoader) {
     ServiceLoader<SdkWorkflow> loader = ServiceLoader.load(SdkWorkflow.class, classLoader);
 
-    LOG.debug("Discovering SdkRunnableTask");
+    LOG.fine("Discovering SdkRunnableTask");
 
     Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
@@ -52,7 +57,7 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
               /* name= */ name,
               /* version= */ sdkConfig.version());
 
-      LOG.debug("Discovered [{}]", name);
+      LOG.fine(String.format("Discovered [%s]", name));
 
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
       sdkWorkflow.expand(builder);

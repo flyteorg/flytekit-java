@@ -39,30 +39,13 @@
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.propensive</groupId>
-        <artifactId>magnolia_${scala.baseVersion}</artifactId>
-        <version>${magnolia.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
-    <!-- modules -->
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <!-- compile -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <!-- compile -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -70,22 +53,19 @@
     <dependency>
       <groupId>com.propensive</groupId>
       <artifactId>magnolia_${scala.baseVersion}</artifactId>
+      <version>${magnolia.version}</version>
     </dependency>
 
     <!-- provided -->
     <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>error_prone_annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
+      <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>

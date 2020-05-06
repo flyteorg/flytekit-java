@@ -16,16 +16,21 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -40,14 +45,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class AutoValueReflectionTest {
-
-  @Test
-  void testInterfaceOfTypeDescriptor() {
-    Map<String, Variable> interface_ =
-        AutoValueReflection.interfaceOf(TypeDescriptor.of(AutoValueInput.class));
-
-    assertThat(interface_, equalTo(AutoValueInput.INTERFACE));
-  }
 
   @Test
   void testInterfaceOfClass() {
@@ -89,15 +86,14 @@ class AutoValueReflectionTest {
     boolean boolean_ = true;
     Timestamp datetime = Timestamp.create(123, 456);
     Duration duration = Duration.create(123, 456);
-    ImmutableMap<String, Literal> inputMap =
-        ImmutableMap.<String, Literal>builder()
-            .put("i", literalOf(Primitive.of(integer)))
-            .put("f", literalOf(Primitive.of(float_)))
-            .put("s", literalOf(Primitive.of(string)))
-            .put("b", literalOf(Primitive.of(boolean_)))
-            .put("t", literalOf(Primitive.of(datetime)))
-            .put("d", literalOf(Primitive.of(duration)))
-            .build();
+
+    Map<String, Literal> inputMap = new HashMap<>();
+    inputMap.put("i", literalOf(Primitive.of(integer)));
+    inputMap.put("f", literalOf(Primitive.of(float_)));
+    inputMap.put("s", literalOf(Primitive.of(string)));
+    inputMap.put("b", literalOf(Primitive.of(boolean_)));
+    inputMap.put("t", literalOf(Primitive.of(datetime)));
+    inputMap.put("d", literalOf(Primitive.of(duration)));
 
     AutoValueInput input = AutoValueReflection.readValue(inputMap, AutoValueInput.class);
 
@@ -114,7 +110,9 @@ class AutoValueReflectionTest {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> AutoValueReflection.readValue(ImmutableMap.of(), ThrowsOnConstructorInput.class));
+            () ->
+                AutoValueReflection.readValue(
+                    Collections.emptyMap(), ThrowsOnConstructorInput.class));
 
     assertThat(exception.getMessage(), containsString("Couldn't instantiate class"));
   }
@@ -122,7 +120,7 @@ class AutoValueReflectionTest {
   @ParameterizedTest
   @MethodSource("createInputMaps")
   void readValueShouldThrowExceptionForInvalidInputs(
-      ImmutableMap<String, Literal> inputMap, String expectedErrMessageFragment) {
+      Map<String, Literal> inputMap, String expectedErrMessageFragment) {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
@@ -131,14 +129,30 @@ class AutoValueReflectionTest {
     assertThat(exception.getMessage(), containsString(expectedErrMessageFragment));
   }
 
+  @Test
+  void testToLiteralMap() {
+    Map<String, Literal> literalMap =
+        AutoValueReflection.toLiteralMap(
+            AutoValueInput.create(42L, 42.0d, "42", false, null, Duration.create(0, 42)),
+            AutoValueInput.class);
+    assertThat(literalMap.size(), is(5));
+    assertThat(Objects.requireNonNull(literalMap.get("i").scalar().primitive()).integer(), is(42L));
+    assertThat(Objects.requireNonNull(literalMap.get("f").scalar().primitive()).float_(), is(42.0));
+    assertThat(Objects.requireNonNull(literalMap.get("s").scalar().primitive()).string(), is("42"));
+    assertThat(
+        Objects.requireNonNull(literalMap.get("b").scalar().primitive()).boolean_(), is(false));
+    assertThat(literalMap.get("t"), nullValue());
+    assertThat(
+        Objects.requireNonNull(literalMap.get("d").scalar().primitive()).duration(),
+        is(Duration.create(0, 42)));
+  }
+
   static Stream<Arguments> createInputMaps() {
     return Stream.of(
         Arguments.of(
-            ImmutableMap.of("i", literalOf(Primitive.of("not a integer"))),
-            "is not assignable from"),
+            singletonMap("i", literalOf(Primitive.of("not a integer"))), "is not assignable from"),
         Arguments.of(
-            ImmutableMap.of("f", literalOf(Primitive.of("doesn't contain 'i'"))),
-            "is not in inputs"));
+            singletonMap("f", literalOf(Primitive.of("doesn't contain 'i'"))), "is not in inputs"));
   }
 
   private static Literal literalOf(Primitive primitive) {
@@ -155,19 +169,25 @@ class AutoValueReflectionTest {
 
     abstract boolean b();
 
+    @Nullable
     abstract Timestamp t();
 
     abstract Duration d();
 
-    static final ImmutableMap<String, Variable> INTERFACE =
-        ImmutableMap.<String, Variable>builder()
-            .put("i", Variable.create(LiteralType.create(SimpleType.INTEGER), ""))
-            .put("f", Variable.create(LiteralType.create(SimpleType.FLOAT), ""))
-            .put("s", Variable.create(LiteralType.create(SimpleType.STRING), ""))
-            .put("b", Variable.create(LiteralType.create(SimpleType.BOOLEAN), ""))
-            .put("t", Variable.create(LiteralType.create(SimpleType.DATETIME), ""))
-            .put("d", Variable.create(LiteralType.create(SimpleType.DURATION), ""))
-            .build();
+    static final Map<String, Variable> INTERFACE = new HashMap<>();
+
+    static {
+      INTERFACE.put("i", Variable.create(LiteralType.create(SimpleType.INTEGER), ""));
+      INTERFACE.put("f", Variable.create(LiteralType.create(SimpleType.FLOAT), ""));
+      INTERFACE.put("s", Variable.create(LiteralType.create(SimpleType.STRING), ""));
+      INTERFACE.put("b", Variable.create(LiteralType.create(SimpleType.BOOLEAN), ""));
+      INTERFACE.put("t", Variable.create(LiteralType.create(SimpleType.DATETIME), ""));
+      INTERFACE.put("d", Variable.create(LiteralType.create(SimpleType.DURATION), ""));
+    }
+
+    static AutoValueInput create(long i, double f, String s, boolean b, Timestamp t, Duration d) {
+      return new AutoValue_AutoValueReflectionTest_AutoValueInput(i, f, s, b, t, d);
+    }
   }
 
   static class NonAutoValueInput {}

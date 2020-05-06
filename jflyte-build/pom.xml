@@ -30,6 +30,7 @@
   <properties>
     <docker.image>${env.FLYTE_INTERNAL_IMAGE}</docker.image>
     <docker.tag>${project.version}</docker.tag>
+    <plugins.dir>${project.build.directory}/plugins</plugins.dir>
 
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
@@ -37,13 +38,15 @@
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>jflyte</artifactId>
+      <artifactId>flytekit-api</artifactId>
       <version>${project.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
+      <artifactId>jflyte</artifactId>
       <version>${project.version}</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
@@ -56,9 +59,43 @@
   <build>
     <finalName>jflyte</finalName>
     <plugins>
+      <!-- if no plugin is enabled (via provided scope), docker copy will fail due to missing directory -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-plugins-dir</id>
+            <phase>process-resources</phase>
+            <configuration>
+              <target>
+                <delete dir="${plugins.dir}" />
+                <mkdir dir="${plugins.dir}" />
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
+          <execution>
+            <id>copy-plugins</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${plugins.dir}</outputDirectory>
+              <useBaseVersion>false</useBaseVersion>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+              <includeScope>provided</includeScope>
+            </configuration>
+          </execution>
           <execution>
             <id>copy-runtime</id>
             <phase>prepare-package</phase>
@@ -66,93 +103,17 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <useBaseVersion>false</useBaseVersion>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>compile</includeScope>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadeTestJar>false</shadeTestJar>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-              </transformers>
-              <relocations>
-                <relocation>
-                  <pattern>com.google.guava</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.guava</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.thirdparty</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.thirdparty</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.protobuf</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.protobuf</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.common</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.inject</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.inject</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.api</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.api</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.gson</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.gson</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.logging</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.com.google.logging</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>picocli</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.picocli</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>io.grpc</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.grpc</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>io.opencensus</pattern>
-                  <shadedPattern>org.flyte.jflyte.shaded.opencensus</shadedPattern>
-                </relocation>
-              </relocations>
-              <artifactSet>
-                <includes>
-                  <include>*</include>
-                </includes>
-                <excludes>
-                  <exclude>com.google.auto.value:auto-value-annotations</exclude>
-                  <exclude>com.google.auto.value:auto-value</exclude>
-                  <exclude>com.google.code.findbugs:annotations</exclude>
-                  <exclude>com.google.code.findbugs:jsr250</exclude>
-                  <exclude>findbugs:annotations</exclude>
-                  <exclude>javax.activation:activation</exclude>
-                  <exclude>javax.annotation:jsr250-api</exclude>
-                  <exclude>com.google.errorprone:error_prone_annotations</exclude>
-                  <exclude>com.google.j2objc:j2objc-annotations</exclude>
-                  <exclude>org.codehaus.mojo:animal-sniffer-annotations</exclude>
-                </excludes>
-              </artifactSet>
+              <includeScope>runtime</includeScope>
+              <excludeGroupIds>
+                com.google.android,com.google.auto.value,com.google.code.findbugs,findbugs,com.google.errorprone
+              </excludeGroupIds>
+              <excludeArtifactIds>
+                animal-sniffer-annotations,j2objc-annotations
+              </excludeArtifactIds>
             </configuration>
           </execution>
         </executions>
@@ -167,4 +128,17 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>env.FLYTE_INTERNAL_IMAGE default value</id>
+      <activation>
+        <property>
+          <name>!env.FLYTE_INTERNAL_IMAGE</name>
+        </property>
+      </activation>
+      <properties>
+        <env.FLYTE_INTERNAL_IMAGE>docker.io/flyte/jflyte</env.FLYTE_INTERNAL_IMAGE>
+      </properties>
+    </profile>
+  </profiles>
 </project>

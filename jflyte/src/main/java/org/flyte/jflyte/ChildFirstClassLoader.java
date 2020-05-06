@@ -17,8 +17,13 @@
 package org.flyte.jflyte;
 
 import com.google.errorprone.annotations.Var;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * {@link URLClassLoader} that loads classes into child class loader, instead of parent.
@@ -30,41 +35,90 @@ import java.net.URLClassLoader;
  * between the code in parent class loader, and the code loaded in child class loaders, and we pass
  * instances of these classes around.
  */
-public class ChildFirstClassLoader extends URLClassLoader {
+public final class ChildFirstClassLoader extends URLClassLoader {
 
-  private static final String FLYTE_API_NAMESPACE = "org.flyte.api.v1.";
-  private static final String JFLYTE_API_NAMESPACE = "org.flyte.jflyte.api.";
+  // we have to load these classes in parent class loader
+  // it's base shared between all plugins and user code
+  private static final String[] PARENT_FIRST_PACKAGE_PREFIXES =
+      new String[] {"org.flyte.api.v1.", "org.flyte.jflyte.api."};
 
-  ChildFirstClassLoader(URL[] urls) {
-    super(urls, Thread.currentThread().getContextClassLoader());
+  @SuppressWarnings("JdkObsolete")
+  private static class CustomEnumeration implements Enumeration<URL> {
+
+    private Iterator<URL> iter;
+
+    public CustomEnumeration(Iterator<URL> iter) {
+      this.iter = iter;
+    }
+
+    @Override
+    public boolean hasMoreElements() {
+      return iter.hasNext();
+    }
+
+    @Override
+    public URL nextElement() {
+      return iter.next();
+    }
+  }
+
+  public ChildFirstClassLoader(URL[] urls) {
+    super(urls, ChildFirstClassLoader.class.getClassLoader());
   }
 
   @Override
   protected synchronized Class<?> loadClass(String name, boolean resolve)
       throws ClassNotFoundException {
+    @Var Class<?> cls = findLoadedClass(name);
 
-    @Var Class<?> loadedClass = findLoadedClass(name);
+    if (cls == null) {
+      for (String prefix : PARENT_FIRST_PACKAGE_PREFIXES) {
+        if (name.startsWith(prefix)) {
+          return super.loadClass(name, resolve);
+        }
+      }
 
-    if (loadedClass != null) {
-      return loadedClass;
-    }
-
-    // we have to load these classes in parent class loader
-    // it's base shared between all plugins and SDK code
-    if (name.startsWith(JFLYTE_API_NAMESPACE) || name.startsWith(FLYTE_API_NAMESPACE)) {
-      return getParent().loadClass(name);
-    }
-
-    try {
-      loadedClass = findClass(name);
-    } catch (ClassNotFoundException e) {
-      loadedClass = getParent().loadClass(name);
+      try {
+        cls = findClass(name);
+      } catch (ClassNotFoundException e) {
+        cls = getParent().loadClass(name);
+      }
     }
 
     if (resolve) {
-      resolveClass(loadedClass);
+      resolveClass(cls);
     }
 
-    return loadedClass;
+    return cls;
+  }
+
+  @Override
+  public URL getResource(String name) {
+    URL resource = findResource(name);
+
+    if (resource != null) {
+      return resource;
+    }
+
+    return getParent().getResource(name);
+  }
+
+  @Override
+  public Enumeration<URL> getResources(String name) throws IOException {
+    Enumeration<URL> childResources = findResources(name);
+
+    List<URL> allResources = new ArrayList<>();
+
+    while (childResources.hasMoreElements()) {
+      allResources.add(childResources.nextElement());
+    }
+
+    Enumeration<URL> parentResources = getParent().getResources(name);
+
+    while (parentResources.hasMoreElements()) {
+      allResources.add(parentResources.nextElement());
+    }
+
+    return new CustomEnumeration(allResources.iterator());
   }
 }

@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekitscala
 
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap
+import collection.JavaConverters.mapAsJavaMap
 import org.flyte.api.v1.{
   Literal,
   LiteralType,
@@ -39,23 +39,16 @@ class SdkScalaTypeTest {
 
   @Test
   def testInterface(): Unit = {
-    val expected = ImmutableMap
-      .builder()
-      .put("string", Variable.create(LiteralType.create(SimpleType.STRING), ""))
-      .put(
-        "integer",
-        Variable.create(LiteralType.create(SimpleType.INTEGER), "")
-      )
-      .put("float", Variable.create(LiteralType.create(SimpleType.FLOAT), ""))
-      .put(
-        "boolean",
-        Variable.create(LiteralType.create(SimpleType.BOOLEAN), "")
-      )
-      .build()
+    val expected = Map(
+      "string" -> Variable.create(LiteralType.create(SimpleType.STRING), ""),
+      "integer" -> Variable.create(LiteralType.create(SimpleType.INTEGER), ""),
+      "float" -> Variable.create(LiteralType.create(SimpleType.FLOAT), ""),
+      "boolean" -> Variable.create(LiteralType.create(SimpleType.BOOLEAN), "")
+    )
 
     val output = SdkScalaType[Input].getVariableMap
 
-    assertEquals(expected, output)
+    assertEquals(mapAsJavaMap(expected), output)
   }
 
   // TODO duration
@@ -63,18 +56,17 @@ class SdkScalaTypeTest {
 
   @Test
   def testFromLiteralMap(): Unit = {
-    val input = ImmutableMap
-      .builder()
-      .put("string", Literal.of(Scalar.create(Primitive.of("string"))))
-      .put("integer", Literal.of(Scalar.create(Primitive.of(1337L))))
-      .put("float", Literal.of(Scalar.create(Primitive.of(42.0))))
-      .put("boolean", Literal.of(Scalar.create(Primitive.of(true))))
-      .build()
+    val input = Map(
+      "string" -> Literal.of(Scalar.create(Primitive.of("string"))),
+      "integer" -> Literal.of(Scalar.create(Primitive.of(1337L))),
+      "float" -> Literal.of(Scalar.create(Primitive.of(42.0))),
+      "boolean" -> Literal.of(Scalar.create(Primitive.of(true)))
+    )
 
     val expected =
       Input(string = "string", integer = 1337L, float = 42.0, boolean = true)
 
-    val output = SdkScalaType[Input].fromLiteralMap(input)
+    val output = SdkScalaType[Input].fromLiteralMap(mapAsJavaMap(input))
 
     assertEquals(expected, output)
   }
@@ -84,17 +76,16 @@ class SdkScalaTypeTest {
     val input =
       Input(string = "string", integer = 1337L, float = 42.0, boolean = true)
 
-    val expected = ImmutableMap
-      .builder()
-      .put("string", Literal.of(Scalar.create(Primitive.of("string"))))
-      .put("integer", Literal.of(Scalar.create(Primitive.of(1337L))))
-      .put("float", Literal.of(Scalar.create(Primitive.of(42.0))))
-      .put("boolean", Literal.of(Scalar.create(Primitive.of(true))))
-      .build()
+    val expected = Map(
+      "string" -> Literal.of(Scalar.create(Primitive.of("string"))),
+      "integer" -> Literal.of(Scalar.create(Primitive.of(1337L))),
+      "float" -> Literal.of(Scalar.create(Primitive.of(42.0))),
+      "boolean" -> Literal.of(Scalar.create(Primitive.of(true)))
+    )
 
     val output = SdkScalaType[Input].toLiteralMap(input)
 
-    assertEquals(expected, output)
+    assertEquals(mapAsJavaMap(expected), output)
   }
 
   // Typed[String] doesn't compile aka illtyped

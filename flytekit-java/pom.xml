@@ -32,54 +32,22 @@
     <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.fasterxml.jackson</groupId>
-        <artifactId>jackson-bom</artifactId>
-        <version>2.10.3</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
-    <!-- modules -->
+    <!-- provided -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
-
-    <!-- compile -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!-- we use guava from Beam, so we don't cause dependency conflicts -->
-    <!-- TODO replace that with shading -->
-    <dependency>
-      <groupId>org.apache.beam</groupId>
-      <artifactId>beam-vendor-guava-26_0-jre</artifactId>
-      <version>0.1</version>
-    </dependency>
-
-    <!-- provided -->
     <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
+      <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -93,6 +61,7 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- test -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import java.util.concurrent.Callable;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -61,6 +62,18 @@ public class Main implements Callable<Integer> {
    * @param args command-line arguments
    */
   public static void main(String... args) {
+    // http://www.slf4j.org/api/org/slf4j/bridge/SLF4JBridgeHandler.html
+    setUpSLF4JBridge();
+
     System.exit(new CommandLine(new Main()).execute(args));
+  }
+
+  private static void setUpSLF4JBridge() {
+    // Optionally remove existing handlers attached to j.u.l root logger
+    SLF4JBridgeHandler.removeHandlersForRootLogger(); // (since SLF4J 1.6.5)
+
+    // add SLF4JBridgeHandler to j.u.l's root logger, should be done once during
+    // the initialization phase of your application
+    SLF4JBridgeHandler.install();
   }
 }

@@ -17,12 +17,11 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.api.v1.RunnableTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 
 /** Hello World in Flyte. */
-@AutoService(RunnableTask.class)
+@AutoService(SdkRunnableTask.class)
 public class HelloWorldTask extends SdkRunnableTask<Void, Void> {
 
   public HelloWorldTask() {

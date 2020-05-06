@@ -32,6 +32,7 @@
   </properties>
 
   <dependencies>
+    <!-- compile -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
@@ -40,18 +41,19 @@
 
     <!-- provided -->
     <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.auto.value</groupId>
-      <artifactId>auto-value</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
+      <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -78,7 +80,7 @@
               <useBaseVersion>false</useBaseVersion>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>compile</includeScope>
+              <includeScope>runtime</includeScope>
             </configuration>
           </execution>
         </executions>

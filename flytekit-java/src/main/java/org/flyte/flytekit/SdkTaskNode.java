@@ -16,10 +16,13 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableList;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -51,9 +54,11 @@ public class SdkTaskNode extends SdkNode {
   public Map<String, SdkBindingData> getOutputs() {
     return this.outputs.entrySet().stream()
         .collect(
-            ImmutableMap.toImmutableMap(
-                Map.Entry::getKey,
-                entry -> SdkBindingData.ofOutputReference(nodeId, entry.getKey())));
+            collectingAndThen(
+                toMap(
+                    Map.Entry::getKey,
+                    entry -> SdkBindingData.ofOutputReference(nodeId, entry.getKey())),
+                Collections::unmodifiableMap));
   }
 
   @Override
@@ -68,7 +73,7 @@ public class SdkTaskNode extends SdkNode {
     List<Binding> bindings =
         inputs.entrySet().stream()
             .map(x -> Binding.create(x.getKey(), x.getValue().toIdl()))
-            .collect(ImmutableList.toImmutableList());
+            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
     return Node.builder().id(nodeId).taskNode(taskNode).inputs(bindings).build();
   }

@@ -34,7 +34,6 @@ import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.Registrars;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -93,15 +92,21 @@ public class Execute implements Callable<Integer> {
         FileSystemRegistrar.getFileSystem(URI.create(outputPrefix).getScheme(), pluginClassLoader);
 
     try {
-      Map<String, Literal> input = getInput(inputFs, inputs);
-      RunnableTask runnableTask = getTask(task, packageClassLoader);
-
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,
       // FileSystemRegister in Apache Beam
+      ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
       Thread.currentThread().setContextClassLoader(packageClassLoader);
 
-      Map<String, Literal> outputs = runnableTask.run(input);
+      Map<String, Literal> outputs;
+      try {
+        Map<String, Literal> input = getInput(inputFs, inputs);
+        RunnableTask runnableTask = getTask(task);
+
+        outputs = runnableTask.run(input);
+      } finally {
+        Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+      }
 
       writeOutputs(outputFs, outputPrefix, outputs);
     } catch (Throwable e) {
@@ -166,15 +171,14 @@ public class Execute implements Callable<Integer> {
     }
   }
 
-  private static RunnableTask getTask(String name, ClassLoader packageClassLoader) {
+  private static RunnableTask getTask(String name) {
     // be careful not to pass extra
     Map<String, String> env =
         System.getenv().entrySet().stream()
             .filter(x -> x.getKey().startsWith("JFLYTE_"))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    Map<TaskIdentifier, RunnableTask> tasks =
-        Registrars.loadAll(RunnableTaskRegistrar.class, packageClassLoader, env);
+    Map<TaskIdentifier, RunnableTask> tasks = Registrars.loadAll(RunnableTaskRegistrar.class, env);
 
     for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
       if (entry.getKey().name().equals(name)) {

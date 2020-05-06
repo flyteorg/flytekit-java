@@ -16,20 +16,25 @@
  */
 package org.flyte.flytekit;
 
-import static org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.Preconditions.checkArgument;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 
 import com.google.auto.value.AutoValue;
+import com.google.errorprone.annotations.FormatMethod;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableMap;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.Maps;
-import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.primitives.Primitives;
 import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -45,13 +50,25 @@ import org.flyte.api.v1.Variable;
  */
 public class AutoValueReflection {
 
-  public static Map<String, Variable> interfaceOf(TypeDescriptor<?> cls) {
-    return interfaceOf(cls.getRawType());
+  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
+
+  static {
+    Map<Class<?>, Class<?>> map = new HashMap<>();
+    map.put(void.class, Void.class);
+    map.put(boolean.class, Boolean.class);
+    map.put(byte.class, Byte.class);
+    map.put(char.class, Character.class);
+    map.put(short.class, Short.class);
+    map.put(int.class, Integer.class);
+    map.put(long.class, Long.class);
+    map.put(float.class, Float.class);
+    map.put(double.class, Double.class);
+    PRIMITIVE_TO_WRAPPER = unmodifiableMap(map);
   }
 
   public static Map<String, Variable> interfaceOf(Class<?> cls) {
     if (Void.class.equals(cls)) {
-      return ImmutableMap.of();
+      return Collections.emptyMap();
     }
 
     // there are 3 ways to create auto-value object:
@@ -88,6 +105,21 @@ public class AutoValueReflection {
     }
   }
 
+  public static <T> Map<String, Literal> toLiteralMap(T object, Class<T> cls) {
+    return interfaceOf(cls).entrySet().stream()
+        .map(
+            entry -> {
+              Object value = getVariableValue(entry.getKey(), object, cls);
+              Literal literal =
+                  value != null ? toLiteral(value, entry.getValue().literalType()) : null;
+              return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), literal);
+            })
+        .filter(entry -> entry.getValue() != null)
+        .collect(
+            collectingAndThen(
+                toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
+  }
+
   private static Object getParamValue(Map<String, Object> inputValues, Parameter param) {
     String paramName = param.getName();
     checkArgument(
@@ -106,8 +138,24 @@ public class AutoValueReflection {
     return value;
   }
 
+  private static <T> Object getVariableValue(String name, T object, Class<T> cls) {
+    try {
+      Method method = cls.getDeclaredMethod(name);
+      if (!method.isAccessible()) {
+        method.setAccessible(true);
+      }
+      return method.invoke(object);
+    } catch (NoSuchMethodException
+        | IllegalArgumentException
+        | IllegalAccessException
+        | InvocationTargetException e) {
+      throw new IllegalArgumentException(
+          String.format("Can't find or invoke method [%s()] on [%s]", name, cls.getName()), e);
+    }
+  }
+
   private static boolean isPrimitiveAssignableFrom(Class<?> fromClass, Class<?> toClass) {
-    return Primitives.wrap(toClass).isAssignableFrom(Primitives.wrap(fromClass));
+    return tryWrap(toClass).isAssignableFrom(tryWrap(fromClass));
   }
 
   private static Map<String, Variable> interfaceOfGeneratedConstructor(Class<?> cls) {
@@ -119,7 +167,9 @@ public class AutoValueReflection {
     return Stream.of(constructor.getParameters())
         .sorted(Comparator.comparing(Parameter::getName))
         .map(AutoValueReflection::toNameVariable)
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(
+            collectingAndThen(
+                toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
   }
 
   @SuppressWarnings("unchecked")
@@ -143,7 +193,7 @@ public class AutoValueReflection {
 
     String description = ""; // TODO add annotation for description
 
-    return Maps.immutableEntry(
+    return new SimpleImmutableEntry<>(
         parameter.getName(), Variable.create(toLiteralType(parameter.getType()), description));
   }
 
@@ -166,13 +216,40 @@ public class AutoValueReflection {
         String.format("Unsupported type: [%s]", type.getName()));
   }
 
+  private static Literal toLiteral(Object value, LiteralType literalType) {
+    SimpleType simpleType = literalType.simpleType();
+
+    if (simpleType == null) {
+      throw new UnsupportedOperationException(
+          String.format("Unsupported literal type: [%s]", literalType));
+    }
+
+    switch (simpleType) {
+      case INTEGER:
+        return Literal.of(Scalar.create(Primitive.of((Long) value)));
+      case FLOAT:
+        return Literal.of(Scalar.create(Primitive.of((Double) value)));
+      case STRING:
+        return Literal.of(Scalar.create(Primitive.of((String) value)));
+      case BOOLEAN:
+        return Literal.of(Scalar.create(Primitive.of((Boolean) value)));
+      case DATETIME:
+        return Literal.of(Scalar.create(Primitive.of((Timestamp) value)));
+      case DURATION:
+        return Literal.of(Scalar.create(Primitive.of((Duration) value)));
+    }
+
+    throw new UnsupportedOperationException(
+        String.format("Unsupported simple type: [%s]", simpleType));
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> Class<T> getGeneratedClass(Class<T> clazz) {
     String generatedClassName = getAutoValueGeneratedName(clazz.getName());
 
     Class<?> generatedClass;
     try {
-      generatedClass = Class.forName(generatedClassName);
+      generatedClass = Class.forName(generatedClassName, true, clazz.getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new IllegalArgumentException(
           String.format("AutoValue generated class not found for [%s]", clazz), e);
@@ -234,5 +311,19 @@ public class AutoValueReflection {
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
+  }
+
+  @FormatMethod
+  private static void checkArgument(
+      boolean booleanValue, String errorMessageTemplate, Object... errorMessageArgs) {
+    if (!booleanValue) {
+      throw new IllegalArgumentException(String.format(errorMessageTemplate, errorMessageArgs));
+    }
+  }
+
+  private static <T> Class<T> tryWrap(Class<T> cls) {
+    @SuppressWarnings("unchecked")
+    Class<T> wrapper = (Class<T>) PRIMITIVE_TO_WRAPPER.get(cls);
+    return wrapper != null ? wrapper : cls;
   }
 }

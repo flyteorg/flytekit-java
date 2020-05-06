@@ -28,7 +28,7 @@
   <artifactId>jflyte-google-cloud</artifactId>
 
   <properties>
-    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 
   <dependencyManagement>

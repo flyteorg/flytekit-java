@@ -22,7 +22,21 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class TaskIdentifier implements Identifier {
 
-  public static TaskIdentifier create(String domain, String project, String name, String version) {
-    return new AutoValue_TaskIdentifier(domain, project, name, version);
+  public static Builder builder() {
+    return new AutoValue_TaskIdentifier.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder domain(String domain);
+
+    public abstract Builder project(String project);
+
+    public abstract Builder name(String name);
+
+    public abstract Builder version(String version);
+
+    public abstract TaskIdentifier build();
   }
 }

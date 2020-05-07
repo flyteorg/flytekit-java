@@ -35,19 +35,19 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofInteger(long value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofDouble(double value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofString(String value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofBoolean(boolean value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofDatetime(int year, int month, int day) {
@@ -57,11 +57,11 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofDatetime(Timestamp value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofDuration(Duration value) {
-    return ofScalar(Scalar.create(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {

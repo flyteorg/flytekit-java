@@ -78,11 +78,12 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     for (SdkRunnableTask<?, ?> sdkTask : loader) {
       String name = sdkTask.getName();
       TaskIdentifier taskId =
-          TaskIdentifier.create(
-              /* domain= */ sdkConfig.domain(),
-              /* project= */ sdkConfig.project(),
-              /* name= */ name,
-              /* version= */ sdkConfig.version());
+          TaskIdentifier.builder()
+              .domain(sdkConfig.domain())
+              .project(sdkConfig.project())
+              .name(name)
+              .version(sdkConfig.version())
+              .build();
       LOG.fine(String.format("Discovered [%s]", name));
 
       RunnableTask task = new RunnableTaskImpl<>(sdkTask);

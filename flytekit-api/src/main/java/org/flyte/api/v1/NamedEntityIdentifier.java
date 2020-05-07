@@ -30,7 +30,19 @@ public abstract class NamedEntityIdentifier {
 
   public abstract String name();
 
-  public static NamedEntityIdentifier create(String domain, String project, String name) {
-    return new AutoValue_NamedEntityIdentifier(domain, project, name);
+  public static Builder builder() {
+    return new AutoValue_NamedEntityIdentifier.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder domain(String domain);
+
+    public abstract Builder project(String project);
+
+    public abstract Builder name(String name);
+
+    public abstract NamedEntityIdentifier build();
   }
 }

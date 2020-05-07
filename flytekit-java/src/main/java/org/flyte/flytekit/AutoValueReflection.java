@@ -226,17 +226,17 @@ public class AutoValueReflection {
 
     switch (simpleType) {
       case INTEGER:
-        return Literal.of(Scalar.create(Primitive.of((Long) value)));
+        return Literal.of(Scalar.of(Primitive.of((Long) value)));
       case FLOAT:
-        return Literal.of(Scalar.create(Primitive.of((Double) value)));
+        return Literal.of(Scalar.of(Primitive.of((Double) value)));
       case STRING:
-        return Literal.of(Scalar.create(Primitive.of((String) value)));
+        return Literal.of(Scalar.of(Primitive.of((String) value)));
       case BOOLEAN:
-        return Literal.of(Scalar.create(Primitive.of((Boolean) value)));
+        return Literal.of(Scalar.of(Primitive.of((Boolean) value)));
       case DATETIME:
-        return Literal.of(Scalar.create(Primitive.of((Timestamp) value)));
+        return Literal.of(Scalar.of(Primitive.of((Timestamp) value)));
       case DURATION:
-        return Literal.of(Scalar.create(Primitive.of((Duration) value)));
+        return Literal.of(Scalar.of(Primitive.of((Duration) value)));
     }
 
     throw new UnsupportedOperationException(

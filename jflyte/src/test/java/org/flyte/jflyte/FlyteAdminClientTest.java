@@ -83,6 +83,13 @@ public class FlyteAdminClientTest {
   private TestAdminService stubService;
 
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
+  private static final LaunchPlanIdentifier LP_IDENTIFIER =
+      LaunchPlanIdentifier.builder()
+          .domain(DOMAIN)
+          .project(PROJECT)
+          .name(LP_NAME)
+          .version(LP_VERSION)
+          .build();
 
   @Before
   public void setup() throws IOException {
@@ -102,7 +109,13 @@ public class FlyteAdminClientTest {
 
   @Test
   public void shouldPropagateCreateTaskToStub() {
-    TaskIdentifier identifier = TaskIdentifier.create(DOMAIN, PROJECT, TASK_NAME, TASK_VERSION);
+    TaskIdentifier identifier =
+        TaskIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(TASK_NAME)
+            .version(TASK_VERSION)
+            .build();
 
     TypedInterface interface_ =
         TypedInterface.create(
@@ -133,7 +146,13 @@ public class FlyteAdminClientTest {
   @Test
   public void shouldPropagateCreateWorkflowToStub() {
     String nodeId = "node";
-    WorkflowIdentifier identifier = WorkflowIdentifier.create(DOMAIN, PROJECT, WF_NAME, WF_VERSION);
+    WorkflowIdentifier identifier =
+        WorkflowIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(WF_NAME)
+            .version(WF_VERSION)
+            .build();
     TaskNode taskNode =
         TaskNode.create(
             PartialTaskIdentifier.builder()
@@ -149,7 +168,7 @@ public class FlyteAdminClientTest {
             .taskNode(taskNode)
             .inputs(
                 ImmutableList.of(
-                    Binding.create(VAR_NAME, BindingData.of(Scalar.create(Primitive.of(SCALAR))))))
+                    Binding.create(VAR_NAME, BindingData.of(Scalar.of(Primitive.of(SCALAR))))))
             .build();
 
     WorkflowTemplate template =
@@ -168,12 +187,15 @@ public class FlyteAdminClientTest {
 
   @Test
   public void shouldPropagateLaunchPlanToStub() {
-    LaunchPlanIdentifier identifier =
-        LaunchPlanIdentifier.create(DOMAIN, PROJECT, LP_NAME, LP_VERSION);
     WorkflowIdentifier wfIdentifier =
-        WorkflowIdentifier.create(DOMAIN, PROJECT, WF_NAME, WF_VERSION);
+        WorkflowIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(WF_NAME)
+            .version(WF_VERSION)
+            .build();
 
-    client.createLaunchPlan(identifier, wfIdentifier);
+    client.createLaunchPlan(LP_IDENTIFIER, wfIdentifier);
 
     assertThat(
         stubService.createLaunchPlanRequest,
@@ -189,10 +211,7 @@ public class FlyteAdminClientTest {
 
   @Test
   public void shouldPropagateCreateExecutionToStub() {
-    LaunchPlanIdentifier identifier =
-        LaunchPlanIdentifier.create(DOMAIN, PROJECT, LP_NAME, LP_VERSION);
-
-    client.createExecution(DOMAIN, PROJECT, identifier);
+    client.createExecution(DOMAIN, PROJECT, LP_IDENTIFIER);
 
     assertThat(
         stubService.createExecutionRequest,

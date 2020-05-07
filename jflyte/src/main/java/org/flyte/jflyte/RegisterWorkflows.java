@@ -191,8 +191,12 @@ public class RegisterWorkflows implements Callable<Integer> {
 
       // for each workflow, create default launch plan
       LaunchPlanIdentifier launchPlanId =
-          LaunchPlanIdentifier.create(
-              workflowId.domain(), workflowId.project(), workflowId.name(), workflowId.version());
+          LaunchPlanIdentifier.builder()
+              .domain(workflowId.domain())
+              .project(workflowId.project())
+              .name(workflowId.name())
+              .version(workflowId.version())
+              .build();
 
       adminClient.createLaunchPlan(launchPlanId, workflowId);
     }

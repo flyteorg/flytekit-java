@@ -83,7 +83,7 @@ class ProtoUtil {
 
   static Scalar deserialize(Literals.Scalar scalar) {
     if (scalar.getPrimitive() != null) {
-      return Scalar.create(deserialize(scalar.getPrimitive()));
+      return Scalar.of(deserialize(scalar.getPrimitive()));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
@@ -254,11 +254,12 @@ class ProtoUtil {
 
   private static Workflow.Node serialize(Node node) {
     TaskIdentifier taskIdentifier =
-        TaskIdentifier.create(
-            /* domain= */ node.taskNode().referenceId().domain(),
-            /* project= */ node.taskNode().referenceId().project(),
-            /* name= */ node.taskNode().referenceId().name(),
-            /* version= */ node.taskNode().referenceId().version());
+        TaskIdentifier.builder()
+            .domain(node.taskNode().referenceId().domain())
+            .project(node.taskNode().referenceId().project())
+            .name(node.taskNode().referenceId().name())
+            .version(node.taskNode().referenceId().version())
+            .build();
 
     Workflow.TaskNode taskNode =
         Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
@@ -385,11 +386,15 @@ class ProtoUtil {
         "isn't ResourceType.TASK, got [%s]",
         id.getResourceType());
 
-    return TaskIdentifier.create(
-        /* domain= */ id.getDomain(),
-        /* project= */ id.getProject(),
-        /* name= */ id.getName(),
-        /* version= */ id.getVersion());
+    /* domain= */
+    /* project= */
+    /* name= */
+    /* version= */ return TaskIdentifier.builder()
+        .domain(id.getDomain())
+        .project(id.getProject())
+        .name(id.getName())
+        .version(id.getVersion())
+        .build();
   }
 
   static Errors.ErrorDocument serialize(Throwable e) {

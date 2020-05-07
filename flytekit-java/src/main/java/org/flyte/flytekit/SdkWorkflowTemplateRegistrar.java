@@ -51,11 +51,12 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
     for (SdkWorkflow sdkWorkflow : loader) {
       String name = sdkWorkflow.getName();
       WorkflowIdentifier workflowId =
-          WorkflowIdentifier.create(
-              /* domain= */ sdkConfig.domain(),
-              /* project= */ sdkConfig.project(),
-              /* name= */ name,
-              /* version= */ sdkConfig.version());
+          WorkflowIdentifier.builder()
+              .domain(sdkConfig.domain())
+              .project(sdkConfig.project())
+              .name(name)
+              .version(sdkConfig.version())
+              .build();
 
       LOG.fine(String.format("Discovered [%s]", name));
 

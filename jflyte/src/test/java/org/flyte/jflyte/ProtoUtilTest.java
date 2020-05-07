@@ -114,8 +114,7 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeLiteralMap() {
-    Map<String, Literal> input =
-        ImmutableMap.of("a", Literal.of(Scalar.create(Primitive.of(1337L))));
+    Map<String, Literal> input = ImmutableMap.of("a", Literal.of(Scalar.of(Primitive.of(1337L))));
     Literals.Primitive expectedPrimitive =
         Literals.Primitive.newBuilder().setInteger(1337L).build();
     Literals.Scalar expectedScalar =
@@ -143,7 +142,7 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeBindingData() {
-    BindingData input = BindingData.of(Scalar.create(Primitive.of(1337L)));
+    BindingData input = BindingData.of(Scalar.of(Primitive.of(1337L)));
     Literals.Scalar expectedScalar =
         Literals.Scalar.newBuilder()
             .setPrimitive(Literals.Primitive.newBuilder().setInteger(1337L).build())
@@ -159,7 +158,13 @@ class ProtoUtilTest {
   @Test
   void shouldSerializeLaunchPlanIdentifiers() {
     String name = "launch-plan-a";
-    LaunchPlanIdentifier id = LaunchPlanIdentifier.create(DOMAIN, PROJECT, name, VERSION);
+    LaunchPlanIdentifier id =
+        LaunchPlanIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(name)
+            .version(VERSION)
+            .build();
 
     IdentifierOuterClass.Identifier serializedId = ProtoUtil.serialize(id);
 
@@ -178,7 +183,13 @@ class ProtoUtilTest {
   @Test
   void shouldSerializeTaskIdentifiers() {
     String name = "task-a";
-    TaskIdentifier id = TaskIdentifier.create(DOMAIN, PROJECT, name, VERSION);
+    TaskIdentifier id =
+        TaskIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(name)
+            .version(VERSION)
+            .build();
 
     IdentifierOuterClass.Identifier serializedId = ProtoUtil.serialize(id);
 
@@ -197,7 +208,13 @@ class ProtoUtilTest {
   @Test
   void shouldSerializeWorkflowIdentifiers() {
     String name = "workflow-a";
-    WorkflowIdentifier id = WorkflowIdentifier.create(DOMAIN, PROJECT, name, VERSION);
+    WorkflowIdentifier id =
+        WorkflowIdentifier.builder()
+            .domain(DOMAIN)
+            .project(PROJECT)
+            .name(name)
+            .version(VERSION)
+            .build();
 
     IdentifierOuterClass.Identifier serializedId = ProtoUtil.serialize(id);
 
@@ -441,7 +458,7 @@ class ProtoUtilTest {
                 .build());
     List<Binding> inputs =
         Collections.singletonList(
-            Binding.create(input_name, BindingData.of(Scalar.create(Primitive.of(input_scalar)))));
+            Binding.create(input_name, BindingData.of(Scalar.of(Primitive.of(input_scalar)))));
 
     return Node.builder().id(id).taskNode(taskNode).inputs(inputs).build();
   }

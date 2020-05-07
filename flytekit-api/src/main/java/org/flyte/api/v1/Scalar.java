@@ -16,19 +16,23 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
+import com.google.auto.value.AutoOneOf;
 
 /** A simple value. */
-@AutoValue
+@AutoOneOf(Scalar.Kind.class)
 public abstract class Scalar {
+  enum Kind {
+    PRIMITIVE
+    // TODO: Add the rest of the types
+  }
 
-  @Nullable
+  public abstract Kind kind();
+
   public abstract Primitive primitive();
 
   // TODO add the rest of the cases
 
-  public static Scalar create(Primitive primitive) {
-    return new AutoValue_Scalar(primitive);
+  public static Scalar of(Primitive primitive) {
+    return AutoOneOf_Scalar.primitive(primitive);
   }
 }

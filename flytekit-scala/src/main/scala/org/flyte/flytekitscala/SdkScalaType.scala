@@ -115,28 +115,28 @@ object SdkScalaType {
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
       LiteralType.create(SimpleType.STRING),
-      value => Literal.of(Scalar.create(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().string()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
       LiteralType.create(SimpleType.INTEGER),
-      value => Literal.of(Scalar.create(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().integer()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
       LiteralType.create(SimpleType.FLOAT),
-      value => Literal.of(Scalar.create(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.of(value))),
       literal => literal.scalar().primitive().float_()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
       LiteralType.create(SimpleType.BOOLEAN),
-      value => Literal.of(Scalar.create(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().boolean_()
     )
 

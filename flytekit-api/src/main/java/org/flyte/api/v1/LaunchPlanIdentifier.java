@@ -22,8 +22,21 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class LaunchPlanIdentifier implements Identifier {
 
-  public static LaunchPlanIdentifier create(
-      String domain, String project, String name, String version) {
-    return new AutoValue_LaunchPlanIdentifier(domain, project, name, version);
+  public static Builder builder() {
+    return new AutoValue_LaunchPlanIdentifier.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder domain(String domain);
+
+    public abstract Builder project(String project);
+
+    public abstract Builder name(String name);
+
+    public abstract Builder version(String version);
+
+    public abstract LaunchPlanIdentifier build();
   }
 }

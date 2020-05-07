@@ -77,8 +77,11 @@ abstract class IdentifierRewrite {
       TaskIdentifier latestTaskId =
           adminClient()
               .fetchLatestTaskId(
-                  NamedEntityIdentifier.create(
-                      /* domain= */ domain, /* project= */ project, /* name= */ taskId.name()));
+                  NamedEntityIdentifier.builder()
+                      .domain(domain)
+                      .project(project)
+                      .name(taskId.name())
+                      .build());
 
       Verify.verifyNotNull(
           latestTaskId,

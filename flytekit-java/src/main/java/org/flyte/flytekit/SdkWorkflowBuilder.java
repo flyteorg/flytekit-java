@@ -53,27 +53,27 @@ public class SdkWorkflowBuilder {
   }
 
   public static SdkBindingData literalOf(long value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData literalOf(double value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData literalOf(String value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData literalOf(boolean value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData literalOf(Timestamp value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public static SdkBindingData literalOf(Duration value) {
-    return SdkBindingData.ofScalar(Scalar.create(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {

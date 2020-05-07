@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.Nullable;
 
 /** Configuration file for jflyte. */
 @AutoValue
@@ -26,6 +27,7 @@ abstract class Config {
 
   abstract String image();
 
+  @Nullable
   abstract String stagingLocation();
 
   abstract String pluginDir();
@@ -37,7 +39,7 @@ abstract class Config {
         .platformUrl(getenv("FLYTE_PLATFORM_URL"))
         .pluginDir(getenv("FLYTE_INTERNAL_PLUGIN_DIR"))
         .image(getenv("FLYTE_INTERNAL_IMAGE"))
-        .stagingLocation(getenv("FLYTE_STAGING_LOCATION"))
+        .stagingLocation(getenvOrNull("FLYTE_STAGING_LOCATION"))
         .platformInsecure(Boolean.parseBoolean(getenv("FLYTE_PLATFORM_INSECURE")))
         .build();
   }
@@ -50,6 +52,10 @@ abstract class Config {
     }
 
     return value;
+  }
+
+  private static String getenvOrNull(String name) {
+    return System.getenv(name);
   }
 
   static Builder builder() {

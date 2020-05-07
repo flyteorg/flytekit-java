@@ -94,13 +94,20 @@ class RegisterWorkflows implements Callable<Integer> {
 
   private ArtifactStager getArtifactStager(Config config) {
     try {
-      URI stagingUri = new URI(config.stagingLocation());
+      String stagingLocation = config.stagingLocation();
+
+      if (stagingLocation == null) {
+        throw new IllegalArgumentException(
+            "Environment variable 'FLYTE_STAGING_LOCATION' isn't set");
+      }
+
+      URI stagingUri = new URI(stagingLocation);
       ClassLoader pluginClassLoader = ClassLoaders.forDirectory(config.pluginDir());
 
       FileSystem stagingFileSystem =
           FileSystemRegistrar.getFileSystem(stagingUri.getScheme(), pluginClassLoader);
 
-      return new ArtifactStager(config.stagingLocation(), stagingFileSystem);
+      return new ArtifactStager(stagingLocation, stagingFileSystem);
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to parse stagingLocation", e);
     }

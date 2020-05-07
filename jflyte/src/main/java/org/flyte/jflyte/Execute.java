@@ -46,7 +46,7 @@ import picocli.CommandLine.Option;
 
 /** Handler for "execute" command. */
 @Command(name = "execute")
-public class Execute implements Callable<Integer> {
+class Execute implements Callable<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
   private static final String OUTPUTS_PB = "outputs.pb";
@@ -79,7 +79,7 @@ public class Execute implements Callable<Integer> {
     return 0;
   }
 
-  public void execute() {
+  private void execute() {
     Config config = Config.load();
     ClassLoader pluginClassLoader = ClassLoaders.forDirectory(config.pluginDir());
     List<String> stagedFiles = readStagedFiles(pluginClassLoader, indexFileLocation);
@@ -215,7 +215,7 @@ public class Execute implements Callable<Integer> {
     }
   }
 
-  public static ClassLoader loadPackage(List<String> stagedFiles, ClassLoader pluginClassLoader) {
+  private static ClassLoader loadPackage(List<String> stagedFiles, ClassLoader pluginClassLoader) {
     try {
       Path tmp = Files.createTempDirectory("tasks");
 

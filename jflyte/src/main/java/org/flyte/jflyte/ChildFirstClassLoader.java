@@ -35,7 +35,7 @@ import java.util.List;
  * between the code in parent class loader, and the code loaded in child class loaders, and we pass
  * instances of these classes around.
  */
-public final class ChildFirstClassLoader extends URLClassLoader {
+class ChildFirstClassLoader extends URLClassLoader {
 
   // we have to load these classes in parent class loader
   // it's base shared between all plugins and user code
@@ -47,7 +47,7 @@ public final class ChildFirstClassLoader extends URLClassLoader {
 
     private Iterator<URL> iter;
 
-    public CustomEnumeration(Iterator<URL> iter) {
+    CustomEnumeration(Iterator<URL> iter) {
       this.iter = iter;
     }
 
@@ -62,7 +62,7 @@ public final class ChildFirstClassLoader extends URLClassLoader {
     }
   }
 
-  public ChildFirstClassLoader(URL[] urls) {
+  ChildFirstClassLoader(URL[] urls) {
     super(urls, ChildFirstClassLoader.class.getClassLoader());
   }
 

@@ -35,7 +35,7 @@
 
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.10</scala.version>
+    <scala.version>2.12.11</scala.version>
 
     <maven.deploy.skip>true</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
@@ -47,13 +47,11 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

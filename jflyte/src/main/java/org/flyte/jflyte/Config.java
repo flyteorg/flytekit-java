@@ -20,19 +20,19 @@ import com.google.auto.value.AutoValue;
 
 /** Configuration file for jflyte. */
 @AutoValue
-public abstract class Config {
+abstract class Config {
 
-  public abstract String platformUrl();
+  abstract String platformUrl();
 
-  public abstract String image();
+  abstract String image();
 
-  public abstract String stagingLocation();
+  abstract String stagingLocation();
 
-  public abstract String pluginDir();
+  abstract String pluginDir();
 
-  public abstract boolean platformInsecure();
+  abstract boolean platformInsecure();
 
-  public static Config load() {
+  static Config load() {
     return Config.builder()
         .platformUrl(getenv("FLYTE_PLATFORM_URL"))
         .pluginDir(getenv("FLYTE_INTERNAL_PLUGIN_DIR"))
@@ -52,23 +52,23 @@ public abstract class Config {
     return value;
   }
 
-  public static Builder builder() {
+  static Builder builder() {
     return new AutoValue_Config.Builder();
   }
 
   /** Builder for {@link Config}. */
   @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder platformUrl(String platformUrl);
+  abstract static class Builder {
+    abstract Builder platformUrl(String platformUrl);
 
-    public abstract Builder image(String image);
+    abstract Builder image(String image);
 
-    public abstract Builder stagingLocation(String stagingLocation);
+    abstract Builder stagingLocation(String stagingLocation);
 
-    public abstract Builder pluginDir(String pluginDir);
+    abstract Builder pluginDir(String pluginDir);
 
-    public abstract Builder platformInsecure(boolean platformInsecure);
+    abstract Builder platformInsecure(boolean platformInsecure);
 
-    public abstract Config build();
+    abstract Config build();
   }
 }

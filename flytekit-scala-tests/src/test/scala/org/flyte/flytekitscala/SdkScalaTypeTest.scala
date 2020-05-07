@@ -57,10 +57,10 @@ class SdkScalaTypeTest {
   @Test
   def testFromLiteralMap(): Unit = {
     val input = Map(
-      "string" -> Literal.of(Scalar.create(Primitive.of("string"))),
-      "integer" -> Literal.of(Scalar.create(Primitive.of(1337L))),
-      "float" -> Literal.of(Scalar.create(Primitive.of(42.0))),
-      "boolean" -> Literal.of(Scalar.create(Primitive.of(true)))
+      "string" -> Literal.of(Scalar.of(Primitive.of("string"))),
+      "integer" -> Literal.of(Scalar.of(Primitive.of(1337L))),
+      "float" -> Literal.of(Scalar.of(Primitive.of(42.0))),
+      "boolean" -> Literal.of(Scalar.of(Primitive.of(true)))
     )
 
     val expected =
@@ -77,10 +77,10 @@ class SdkScalaTypeTest {
       Input(string = "string", integer = 1337L, float = 42.0, boolean = true)
 
     val expected = Map(
-      "string" -> Literal.of(Scalar.create(Primitive.of("string"))),
-      "integer" -> Literal.of(Scalar.create(Primitive.of(1337L))),
-      "float" -> Literal.of(Scalar.create(Primitive.of(42.0))),
-      "boolean" -> Literal.of(Scalar.create(Primitive.of(true)))
+      "string" -> Literal.of(Scalar.of(Primitive.of("string"))),
+      "integer" -> Literal.of(Scalar.of(Primitive.of(1337L))),
+      "float" -> Literal.of(Scalar.of(Primitive.of(42.0))),
+      "boolean" -> Literal.of(Scalar.of(Primitive.of(true)))
     )
 
     val output = SdkScalaType[Input].toLiteralMap(input)

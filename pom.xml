@@ -40,9 +40,6 @@
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
     <junit.version>5.4.2</junit.version>
 
-    <!-- need to deploy parent pom because it's referenced from other poms -->
-    <maven.deploy.skip>false</maven.deploy.skip>
-
     <!-- has to be one liner, or errorprone doesn't work -->
     <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
     <error-prone-additional-args>-Xep:AutoValueImmutableFields:OFF -Xep:Var:ERROR</error-prone-additional-args>
@@ -56,6 +53,7 @@
     <module>flytekit-examples</module>
     <module>flytekit-examples-scala</module>
     <module>jflyte</module>
+    <module>jflyte-api</module>
     <module>jflyte-build</module>
     <module>jflyte-google-cloud</module>
   </modules>
@@ -70,6 +68,38 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- modules -->
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-java</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-scala_2.12</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-google-cloud</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-bom</artifactId>

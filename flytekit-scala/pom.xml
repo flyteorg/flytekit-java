@@ -32,9 +32,9 @@
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.11</scala.version>
+
     <magnolia.version>0.16.0</magnolia.version>
 
-    <maven.deploy.skip>false</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
@@ -44,7 +44,6 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -60,7 +59,6 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

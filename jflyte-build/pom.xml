@@ -39,19 +39,16 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>jflyte</artifactId>
-      <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>jflyte-google-cloud</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

@@ -48,9 +48,13 @@ import org.flyte.api.v1.Variable;
 /**
  * Mapping between {@link AutoValue} classes and Flyte {@link TypedInterface} and {@link Literal}.
  */
-public class AutoValueReflection {
+class AutoValueReflection {
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
+
+  private AutoValueReflection() {
+    throw new UnsupportedOperationException();
+  }
 
   static {
     Map<Class<?>, Class<?>> map = new HashMap<>();
@@ -66,7 +70,7 @@ public class AutoValueReflection {
     PRIMITIVE_TO_WRAPPER = unmodifiableMap(map);
   }
 
-  public static Map<String, Variable> interfaceOf(Class<?> cls) {
+  static Map<String, Variable> interfaceOf(Class<?> cls) {
     if (Void.class.equals(cls)) {
       return Collections.emptyMap();
     }
@@ -83,7 +87,7 @@ public class AutoValueReflection {
     return interfaceOfGeneratedConstructor(cls);
   }
 
-  public static <T> T readValue(Map<String, Literal> inputs, Class<T> cls) {
+  static <T> T readValue(Map<String, Literal> inputs, Class<T> cls) {
     Map<String, Object> inputValues = toJavaMap(inputs);
     Constructor<T> constructor = getAutoValueConstructor(cls);
     Object[] paramValues =
@@ -105,7 +109,7 @@ public class AutoValueReflection {
     }
   }
 
-  public static <T> Map<String, Literal> toLiteralMap(T object, Class<T> cls) {
+  static <T> Map<String, Literal> toLiteralMap(T object, Class<T> cls) {
     return interfaceOf(cls).entrySet().stream()
         .map(
             entry -> {
@@ -244,7 +248,7 @@ public class AutoValueReflection {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Class<T> getGeneratedClass(Class<T> clazz) {
+  private static <T> Class<T> getGeneratedClass(Class<T> clazz) {
     String generatedClassName = getAutoValueGeneratedName(clazz.getName());
 
     Class<?> generatedClass;

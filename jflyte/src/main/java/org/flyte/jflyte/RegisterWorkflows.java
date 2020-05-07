@@ -50,7 +50,7 @@ import picocli.CommandLine.Option;
 
 /** Registers all workflows on classpath. */
 @Command(name = "workflows")
-public class RegisterWorkflows implements Callable<Integer> {
+class RegisterWorkflows implements Callable<Integer> {
 
   @SuppressWarnings("UnusedVariable")
   @Option(

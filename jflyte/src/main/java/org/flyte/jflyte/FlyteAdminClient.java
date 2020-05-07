@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * This is a thin synchronous wrapper around the auto-generated GRPC stubs for communicating with
  * the admin service.
  */
-public class FlyteAdminClient implements AutoCloseable {
+class FlyteAdminClient implements AutoCloseable {
 
   private static final Logger LOG = LoggerFactory.getLogger(FlyteAdminClient.class);
   static final String TRIGGERING_PRINCIPAL = "sdk";
@@ -57,11 +57,7 @@ public class FlyteAdminClient implements AutoCloseable {
     this.channel = channel;
   }
 
-  public static FlyteAdminClient create(String target) {
-    return create(target, /* insecure= */ false);
-  }
-
-  public static FlyteAdminClient create(String target, boolean insecure) {
+  static FlyteAdminClient create(String target, boolean insecure) {
     ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forTarget(target);
 
     if (insecure) {
@@ -73,7 +69,7 @@ public class FlyteAdminClient implements AutoCloseable {
     return new FlyteAdminClient(AdminServiceGrpc.newBlockingStub(builder.build()), channel);
   }
 
-  public void createTask(TaskIdentifier id, TaskTemplate template) {
+  void createTask(TaskIdentifier id, TaskTemplate template) {
     LOG.debug("createTask {}", id);
 
     TaskOuterClass.TaskCreateResponse response =
@@ -89,7 +85,7 @@ public class FlyteAdminClient implements AutoCloseable {
     verifyNotNull(response, "Unexpected null response when creating task: %s", id);
   }
 
-  public void createWorkflow(WorkflowIdentifier id, WorkflowTemplate template) {
+  void createWorkflow(WorkflowIdentifier id, WorkflowTemplate template) {
     LOG.debug("createWorkflow {}", id);
 
     WorkflowOuterClass.WorkflowCreateResponse response =
@@ -105,7 +101,7 @@ public class FlyteAdminClient implements AutoCloseable {
     verifyNotNull(response, "Unexpected null response when creating workflow: %s", id);
   }
 
-  public void createLaunchPlan(LaunchPlanIdentifier id, WorkflowIdentifier workflowId) {
+  void createLaunchPlan(LaunchPlanIdentifier id, WorkflowIdentifier workflowId) {
     LOG.debug("createLaunchPlan {}", id);
 
     LaunchPlanOuterClass.LaunchPlanCreateResponse response =
@@ -121,7 +117,7 @@ public class FlyteAdminClient implements AutoCloseable {
     verifyNotNull(response, "Unexpected null response when creating launch plan: %s", id);
   }
 
-  public void createExecution(String domain, String project, LaunchPlanIdentifier launchPlanId) {
+  void createExecution(String domain, String project, LaunchPlanIdentifier launchPlanId) {
     LOG.debug("createExecution {} {} {}", domain, project, launchPlanId);
 
     ExecutionOuterClass.ExecutionMetadata metadata =
@@ -154,7 +150,7 @@ public class FlyteAdminClient implements AutoCloseable {
   }
 
   @Nullable
-  public TaskIdentifier fetchLatestTaskId(NamedEntityIdentifier taskId) {
+  TaskIdentifier fetchLatestTaskId(NamedEntityIdentifier taskId) {
     Common.ResourceListRequest request =
         Common.ResourceListRequest.newBuilder()
             .setLimit(1)

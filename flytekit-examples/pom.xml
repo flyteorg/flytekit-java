@@ -36,14 +36,12 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <!-- provided -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

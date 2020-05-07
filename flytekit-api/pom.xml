@@ -28,10 +28,6 @@
 
   <artifactId>flytekit-api</artifactId>
 
-  <properties>
-    <maven.deploy.skip>false</maven.deploy.skip>
-  </properties>
-
   <dependencies>
     <!-- provided -->
     <dependency>

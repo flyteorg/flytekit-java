@@ -63,6 +63,10 @@ class ProtoUtil {
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
 
+  private ProtoUtil() {
+    throw new UnsupportedOperationException();
+  }
+
   static Map<String, Literal> deserialize(Literals.LiteralMap literalMap) {
     Map<String, Literal> inputs = new HashMap<>();
 

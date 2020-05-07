@@ -28,16 +28,11 @@
 
   <artifactId>flytekit-java</artifactId>
 
-  <properties>
-    <maven.deploy.skip>false</maven.deploy.skip>
-  </properties>
-
   <dependencies>
     <!-- provided -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

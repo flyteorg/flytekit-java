@@ -55,12 +55,12 @@ class ArtifactStager {
   private final String stagingLocation;
   private final FileSystem fileSystem;
 
-  public ArtifactStager(String stagingLocation, FileSystem fileSystem) {
+  ArtifactStager(String stagingLocation, FileSystem fileSystem) {
     this.stagingLocation = stagingLocation;
     this.fileSystem = fileSystem;
   }
 
-  public List<Artifact> stageFiles(List<String> files) {
+  List<Artifact> stageFiles(List<String> files) {
     List<Artifact> artifacts = new ArrayList<>();
 
     // TODO use multiple threads for better throughput
@@ -79,7 +79,7 @@ class ArtifactStager {
     return artifacts;
   }
 
-  public void stageArtifact(Artifact artifact, ByteSource content) {
+  void stageArtifact(Artifact artifact, ByteSource content) {
     LOG.debug("Staging [{}] to [{}]", artifact.name(), artifact.location());
 
     Manifest manifest = fileSystem.getManifest(artifact.location());
@@ -110,15 +110,15 @@ class ArtifactStager {
     }
   }
 
-  public Artifact getArtifact(String name, ByteSource bs) {
+  Artifact getArtifact(String name, ByteSource bs) {
     return getArtifact(name, bs, stagingLocation);
   }
 
-  public static Artifact getArtifactForFile(File file, String stagingLocation) {
+  static Artifact getArtifactForFile(File file, String stagingLocation) {
     return getArtifact(file.getName(), Files.asByteSource(file), stagingLocation);
   }
 
-  public static Artifact getArtifact(String name, ByteSource bs, String stagingLocation) {
+  static Artifact getArtifact(String name, ByteSource bs, String stagingLocation) {
     // md5 is fine, don't change because of compatibility
     @SuppressWarnings({"deprecation"})
     Hasher hasher = Hashing.md5().newHasher();

@@ -35,7 +35,7 @@ public class Main implements Callable<Integer> {
   @Command(
       name = "jflyte",
       subcommands = {Main.Register.class, Execute.class})
-  public static class JFlyte implements Callable<Integer> {
+  static class JFlyte implements Callable<Integer> {
 
     @Override
     public Integer call() {
@@ -48,7 +48,7 @@ public class Main implements Callable<Integer> {
   @Command(
       name = "register",
       subcommands = {RegisterWorkflows.class})
-  public static class Register implements Callable<Integer> {
+  static class Register implements Callable<Integer> {
     @Override
     public Integer call() {
       new CommandLine(this).usage(System.err);

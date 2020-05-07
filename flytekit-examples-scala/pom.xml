@@ -29,7 +29,8 @@
 
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.10</scala.version>
+    <scala.version>2.12.11</scala.version>
+
     <maven.deploy.skip>true</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
@@ -39,14 +40,12 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <!-- provided -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

@@ -27,7 +27,11 @@ import org.slf4j.LoggerFactory;
 class Registrars {
   private static final Logger LOG = LoggerFactory.getLogger(Registrars.class);
 
-  public static <K, V, T extends Registrar<K, V>> Map<K, V> loadAll(
+  private Registrars() {
+    throw new UnsupportedOperationException();
+  }
+
+  static <K, V, T extends Registrar<K, V>> Map<K, V> loadAll(
       Class<T> registrarClass, Map<String, String> env) {
     ServiceLoader<T> loader = ServiceLoader.load(registrarClass);
 

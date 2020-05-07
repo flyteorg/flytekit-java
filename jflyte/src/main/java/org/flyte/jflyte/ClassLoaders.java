@@ -31,12 +31,16 @@ class ClassLoaders {
 
   private static final Logger LOG = LoggerFactory.getLogger(ClassLoaders.class);
 
-  public static ClassLoader forDirectory(String dir) {
+  private ClassLoaders() {
+    throw new UnsupportedOperationException();
+  }
+
+  static ClassLoader forDirectory(String dir) {
     return AccessController.doPrivileged(
         (PrivilegedAction<ClassLoader>) () -> new ChildFirstClassLoader(getClassLoaderUrls(dir)));
   }
 
-  public static URL[] getClassLoaderUrls(String dir) {
+  static URL[] getClassLoaderUrls(String dir) {
     Preconditions.checkNotNull(dir, "dir is null");
 
     File file = new File(dir);

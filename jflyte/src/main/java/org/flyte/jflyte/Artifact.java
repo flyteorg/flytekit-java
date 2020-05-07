@@ -21,15 +21,15 @@ import org.flyte.jflyte.api.FileSystem;
 
 /** Represents artifact to stage to {@link FileSystem}. */
 @AutoValue
-public abstract class Artifact {
+abstract class Artifact {
 
-  public abstract String location();
+  abstract String location();
 
-  public abstract String name();
+  abstract String name();
 
-  public abstract long size();
+  abstract long size();
 
-  public static Artifact create(String location, String name, long size) {
+  static Artifact create(String location, String name, long size) {
     return new AutoValue_Artifact(location, name, size);
   }
 }

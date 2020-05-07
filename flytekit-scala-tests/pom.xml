@@ -38,6 +38,8 @@
     <scala.version>2.12.10</scala.version>
 
     <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- spotbugs doesn't understand Scala code -->
+    <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
   <dependencies>
@@ -76,19 +78,18 @@
             <arg>-language:experimental.macros</arg>
           </args>
         </configuration>
-<!-- FIXME: enable those after fixing code -->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <goals>-->
-<!--              <goal>compile</goal>-->
-<!--              <goal>testCompile</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
-<!--      <plugin>-->
-<!--        <artifactId>maven-jar-plugin</artifactId>-->
-<!--      </plugin>-->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 </project>

@@ -16,17 +16,18 @@
  */
 package org.flyte.examples.flytekitscala
 
-import com.google.auto.service.AutoService
 import org.flyte.flytekit.SdkRunnableTask
 import org.flyte.flytekitscala.SdkScalaType
 
-case class Input(message: String)
+case class HelloWorldTaskInput(message: String)
 
-@AutoService(Array(classOf[SdkRunnableTask[_, _]]))
-object HelloWorldTask
-    extends SdkRunnableTask(SdkScalaType[Input], SdkScalaType.unit) {
+class HelloWorldTask
+    extends SdkRunnableTask(
+      SdkScalaType[HelloWorldTaskInput],
+      SdkScalaType.unit
+    ) {
 
-  override def run(input: Input): Unit = {
+  override def run(input: HelloWorldTaskInput): Unit = {
     println(input.message)
   }
 }

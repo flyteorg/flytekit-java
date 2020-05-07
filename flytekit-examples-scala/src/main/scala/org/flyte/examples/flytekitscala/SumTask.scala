@@ -14,20 +14,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.examples.flytekitscala;
+package org.flyte.examples.flytekitscala
 
-import com.google.auto.service.AutoService
 import org.flyte.flytekit.SdkRunnableTask
 import org.flyte.flytekitscala.SdkScalaType
 
-case class Input(a: Long, b: Long)
-case class Output(c: Long)
+case class SumTaskInput(a: Long, b: Long)
+case class SumTaskOutput(c: Long)
 
-@AutoService(Array(classOf[SdkRunnableTask[_, _]]))
-object SumTask
-    extends SdkRunnableTask(SdkScalaType[Input], SdkScalaType[Output]) {
+class SumTask
+    extends SdkRunnableTask(
+      SdkScalaType[SumTaskInput],
+      SdkScalaType[SumTaskOutput]
+    ) {
 
-  override def run(input: Input): Output = {
-    Output(input.a + input.b)
+  override def run(input: SumTaskInput): SumTaskOutput = {
+    SumTaskOutput(input.a + input.b)
   }
 }

@@ -32,7 +32,7 @@
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.11</scala.version>
-    <magnolia.version>0.15.0</magnolia.version>
+    <magnolia.version>0.16.0</magnolia.version>
 
     <maven.deploy.skip>false</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
@@ -61,11 +61,6 @@
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-api</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>

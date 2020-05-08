@@ -32,6 +32,7 @@ import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
 import flyteidl.core.Types;
 import flyteidl.core.Workflow;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +42,6 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -55,7 +55,6 @@ import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
-import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -68,6 +67,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtilTest {
   private static final String DOMAIN = "development";
   private static final String PROJECT = "flyte-test";
@@ -99,7 +99,7 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Timestamp.builder().seconds(seconds).nanos(nanos).build())),
+            Primitive.of(Instant.ofEpochSecond(seconds, nanos))),
         Arguments.of(
             Literals.Primitive.newBuilder()
                 .setDuration(
@@ -108,7 +108,7 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Duration.builder().seconds(seconds).nanos(nanos).build())));
+            Primitive.of(Duration.ofSeconds(seconds, nanos))));
   }
 
   @Test
@@ -412,7 +412,7 @@ class ProtoUtilTest {
             Primitive.of("123"), Literals.Primitive.newBuilder().setStringValue("123").build()),
         Arguments.of(Primitive.of(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
         Arguments.of(
-            Primitive.of(Timestamp.builder().seconds(seconds).nanos(nanos).build()),
+            Primitive.of(Instant.ofEpochSecond(seconds, nanos)),
             Literals.Primitive.newBuilder()
                 .setDatetime(
                     com.google.protobuf.Timestamp.newBuilder()
@@ -421,7 +421,7 @@ class ProtoUtilTest {
                         .build())
                 .build()),
         Arguments.of(
-            Primitive.of(Duration.builder().seconds(seconds).nanos(nanos).build()),
+            Primitive.of(Duration.ofSeconds(seconds, nanos)),
             Literals.Primitive.newBuilder()
                 .setDuration(
                     com.google.protobuf.Duration.newBuilder()

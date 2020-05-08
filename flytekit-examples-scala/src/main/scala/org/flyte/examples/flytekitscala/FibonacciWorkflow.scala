@@ -16,14 +16,14 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.SdkWorkflowBuilder.literalOf
+import org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger
 import org.flyte.flytekit.{SdkWorkflow, SdkWorkflowBuilder}
 
 class FibonacciWorkflow extends SdkWorkflow {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
-    val fib0 = literalOf(0L);
-    val fib1 = literalOf(1L);
+    val fib0 = literalOfInteger(0L);
+    val fib1 = literalOfInteger(1L);
 
     val fib2 =
       builder

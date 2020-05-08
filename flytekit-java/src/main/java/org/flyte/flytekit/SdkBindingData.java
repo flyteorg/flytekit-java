@@ -16,16 +16,16 @@
  */
 package org.flyte.flytekit;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.Timestamp;
 
+@SuppressWarnings("PreferJavaTimeOverload")
 public class SdkBindingData {
 
   private final BindingData idl;
@@ -52,11 +52,10 @@ public class SdkBindingData {
 
   public static SdkBindingData ofDatetime(int year, int month, int day) {
     Instant instant = LocalDate.of(year, month, day).atStartOfDay().toInstant(ZoneOffset.UTC);
-
-    return ofDatetime(Timestamp.builder().seconds(instant.getEpochSecond()).nanos(0).build());
+    return ofDatetime(instant);
   }
 
-  public static SdkBindingData ofDatetime(Timestamp value) {
+  public static SdkBindingData ofDatetime(Instant value) {
     return ofScalar(Scalar.of(Primitive.of(value)));
   }
 

@@ -17,6 +17,8 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoOneOf;
+import java.time.Duration;
+import java.time.Instant;
 
 /** A simple value. Primitive can be: string, ... . */
 @AutoOneOf(SimpleType.class)
@@ -31,7 +33,7 @@ public abstract class Primitive {
 
   public abstract boolean boolean_();
 
-  public abstract Timestamp datetime();
+  public abstract Instant datetime();
 
   public abstract Duration duration();
 
@@ -51,7 +53,7 @@ public abstract class Primitive {
     return AutoOneOf_Primitive.boolean_(boolean_);
   }
 
-  public static Primitive of(Timestamp datetime) {
+  public static Primitive of(Instant datetime) {
     return AutoOneOf_Primitive.datetime(datetime);
   }
 

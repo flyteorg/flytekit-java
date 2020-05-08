@@ -30,13 +30,14 @@ import flyteidl.core.Types;
 import flyteidl.core.Workflow;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -50,7 +51,6 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
-import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -58,6 +58,7 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Utility to serialize between flytekit-api and flyteidl proto. */
+@SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtil {
   static final String TASK_TYPE = "java-task";
   static final String RUNTIME_FLAVOR = "java";
@@ -106,12 +107,10 @@ class ProtoUtil {
         return Primitive.of(primitive.getBoolean());
       case DATETIME:
         com.google.protobuf.Timestamp datetime = primitive.getDatetime();
-        return Primitive.of(
-            Timestamp.builder().seconds(datetime.getSeconds()).nanos(datetime.getNanos()).build());
+        return Primitive.of(Instant.ofEpochSecond(datetime.getSeconds(), datetime.getNanos()));
       case DURATION:
         com.google.protobuf.Duration duration = primitive.getDuration();
-        return Primitive.of(
-            Duration.builder().seconds(duration.getSeconds()).nanos(duration.getNanos()).build());
+        return Primitive.of(Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
       case VALUE_NOT_SET:
         // fallthrough
     }
@@ -337,19 +336,19 @@ class ProtoUtil {
         builder.setBoolean(primitive.boolean_());
         break;
       case DATETIME:
-        Timestamp datetime = primitive.datetime();
+        Instant datetime = primitive.datetime();
         builder.setDatetime(
             com.google.protobuf.Timestamp.newBuilder()
-                .setSeconds(datetime.seconds())
-                .setNanos(datetime.nanos())
+                .setSeconds(datetime.getEpochSecond())
+                .setNanos(datetime.getNano())
                 .build());
         break;
       case DURATION:
         Duration duration = primitive.duration();
         builder.setDuration(
             com.google.protobuf.Duration.newBuilder()
-                .setSeconds(duration.seconds())
-                .setNanos(duration.nanos())
+                .setSeconds(duration.getSeconds())
+                .setNanos(duration.getNano())
                 .build());
         break;
     }

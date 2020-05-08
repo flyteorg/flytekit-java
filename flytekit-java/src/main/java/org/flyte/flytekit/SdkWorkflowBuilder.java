@@ -22,17 +22,18 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.Timestamp;
 
+@SuppressWarnings("PreferJavaTimeOverload")
 public class SdkWorkflowBuilder {
 
   private final Map<String, SdkNode> allNodes;
@@ -52,27 +53,27 @@ public class SdkWorkflowBuilder {
     return sdkNode;
   }
 
-  public static SdkBindingData literalOf(long value) {
+  public static SdkBindingData literalOfInteger(long value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
-  public static SdkBindingData literalOf(double value) {
+  public static SdkBindingData literalOfFloat(double value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
-  public static SdkBindingData literalOf(String value) {
+  public static SdkBindingData literalOfString(String value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
-  public static SdkBindingData literalOf(boolean value) {
+  public static SdkBindingData literalOfBoolean(boolean value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
-  public static SdkBindingData literalOf(Timestamp value) {
+  public static SdkBindingData literalOfDatetime(Instant value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 
-  public static SdkBindingData literalOf(Duration value) {
+  public static SdkBindingData literalOfDuration(Duration value) {
     return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
   }
 

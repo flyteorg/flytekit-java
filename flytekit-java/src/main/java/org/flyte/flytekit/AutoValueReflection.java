@@ -27,6 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
@@ -35,19 +37,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 
 /**
  * Mapping between {@link AutoValue} classes and Flyte {@link TypedInterface} and {@link Literal}.
  */
+@SuppressWarnings("PreferJavaTimeOverload")
 class AutoValueReflection {
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
@@ -214,7 +215,7 @@ class AutoValueReflection {
       return LiteralType.builder().simpleType(SimpleType.STRING).build();
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
       return LiteralType.builder().simpleType(SimpleType.BOOLEAN).build();
-    } else if (Timestamp.class.isAssignableFrom(type)) {
+    } else if (Instant.class.isAssignableFrom(type)) {
       return LiteralType.builder().simpleType(SimpleType.DATETIME).build();
     } else if (Duration.class.isAssignableFrom(type)) {
       return LiteralType.builder().simpleType(SimpleType.DURATION).build();
@@ -242,7 +243,7 @@ class AutoValueReflection {
       case BOOLEAN:
         return Literal.of(Scalar.of(Primitive.of((Boolean) value)));
       case DATETIME:
-        return Literal.of(Scalar.of(Primitive.of((Timestamp) value)));
+        return Literal.of(Scalar.of(Primitive.of((Instant) value)));
       case DURATION:
         return Literal.of(Scalar.of(Primitive.of((Duration) value)));
     }

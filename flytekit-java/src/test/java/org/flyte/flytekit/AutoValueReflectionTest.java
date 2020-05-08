@@ -17,33 +17,32 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import org.flyte.api.v1.Duration;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Timestamp;
 import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings("PreferJavaTimeOverload")
 class AutoValueReflectionTest {
 
   @Test
@@ -80,27 +79,22 @@ class AutoValueReflectionTest {
 
   @Test
   void testReadValue() {
-    long integer = 123L;
-    double float_ = 123.0;
-    String string = "123";
-    boolean boolean_ = true;
-    Timestamp datetime = Timestamp.builder().seconds(123).nanos(456).build();
-    Duration duration = Duration.builder().seconds(123).nanos(456).build();
-
+    Instant datetime = Instant.ofEpochSecond(12, 34);
+    Duration duration = Duration.ofSeconds(56, 78);
     Map<String, Literal> inputMap = new HashMap<>();
-    inputMap.put("i", literalOf(Primitive.of(integer)));
-    inputMap.put("f", literalOf(Primitive.of(float_)));
-    inputMap.put("s", literalOf(Primitive.of(string)));
-    inputMap.put("b", literalOf(Primitive.of(boolean_)));
+    inputMap.put("i", literalOf(Primitive.of(123L)));
+    inputMap.put("f", literalOf(Primitive.of(123.0)));
+    inputMap.put("s", literalOf(Primitive.of("123")));
+    inputMap.put("b", literalOf(Primitive.of(true)));
     inputMap.put("t", literalOf(Primitive.of(datetime)));
     inputMap.put("d", literalOf(Primitive.of(duration)));
 
     AutoValueInput input = AutoValueReflection.readValue(inputMap, AutoValueInput.class);
 
-    assertThat(input.i(), equalTo(integer));
-    assertThat(input.f(), equalTo(float_));
-    assertThat(input.s(), equalTo(string));
-    assertThat(input.b(), equalTo(boolean_));
+    assertThat(input.i(), equalTo(123L));
+    assertThat(input.f(), equalTo(123.0));
+    assertThat(input.s(), equalTo("123"));
+    assertThat(input.b(), equalTo(true));
     assertThat(input.t(), equalTo(datetime));
     assertThat(input.d(), equalTo(duration));
   }
@@ -134,18 +128,19 @@ class AutoValueReflectionTest {
     Map<String, Literal> literalMap =
         AutoValueReflection.toLiteralMap(
             AutoValueInput.create(
-                42L, 42.0d, "42", false, null, Duration.builder().seconds(0).nanos(42).build()),
+                42L, 42.0d, "42", false, Instant.ofEpochSecond(42, 1), Duration.ofSeconds(1, 42)),
             AutoValueInput.class);
-    assertThat(literalMap.size(), is(5));
-    assertThat(Objects.requireNonNull(literalMap.get("i").scalar().primitive()).integer(), is(42L));
-    assertThat(Objects.requireNonNull(literalMap.get("f").scalar().primitive()).float_(), is(42.0));
-    assertThat(Objects.requireNonNull(literalMap.get("s").scalar().primitive()).string(), is("42"));
+    assertThat(literalMap.size(), is(6));
+    assertThat(requireNonNull(literalMap.get("i").scalar().primitive()).integer(), is(42L));
+    assertThat(requireNonNull(literalMap.get("f").scalar().primitive()).float_(), is(42.0));
+    assertThat(requireNonNull(literalMap.get("s").scalar().primitive()).string(), is("42"));
+    assertThat(requireNonNull(literalMap.get("b").scalar().primitive()).boolean_(), is(false));
     assertThat(
-        Objects.requireNonNull(literalMap.get("b").scalar().primitive()).boolean_(), is(false));
-    assertThat(literalMap.get("t"), nullValue());
+        requireNonNull(literalMap.get("t").scalar().primitive().datetime()),
+        is(Instant.ofEpochSecond(42, 1)));
     assertThat(
-        Objects.requireNonNull(literalMap.get("d").scalar().primitive()).duration(),
-        is(Duration.builder().seconds(0).nanos(42).build()));
+        requireNonNull(literalMap.get("d").scalar().primitive()).duration(),
+        is(Duration.ofSeconds(1, 42)));
   }
 
   static Stream<Arguments> createInputMaps() {
@@ -170,8 +165,7 @@ class AutoValueReflectionTest {
 
     abstract boolean b();
 
-    @Nullable
-    abstract Timestamp t();
+    abstract Instant t();
 
     abstract Duration d();
 
@@ -193,7 +187,7 @@ class AutoValueReflectionTest {
           .build();
     }
 
-    static AutoValueInput create(long i, double f, String s, boolean b, Timestamp t, Duration d) {
+    static AutoValueInput create(long i, double f, String s, boolean b, Instant t, Duration d) {
       return new AutoValue_AutoValueReflectionTest_AutoValueInput(i, f, s, b, t, d);
     }
   }

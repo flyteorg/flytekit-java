@@ -16,8 +16,9 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Map;
-import java.util.Objects;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
@@ -34,7 +35,7 @@ public abstract class SdkNode {
   public SdkBindingData getOutput(String name) {
     SdkBindingData output = getOutputs().get(name);
 
-    Objects.requireNonNull(output, String.format("output not found [%s]", name));
+    requireNonNull(output, String.format("output not found [%s]", name));
 
     return output;
   }

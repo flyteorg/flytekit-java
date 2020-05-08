@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toMap;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -80,5 +81,32 @@ public class SdkTaskNode extends SdkNode {
 
   private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
     return Binding.builder().var_(var_).binding(sdkBindingData.toIdl()).build();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof SdkTaskNode)) {
+      return false;
+    }
+    SdkTaskNode that = (SdkTaskNode) o;
+    return nodeId.equals(that.nodeId)
+        && taskId.equals(that.taskId)
+        && inputs.equals(that.inputs)
+        && outputs.equals(that.outputs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(nodeId, taskId, inputs, outputs);
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "SdkTaskNode{nodeId='%s', taskId=%s, inputs=%s, outputs=%s}",
+        nodeId, taskId, inputs, outputs);
   }
 }

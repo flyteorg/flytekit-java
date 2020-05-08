@@ -20,11 +20,10 @@ import com.google.auto.value.AutoValue;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
-import org.flyte.api.v1.Variable;
 
 /** Reference to a task deployed in flyte, a remote Task. */
 @AutoValue
-public abstract class SdkRemoteTask extends SdkTransform {
+public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
 
   @Nullable
   public abstract String domain();
@@ -33,9 +32,24 @@ public abstract class SdkRemoteTask extends SdkTransform {
 
   public abstract String name();
 
-  public abstract Map<String, Variable> outputs();
+  public abstract SdkType<InputT> inputs();
 
-  public abstract Map<String, Variable> inputs();
+  public abstract SdkType<OutputT> outputs();
+
+  public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
+      String domain,
+      String project,
+      String name,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
+    return SdkRemoteTask.<InputT, OutputT>builder()
+        .domain(domain)
+        .project(project)
+        .name(name)
+        .inputs(inputs)
+        .outputs(outputs)
+        .build();
+  }
 
   @Override
   public SdkNode apply(
@@ -45,25 +59,26 @@ public abstract class SdkRemoteTask extends SdkTransform {
 
     // TODO put type checking here
 
-    return new SdkTaskNode(builder, nodeId, taskId, inputs, outputs());
+    return new SdkTaskNode(builder, nodeId, taskId, inputs, outputs().getVariableMap());
   }
 
-  public static Builder builder() {
-    return new AutoValue_SdkRemoteTask.Builder();
+  public static <InputT, OutputT> Builder<InputT, OutputT> builder() {
+    return new AutoValue_SdkRemoteTask.Builder<>();
   }
 
   @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder domain(String domain);
+  public abstract static class Builder<InputT, OutputT> {
 
-    public abstract Builder project(String project);
+    public abstract Builder<InputT, OutputT> domain(String domain);
 
-    public abstract Builder name(String name);
+    public abstract Builder<InputT, OutputT> project(String project);
 
-    public abstract Builder outputs(Map<String, Variable> outputs);
+    public abstract Builder<InputT, OutputT> name(String name);
 
-    public abstract Builder inputs(Map<String, Variable> inputs);
+    public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 
-    public abstract SdkRemoteTask build();
+    public abstract Builder<InputT, OutputT> outputs(SdkType<OutputT> outputs);
+
+    public abstract SdkRemoteTask<InputT, OutputT> build();
   }
 }

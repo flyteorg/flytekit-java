@@ -46,7 +46,6 @@ import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -100,7 +99,7 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Timestamp.create(seconds, nanos))),
+            Primitive.of(Timestamp.builder().seconds(seconds).nanos(nanos).build())),
         Arguments.of(
             Literals.Primitive.newBuilder()
                 .setDuration(
@@ -109,7 +108,7 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Duration.create(seconds, nanos))));
+            Primitive.of(Duration.builder().seconds(seconds).nanos(nanos).build())));
   }
 
   @Test
@@ -131,7 +130,7 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeOutputReference() {
-    OutputReference input = OutputReference.create("node-id", "var");
+    OutputReference input = OutputReference.builder().nodeId("node-id").var("var").build();
     Types.OutputReference expected =
         Types.OutputReference.newBuilder().setNodeId("node-id").setVar("var").build();
 
@@ -247,13 +246,17 @@ class ProtoUtilTest {
             .image("alpine:3.7")
             .build();
 
-    Variable stringVar = Variable.create(LiteralType.create(SimpleType.STRING), null);
-    Variable integerVar = Variable.create(LiteralType.create(SimpleType.INTEGER), null);
+    Variable stringVar = ApiUtils.createVar(SimpleType.STRING);
+    Variable integerVar = ApiUtils.createVar(SimpleType.INTEGER);
 
     TypedInterface interface_ =
-        TypedInterface.create(ImmutableMap.of("x", stringVar), ImmutableMap.of("y", integerVar));
+        TypedInterface.builder()
+            .inputs(ImmutableMap.of("x", stringVar))
+            .outputs(ImmutableMap.of("y", integerVar))
+            .build();
 
-    TaskTemplate template = TaskTemplate.create(container, interface_);
+    TaskTemplate template =
+        TaskTemplate.builder().container(container).interface_(interface_).build();
 
     Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
 
@@ -314,8 +317,9 @@ class ProtoUtilTest {
   void shouldSerializeWorkflowTemplate() {
     Node nodeA = createNode("a");
     Node nodeB = createNode("b");
-    WorkflowMetadata metadata = WorkflowMetadata.create();
-    WorkflowTemplate template = WorkflowTemplate.create(Arrays.asList(nodeA, nodeB), metadata);
+    WorkflowMetadata metadata = WorkflowMetadata.builder().build();
+    WorkflowTemplate template =
+        WorkflowTemplate.builder().nodes(Arrays.asList(nodeA, nodeB)).metadata(metadata).build();
 
     Workflow.Node expectedNode1 =
         Workflow.Node.newBuilder()
@@ -408,7 +412,7 @@ class ProtoUtilTest {
             Primitive.of("123"), Literals.Primitive.newBuilder().setStringValue("123").build()),
         Arguments.of(Primitive.of(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
         Arguments.of(
-            Primitive.of(Timestamp.create(seconds, nanos)),
+            Primitive.of(Timestamp.builder().seconds(seconds).nanos(nanos).build()),
             Literals.Primitive.newBuilder()
                 .setDatetime(
                     com.google.protobuf.Timestamp.newBuilder()
@@ -417,7 +421,7 @@ class ProtoUtilTest {
                         .build())
                 .build()),
         Arguments.of(
-            Primitive.of(Duration.create(seconds, nanos)),
+            Primitive.of(Duration.builder().seconds(seconds).nanos(nanos).build()),
             Literals.Primitive.newBuilder()
                 .setDuration(
                     com.google.protobuf.Duration.newBuilder()
@@ -449,16 +453,21 @@ class ProtoUtilTest {
     String input_scalar = "input-scalar-" + id;
 
     TaskNode taskNode =
-        TaskNode.create(
-            PartialTaskIdentifier.builder()
-                .domain(DOMAIN)
-                .project(PROJECT)
-                .name(taskName)
-                .version(version)
-                .build());
+        TaskNode.builder()
+            .referenceId(
+                PartialTaskIdentifier.builder()
+                    .domain(DOMAIN)
+                    .project(PROJECT)
+                    .name(taskName)
+                    .version(version)
+                    .build())
+            .build();
     List<Binding> inputs =
         Collections.singletonList(
-            Binding.create(input_name, BindingData.of(Scalar.of(Primitive.of(input_scalar)))));
+            Binding.builder()
+                .var_(input_name)
+                .binding(BindingData.of(Scalar.of(Primitive.of(input_scalar))))
+                .build());
 
     return Node.builder().id(id).taskNode(taskNode).inputs(inputs).build();
   }

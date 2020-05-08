@@ -27,14 +27,30 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class Timestamp {
 
-  public static final Timestamp EPOCH = create(0L, 0);
-
   public abstract long seconds();
 
   public abstract int nanos();
 
-  public static Timestamp create(long seconds, int nanos) {
-    checkNanosInRange(nanos);
-    return new AutoValue_Timestamp(seconds, nanos);
+  public static Builder builder() {
+    return new AutoValue_Timestamp.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder seconds(long seconds);
+
+    public abstract Builder nanos(int nanos);
+
+    // required for property validation
+    abstract int nanos();
+
+    abstract Timestamp autoBuild();
+
+    public Timestamp build() {
+      Timestamp timestamp = autoBuild();
+      checkNanosInRange(timestamp.nanos());
+      return timestamp;
+    }
   }
 }

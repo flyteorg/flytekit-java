@@ -14,25 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte;
 
-import com.google.auto.value.AutoValue;
+import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Variable;
 
-/** Refers to the task that the Node is to execute. */
-@AutoValue
-public abstract class TaskNode {
+/** Contains helper methods to create api objects in a more concise way */
+class ApiUtils {
 
-  public abstract PartialTaskIdentifier referenceId();
-
-  public static Builder builder() {
-    return new AutoValue_TaskNode.Builder();
+  private ApiUtils() {
+    throw new UnsupportedOperationException("Not meant to be created");
   }
 
-  @AutoValue.Builder
-  public abstract static class Builder {
-
-    public abstract Builder referenceId(PartialTaskIdentifier referenceId);
-
-    public abstract TaskNode build();
+  static Variable createVar(SimpleType type) {
+    return Variable.builder()
+        .literalType(LiteralType.builder().simpleType(type).build())
+        .description(null)
+        .build();
   }
 }

@@ -106,10 +106,12 @@ class ProtoUtil {
         return Primitive.of(primitive.getBoolean());
       case DATETIME:
         com.google.protobuf.Timestamp datetime = primitive.getDatetime();
-        return Primitive.of(Timestamp.create(datetime.getSeconds(), datetime.getNanos()));
+        return Primitive.of(
+            Timestamp.builder().seconds(datetime.getSeconds()).nanos(datetime.getNanos()).build());
       case DURATION:
         com.google.protobuf.Duration duration = primitive.getDuration();
-        return Primitive.of(Duration.create(duration.getSeconds(), duration.getNanos()));
+        return Primitive.of(
+            Duration.builder().seconds(duration.getSeconds()).nanos(duration.getNanos()).build());
       case VALUE_NOT_SET:
         // fallthrough
     }

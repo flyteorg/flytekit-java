@@ -28,14 +28,30 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class Duration {
 
-  public static final Duration ZERO = create(0L, 0);
-
   public abstract long seconds();
 
   public abstract int nanos();
 
-  public static Duration create(long seconds, int nanos) {
-    checkNanosInRange(nanos);
-    return new AutoValue_Duration(seconds, nanos);
+  public static Builder builder() {
+    return new AutoValue_Duration.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder seconds(long seconds);
+
+    public abstract Builder nanos(int nanos);
+
+    // required for property validation
+    abstract int nanos();
+
+    abstract Duration autoBuild();
+
+    public Duration build() {
+      Duration duration = autoBuild();
+      checkNanosInRange(duration.nanos());
+      return duration;
+    }
   }
 }

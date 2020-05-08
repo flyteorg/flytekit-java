@@ -28,7 +28,17 @@ public abstract class Variable {
   @Nullable
   public abstract String description();
 
-  public static Variable create(LiteralType literalType, String description) {
-    return new AutoValue_Variable(literalType, description);
+  public static Builder builder() {
+    return new AutoValue_Variable.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder literalType(LiteralType literalType);
+
+    public abstract Builder description(String description);
+
+    public abstract Variable build();
   }
 }

@@ -53,7 +53,7 @@ public class SdkBindingData {
   public static SdkBindingData ofDatetime(int year, int month, int day) {
     Instant instant = LocalDate.of(year, month, day).atStartOfDay().toInstant(ZoneOffset.UTC);
 
-    return ofDatetime(Timestamp.create(instant.getEpochSecond(), 0));
+    return ofDatetime(Timestamp.builder().seconds(instant.getEpochSecond()).nanos(0).build());
   }
 
   public static SdkBindingData ofDatetime(Timestamp value) {
@@ -65,7 +65,7 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {
-    BindingData idl = BindingData.of(OutputReference.create(nodeId, nodeVar));
+    BindingData idl = BindingData.of(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
 
     return new SdkBindingData(idl);
   }

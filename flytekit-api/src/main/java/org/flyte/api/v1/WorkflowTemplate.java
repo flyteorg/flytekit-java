@@ -30,7 +30,17 @@ public abstract class WorkflowTemplate {
 
   public abstract WorkflowMetadata metadata();
 
-  public static WorkflowTemplate create(List<Node> nodes, WorkflowMetadata metadata) {
-    return new AutoValue_WorkflowTemplate(nodes, metadata);
+  public static Builder builder() {
+    return new AutoValue_WorkflowTemplate.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder nodes(List<Node> nodes);
+
+    public abstract Builder metadata(WorkflowMetadata metadata);
+
+    public abstract WorkflowTemplate build();
   }
 }

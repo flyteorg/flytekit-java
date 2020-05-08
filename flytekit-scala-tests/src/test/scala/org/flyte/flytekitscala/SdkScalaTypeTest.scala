@@ -40,10 +40,10 @@ class SdkScalaTypeTest {
   @Test
   def testInterface(): Unit = {
     val expected = Map(
-      "string" -> Variable.create(LiteralType.create(SimpleType.STRING), ""),
-      "integer" -> Variable.create(LiteralType.create(SimpleType.INTEGER), ""),
-      "float" -> Variable.create(LiteralType.create(SimpleType.FLOAT), ""),
-      "boolean" -> Variable.create(LiteralType.create(SimpleType.BOOLEAN), "")
+      "string" -> createVar(SimpleType.STRING),
+      "integer" -> createVar(SimpleType.INTEGER),
+      "float" -> createVar(SimpleType.FLOAT),
+      "boolean" -> createVar(SimpleType.BOOLEAN)
     )
 
     val output = SdkScalaType[Input].getVariableMap
@@ -53,6 +53,19 @@ class SdkScalaTypeTest {
 
   // TODO duration
   // TODO timestamp
+
+  private def createVar(simpleType: SimpleType) = {
+    Variable
+      .builder()
+      .literalType(
+        LiteralType
+          .builder()
+          .simpleType(simpleType)
+          .build()
+      )
+      .description("")
+      .build()
+  }
 
   @Test
   def testFromLiteralMap(): Unit = {

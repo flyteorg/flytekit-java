@@ -63,10 +63,11 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
       sdkWorkflow.expand(builder);
 
-      WorkflowMetadata metadata = WorkflowMetadata.create();
+      WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
       List<Node> nodes = builder.toIdl();
-      WorkflowTemplate workflow = WorkflowTemplate.create(nodes, metadata);
+      WorkflowTemplate workflow =
+          WorkflowTemplate.builder().nodes(nodes).metadata(metadata).build();
       WorkflowTemplate previous = workflows.put(workflowId, workflow);
 
       if (previous != null) {

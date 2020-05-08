@@ -79,9 +79,11 @@ object SdkScalaType {
       def getVariableMap: ju.Map[String, Variable] = {
         val scalaMap = params.map { param =>
           val variable =
-            Variable.create(
-              param.typeclass.getLiteralType, /* description= */ ""
-            )
+            Variable
+              .builder()
+              .literalType(param.typeclass.getLiteralType)
+              .description("")
+              .build()
 
           param.label -> variable
         }.toMap
@@ -114,28 +116,28 @@ object SdkScalaType {
 
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
-      LiteralType.create(SimpleType.STRING),
+      LiteralType.builder().simpleType(SimpleType.STRING).build(),
       value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().string()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
-      LiteralType.create(SimpleType.INTEGER),
+      LiteralType.builder().simpleType(SimpleType.INTEGER).build(),
       value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().integer()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
-      LiteralType.create(SimpleType.FLOAT),
+      LiteralType.builder().simpleType(SimpleType.FLOAT).build(),
       value => Literal.of(Scalar.of(Primitive.of(value))),
       literal => literal.scalar().primitive().float_()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
-      LiteralType.create(SimpleType.BOOLEAN),
+      LiteralType.builder().simpleType(SimpleType.BOOLEAN).build(),
       value => Literal.of(Scalar.of(Primitive.of(value))),
       _.scalar().primitive().boolean_()
     )

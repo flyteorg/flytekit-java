@@ -21,7 +21,14 @@ import com.google.auto.value.AutoValue;
 /** Metadata for the entire workflow. */
 @AutoValue
 public class WorkflowMetadata {
-  public static WorkflowMetadata create() {
-    return new AutoValue_WorkflowMetadata();
+
+  public static Builder builder() {
+    return new AutoValue_WorkflowMetadata.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract WorkflowMetadata build();
   }
 }

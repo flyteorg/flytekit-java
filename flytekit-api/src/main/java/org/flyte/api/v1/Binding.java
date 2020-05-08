@@ -26,7 +26,17 @@ public abstract class Binding {
 
   public abstract BindingData binding();
 
-  public static Binding create(String var_, BindingData binding) {
-    return new AutoValue_Binding(var_, binding);
+  public static Builder builder() {
+    return new AutoValue_Binding.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder var_(String var_);
+
+    public abstract Builder binding(BindingData binding);
+
+    public abstract Binding build();
   }
 }

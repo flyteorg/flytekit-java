@@ -24,7 +24,17 @@ public abstract class OutputReference {
 
   public abstract String var();
 
-  public static OutputReference create(String nodeId, String var) {
-    return new AutoValue_OutputReference(nodeId, var);
+  public static Builder builder() {
+    return new AutoValue_OutputReference.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder nodeId(String nodeId);
+
+    public abstract Builder var(String var);
+
+    public abstract OutputReference build();
   }
 }

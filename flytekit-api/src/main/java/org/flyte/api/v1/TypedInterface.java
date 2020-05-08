@@ -27,7 +27,17 @@ public abstract class TypedInterface {
 
   public abstract Map<String, Variable> outputs();
 
-  public static TypedInterface create(Map<String, Variable> inputs, Map<String, Variable> outputs) {
-    return new AutoValue_TypedInterface(inputs, outputs);
+  public static Builder builder() {
+    return new AutoValue_TypedInterface.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder inputs(Map<String, Variable> inputs);
+
+    public abstract Builder outputs(Map<String, Variable> outputs);
+
+    public abstract TypedInterface build();
   }
 }

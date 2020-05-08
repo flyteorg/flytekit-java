@@ -31,7 +31,17 @@ public abstract class TaskTemplate {
 
   public abstract TypedInterface interface_();
 
-  public static TaskTemplate create(Container container, TypedInterface interface_) {
-    return new AutoValue_TaskTemplate(container, interface_);
+  public static Builder builder() {
+    return new AutoValue_TaskTemplate.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder container(Container container);
+
+    public abstract Builder interface_(TypedInterface interface_);
+
+    public abstract TaskTemplate build();
   }
 }

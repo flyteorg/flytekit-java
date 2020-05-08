@@ -68,13 +68,17 @@ public class SdkTaskNode extends SdkNode {
 
   @Override
   public Node toIdl() {
-    TaskNode taskNode = TaskNode.create(taskId);
+    TaskNode taskNode = TaskNode.builder().referenceId(taskId).build();
 
     List<Binding> bindings =
         inputs.entrySet().stream()
-            .map(x -> Binding.create(x.getKey(), x.getValue().toIdl()))
+            .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
     return Node.builder().id(nodeId).taskNode(taskNode).inputs(bindings).build();
+  }
+
+  private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
+    return Binding.builder().var_(var_).binding(sdkBindingData.toIdl()).build();
   }
 }

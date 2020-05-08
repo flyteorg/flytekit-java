@@ -198,22 +198,26 @@ class AutoValueReflection {
     String description = ""; // TODO add annotation for description
 
     return new SimpleImmutableEntry<>(
-        parameter.getName(), Variable.create(toLiteralType(parameter.getType()), description));
+        parameter.getName(),
+        Variable.builder()
+            .literalType(toLiteralType(parameter.getType()))
+            .description(description)
+            .build());
   }
 
   private static LiteralType toLiteralType(Class<?> type) {
     if (isPrimitiveAssignableFrom(Long.class, type)) {
-      return LiteralType.create(SimpleType.INTEGER);
+      return LiteralType.builder().simpleType(SimpleType.INTEGER).build();
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
-      return LiteralType.create(SimpleType.FLOAT);
+      return LiteralType.builder().simpleType(SimpleType.FLOAT).build();
     } else if (String.class.isAssignableFrom(type)) {
-      return LiteralType.create(SimpleType.STRING);
+      return LiteralType.builder().simpleType(SimpleType.STRING).build();
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
-      return LiteralType.create(SimpleType.BOOLEAN);
+      return LiteralType.builder().simpleType(SimpleType.BOOLEAN).build();
     } else if (Timestamp.class.isAssignableFrom(type)) {
-      return LiteralType.create(SimpleType.DATETIME);
+      return LiteralType.builder().simpleType(SimpleType.DATETIME).build();
     } else if (Duration.class.isAssignableFrom(type)) {
-      return LiteralType.create(SimpleType.DURATION);
+      return LiteralType.builder().simpleType(SimpleType.DURATION).build();
     }
 
     throw new UnsupportedOperationException(

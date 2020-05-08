@@ -84,8 +84,8 @@ class AutoValueReflectionTest {
     double float_ = 123.0;
     String string = "123";
     boolean boolean_ = true;
-    Timestamp datetime = Timestamp.create(123, 456);
-    Duration duration = Duration.create(123, 456);
+    Timestamp datetime = Timestamp.builder().seconds(123).nanos(456).build();
+    Duration duration = Duration.builder().seconds(123).nanos(456).build();
 
     Map<String, Literal> inputMap = new HashMap<>();
     inputMap.put("i", literalOf(Primitive.of(integer)));
@@ -133,7 +133,8 @@ class AutoValueReflectionTest {
   void testToLiteralMap() {
     Map<String, Literal> literalMap =
         AutoValueReflection.toLiteralMap(
-            AutoValueInput.create(42L, 42.0d, "42", false, null, Duration.create(0, 42)),
+            AutoValueInput.create(
+                42L, 42.0d, "42", false, null, Duration.builder().seconds(0).nanos(42).build()),
             AutoValueInput.class);
     assertThat(literalMap.size(), is(5));
     assertThat(Objects.requireNonNull(literalMap.get("i").scalar().primitive()).integer(), is(42L));
@@ -144,7 +145,7 @@ class AutoValueReflectionTest {
     assertThat(literalMap.get("t"), nullValue());
     assertThat(
         Objects.requireNonNull(literalMap.get("d").scalar().primitive()).duration(),
-        is(Duration.create(0, 42)));
+        is(Duration.builder().seconds(0).nanos(42).build()));
   }
 
   static Stream<Arguments> createInputMaps() {
@@ -177,12 +178,19 @@ class AutoValueReflectionTest {
     static final Map<String, Variable> INTERFACE = new HashMap<>();
 
     static {
-      INTERFACE.put("i", Variable.create(LiteralType.create(SimpleType.INTEGER), ""));
-      INTERFACE.put("f", Variable.create(LiteralType.create(SimpleType.FLOAT), ""));
-      INTERFACE.put("s", Variable.create(LiteralType.create(SimpleType.STRING), ""));
-      INTERFACE.put("b", Variable.create(LiteralType.create(SimpleType.BOOLEAN), ""));
-      INTERFACE.put("t", Variable.create(LiteralType.create(SimpleType.DATETIME), ""));
-      INTERFACE.put("d", Variable.create(LiteralType.create(SimpleType.DURATION), ""));
+      INTERFACE.put("i", createVar(SimpleType.INTEGER));
+      INTERFACE.put("f", createVar(SimpleType.FLOAT));
+      INTERFACE.put("s", createVar(SimpleType.STRING));
+      INTERFACE.put("b", createVar(SimpleType.BOOLEAN));
+      INTERFACE.put("t", createVar(SimpleType.DATETIME));
+      INTERFACE.put("d", createVar(SimpleType.DURATION));
+    }
+
+    private static Variable createVar(SimpleType integer) {
+      return Variable.builder()
+          .literalType(LiteralType.builder().simpleType(integer).build())
+          .description("")
+          .build();
     }
 
     static AutoValueInput create(long i, double f, String s, boolean b, Timestamp t, Duration d) {

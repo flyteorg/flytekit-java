@@ -47,8 +47,10 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
     @Override
     public TypedInterface getInterface() {
-      return TypedInterface.create(
-          sdkTask.getInputType().getVariableMap(), sdkTask.getOutputType().getVariableMap());
+      return TypedInterface.builder()
+          .inputs(sdkTask.getInputType().getVariableMap())
+          .outputs(sdkTask.getOutputType().getVariableMap())
+          .build();
     }
 
     @Override

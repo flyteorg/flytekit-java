@@ -43,7 +43,7 @@ abstract class IdentifierRewrite {
   WorkflowTemplate apply(WorkflowTemplate template) {
     List<Node> newNodes = template.nodes().stream().map(this::apply).collect(Collectors.toList());
 
-    return WorkflowTemplate.create(newNodes, template.metadata());
+    return WorkflowTemplate.builder().nodes(newNodes).metadata(template.metadata()).build();
   }
 
   private Node apply(Node node) {
@@ -51,7 +51,7 @@ abstract class IdentifierRewrite {
   }
 
   private TaskNode apply(TaskNode taskNode) {
-    return TaskNode.create(apply(taskNode.referenceId()));
+    return TaskNode.builder().referenceId(apply(taskNode.referenceId())).build();
   }
 
   private PartialTaskIdentifier apply(PartialTaskIdentifier taskId) {

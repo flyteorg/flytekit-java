@@ -16,6 +16,7 @@
  */
 package org.flyte.jflyte;
 
+import static org.flyte.jflyte.ApiUtils.createVar;
 import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +46,6 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -55,7 +55,6 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
-import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -118,9 +117,10 @@ public class FlyteAdminClientTest {
             .build();
 
     TypedInterface interface_ =
-        TypedInterface.create(
-            ImmutableMap.of("x", Variable.create(LiteralType.create(SimpleType.STRING), null)),
-            ImmutableMap.of("y", Variable.create(LiteralType.create(SimpleType.INTEGER), null)));
+        TypedInterface.builder()
+            .inputs(ImmutableMap.of("x", createVar(SimpleType.STRING)))
+            .outputs(ImmutableMap.of("y", createVar(SimpleType.INTEGER)))
+            .build();
 
     Container container =
         Container.builder()
@@ -130,7 +130,8 @@ public class FlyteAdminClientTest {
             .env(ImmutableList.of(KeyValuePair.of("key", "value")))
             .build();
 
-    TaskTemplate template = TaskTemplate.create(container, interface_);
+    TaskTemplate template =
+        TaskTemplate.builder().container(container).interface_(interface_).build();
 
     client.createTask(identifier, template);
 
@@ -154,13 +155,15 @@ public class FlyteAdminClientTest {
             .version(WF_VERSION)
             .build();
     TaskNode taskNode =
-        TaskNode.create(
-            PartialTaskIdentifier.builder()
-                .domain(DOMAIN)
-                .project(PROJECT)
-                .name(TASK_NAME)
-                .version(TASK_VERSION)
-                .build());
+        TaskNode.builder()
+            .referenceId(
+                PartialTaskIdentifier.builder()
+                    .domain(DOMAIN)
+                    .project(PROJECT)
+                    .name(TASK_NAME)
+                    .version(TASK_VERSION)
+                    .build())
+            .build();
 
     Node node =
         Node.builder()
@@ -168,11 +171,17 @@ public class FlyteAdminClientTest {
             .taskNode(taskNode)
             .inputs(
                 ImmutableList.of(
-                    Binding.create(VAR_NAME, BindingData.of(Scalar.of(Primitive.of(SCALAR))))))
+                    Binding.builder()
+                        .var_(VAR_NAME)
+                        .binding(BindingData.of(Scalar.of(Primitive.of(SCALAR))))
+                        .build()))
             .build();
 
     WorkflowTemplate template =
-        WorkflowTemplate.create(ImmutableList.of(node), WorkflowMetadata.create());
+        WorkflowTemplate.builder()
+            .nodes(ImmutableList.of(node))
+            .metadata(WorkflowMetadata.builder().build())
+            .build();
 
     client.createWorkflow(identifier, template);
 

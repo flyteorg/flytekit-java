@@ -26,7 +26,15 @@ public abstract class LiteralType {
   @Nullable
   public abstract SimpleType simpleType();
 
-  public static LiteralType create(SimpleType simpleType) {
-    return new AutoValue_LiteralType(simpleType);
+  public static Builder builder() {
+    return new AutoValue_LiteralType.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder simpleType(SimpleType simpleType);
+
+    public abstract LiteralType build();
   }
 }

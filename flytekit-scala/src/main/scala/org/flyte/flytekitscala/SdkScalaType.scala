@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekitscala
 
+import java.time.{Duration, Instant}
 import java.{util => ju}
 
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
@@ -117,29 +118,43 @@ object SdkScalaType {
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
       LiteralType.builder().simpleType(SimpleType.STRING).build(),
-      value => Literal.of(Scalar.of(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.ofString(value))),
       _.scalar().primitive().string()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
       LiteralType.builder().simpleType(SimpleType.INTEGER).build(),
-      value => Literal.of(Scalar.of(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.ofInteger(value))),
       _.scalar().primitive().integer()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
       LiteralType.builder().simpleType(SimpleType.FLOAT).build(),
-      value => Literal.of(Scalar.of(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.ofFloat(value))),
       literal => literal.scalar().primitive().float_()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
       LiteralType.builder().simpleType(SimpleType.BOOLEAN).build(),
-      value => Literal.of(Scalar.of(Primitive.of(value))),
+      value => Literal.of(Scalar.of(Primitive.ofBoolean(value))),
       _.scalar().primitive().boolean_()
+    )
+
+  implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
+    SdkScalaLiteralType[Instant](
+      LiteralType.builder().simpleType(SimpleType.DATETIME).build(),
+      value => Literal.of(Scalar.of(Primitive.ofDatetime(value))),
+      _.scalar().primitive().datetime()
+    )
+
+  implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
+    SdkScalaLiteralType[Duration](
+      LiteralType.builder().simpleType(SimpleType.DURATION).build(),
+      value => Literal.of(Scalar.of(Primitive.ofDuration(value))),
+      _.scalar().primitive().duration()
     )
 
   @implicitNotFound("Cannot derive SdkScalaType for sealed trait")

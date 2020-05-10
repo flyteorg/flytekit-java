@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekitscala
 
+import java.time.{Duration, Instant}
+
 import collection.JavaConverters.mapAsJavaMap
 import org.flyte.api.v1.{
   Literal,
@@ -34,7 +36,9 @@ class SdkScalaTypeTest {
       string: String,
       integer: Long,
       float: Double,
-      boolean: Boolean
+      boolean: Boolean,
+      datetime: Instant,
+      duration: Duration
   )
 
   @Test
@@ -43,16 +47,15 @@ class SdkScalaTypeTest {
       "string" -> createVar(SimpleType.STRING),
       "integer" -> createVar(SimpleType.INTEGER),
       "float" -> createVar(SimpleType.FLOAT),
-      "boolean" -> createVar(SimpleType.BOOLEAN)
+      "boolean" -> createVar(SimpleType.BOOLEAN),
+      "datetime" -> createVar(SimpleType.DATETIME),
+      "duration" -> createVar(SimpleType.DURATION)
     )
 
     val output = SdkScalaType[Input].getVariableMap
 
     assertEquals(mapAsJavaMap(expected), output)
   }
-
-  // TODO duration
-  // TODO timestamp
 
   private def createVar(simpleType: SimpleType) = {
     Variable
@@ -70,14 +73,27 @@ class SdkScalaTypeTest {
   @Test
   def testFromLiteralMap(): Unit = {
     val input = Map(
-      "string" -> Literal.of(Scalar.of(Primitive.of("string"))),
-      "integer" -> Literal.of(Scalar.of(Primitive.of(1337L))),
-      "float" -> Literal.of(Scalar.of(Primitive.of(42.0))),
-      "boolean" -> Literal.of(Scalar.of(Primitive.of(true)))
+      "string" -> Literal.of(Scalar.of(Primitive.ofString("string"))),
+      "integer" -> Literal.of(Scalar.of(Primitive.ofInteger(1337L))),
+      "float" -> Literal.of(Scalar.of(Primitive.ofFloat(42.0))),
+      "boolean" -> Literal.of(Scalar.of(Primitive.ofBoolean(true))),
+      "datetime" -> Literal.of(
+        Scalar.of(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
+      ),
+      "duration" -> Literal.of(
+        Scalar.of(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      )
     )
 
     val expected =
-      Input(string = "string", integer = 1337L, float = 42.0, boolean = true)
+      Input(
+        string = "string",
+        integer = 1337L,
+        float = 42.0,
+        boolean = true,
+        datetime = Instant.ofEpochMilli(123456L),
+        duration = Duration.ofSeconds(123, 456)
+      )
 
     val output = SdkScalaType[Input].fromLiteralMap(mapAsJavaMap(input))
 
@@ -87,13 +103,26 @@ class SdkScalaTypeTest {
   @Test
   def testToLiteralMap(): Unit = {
     val input =
-      Input(string = "string", integer = 1337L, float = 42.0, boolean = true)
+      Input(
+        string = "string",
+        integer = 1337L,
+        float = 42.0,
+        boolean = true,
+        datetime = Instant.ofEpochMilli(123456L),
+        duration = Duration.ofSeconds(123, 456)
+      )
 
     val expected = Map(
-      "string" -> Literal.of(Scalar.of(Primitive.of("string"))),
-      "integer" -> Literal.of(Scalar.of(Primitive.of(1337L))),
-      "float" -> Literal.of(Scalar.of(Primitive.of(42.0))),
-      "boolean" -> Literal.of(Scalar.of(Primitive.of(true)))
+      "string" -> Literal.of(Scalar.of(Primitive.ofString("string"))),
+      "integer" -> Literal.of(Scalar.of(Primitive.ofInteger(1337L))),
+      "float" -> Literal.of(Scalar.of(Primitive.ofFloat(42.0))),
+      "boolean" -> Literal.of(Scalar.of(Primitive.ofBoolean(true))),
+      "datetime" -> Literal.of(
+        Scalar.of(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
+      ),
+      "duration" -> Literal.of(
+        Scalar.of(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      )
     )
 
     val output = SdkScalaType[Input].toLiteralMap(input)

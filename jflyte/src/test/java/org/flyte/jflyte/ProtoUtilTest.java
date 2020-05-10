@@ -85,12 +85,15 @@ class ProtoUtilTest {
     int nanos = now.getNano();
 
     return Stream.of(
-        Arguments.of(Literals.Primitive.newBuilder().setInteger(123).build(), Primitive.of(123)),
         Arguments.of(
-            Literals.Primitive.newBuilder().setFloatValue(123.0).build(), Primitive.of(123.0)),
+            Literals.Primitive.newBuilder().setInteger(123).build(), Primitive.ofInteger(123)),
         Arguments.of(
-            Literals.Primitive.newBuilder().setStringValue("123").build(), Primitive.of("123")),
-        Arguments.of(Literals.Primitive.newBuilder().setBoolean(true).build(), Primitive.of(true)),
+            Literals.Primitive.newBuilder().setFloatValue(123.0).build(), Primitive.ofFloat(123.0)),
+        Arguments.of(
+            Literals.Primitive.newBuilder().setStringValue("123").build(),
+            Primitive.ofString("123")),
+        Arguments.of(
+            Literals.Primitive.newBuilder().setBoolean(true).build(), Primitive.ofBoolean(true)),
         Arguments.of(
             Literals.Primitive.newBuilder()
                 .setDatetime(
@@ -99,7 +102,7 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Instant.ofEpochSecond(seconds, nanos))),
+            Primitive.ofDatetime(Instant.ofEpochSecond(seconds, nanos))),
         Arguments.of(
             Literals.Primitive.newBuilder()
                 .setDuration(
@@ -108,12 +111,13 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build(),
-            Primitive.of(Duration.ofSeconds(seconds, nanos))));
+            Primitive.ofDuration(Duration.ofSeconds(seconds, nanos))));
   }
 
   @Test
   void shouldSerializeLiteralMap() {
-    Map<String, Literal> input = ImmutableMap.of("a", Literal.of(Scalar.of(Primitive.of(1337L))));
+    Map<String, Literal> input =
+        ImmutableMap.of("a", Literal.of(Scalar.of(Primitive.ofInteger(1337L))));
     Literals.Primitive expectedPrimitive =
         Literals.Primitive.newBuilder().setInteger(1337L).build();
     Literals.Scalar expectedScalar =
@@ -141,7 +145,7 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeBindingData() {
-    BindingData input = BindingData.of(Scalar.of(Primitive.of(1337L)));
+    BindingData input = BindingData.of(Scalar.of(Primitive.ofInteger(1337L)));
     Literals.Scalar expectedScalar =
         Literals.Scalar.newBuilder()
             .setPrimitive(Literals.Primitive.newBuilder().setInteger(1337L).build())
@@ -405,14 +409,17 @@ class ProtoUtilTest {
     int nanos = now.getNano();
 
     return Stream.of(
-        Arguments.of(Primitive.of(123), Literals.Primitive.newBuilder().setInteger(123).build()),
         Arguments.of(
-            Primitive.of(123.0), Literals.Primitive.newBuilder().setFloatValue(123.0).build()),
+            Primitive.ofInteger(123), Literals.Primitive.newBuilder().setInteger(123).build()),
         Arguments.of(
-            Primitive.of("123"), Literals.Primitive.newBuilder().setStringValue("123").build()),
-        Arguments.of(Primitive.of(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
+            Primitive.ofFloat(123.0), Literals.Primitive.newBuilder().setFloatValue(123.0).build()),
         Arguments.of(
-            Primitive.of(Instant.ofEpochSecond(seconds, nanos)),
+            Primitive.ofString("123"),
+            Literals.Primitive.newBuilder().setStringValue("123").build()),
+        Arguments.of(
+            Primitive.ofBoolean(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
+        Arguments.of(
+            Primitive.ofDatetime(Instant.ofEpochSecond(seconds, nanos)),
             Literals.Primitive.newBuilder()
                 .setDatetime(
                     com.google.protobuf.Timestamp.newBuilder()
@@ -421,7 +428,7 @@ class ProtoUtilTest {
                         .build())
                 .build()),
         Arguments.of(
-            Primitive.of(Duration.ofSeconds(seconds, nanos)),
+            Primitive.ofDuration(Duration.ofSeconds(seconds, nanos)),
             Literals.Primitive.newBuilder()
                 .setDuration(
                     com.google.protobuf.Duration.newBuilder()
@@ -466,7 +473,7 @@ class ProtoUtilTest {
         Collections.singletonList(
             Binding.builder()
                 .var_(input_name)
-                .binding(BindingData.of(Scalar.of(Primitive.of(input_scalar))))
+                .binding(BindingData.of(Scalar.of(Primitive.ofString(input_scalar))))
                 .build());
 
     return Node.builder().id(id).taskNode(taskNode).inputs(inputs).build();

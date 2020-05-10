@@ -25,7 +25,6 @@ import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-@SuppressWarnings("PreferJavaTimeOverload")
 public class SdkBindingData {
 
   private final BindingData idl;
@@ -35,19 +34,19 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofInteger(long value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofInteger(value)));
   }
 
   public static SdkBindingData ofDouble(double value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofFloat(value)));
   }
 
   public static SdkBindingData ofString(String value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofString(value)));
   }
 
   public static SdkBindingData ofBoolean(boolean value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofBoolean(value)));
   }
 
   public static SdkBindingData ofDatetime(int year, int month, int day) {
@@ -56,11 +55,11 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofDatetime(Instant value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofDatetime(value)));
   }
 
   public static SdkBindingData ofDuration(Duration value) {
-    return ofScalar(Scalar.of(Primitive.of(value)));
+    return ofScalar(Scalar.of(Primitive.ofDuration(value)));
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {

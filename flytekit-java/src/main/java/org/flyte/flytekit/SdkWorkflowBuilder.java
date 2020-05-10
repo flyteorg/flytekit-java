@@ -33,7 +33,6 @@ import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-@SuppressWarnings("PreferJavaTimeOverload")
 public class SdkWorkflowBuilder {
 
   private final Map<String, SdkNode> allNodes;
@@ -54,27 +53,27 @@ public class SdkWorkflowBuilder {
   }
 
   public static SdkBindingData literalOfInteger(long value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofInteger(value)));
   }
 
   public static SdkBindingData literalOfFloat(double value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDouble(value)));
   }
 
   public static SdkBindingData literalOfString(String value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofString(value)));
   }
 
   public static SdkBindingData literalOfBoolean(boolean value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofBoolean(value)));
   }
 
   public static SdkBindingData literalOfDatetime(Instant value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDatetime(value)));
   }
 
   public static SdkBindingData literalOfDuration(Duration value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.of(value)));
+    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDuration(value)));
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {

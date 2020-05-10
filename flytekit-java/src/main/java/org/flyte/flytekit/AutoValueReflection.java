@@ -48,7 +48,6 @@ import org.flyte.api.v1.Variable;
 /**
  * Mapping between {@link AutoValue} classes and Flyte {@link TypedInterface} and {@link Literal}.
  */
-@SuppressWarnings("PreferJavaTimeOverload")
 class AutoValueReflection {
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
@@ -208,21 +207,25 @@ class AutoValueReflection {
 
   private static LiteralType toLiteralType(Class<?> type) {
     if (isPrimitiveAssignableFrom(Long.class, type)) {
-      return LiteralType.builder().simpleType(SimpleType.INTEGER).build();
+      return toLiteralType(SimpleType.INTEGER);
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
-      return LiteralType.builder().simpleType(SimpleType.FLOAT).build();
+      return toLiteralType(SimpleType.FLOAT);
     } else if (String.class.isAssignableFrom(type)) {
-      return LiteralType.builder().simpleType(SimpleType.STRING).build();
+      return toLiteralType(SimpleType.STRING);
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
-      return LiteralType.builder().simpleType(SimpleType.BOOLEAN).build();
+      return toLiteralType(SimpleType.BOOLEAN);
     } else if (Instant.class.isAssignableFrom(type)) {
-      return LiteralType.builder().simpleType(SimpleType.DATETIME).build();
+      return toLiteralType(SimpleType.DATETIME);
     } else if (Duration.class.isAssignableFrom(type)) {
-      return LiteralType.builder().simpleType(SimpleType.DURATION).build();
+      return toLiteralType(SimpleType.DURATION);
     }
 
     throw new UnsupportedOperationException(
         String.format("Unsupported type: [%s]", type.getName()));
+  }
+
+  private static LiteralType toLiteralType(SimpleType simpleType) {
+    return LiteralType.builder().simpleType(simpleType).build();
   }
 
   private static Literal toLiteral(Object value, LiteralType literalType) {
@@ -235,21 +238,25 @@ class AutoValueReflection {
 
     switch (simpleType) {
       case INTEGER:
-        return Literal.of(Scalar.of(Primitive.of((Long) value)));
+        return toLiteral(Primitive.ofInteger((Long) value));
       case FLOAT:
-        return Literal.of(Scalar.of(Primitive.of((Double) value)));
+        return toLiteral(Primitive.ofFloat((Double) value));
       case STRING:
-        return Literal.of(Scalar.of(Primitive.of((String) value)));
+        return toLiteral(Primitive.ofString((String) value));
       case BOOLEAN:
-        return Literal.of(Scalar.of(Primitive.of((Boolean) value)));
+        return toLiteral(Primitive.ofBoolean((Boolean) value));
       case DATETIME:
-        return Literal.of(Scalar.of(Primitive.of((Instant) value)));
+        return toLiteral(Primitive.ofDatetime((Instant) value));
       case DURATION:
-        return Literal.of(Scalar.of(Primitive.of((Duration) value)));
+        return toLiteral(Primitive.ofDuration((Duration) value));
     }
 
     throw new UnsupportedOperationException(
         String.format("Unsupported simple type: [%s]", simpleType));
+  }
+
+  private static Literal toLiteral(Primitive primitive) {
+    return Literal.of(Scalar.of(primitive));
   }
 
   @SuppressWarnings("unchecked")

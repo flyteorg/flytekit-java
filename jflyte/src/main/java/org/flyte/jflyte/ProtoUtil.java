@@ -98,19 +98,20 @@ class ProtoUtil {
   static Primitive deserialize(Literals.Primitive primitive) {
     switch (primitive.getValueCase()) {
       case INTEGER:
-        return Primitive.of(primitive.getInteger());
+        return Primitive.ofInteger(primitive.getInteger());
       case FLOAT_VALUE:
-        return Primitive.of(primitive.getFloatValue());
+        return Primitive.ofFloat(primitive.getFloatValue());
       case STRING_VALUE:
-        return Primitive.of(primitive.getStringValue());
+        return Primitive.ofString(primitive.getStringValue());
       case BOOLEAN:
-        return Primitive.of(primitive.getBoolean());
+        return Primitive.ofBoolean(primitive.getBoolean());
       case DATETIME:
         com.google.protobuf.Timestamp datetime = primitive.getDatetime();
-        return Primitive.of(Instant.ofEpochSecond(datetime.getSeconds(), datetime.getNanos()));
+        return Primitive.ofDatetime(
+            Instant.ofEpochSecond(datetime.getSeconds(), datetime.getNanos()));
       case DURATION:
         com.google.protobuf.Duration duration = primitive.getDuration();
-        return Primitive.of(Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+        return Primitive.ofDuration(Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
       case VALUE_NOT_SET:
         // fallthrough
     }

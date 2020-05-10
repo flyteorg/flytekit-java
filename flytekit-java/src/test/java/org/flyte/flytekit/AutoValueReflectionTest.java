@@ -42,7 +42,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings("PreferJavaTimeOverload")
 class AutoValueReflectionTest {
 
   @Test
@@ -82,12 +81,12 @@ class AutoValueReflectionTest {
     Instant datetime = Instant.ofEpochSecond(12, 34);
     Duration duration = Duration.ofSeconds(56, 78);
     Map<String, Literal> inputMap = new HashMap<>();
-    inputMap.put("i", literalOf(Primitive.of(123L)));
-    inputMap.put("f", literalOf(Primitive.of(123.0)));
-    inputMap.put("s", literalOf(Primitive.of("123")));
-    inputMap.put("b", literalOf(Primitive.of(true)));
-    inputMap.put("t", literalOf(Primitive.of(datetime)));
-    inputMap.put("d", literalOf(Primitive.of(duration)));
+    inputMap.put("i", literalOf(Primitive.ofInteger(123L)));
+    inputMap.put("f", literalOf(Primitive.ofFloat(123.0)));
+    inputMap.put("s", literalOf(Primitive.ofString("123")));
+    inputMap.put("b", literalOf(Primitive.ofBoolean(true)));
+    inputMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
+    inputMap.put("d", literalOf(Primitive.ofDuration(duration)));
 
     AutoValueInput input = AutoValueReflection.readValue(inputMap, AutoValueInput.class);
 
@@ -146,9 +145,11 @@ class AutoValueReflectionTest {
   static Stream<Arguments> createInputMaps() {
     return Stream.of(
         Arguments.of(
-            singletonMap("i", literalOf(Primitive.of("not a integer"))), "is not assignable from"),
+            singletonMap("i", literalOf(Primitive.ofString("not a integer"))),
+            "is not assignable from"),
         Arguments.of(
-            singletonMap("f", literalOf(Primitive.of("doesn't contain 'i'"))), "is not in inputs"));
+            singletonMap("f", literalOf(Primitive.ofString("doesn't contain 'i'"))),
+            "is not in inputs"));
   }
 
   private static Literal literalOf(Primitive primitive) {

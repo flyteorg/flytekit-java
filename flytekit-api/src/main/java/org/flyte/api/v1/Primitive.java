@@ -37,27 +37,27 @@ public abstract class Primitive {
 
   public abstract Duration duration();
 
-  public static Primitive of(long integer) {
+  public static Primitive ofInteger(long integer) {
     return AutoOneOf_Primitive.integer(integer);
   }
 
-  public static Primitive of(double float_) {
+  public static Primitive ofFloat(double float_) {
     return AutoOneOf_Primitive.float_(float_);
   }
 
-  public static Primitive of(String string) {
+  public static Primitive ofString(String string) {
     return AutoOneOf_Primitive.string(string);
   }
 
-  public static Primitive of(boolean boolean_) {
+  public static Primitive ofBoolean(boolean boolean_) {
     return AutoOneOf_Primitive.boolean_(boolean_);
   }
 
-  public static Primitive of(Instant datetime) {
+  public static Primitive ofDatetime(Instant datetime) {
     return AutoOneOf_Primitive.datetime(datetime);
   }
 
-  public static Primitive of(Duration duration) {
+  public static Primitive ofDuration(Duration duration) {
     return AutoOneOf_Primitive.duration(duration);
   }
 }

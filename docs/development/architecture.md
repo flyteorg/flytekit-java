@@ -21,6 +21,7 @@ and register tasks and workflows. While the existing version of `flytekit-java` 
 register instances of SdkRunnableTask and SdkWorkflow, this logic is encapsulated in concrete implementation of 
 registrar, and can be different, for instance, in `flytekit-scala`.
 
+![Class diagram](./class-diagram.png)
 ## Container Runtime
 
 When `jflyte` registers workflows and tasks, for `RunnableTask` it stages classpath to `FileSystem`, for instance, 
@@ -39,6 +40,8 @@ jflyte
 `jflyte` code within container downloads classpath from staging location, verifies checksums and executes the code. 
 By default, `jflyte` uses docker image build as a part of `jflyte-build`, that is customizable through 
 `FLYTE_INTERNAL_IMAGE` setting.
+
+![Register and run sequence diagram](./register-and-run.png)
 
 ## Class Loader Isolation
 

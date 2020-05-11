@@ -46,10 +46,6 @@
       <artifactId>flytekit-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.propensive</groupId>
       <artifactId>magnolia_${scala.baseVersion}</artifactId>
       <version>${magnolia.version}</version>

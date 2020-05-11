@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Node;
-import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.Scalar;
 
 public class SdkWorkflowBuilder {
 
@@ -53,27 +51,27 @@ public class SdkWorkflowBuilder {
   }
 
   public static SdkBindingData literalOfInteger(long value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofInteger(value)));
+    return SdkBindingData.ofInteger(value);
   }
 
   public static SdkBindingData literalOfFloat(double value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDouble(value)));
+    return SdkBindingData.ofFloat(value);
   }
 
   public static SdkBindingData literalOfString(String value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofString(value)));
+    return SdkBindingData.ofString(value);
   }
 
   public static SdkBindingData literalOfBoolean(boolean value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofBoolean(value)));
+    return SdkBindingData.ofBoolean(value);
   }
 
   public static SdkBindingData literalOfDatetime(Instant value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDatetime(value)));
+    return SdkBindingData.ofDatetime(value);
   }
 
   public static SdkBindingData literalOfDuration(Duration value) {
-    return SdkBindingData.ofScalar(Scalar.of(Primitive.ofDuration(value)));
+    return SdkBindingData.ofDuration(value);
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {

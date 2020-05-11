@@ -34,19 +34,19 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofInteger(long value) {
-    return ofScalar(Scalar.of(Primitive.ofInteger(value)));
+    return ofPrimitive(Primitive.ofInteger(value));
   }
 
-  public static SdkBindingData ofDouble(double value) {
-    return ofScalar(Scalar.of(Primitive.ofFloat(value)));
+  public static SdkBindingData ofFloat(double value) {
+    return ofPrimitive(Primitive.ofFloat(value));
   }
 
   public static SdkBindingData ofString(String value) {
-    return ofScalar(Scalar.of(Primitive.ofString(value)));
+    return ofPrimitive(Primitive.ofString(value));
   }
 
   public static SdkBindingData ofBoolean(boolean value) {
-    return ofScalar(Scalar.of(Primitive.ofBoolean(value)));
+    return ofPrimitive(Primitive.ofBoolean(value));
   }
 
   public static SdkBindingData ofDatetime(int year, int month, int day) {
@@ -55,17 +55,21 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofDatetime(Instant value) {
-    return ofScalar(Scalar.of(Primitive.ofDatetime(value)));
+    return ofPrimitive(Primitive.ofDatetime(value));
   }
 
   public static SdkBindingData ofDuration(Duration value) {
-    return ofScalar(Scalar.of(Primitive.ofDuration(value)));
+    return ofPrimitive(Primitive.ofDuration(value));
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {
     BindingData idl = BindingData.of(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
 
     return new SdkBindingData(idl);
+  }
+
+  public static SdkBindingData ofPrimitive(Primitive primitive) {
+    return ofScalar(Scalar.of(primitive));
   }
 
   public static SdkBindingData ofScalar(Scalar scalar) {

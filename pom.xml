@@ -230,8 +230,6 @@
             <failOnWarning>true</failOnWarning>
             <encoding>utf-8</encoding>
             <compilerArgs>
-              <arg>-XDcompilePolicy=simple</arg>
-              <arg>${error-prone-base-config} ${error-prone-additional-args}</arg>
               <!-- for AutoValue reflection -->
               <arg>-parameters</arg>
               <arg>-Xlint:all</arg>
@@ -530,8 +528,32 @@
     </pluginManagement>
   </build>
 
-  <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
   <profiles>
+    <profile>
+      <id>errorprone</id>
+      <activation>
+        <property>
+          <name>!errorprone.skip</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                <compilerArgs combine.children="append">
+                  <arg>-XDcompilePolicy=simple</arg>
+                  <arg>${error-prone-base-config} ${error-prone-additional-args}</arg>
+                </compilerArgs>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>
       <id>jdk8</id>
       <activation>

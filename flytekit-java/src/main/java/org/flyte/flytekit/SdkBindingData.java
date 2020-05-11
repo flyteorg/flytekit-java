@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit;
 
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,12 +26,13 @@ import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-public class SdkBindingData {
+@AutoValue
+public abstract class SdkBindingData {
 
-  private final BindingData idl;
+  abstract BindingData idl();
 
-  public SdkBindingData(BindingData idl) {
-    this.idl = idl;
+  public static SdkBindingData create(BindingData idl) {
+    return new AutoValue_SdkBindingData(idl);
   }
 
   public static SdkBindingData ofInteger(long value) {
@@ -65,7 +67,7 @@ public class SdkBindingData {
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {
     BindingData idl = BindingData.of(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
 
-    return new SdkBindingData(idl);
+    return create(idl);
   }
 
   public static SdkBindingData ofPrimitive(Primitive primitive) {
@@ -73,10 +75,6 @@ public class SdkBindingData {
   }
 
   public static SdkBindingData ofScalar(Scalar scalar) {
-    return new SdkBindingData(BindingData.of(scalar));
-  }
-
-  public BindingData toIdl() {
-    return idl;
+    return create(BindingData.of(scalar));
   }
 }

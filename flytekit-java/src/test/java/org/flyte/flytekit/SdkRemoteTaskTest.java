@@ -21,23 +21,26 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 import com.google.auto.value.AutoValue;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Binding;
+import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
-import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.TaskNode;
 import org.junit.jupiter.api.Test;
 
 class SdkRemoteTaskTest {
 
   @Test
   void applyShouldReturnASdkTaskNode() {
-    SdkWorkflowBuilder builder = mock(SdkWorkflowBuilder.class);
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
-    inputs.put("b", SdkBindingData.ofInteger(2));
+    inputs.put("b", SdkBindingData.ofString("2"));
     SdkRemoteTask<Input, Output> remoteTask =
         SdkRemoteTask.<Input, Output>builder()
             .domain("dev")
@@ -47,44 +50,55 @@ class SdkRemoteTaskTest {
             .outputs(SdkTypes.autoValue(Output.class))
             .build();
 
-    SdkNode node = remoteTask.apply(builder, "lookup-endsong", inputs);
+    SdkNode node = remoteTask.apply(mock(SdkWorkflowBuilder.class), "lookup-endsong", inputs);
 
+    assertThat(node.getNodeId(), is("lookup-endsong"));
     assertThat(
-        node,
+        node.toIdl(),
         is(
-            new SdkTaskNode(
-                builder,
-                "lookup-endsong",
-                PartialTaskIdentifier.builder()
-                    .domain("dev")
-                    .project("project-a")
-                    .name("LookupTask")
-                    .build(),
-                inputs,
-                Collections.singletonMap(
-                    "c",
-                    Variable.builder()
-                        .literalType(LiteralType.builder().simpleType(SimpleType.INTEGER).build())
-                        .description("")
-                        .build()))));
+            Node.builder()
+                .id("lookup-endsong")
+                .taskNode(
+                    TaskNode.builder()
+                        .referenceId(
+                            PartialTaskIdentifier.builder()
+                                .domain("dev")
+                                .project("project-a")
+                                .name("LookupTask")
+                                .build())
+                        .build())
+                .inputs(
+                    Arrays.asList(
+                        Binding.builder()
+                            .var_("a")
+                            .binding(BindingData.of(Scalar.of(Primitive.ofInteger(1))))
+                            .build(),
+                        Binding.builder()
+                            .var_("b")
+                            .binding(BindingData.of(Scalar.of(Primitive.ofString("2"))))
+                            .build()))
+                .build()));
+    assertThat(
+        node.getOutputs(),
+        is(Collections.singletonMap("c", SdkBindingData.ofOutputReference("lookup-endsong", "c"))));
   }
 
   @AutoValue
   abstract static class Input {
     abstract long a();
 
-    abstract long b();
+    abstract String b();
 
-    public static Input create(long a, long b) {
+    public static Input create(long a, String b) {
       return new AutoValue_SdkRemoteTaskTest_Input(a, b);
     }
   }
 
   @AutoValue
   abstract static class Output {
-    abstract long c();
+    abstract boolean c();
 
-    public static Output create(long c) {
+    public static Output create(boolean c) {
       return new AutoValue_SdkRemoteTaskTest_Output(c);
     }
   }

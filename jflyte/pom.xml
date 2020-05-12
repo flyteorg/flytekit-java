@@ -93,6 +93,11 @@
 
     <!-- test -->
     <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>

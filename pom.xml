@@ -330,8 +330,7 @@
             </xml>
             <scala>
               <scalafmt>
-                <!-- see available versions: https://github.com/scalameta/scalafmt/releases -->
-                <version>2.5.0-RC2</version>
+                <file>${maven.multiModuleProjectDirectory}/.scalafmt.conf</file>
               </scalafmt>
               <licenseHeader>
                 <content><![CDATA[/*

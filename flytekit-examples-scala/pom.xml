@@ -41,13 +41,6 @@
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
     </dependency>
-
-    <!-- provided -->
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>

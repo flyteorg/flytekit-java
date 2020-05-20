@@ -32,6 +32,8 @@ public abstract class Node {
 
   public abstract List<Binding> inputs();
 
+  public abstract List<String> upstreamNodeIds();
+
   public abstract Builder toBuilder();
 
   public static Builder builder() {
@@ -45,6 +47,8 @@ public abstract class Node {
     public abstract Builder taskNode(TaskNode taskNode);
 
     public abstract Builder inputs(List<Binding> inputs);
+
+    public abstract Builder upstreamNodeIds(List<String> upstreamNodeIds);
 
     public abstract Node build();
   }

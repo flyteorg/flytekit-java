@@ -111,7 +111,9 @@ page at http://checkstyle.sf.net/config.html -->
 
     <module name="TypeName" />
     <module name="LocalFinalVariableName" />
-    <module name="LocalVariableName" />
+    <module name="LocalVariableName">
+      <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9_]*)?_?$"/>
+    </module>
 
     <!-- Type parameters must be either one of the four blessed letters
     T, K, V, W, X or else be capital-case terminated with a T,

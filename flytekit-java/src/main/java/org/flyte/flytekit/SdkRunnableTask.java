@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
@@ -57,12 +58,16 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
 
   @Override
   public SdkNode apply(
-      SdkWorkflowBuilder builder, String nodeId, Map<String, SdkBindingData> inputs) {
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
 
     // TODO put type checking here
 
-    return new SdkTaskNode(builder, nodeId, taskId, inputs, outputType.getVariableMap());
+    return new SdkTaskNode(
+        builder, nodeId, taskId, upstreamNodeIds, inputs, outputType.getVariableMap());
   }
 
   public abstract OutputT run(InputT input);

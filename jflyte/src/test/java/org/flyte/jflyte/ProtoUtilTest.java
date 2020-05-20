@@ -19,6 +19,9 @@ package org.flyte.jflyte;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.TASK;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,7 +38,6 @@ import flyteidl.core.Workflow;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -319,15 +321,23 @@ class ProtoUtilTest {
 
   @Test
   void shouldSerializeWorkflowTemplate() {
-    Node nodeA = createNode("a");
+    Node nodeA = createNode("a").toBuilder().upstreamNodeIds(singletonList("b")).build();
     Node nodeB = createNode("b");
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
+    TypedInterface interface_ =
+        TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();
     WorkflowTemplate template =
-        WorkflowTemplate.builder().nodes(Arrays.asList(nodeA, nodeB)).metadata(metadata).build();
+        WorkflowTemplate.builder()
+            .nodes(Arrays.asList(nodeA, nodeB))
+            .metadata(metadata)
+            .interface_(interface_)
+            .outputs(emptyList())
+            .build();
 
     Workflow.Node expectedNode1 =
         Workflow.Node.newBuilder()
             .setId("a")
+            .addUpstreamNodeIds("b")
             .setTaskNode(
                 Workflow.TaskNode.newBuilder()
                     .setReferenceId(
@@ -392,6 +402,11 @@ class ProtoUtilTest {
         equalTo(
             Workflow.WorkflowTemplate.newBuilder()
                 .setMetadata(Workflow.WorkflowMetadata.newBuilder().build())
+                .setInterface(
+                    Interface.TypedInterface.newBuilder()
+                        .setOutputs(Interface.VariableMap.newBuilder().build())
+                        .setInputs(Interface.VariableMap.newBuilder().build())
+                        .build())
                 .addNodes(expectedNode1)
                 .addNodes(expectedNode2)
                 .build()));
@@ -470,13 +485,18 @@ class ProtoUtilTest {
                     .build())
             .build();
     List<Binding> inputs =
-        Collections.singletonList(
+        singletonList(
             Binding.builder()
                 .var_(input_name)
                 .binding(BindingData.of(Scalar.of(Primitive.ofString(input_scalar))))
                 .build());
 
-    return Node.builder().id(id).taskNode(taskNode).inputs(inputs).build();
+    return Node.builder()
+        .id(id)
+        .taskNode(taskNode)
+        .inputs(inputs)
+        .upstreamNodeIds(emptyList())
+        .build();
   }
 
   private static class UnknownIdentifier implements Identifier {

@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -53,13 +54,17 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
 
   @Override
   public SdkNode apply(
-      SdkWorkflowBuilder builder, String nodeId, Map<String, SdkBindingData> inputs) {
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId =
         PartialTaskIdentifier.builder().name(name()).project(project()).domain(domain()).build();
 
     // TODO put type checking here
 
-    return new SdkTaskNode(builder, nodeId, taskId, inputs, outputs().getVariableMap());
+    return new SdkTaskNode(
+        builder, nodeId, taskId, upstreamNodeIds, inputs, outputs().getVariableMap());
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

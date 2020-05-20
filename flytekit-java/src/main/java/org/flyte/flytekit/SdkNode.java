@@ -18,6 +18,8 @@ package org.flyte.flytekit;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Node;
 
@@ -45,6 +47,10 @@ public abstract class SdkNode {
   public abstract Node toIdl();
 
   public SdkNode apply(String id, SdkRunnableTask<?, ?> task) {
-    return builder.apply(id, task, getOutputs());
+    // if there are no outputs, explicitly specify dependency to preserve execution order
+    List<String> upstreamNodeIds =
+        getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
+
+    return builder.applyInternal(id, task, upstreamNodeIds, getOutputs());
   }
 }

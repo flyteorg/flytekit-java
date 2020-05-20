@@ -33,6 +33,7 @@ import org.flyte.api.v1.Variable;
 public class SdkTaskNode extends SdkNode {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
+  private final List<String> upstreamNodeIds;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, Variable> outputs;
 
@@ -40,12 +41,14 @@ public class SdkTaskNode extends SdkNode {
       SdkWorkflowBuilder builder,
       String nodeId,
       PartialTaskIdentifier taskId,
+      List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs,
       Map<String, Variable> outputs) {
     super(builder);
 
     this.nodeId = nodeId;
     this.taskId = taskId;
+    this.upstreamNodeIds = upstreamNodeIds;
     this.inputs = inputs;
     this.outputs = outputs;
   }
@@ -75,7 +78,12 @@ public class SdkTaskNode extends SdkNode {
             .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
-    return Node.builder().id(nodeId).taskNode(taskNode).inputs(bindings).build();
+    return Node.builder()
+        .id(nodeId)
+        .upstreamNodeIds(upstreamNodeIds)
+        .taskNode(taskNode)
+        .inputs(bindings)
+        .build();
   }
 
   private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {

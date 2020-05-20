@@ -246,8 +246,11 @@ class ProtoUtil {
 
   public static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
     Workflow.WorkflowTemplate.Builder builder =
-        Workflow.WorkflowTemplate.newBuilder().setMetadata(serialize(template.metadata()));
+        Workflow.WorkflowTemplate.newBuilder()
+            .setMetadata(serialize(template.metadata()))
+            .setInterface(serialize(template.interface_()));
 
+    template.outputs().forEach(output -> builder.addOutputs(serialize(output)));
     template.nodes().forEach(node -> builder.addNodes(serialize(node)));
 
     return builder.build();
@@ -271,7 +274,10 @@ class ProtoUtil {
         Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
 
     Workflow.Node.Builder builder =
-        Workflow.Node.newBuilder().setId(node.id()).setTaskNode(taskNode);
+        Workflow.Node.newBuilder()
+            .setId(node.id())
+            .addAllUpstreamNodeIds(node.upstreamNodeIds())
+            .setTaskNode(taskNode);
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 

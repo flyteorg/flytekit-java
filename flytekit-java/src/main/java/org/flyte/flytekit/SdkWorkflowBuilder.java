@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -40,11 +41,19 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkNode apply(String nodeId, SdkRunnableTask<?, ?> task) {
-    return apply(nodeId, task, Collections.emptyMap());
+    return applyInternal(nodeId, task, emptyList(), Collections.emptyMap());
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
-    SdkNode sdkNode = transform.apply(this, nodeId, inputs);
+    return applyInternal(nodeId, transform, emptyList(), inputs);
+  }
+
+  SdkNode applyInternal(
+      String nodeId,
+      SdkTransform transform,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> inputs) {
+    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, inputs);
     applyInternal(sdkNode);
 
     return sdkNode;
@@ -75,7 +84,7 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {
-    return new SdkBinding(this, singletonMap(name1, value1));
+    return new SdkBinding(this, emptyList(), singletonMap(name1, value1));
   }
 
   public SdkBinding mapOf(
@@ -83,7 +92,7 @@ public class SdkWorkflowBuilder {
     Map<String, SdkBindingData> map = new HashMap<>();
     map.put(name1, value1);
     map.put(name2, value2);
-    return new SdkBinding(this, unmodifiableMap(map));
+    return new SdkBinding(this, emptyList(), unmodifiableMap(map));
   }
 
   public SdkBinding mapOf(
@@ -97,7 +106,7 @@ public class SdkWorkflowBuilder {
     map.put(name1, value1);
     map.put(name2, value2);
     map.put(name3, value3);
-    return new SdkBinding(this, unmodifiableMap(map));
+    return new SdkBinding(this, emptyList(), unmodifiableMap(map));
   }
 
   public SdkBinding tupleOf(SdkNode... nodes) {
@@ -108,7 +117,15 @@ public class SdkWorkflowBuilder {
                 collectingAndThen(
                     toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
 
-    return new SdkBinding(this, inputs);
+    // explicitly specify upstreamNodeIds if we don't use any outputs to preserve the execution
+    // order
+    List<String> upstreamNodeIds =
+        Stream.of(nodes)
+            .filter(x -> x.getOutputs().isEmpty())
+            .map(SdkNode::getNodeId)
+            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+
+    return new SdkBinding(this, upstreamNodeIds, inputs);
   }
 
   public void applyInternal(SdkNode node) {

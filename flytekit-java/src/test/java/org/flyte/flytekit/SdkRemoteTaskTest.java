@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -50,7 +51,9 @@ class SdkRemoteTaskTest {
             .outputs(SdkTypes.autoValue(Output.class))
             .build();
 
-    SdkNode node = remoteTask.apply(mock(SdkWorkflowBuilder.class), "lookup-endsong", inputs);
+    SdkNode node =
+        remoteTask.apply(
+            mock(SdkWorkflowBuilder.class), "lookup-endsong", singletonList("upstream-1"), inputs);
 
     assertThat(node.getNodeId(), is("lookup-endsong"));
     assertThat(
@@ -67,6 +70,7 @@ class SdkRemoteTaskTest {
                                 .name("LookupTask")
                                 .build())
                         .build())
+                .upstreamNodeIds(singletonList("upstream-1"))
                 .inputs(
                     Arrays.asList(
                         Binding.builder()

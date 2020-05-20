@@ -16,18 +16,24 @@
  */
 package org.flyte.flytekit;
 
+import java.util.List;
 import java.util.Map;
 
 public class SdkBinding {
   private final SdkWorkflowBuilder builder;
   private final Map<String, SdkBindingData> bindingData;
+  private final List<String> upstreamNodeIds;
 
-  SdkBinding(SdkWorkflowBuilder builder, Map<String, SdkBindingData> bindingData) {
+  SdkBinding(
+      SdkWorkflowBuilder builder,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> bindingData) {
     this.builder = builder;
+    this.upstreamNodeIds = upstreamNodeIds;
     this.bindingData = bindingData;
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
-    return builder.apply(nodeId, transform, bindingData);
+    return builder.applyInternal(nodeId, transform, upstreamNodeIds, bindingData);
   }
 }

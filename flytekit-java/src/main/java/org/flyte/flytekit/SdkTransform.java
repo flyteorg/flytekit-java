@@ -16,10 +16,14 @@
  */
 package org.flyte.flytekit;
 
+import java.util.List;
 import java.util.Map;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
 public abstract class SdkTransform {
   public abstract SdkNode apply(
-      SdkWorkflowBuilder builder, String nodeId, Map<String, SdkBindingData> inputs);
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> inputs);
 }

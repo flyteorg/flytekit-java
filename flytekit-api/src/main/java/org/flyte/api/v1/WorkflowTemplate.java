@@ -34,12 +34,22 @@ public abstract class WorkflowTemplate {
     return new AutoValue_WorkflowTemplate.Builder();
   }
 
+  public abstract TypedInterface interface_();
+
+  public abstract List<Binding> outputs();
+
+  public abstract Builder toBuilder();
+
   @AutoValue.Builder
   public abstract static class Builder {
 
     public abstract Builder nodes(List<Node> nodes);
 
     public abstract Builder metadata(WorkflowMetadata metadata);
+
+    public abstract Builder interface_(TypedInterface interface_);
+
+    public abstract Builder outputs(List<Binding> outputs);
 
     public abstract WorkflowTemplate build();
   }

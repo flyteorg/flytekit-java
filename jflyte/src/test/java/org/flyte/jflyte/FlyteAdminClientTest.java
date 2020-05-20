@@ -16,6 +16,7 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.emptyList;
 import static org.flyte.jflyte.ApiUtils.createVar;
 import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
@@ -175,12 +176,18 @@ public class FlyteAdminClientTest {
                         .var_(VAR_NAME)
                         .binding(BindingData.of(Scalar.of(Primitive.ofString(SCALAR))))
                         .build()))
+            .upstreamNodeIds(emptyList())
             .build();
+
+    TypedInterface interface_ =
+        TypedInterface.builder().inputs(ImmutableMap.of()).outputs(ImmutableMap.of()).build();
 
     WorkflowTemplate template =
         WorkflowTemplate.builder()
             .nodes(ImmutableList.of(node))
             .metadata(WorkflowMetadata.builder().build())
+            .interface_(interface_)
+            .outputs(ImmutableList.of())
             .build();
 
     client.createWorkflow(identifier, template);
@@ -301,6 +308,11 @@ public class FlyteAdminClientTest {
         .setTemplate(
             Workflow.WorkflowTemplate.newBuilder()
                 .setMetadata(Workflow.WorkflowMetadata.newBuilder().build())
+                .setInterface(
+                    Interface.TypedInterface.newBuilder()
+                        .setInputs(Interface.VariableMap.newBuilder().build())
+                        .setOutputs(Interface.VariableMap.newBuilder().build())
+                        .build())
                 .addNodes(
                     Workflow.Node.newBuilder()
                         .setId(nodeId)

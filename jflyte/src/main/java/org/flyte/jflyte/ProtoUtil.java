@@ -50,6 +50,7 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
@@ -262,32 +263,40 @@ class ProtoUtil {
   }
 
   private static Workflow.Node serialize(Node node) {
-    TaskIdentifier taskIdentifier =
-        TaskIdentifier.builder()
-            .domain(node.taskNode().referenceId().domain())
-            .project(node.taskNode().referenceId().project())
-            .name(node.taskNode().referenceId().name())
-            .version(node.taskNode().referenceId().version())
-            .build();
-
-    Workflow.TaskNode taskNode =
-        Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
 
     Workflow.Node.Builder builder =
-        Workflow.Node.newBuilder()
-            .setId(node.id())
-            .addAllUpstreamNodeIds(node.upstreamNodeIds())
-            .setTaskNode(taskNode);
+        Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
+
+    Workflow.TaskNode taskNode = serialize(node.taskNode());
+    if (taskNode != null) {
+      builder.setTaskNode(taskNode);
+    }
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 
     return builder.build();
   }
 
-  private static Literals.Binding serialize(Binding input) {
+  private static Workflow.TaskNode serialize(@Nullable TaskNode apiTaskNode) {
+    if (apiTaskNode == null) {
+      return null;
+    }
+
+    TaskIdentifier taskIdentifier =
+        TaskIdentifier.builder()
+            .domain(apiTaskNode.referenceId().domain())
+            .project(apiTaskNode.referenceId().project())
+            .name(apiTaskNode.referenceId().name())
+            .version(apiTaskNode.referenceId().version())
+            .build();
+
+    return Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
+  }
+
+  private static Literals.Binding serialize(Binding binding) {
     return Literals.Binding.newBuilder()
-        .setVar(input.var_())
-        .setBinding(serialize(input.binding()))
+        .setVar(binding.var_())
+        .setBinding(serialize(binding.binding()))
         .build();
   }
 

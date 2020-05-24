@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
@@ -31,8 +32,10 @@ public abstract class SdkBindingData {
 
   abstract BindingData idl();
 
-  public static SdkBindingData create(BindingData idl) {
-    return new AutoValue_SdkBindingData(idl);
+  abstract LiteralType type();
+
+  public static SdkBindingData create(BindingData idl, LiteralType type) {
+    return new AutoValue_SdkBindingData(idl, type);
   }
 
   public static SdkBindingData ofInteger(long value) {
@@ -64,17 +67,14 @@ public abstract class SdkBindingData {
     return ofPrimitive(Primitive.ofDuration(value));
   }
 
-  public static SdkBindingData ofOutputReference(String nodeId, String nodeVar) {
+  public static SdkBindingData ofOutputReference(String nodeId, String nodeVar, LiteralType type) {
     BindingData idl = BindingData.of(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
-
-    return create(idl);
+    return create(idl, type);
   }
 
   public static SdkBindingData ofPrimitive(Primitive primitive) {
-    return ofScalar(Scalar.of(primitive));
-  }
-
-  public static SdkBindingData ofScalar(Scalar scalar) {
-    return create(BindingData.of(scalar));
+    BindingData bindingData = BindingData.of(Scalar.of(primitive));
+    LiteralType literalType = LiteralTypes.ofSimpleType(primitive.type());
+    return create(bindingData, literalType);
   }
 }

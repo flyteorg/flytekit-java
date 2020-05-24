@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -181,9 +180,9 @@ class AutoValueReflectionTest {
       INTERFACE.put("d", createVar(SimpleType.DURATION));
     }
 
-    private static Variable createVar(SimpleType integer) {
+    private static Variable createVar(SimpleType simpleType) {
       return Variable.builder()
-          .literalType(LiteralType.builder().simpleType(integer).build())
+          .literalType(LiteralTypes.ofSimpleType(simpleType))
           .description("")
           .build();
     }

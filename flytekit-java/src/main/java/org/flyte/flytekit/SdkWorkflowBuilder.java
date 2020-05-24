@@ -27,17 +27,32 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.flyte.api.v1.Binding;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.TypedInterface;
+import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.WorkflowMetadata;
+import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
 
   private final Map<String, SdkNode> allNodes;
+  private final Map<String, Variable> inputs;
+  private final Map<String, Variable> outputVariables;
+  private final Map<String, SdkBindingData> outputBindings;
 
   SdkWorkflowBuilder() {
     this.allNodes = new HashMap<>();
+    // Using LinkedHashMap to preserve declaration order
+    this.inputs = new LinkedHashMap<>();
+    this.outputVariables = new LinkedHashMap<>();
+    this.outputBindings = new LinkedHashMap<>();
   }
 
   public SdkNode apply(String nodeId, SdkRunnableTask<?, ?> task) {
@@ -128,13 +143,105 @@ public class SdkWorkflowBuilder {
     return new SdkBinding(this, upstreamNodeIds, inputs);
   }
 
+  public SdkBindingData inputOfInteger(String name) {
+    return inputOfInteger(name, "");
+  }
+
+  public SdkBindingData inputOfInteger(String name, String help) {
+    return inputOf(name, SimpleType.INTEGER, help);
+  }
+
+  public SdkBindingData inputOfString(String name) {
+    return inputOfInteger(name, "");
+  }
+
+  public SdkBindingData inputOfString(String name, String help) {
+    return inputOf(name, SimpleType.STRING, help);
+  }
+
+  public SdkBindingData inputOfBoolean(String name) {
+    return inputOfInteger(name, "");
+  }
+
+  public SdkBindingData inputOfBoolean(String name, String help) {
+    return inputOf(name, SimpleType.BOOLEAN, help);
+  }
+
+  public SdkBindingData inputOfDatetime(String name) {
+    return inputOfInteger(name, "");
+  }
+
+  public SdkBindingData inputOfDatetime(String name, String help) {
+    return inputOf(name, SimpleType.DATETIME, help);
+  }
+
+  public SdkBindingData inputOfDuration(String name) {
+    return inputOfInteger(name, "");
+  }
+
+  public SdkBindingData inputOfDuration(String name, String help) {
+    return inputOf(name, SimpleType.DURATION, help);
+  }
+
+  private SdkBindingData inputOf(String name, SimpleType type, String help) {
+    LiteralType literalType = LiteralTypes.ofSimpleType(type);
+    Variable variable = Variable.builder().literalType(literalType).description(help).build();
+    SdkBindingData bindingData = SdkBindingData.ofOutputReference("start-node", name, literalType);
+    inputs.put(name, variable);
+    return bindingData;
+  }
+
+  private Map<String, Variable> getInputVariables() {
+    return unmodifiableMap(new LinkedHashMap<>(inputs));
+  }
+
+  public void output(String name, SdkBindingData value) {
+    output(name, value, "");
+  }
+
+  public void output(String name, SdkBindingData value, String help) {
+    outputVariables.put(
+        name, Variable.builder().literalType(value.type()).description(help).build());
+    outputBindings.put(name, value);
+  }
+
+  private List<Binding> getOutputBindings() {
+    return this.outputBindings.entrySet().stream()
+        .map(entry -> getBinding(entry.getKey(), entry.getValue()))
+        .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+  }
+
+  private Map<String, Variable> getOutputVariables() {
+    return unmodifiableMap(new LinkedHashMap<>(outputVariables));
+  }
+
+  private Binding getBinding(String var_, SdkBindingData bindingData) {
+    return Binding.builder().var_(var_).binding(bindingData.idl()).build();
+  }
+
   public void applyInternal(SdkNode node) {
     allNodes.put(node.getNodeId(), node);
   }
 
-  public List<Node> toIdl() {
+  private List<Node> nodesToIdl() {
     return allNodes.values().stream()
         .map(SdkNode::toIdl)
         .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+  }
+
+  public WorkflowTemplate toIdlTemplate() {
+    WorkflowMetadata metadata = WorkflowMetadata.builder().build();
+    List<Node> nodes = this.nodesToIdl();
+
+    return WorkflowTemplate.builder()
+        .metadata(metadata)
+        .interface_(
+            TypedInterface.builder()
+                .inputs(getInputVariables())
+                .outputs(getOutputVariables())
+                .build())
+        .outputs(getOutputBindings())
+        .nodes(nodes)
+        .build();
   }
 }

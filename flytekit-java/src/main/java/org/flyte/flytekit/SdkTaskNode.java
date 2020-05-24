@@ -60,7 +60,9 @@ public class SdkTaskNode extends SdkNode {
             collectingAndThen(
                 toMap(
                     Map.Entry::getKey,
-                    entry -> SdkBindingData.ofOutputReference(nodeId, entry.getKey())),
+                    entry ->
+                        SdkBindingData.ofOutputReference(
+                            nodeId, entry.getKey(), entry.getValue().literalType())),
                 Collections::unmodifiableMap));
   }
 

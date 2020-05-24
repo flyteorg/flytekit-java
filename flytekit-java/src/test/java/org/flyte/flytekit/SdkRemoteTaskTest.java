@@ -17,13 +17,14 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 
 import com.google.auto.value.AutoValue;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -55,36 +56,43 @@ class SdkRemoteTaskTest {
         remoteTask.apply(
             mock(SdkWorkflowBuilder.class), "lookup-endsong", singletonList("upstream-1"), inputs);
 
-    assertThat(node.getNodeId(), is("lookup-endsong"));
-    assertThat(
-        node.toIdl(),
-        is(
-            Node.builder()
-                .id("lookup-endsong")
-                .taskNode(
-                    TaskNode.builder()
-                        .referenceId(
-                            PartialTaskIdentifier.builder()
-                                .domain("dev")
-                                .project("project-a")
-                                .name("LookupTask")
+    assertAll(
+        () -> assertThat(node.getNodeId(), is("lookup-endsong")),
+        () ->
+            assertThat(
+                node.toIdl(),
+                is(
+                    Node.builder()
+                        .id("lookup-endsong")
+                        .taskNode(
+                            TaskNode.builder()
+                                .referenceId(
+                                    PartialTaskIdentifier.builder()
+                                        .domain("dev")
+                                        .project("project-a")
+                                        .name("LookupTask")
+                                        .build())
                                 .build())
-                        .build())
-                .upstreamNodeIds(singletonList("upstream-1"))
-                .inputs(
-                    Arrays.asList(
-                        Binding.builder()
-                            .var_("a")
-                            .binding(BindingData.of(Scalar.of(Primitive.ofInteger(1))))
-                            .build(),
-                        Binding.builder()
-                            .var_("b")
-                            .binding(BindingData.of(Scalar.of(Primitive.ofString("2"))))
-                            .build()))
-                .build()));
-    assertThat(
-        node.getOutputs(),
-        is(Collections.singletonMap("c", SdkBindingData.ofOutputReference("lookup-endsong", "c"))));
+                        .upstreamNodeIds(singletonList("upstream-1"))
+                        .inputs(
+                            Arrays.asList(
+                                Binding.builder()
+                                    .var_("a")
+                                    .binding(BindingData.of(Scalar.of(Primitive.ofInteger(1))))
+                                    .build(),
+                                Binding.builder()
+                                    .var_("b")
+                                    .binding(BindingData.of(Scalar.of(Primitive.ofString("2"))))
+                                    .build()))
+                        .build())),
+        () ->
+            assertThat(
+                node.getOutputs(),
+                is(
+                    singletonMap(
+                        "c",
+                        SdkBindingData.ofOutputReference(
+                            "lookup-endsong", "c", LiteralTypes.BOOLEAN)))));
   }
 
   @AutoValue

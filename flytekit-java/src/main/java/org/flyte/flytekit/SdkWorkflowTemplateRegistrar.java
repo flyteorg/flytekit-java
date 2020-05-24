@@ -16,21 +16,13 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.emptyList;
-
 import com.google.auto.service.AutoService;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.flyte.api.v1.Binding;
-import org.flyte.api.v1.Node;
-import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowIdentifier;
-import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 
@@ -68,26 +60,7 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
       sdkWorkflow.expand(builder);
 
-      WorkflowMetadata metadata = WorkflowMetadata.builder().build();
-
-      // TODO put real interface once it's implemented in flytekit-java
-      TypedInterface interface_ =
-          TypedInterface.builder()
-              .inputs(Collections.emptyMap())
-              .outputs(Collections.emptyMap())
-              .build();
-
-      // TODO put real output once it's implemented in flytekit-java
-      List<Binding> outputs = emptyList();
-
-      List<Node> nodes = builder.toIdl();
-      WorkflowTemplate workflow =
-          WorkflowTemplate.builder()
-              .nodes(nodes)
-              .metadata(metadata)
-              .interface_(interface_)
-              .outputs(outputs)
-              .build();
+      WorkflowTemplate workflow = builder.toIdlTemplate();
       WorkflowTemplate previous = workflows.put(workflowId, workflow);
 
       if (previous != null) {

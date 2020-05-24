@@ -207,25 +207,21 @@ class AutoValueReflection {
 
   private static LiteralType toLiteralType(Class<?> type) {
     if (isPrimitiveAssignableFrom(Long.class, type)) {
-      return toLiteralType(SimpleType.INTEGER);
+      return LiteralTypes.ofSimpleType(SimpleType.INTEGER);
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
-      return toLiteralType(SimpleType.FLOAT);
+      return LiteralTypes.ofSimpleType(SimpleType.FLOAT);
     } else if (String.class.isAssignableFrom(type)) {
-      return toLiteralType(SimpleType.STRING);
+      return LiteralTypes.ofSimpleType(SimpleType.STRING);
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
-      return toLiteralType(SimpleType.BOOLEAN);
+      return LiteralTypes.ofSimpleType(SimpleType.BOOLEAN);
     } else if (Instant.class.isAssignableFrom(type)) {
-      return toLiteralType(SimpleType.DATETIME);
+      return LiteralTypes.ofSimpleType(SimpleType.DATETIME);
     } else if (Duration.class.isAssignableFrom(type)) {
-      return toLiteralType(SimpleType.DURATION);
+      return LiteralTypes.ofSimpleType(SimpleType.DURATION);
     }
 
     throw new UnsupportedOperationException(
         String.format("Unsupported type: [%s]", type.getName()));
-  }
-
-  private static LiteralType toLiteralType(SimpleType simpleType) {
-    return LiteralType.builder().simpleType(simpleType).build();
   }
 
   private static Literal toLiteral(Object value, LiteralType literalType) {

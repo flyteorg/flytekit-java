@@ -207,17 +207,17 @@ class AutoValueReflection {
 
   private static LiteralType toLiteralType(Class<?> type) {
     if (isPrimitiveAssignableFrom(Long.class, type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.INTEGER);
+      return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.FLOAT);
+      return LiteralTypes.FLOAT;
     } else if (String.class.isAssignableFrom(type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.STRING);
+      return LiteralTypes.STRING;
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.BOOLEAN);
+      return LiteralTypes.BOOLEAN;
     } else if (Instant.class.isAssignableFrom(type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.DATETIME);
+      return LiteralTypes.DATETIME;
     } else if (Duration.class.isAssignableFrom(type)) {
-      return LiteralTypes.ofSimpleType(SimpleType.DURATION);
+      return LiteralTypes.DURATION;
     }
 
     throw new UnsupportedOperationException(

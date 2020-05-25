@@ -1,0 +1,46 @@
+version: 2
+
+jobs:
+  build:
+
+    working_directory: ~/flytekit-java
+
+    docker:
+      - image: circleci/openjdk:8-jdk-stretch
+
+    steps:
+
+      - checkout
+
+      - run:
+          name: Generate cumulative pom.xml checksum
+          command: sha256sum pom.xml */pom.xml | sort > ~/pom-checksum
+          when: always
+
+      - restore_cache:
+          keys: 
+            - flytekit-java-{{ checksum "~/pom-checksum" }}
+            - flytekit-java-
+
+      - run: mvn dependency:go-offline compile
+
+      # run static checks first for faster feedback
+      - run: mvn spotless:check checkstyle:check  
+      - run: mvn -Ddockerfile.skip verify
+
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+
+      - store_test_results:
+          path: ~/test-results
+
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.sbt
+          key: flytekit-java-{{ checksum "~/pom-checksum" }}
+

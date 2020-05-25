@@ -265,23 +265,17 @@ class ProtoUtil {
   private static Workflow.Node serialize(Node node) {
 
     Workflow.Node.Builder builder =
-        Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
-
-    Workflow.TaskNode taskNode = serialize(node.taskNode());
-    if (taskNode != null) {
-      builder.setTaskNode(taskNode);
-    }
+        Workflow.Node.newBuilder()
+            .setId(node.id())
+            .addAllUpstreamNodeIds(node.upstreamNodeIds())
+            .setTaskNode(serialize(node.taskNode()));
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 
     return builder.build();
   }
 
-  private static Workflow.TaskNode serialize(@Nullable TaskNode apiTaskNode) {
-    if (apiTaskNode == null) {
-      return null;
-    }
-
+  private static Workflow.TaskNode serialize(TaskNode apiTaskNode) {
     TaskIdentifier taskIdentifier =
         TaskIdentifier.builder()
             .domain(apiTaskNode.referenceId().domain())

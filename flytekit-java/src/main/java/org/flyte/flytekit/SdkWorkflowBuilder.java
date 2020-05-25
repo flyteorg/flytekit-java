@@ -41,6 +41,8 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
+  // @VisibleForTesting
+  static final String START_NODE_ID = "start-node";
 
   private final Map<String, SdkNode> allNodes;
   private final Map<String, Variable> inputs;
@@ -186,7 +188,7 @@ public class SdkWorkflowBuilder {
   private SdkBindingData inputOf(String name, SimpleType type, String help) {
     LiteralType literalType = LiteralTypes.ofSimpleType(type);
     Variable variable = Variable.builder().literalType(literalType).description(help).build();
-    SdkBindingData bindingData = SdkBindingData.ofOutputReference("start-node", name, literalType);
+    SdkBindingData bindingData = SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
     inputs.put(name, variable);
     return bindingData;
   }
@@ -206,7 +208,7 @@ public class SdkWorkflowBuilder {
   }
 
   private List<Binding> getOutputBindings() {
-    return this.outputBindings.entrySet().stream()
+    return outputBindings.entrySet().stream()
         .map(entry -> getBinding(entry.getKey(), entry.getValue()))
         .collect(collectingAndThen(toList(), Collections::unmodifiableList));
   }
@@ -231,7 +233,7 @@ public class SdkWorkflowBuilder {
 
   public WorkflowTemplate toIdlTemplate() {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
-    List<Node> nodes = this.nodesToIdl();
+    List<Node> nodes = nodesToIdl();
 
     return WorkflowTemplate.builder()
         .metadata(metadata)

@@ -22,6 +22,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -41,9 +42,6 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
-  // @VisibleForTesting
-  static final String START_NODE_ID = "start-node";
-
   private final Map<String, SdkNode> allNodes;
   private final Map<String, Variable> inputs;
   private final Map<String, Variable> outputVariables;

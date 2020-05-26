@@ -16,11 +16,14 @@
  */
 package org.flyte.jflyte;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.flyte.api.v1.*;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Scalar;
 import org.flyte.jflyte.examples.FibonacciWorkflow;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class LocalRunnerTest {
@@ -29,9 +32,14 @@ class LocalRunnerTest {
   void testFibonacci() {
     String workflowName = new FibonacciWorkflow().getName();
 
-    Map<String, Literal> outputs = LocalRunner.executeWorkflow(workflowName);
+    Literal fib0 = Literal.of(Scalar.of(Primitive.ofInteger(0L)));
+    Literal fib1 = Literal.of(Scalar.of(Primitive.ofInteger(1L)));
+    Literal fib4 = Literal.of(Scalar.of(Primitive.ofInteger(3L)));
+    Literal fib5 = Literal.of(Scalar.of(Primitive.ofInteger(5L)));
 
-    // FIXME flytekit-java doesn't yet support outputs
-    Assertions.assertEquals(ImmutableMap.of(), outputs);
+    Map<String, Literal> outputs =
+        LocalRunner.executeWorkflow(workflowName, ImmutableMap.of("fib0", fib0, "fib1", fib1));
+
+    assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
   }
 }

@@ -16,6 +16,8 @@
  */
 package org.flyte.jflyte;
 
+import static org.flyte.api.v1.Node.START_NODE_ID;
+
 import com.google.common.base.Verify;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
@@ -34,7 +36,8 @@ import org.flyte.api.v1.WorkflowTemplateRegistrar;
 
 public class LocalRunner {
 
-  public static Map<String, Literal> executeWorkflow(String workflowName) {
+  public static Map<String, Literal> executeWorkflow(
+      String workflowName, Map<String, Literal> inputs) {
     Map<String, String> env =
         ImmutableMap.of(
             "JFLYTE_DOMAIN", "development",
@@ -59,20 +62,26 @@ public class LocalRunner {
 
     Verify.verify(workflow != null, "workflow not found [%s]", workflowName);
 
-    return compileAndExecute(workflow, runnableTasks);
+    return compileAndExecute(workflow, runnableTasks, inputs);
   }
 
   static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template, Map<String, RunnableTask> runnableTasks) {
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, Literal> inputs) {
     List<ExecutionNode> executionNodes =
         ExecutionNodeCompiler.compile(template.nodes(), runnableTasks);
 
-    return execute(executionNodes, template.outputs());
+    return execute(executionNodes, inputs, template.outputs());
   }
 
-  static Map<String, Literal> execute(List<ExecutionNode> executionNodes, List<Binding> bindings) {
+  static Map<String, Literal> execute(
+      List<ExecutionNode> executionNodes,
+      Map<String, Literal> workflowInputs,
+      List<Binding> bindings) {
 
     Map<String, Map<String, Literal>> nodeOutputs = new HashMap<>();
+    nodeOutputs.put(START_NODE_ID, workflowInputs);
 
     for (ExecutionNode executionNode : executionNodes) {
       Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());

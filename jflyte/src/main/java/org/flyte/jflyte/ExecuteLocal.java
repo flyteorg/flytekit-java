@@ -16,7 +16,11 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.emptyMap;
+
+import java.util.Map;
 import java.util.concurrent.Callable;
+import org.flyte.api.v1.Literal;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -34,9 +38,6 @@ public class ExecuteLocal implements Callable<Integer> {
       required = true)
   private String packageDir;
 
-  // TODO once we support workflow inputs, parse them from options, supporting primitive types
-  // should be enough
-
   @Override
   public Integer call() {
     ClassLoader packageClassLoader = ClassLoaders.forDirectory(packageDir);
@@ -46,8 +47,12 @@ public class ExecuteLocal implements Callable<Integer> {
     ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(packageClassLoader);
 
+    // TODO Parse input parameters from options, supporting primitive types
+    // should be enough
+    Map<String, Literal> inputs = emptyMap();
+
     try {
-      LocalRunner.executeWorkflow(workflow);
+      LocalRunner.executeWorkflow(workflow, inputs);
     } finally {
       Thread.currentThread().setContextClassLoader(originalContextClassLoader);
     }

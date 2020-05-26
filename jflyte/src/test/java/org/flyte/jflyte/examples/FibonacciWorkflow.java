@@ -16,8 +16,6 @@
  */
 package org.flyte.jflyte.examples;
 
-import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
-
 import com.google.auto.service.AutoService;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
@@ -29,20 +27,23 @@ public class FibonacciWorkflow extends SdkWorkflow {
   @Override
   @SuppressWarnings("UnusedVariable")
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData fib0 = literalOfInteger(0L);
+    SdkBindingData fib0 = builder.inputOfInteger("fib0");
 
-    SdkBindingData fib1 = literalOfInteger(1L);
+    SdkBindingData fib1 = builder.inputOfInteger("fib1");
 
     SdkBindingData fib2 =
-        builder.mapOf("a", fib0, "b", fib1).apply("fib-2", new SumTask()).getOutput("c");
+        builder.mapOf("a", fib0, "b", fib1).apply("fib2", new SumTask()).getOutput("c");
 
     SdkBindingData fib3 =
-        builder.mapOf("a", fib1, "b", fib2).apply("fib-3", new SumTask()).getOutput("c");
+        builder.mapOf("a", fib1, "b", fib2).apply("fib3", new SumTask()).getOutput("c");
 
     SdkBindingData fib4 =
-        builder.mapOf("a", fib2, "b", fib3).apply("fib-4", new SumTask()).getOutput("c");
+        builder.mapOf("a", fib2, "b", fib3).apply("fib4", new SumTask()).getOutput("c");
 
-    // fib5 =
-    builder.mapOf("a", fib3, "b", fib4).apply("fib-5", new SumTask()).getOutput("c");
+    SdkBindingData fib5 =
+        builder.mapOf("a", fib3, "b", fib4).apply("fib5", new SumTask()).getOutput("c");
+
+    builder.output("fib4", fib4);
+    builder.output("fib5", fib5);
   }
 }

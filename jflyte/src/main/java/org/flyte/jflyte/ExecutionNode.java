@@ -24,8 +24,6 @@ import org.flyte.api.v1.RunnableTask;
 @AutoValue
 public abstract class ExecutionNode {
 
-  public static final String START_NODE_ID = "start-node";
-
   public abstract String nodeId();
 
   public abstract List<String> upstreamNodeIds();

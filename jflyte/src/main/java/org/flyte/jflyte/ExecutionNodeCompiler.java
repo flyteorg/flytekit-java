@@ -16,7 +16,8 @@
  */
 package org.flyte.jflyte;
 
-import static org.flyte.jflyte.ExecutionNode.START_NODE_ID;
+import static java.util.Collections.singletonList;
+import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.common.base.Verify;
 import com.google.common.collect.ArrayListMultimap;
@@ -117,16 +118,18 @@ class ExecutionNodeCompiler {
     Set<String> visitedNodeIds = new HashSet<>();
     List<ExecutionNode> topologicallySorted = new ArrayList<>();
 
-    deque.add(downstreamNodeIdsMap.get(START_NODE_ID));
+    deque.add(singletonList(START_NODE_ID));
 
     while (!deque.isEmpty()) {
       List<String> nodeIds = deque.pollFirst();
       List<String> downstreamNodeIds = new ArrayList<>();
 
       for (String nodeId : nodeIds) {
-        ExecutionNode node = lookup.get(nodeId);
-
-        Verify.verifyNotNull(node, "node not found [%s]", nodeId);
+        if (!nodeId.equals(START_NODE_ID)) {
+          ExecutionNode node = lookup.get(nodeId);
+          Verify.verifyNotNull(node, "node not found [%s]", nodeId);
+          topologicallySorted.add(node);
+        }
 
         boolean visited = visitedNodeIds.contains(nodeId);
 
@@ -141,8 +144,6 @@ class ExecutionNodeCompiler {
 
           degreeMap.put(downstreamNodeId, newDegree);
         }
-
-        topologicallySorted.add(node);
       }
 
       visitedNodeIds.addAll(nodeIds);

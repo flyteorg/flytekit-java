@@ -100,7 +100,7 @@ class SdkWorkflowBuilderTest {
                             BindingData.of(
                                 OutputReference.builder()
                                     .var("in")
-                                    .nodeId(SdkWorkflowBuilder.START_NODE_ID)
+                                    .nodeId(Node.START_NODE_ID)
                                     .build()))
                         .build(),
                     Binding.builder()

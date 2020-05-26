@@ -26,6 +26,8 @@ import java.util.List;
 @AutoValue
 public abstract class Node {
 
+  public static final String START_NODE_ID = "start-node";
+
   public abstract String id();
 
   public abstract TaskNode taskNode();

@@ -16,7 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import static org.flyte.jflyte.ExecutionNode.START_NODE_ID;
+import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.base.VerifyException;

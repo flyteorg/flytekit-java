@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -412,17 +413,33 @@ class ProtoUtil {
         .build();
   }
 
-  static Errors.ErrorDocument serialize(Throwable e) {
+  static Errors.ContainerError serializeThrowable(Throwable e) {
     StringWriter sw = new StringWriter();
     e.printStackTrace(new PrintWriter(sw));
 
-    return Errors.ErrorDocument.newBuilder()
-        .setError(
-            Errors.ContainerError.newBuilder()
-                .setCode("SYSTEM:Unknown")
-                .setKind(Errors.ContainerError.Kind.NON_RECOVERABLE)
-                .setMessage(sw.toString())
-                .build())
+    return Errors.ContainerError.newBuilder()
+        .setCode("SYSTEM:Unknown")
+        .setKind(Errors.ContainerError.Kind.NON_RECOVERABLE)
+        .setMessage(sw.toString())
+        .build();
+  }
+
+  static Errors.ContainerError.Kind serialize(ContainerError.Kind kind) {
+    switch (kind) {
+      case RECOVERABLE:
+        return Errors.ContainerError.Kind.RECOVERABLE;
+      case NON_RECOVERABLE:
+        return Errors.ContainerError.Kind.NON_RECOVERABLE;
+    }
+
+    throw new AssertionError("unexpected ContainerError.Kind: " + kind);
+  }
+
+  static Errors.ContainerError serializeContainerError(ContainerError error) {
+    return Errors.ContainerError.newBuilder()
+        .setCode(error.getCode())
+        .setKind(serialize(error.getKind()))
+        .setMessage(error.getMessage())
         .build();
   }
 }

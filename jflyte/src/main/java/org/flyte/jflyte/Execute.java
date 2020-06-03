@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
@@ -109,10 +110,14 @@ class Execute implements Callable<Integer> {
       }
 
       writeOutputs(outputFs, outputPrefix, outputs);
+    } catch (ContainerError e) {
+      LOG.error("failed to run task", e);
+
+      writeError(outputFs, outputPrefix, ProtoUtil.serializeContainerError(e));
     } catch (Throwable e) {
       LOG.error("failed to run task", e);
 
-      writeError(outputFs, outputPrefix, e);
+      writeError(outputFs, outputPrefix, ProtoUtil.serializeThrowable(e));
     }
   }
 
@@ -129,14 +134,16 @@ class Execute implements Callable<Integer> {
         });
   }
 
-  private static void writeError(FileSystem fs, String outputPrefix, Throwable error) {
+  private static void writeError(
+      FileSystem fs, String outputPrefix, Errors.ContainerError containerError) {
     String outputUri = normalizeUri(outputPrefix, ERROR_PB);
 
     writeTo(
         fs,
         outputUri,
         outputStream -> {
-          Errors.ErrorDocument errorDocument = ProtoUtil.serialize(error);
+          Errors.ErrorDocument errorDocument =
+              Errors.ErrorDocument.newBuilder().setError(containerError).build();
 
           errorDocument.writeTo(outputStream);
         });

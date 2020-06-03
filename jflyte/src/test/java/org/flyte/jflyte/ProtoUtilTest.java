@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -460,12 +461,28 @@ class ProtoUtilTest {
 
     Throwable e = new RuntimeException("oops");
 
-    Errors.ErrorDocument errorDocument = ProtoUtil.serialize(e);
-    Errors.ContainerError error = errorDocument.getError();
+    Errors.ContainerError error = ProtoUtil.serializeThrowable(e);
 
     assertThat(error.getKind(), equalTo(Errors.ContainerError.Kind.NON_RECOVERABLE));
     assertThat(error.getMessage(), containsString(e.getMessage()));
     assertThat(error.getCode(), equalTo("SYSTEM:Unknown"));
+  }
+
+  @Test
+  void shouldSerializeContainerError() {
+    ContainerError error =
+        ContainerError.create("SYSTEM:NOT_READY", "Not ready", ContainerError.Kind.RECOVERABLE);
+
+    Errors.ContainerError proto = ProtoUtil.serializeContainerError(error);
+
+    assertThat(
+        proto,
+        equalTo(
+            Errors.ContainerError.newBuilder()
+                .setMessage("Not ready")
+                .setKind(Errors.ContainerError.Kind.RECOVERABLE)
+                .setCode("SYSTEM:NOT_READY")
+                .build()));
   }
 
   private Node createNode(String id) {

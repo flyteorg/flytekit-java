@@ -19,7 +19,6 @@ package org.flyte.jflyte;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.common.base.Verify;
-import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,42 +27,9 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
-import org.flyte.api.v1.RunnableTaskRegistrar;
-import org.flyte.api.v1.TaskIdentifier;
-import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
-import org.flyte.api.v1.WorkflowTemplateRegistrar;
 
 public class LocalRunner {
-
-  public static Map<String, Literal> executeWorkflow(
-      String workflowName, Map<String, Literal> inputs) {
-    Map<String, String> env =
-        ImmutableMap.of(
-            "JFLYTE_DOMAIN", "development",
-            "JFLYTE_VERSION", "test",
-            "JFLYTE_PROJECT", "flytetester");
-
-    Map<TaskIdentifier, RunnableTask> registrarRunnableTasks =
-        Registrars.loadAll(RunnableTaskRegistrar.class, env);
-    Map<WorkflowIdentifier, WorkflowTemplate> registrarWorkflows =
-        Registrars.loadAll(WorkflowTemplateRegistrar.class, env);
-
-    // assume that task names are unique, that is true for the existing Java SDK
-    Map<String, RunnableTask> runnableTasks =
-        registrarRunnableTasks.entrySet().stream()
-            .collect(Collectors.toMap(x -> x.getKey().name(), Map.Entry::getValue));
-
-    Map<String, WorkflowTemplate> workflows =
-        registrarWorkflows.entrySet().stream()
-            .collect(Collectors.toMap(x -> x.getKey().name(), Map.Entry::getValue));
-
-    WorkflowTemplate workflow = workflows.get(workflowName);
-
-    Verify.verify(workflow != null, "workflow not found [%s]", workflowName);
-
-    return compileAndExecute(workflow, runnableTasks, inputs);
-  }
 
   static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,

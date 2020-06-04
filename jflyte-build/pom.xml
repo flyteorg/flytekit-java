@@ -43,6 +43,10 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
+      <artifactId>jflyte-aws</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
       <artifactId>jflyte-google-cloud</artifactId>
     </dependency>
   </dependencies>

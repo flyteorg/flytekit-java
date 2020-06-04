@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import com.google.common.base.Verify;
+import com.google.common.collect.ImmutableMap;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +56,10 @@ class FileSystemLoader {
 
     List<FileSystem> fileSystems = new ArrayList<>();
 
+    Map<String, String> env = ImmutableMap.copyOf(System.getenv());
+
     for (FileSystemRegistrar registrar : loader) {
-      for (FileSystem fileSystem : registrar.load()) {
+      for (FileSystem fileSystem : registrar.load(env)) {
         LOG.debug(String.format("Discovered FileSystem [%s]", fileSystem.getClass().getName()));
 
         fileSystems.add(fileSystem);

@@ -54,6 +54,7 @@
     <module>flytekit-examples-scala</module>
     <module>jflyte</module>
     <module>jflyte-api</module>
+    <module>jflyte-aws</module>
     <module>jflyte-build</module>
     <module>jflyte-google-cloud</module>
   </modules>
@@ -92,6 +93,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>jflyte</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-aws</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

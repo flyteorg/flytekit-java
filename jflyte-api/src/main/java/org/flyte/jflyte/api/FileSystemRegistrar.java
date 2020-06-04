@@ -16,7 +16,9 @@
  */
 package org.flyte.jflyte.api;
 
+import java.util.Map;
+
 /** A registrar that creates {@link FileSystem} instances. */
 public abstract class FileSystemRegistrar {
-  public abstract Iterable<FileSystem> load();
+  public abstract Iterable<FileSystem> load(Map<String, String> env);
 }

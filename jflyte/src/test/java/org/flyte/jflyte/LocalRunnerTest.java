@@ -22,7 +22,9 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.jflyte.examples.FibonacciWorkflow;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +32,12 @@ class LocalRunnerTest {
 
   @Test
   void testFibonacci() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
     String workflowName = new FibonacciWorkflow().getName();
 
     Literal fib0 = Literal.of(Scalar.of(Primitive.ofInteger(0L)));
@@ -37,8 +45,12 @@ class LocalRunnerTest {
     Literal fib4 = Literal.of(Scalar.of(Primitive.ofInteger(3L)));
     Literal fib5 = Literal.of(Scalar.of(Primitive.ofInteger(5L)));
 
+    Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
+    Map<String, RunnableTask> tasks = Modules.loadTasks(env);
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
     Map<String, Literal> outputs =
-        LocalRunner.executeWorkflow(workflowName, ImmutableMap.of("fib0", fib0, "fib1", fib1));
+        LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
   }

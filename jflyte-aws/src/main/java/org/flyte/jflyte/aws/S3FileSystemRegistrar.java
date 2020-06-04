@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.jflyte.gcp;
+package org.flyte.jflyte.aws;
 
 import com.google.auto.service.AutoService;
 import java.util.Collections;
@@ -22,12 +22,11 @@ import java.util.Map;
 import org.flyte.jflyte.api.FileSystem;
 import org.flyte.jflyte.api.FileSystemRegistrar;
 
-/** Registrar for {@link GcsFileSystem}. */
 @AutoService(FileSystemRegistrar.class)
-public class GcsFileSystemRegistrar extends FileSystemRegistrar {
+public class S3FileSystemRegistrar extends FileSystemRegistrar {
 
   @Override
   public Iterable<FileSystem> load(Map<String, String> env) {
-    return Collections.singletonList(new GcsFileSystem());
+    return Collections.singletonList(S3FileSystem.create(env));
   }
 }

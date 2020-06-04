@@ -5,6 +5,7 @@ ARG FLYTE_INTERNAL_IMAGE
 COPY jflyte/target/lib /jflyte/
 
 # plugins
+COPY jflyte-aws/target/lib /jflyte/modules/jflyte-aws
 COPY jflyte-google-cloud/target/lib /jflyte/modules/jflyte-google-cloud
 
 ENV FLYTE_INTERNAL_MODULE_DIR "/jflyte/modules"

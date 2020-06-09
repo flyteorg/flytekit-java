@@ -152,7 +152,7 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBindingData inputOfString(String name) {
-    return inputOfInteger(name, "");
+    return inputOfString(name, "");
   }
 
   public SdkBindingData inputOfString(String name, String help) {
@@ -160,7 +160,7 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBindingData inputOfBoolean(String name) {
-    return inputOfInteger(name, "");
+    return inputOfBoolean(name, "");
   }
 
   public SdkBindingData inputOfBoolean(String name, String help) {
@@ -168,7 +168,7 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBindingData inputOfDatetime(String name) {
-    return inputOfInteger(name, "");
+    return inputOfDatetime(name, "");
   }
 
   public SdkBindingData inputOfDatetime(String name, String help) {
@@ -176,11 +176,19 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBindingData inputOfDuration(String name) {
-    return inputOfInteger(name, "");
+    return inputOfDuration(name, "");
   }
 
   public SdkBindingData inputOfDuration(String name, String help) {
     return inputOf(name, SimpleType.DURATION, help);
+  }
+
+  public SdkBindingData inputOfFloat(String name) {
+    return inputOfFloat(name, "");
+  }
+
+  public SdkBindingData inputOfFloat(String name, String help) {
+    return inputOf(name, SimpleType.FLOAT, help);
   }
 
   private SdkBindingData inputOf(String name, SimpleType type, String help) {

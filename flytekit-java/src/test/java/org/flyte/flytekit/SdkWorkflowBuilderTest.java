@@ -57,6 +57,35 @@ class SdkWorkflowBuilderTest {
     assertEquals(expected, builder.toIdlTemplate());
   }
 
+  @Test
+  void testInputOf() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input1", LiteralTypes.STRING),
+        builder.inputOfString("input1"));
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input2", LiteralTypes.BOOLEAN),
+        builder.inputOfBoolean("input2"));
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input3", LiteralTypes.DATETIME),
+        builder.inputOfDatetime("input3"));
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input4", LiteralTypes.DURATION),
+        builder.inputOfDuration("input4"));
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input5", LiteralTypes.FLOAT),
+        builder.inputOfFloat("input5"));
+
+    assertEquals(
+        SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
+        builder.inputOfInteger("input6"));
+  }
+
   private TypedInterface expectedInterface() {
     return TypedInterface.builder()
         .inputs(

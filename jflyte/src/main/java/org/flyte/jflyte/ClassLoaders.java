@@ -17,12 +17,15 @@
 package org.flyte.jflyte;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,18 +38,39 @@ class ClassLoaders {
     throw new UnsupportedOperationException();
   }
 
-  static ClassLoader forDirectory(String dir) {
+  static List<ClassLoader> forModuleDir(String dir) {
+    return listDirectory(new File(dir)).stream()
+        .filter(File::isDirectory)
+        .map(ClassLoaders::forDirectory)
+        .collect(Collectors.toList());
+  }
+
+  static ClassLoader forDirectory(File dir) {
+    LOG.debug("Loading jars from [{}]", dir.getAbsolutePath());
+
     return AccessController.doPrivileged(
         (PrivilegedAction<ClassLoader>) () -> new ChildFirstClassLoader(getClassLoaderUrls(dir)));
   }
 
-  static URL[] getClassLoaderUrls(String dir) {
+  static URL[] getClassLoaderUrls(File dir) {
     Preconditions.checkNotNull(dir, "dir is null");
 
-    File file = new File(dir);
+    return listDirectory(dir).stream()
+        .map(
+            file -> {
+              try {
+                URL url = file.toURI().toURL();
+                LOG.debug("Discovered [{}]", url);
 
-    LOG.debug("Loading jars from [{}]", dir);
+                return url;
+              } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+              }
+            })
+        .toArray(URL[]::new);
+  }
 
+  static List<File> listDirectory(File file) {
     if (!file.exists()) {
       throw new RuntimeException(
           String.format("Directory doesn't exist [%s]", file.getAbsolutePath()));
@@ -58,18 +82,26 @@ class ClassLoaders {
       throw new RuntimeException(String.format("Isn't directory [%s]", file.getAbsolutePath()));
     }
 
-    return Stream.of(files)
-        .map(
-            x -> {
-              try {
-                URL url = x.toURI().toURL();
-                LOG.debug("Discovered [{}]", url);
+    return ImmutableList.copyOf(files);
+  }
 
-                return url;
-              } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-              }
-            })
-        .toArray(URL[]::new);
+  static <V> V withClassLoader(ClassLoader classLoader, Callable<V> callable) {
+    ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(classLoader);
+
+    // before we run anything, switch class loader, because we will be touching user classes;
+    // setting it in thread context will give us access to the right class loader
+
+    try {
+      return callable.call();
+    } catch (Exception e) {
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      }
+
+      throw new RuntimeException(e);
+    } finally {
+      Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+    }
   }
 }

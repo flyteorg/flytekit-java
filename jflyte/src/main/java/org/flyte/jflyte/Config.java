@@ -30,14 +30,14 @@ abstract class Config {
   @Nullable
   abstract String stagingLocation();
 
-  abstract String pluginDir();
+  abstract String moduleDir();
 
   abstract boolean platformInsecure();
 
   static Config load() {
     return Config.builder()
         .platformUrl(getenv("FLYTE_PLATFORM_URL"))
-        .pluginDir(getenv("FLYTE_INTERNAL_PLUGIN_DIR"))
+        .moduleDir(getenv("FLYTE_INTERNAL_MODULE_DIR"))
         .image(getenv("FLYTE_INTERNAL_IMAGE"))
         .stagingLocation(getenvOrNull("FLYTE_STAGING_LOCATION"))
         .platformInsecure(Boolean.parseBoolean(getenv("FLYTE_PLATFORM_INSECURE")))
@@ -71,7 +71,7 @@ abstract class Config {
 
     abstract Builder stagingLocation(String stagingLocation);
 
-    abstract Builder pluginDir(String pluginDir);
+    abstract Builder moduleDir(String moduleDir);
 
     abstract Builder platformInsecure(boolean platformInsecure);
 

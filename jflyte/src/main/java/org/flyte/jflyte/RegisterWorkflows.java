@@ -20,6 +20,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -44,13 +45,12 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.jflyte.api.FileSystem;
-import org.flyte.jflyte.api.FileSystemRegistrar;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /** Registers all workflows on classpath. */
 @Command(name = "workflows")
-class RegisterWorkflows implements Callable<Integer> {
+public class RegisterWorkflows implements Callable<Integer> {
 
   @SuppressWarnings("UnusedVariable")
   @Option(
@@ -102,10 +102,9 @@ class RegisterWorkflows implements Callable<Integer> {
       }
 
       URI stagingUri = new URI(stagingLocation);
-      ClassLoader pluginClassLoader = ClassLoaders.forDirectory(config.pluginDir());
-
-      FileSystem stagingFileSystem =
-          FileSystemRegistrar.getFileSystem(stagingUri.getScheme(), pluginClassLoader);
+      List<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
+      Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
+      FileSystem stagingFileSystem = FileSystemLoader.getFileSystem(fileSystems, stagingUri);
 
       return new ArtifactStager(stagingLocation, stagingFileSystem);
     } catch (URISyntaxException e) {
@@ -138,7 +137,7 @@ class RegisterWorkflows implements Callable<Integer> {
   }
 
   private void registerAll(ArtifactStager stager, String image, FlyteAdminClient adminClient) {
-    ClassLoader packageClassLoader = ClassLoaders.forDirectory(packageDir);
+    ClassLoader packageClassLoader = ClassLoaders.forDirectory(new File(packageDir));
 
     List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
     Artifact indexFile = stageIndexFile(stager, artifacts);
@@ -156,17 +155,14 @@ class RegisterWorkflows implements Callable<Integer> {
 
     // before we run anything, switch class loader, because we will be touching user classes;
     // setting it in thread context will give us access to the right class loader
-    ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(packageClassLoader);
 
-    Map<TaskIdentifier, RunnableTask> tasks;
-    Map<WorkflowIdentifier, WorkflowTemplate> workflows;
-    try {
-      tasks = Registrars.loadAll(RunnableTaskRegistrar.class, env);
-      workflows = Registrars.loadAll(WorkflowTemplateRegistrar.class, env);
-    } finally {
-      Thread.currentThread().setContextClassLoader(originalContextClassLoader);
-    }
+    Map<TaskIdentifier, RunnableTask> tasks =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(RunnableTaskRegistrar.class, env));
+
+    Map<WorkflowIdentifier, WorkflowTemplate> workflows =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
 
     IdentifierRewrite identifierRewrite =
         IdentifierRewrite.builder()

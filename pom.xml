@@ -38,7 +38,7 @@
     <error_prone.version>2.3.4</error_prone.version>
     <!-- Using the error-prone-javac is required when running on JDK 8 -->
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
-    <junit.version>5.4.2</junit.version>
+    <junit.version>5.6.2</junit.version>
 
     <!-- has to be one liner, or errorprone doesn't work -->
     <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
@@ -303,7 +303,7 @@
             <xml>
               <includes>
                 <include>**/pom.xml</include>
-                <include>**/src/**.xml</include>
+                <include>**/src/**/*.xml</include>
               </includes>
               <licenseHeader>
                 <content><![CDATA[<!--
@@ -527,6 +527,37 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.0</version>
+          <configuration>
+            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.2</version>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <phase>package</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            <useBaseVersion>false</useBaseVersion>
+            <overWriteReleases>false</overWriteReleases>
+            <overWriteSnapshots>true</overWriteSnapshots>
+            <includeScope>runtime</includeScope>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

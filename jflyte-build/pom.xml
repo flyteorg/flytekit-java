@@ -30,97 +30,36 @@
   <properties>
     <docker.image>${env.FLYTE_INTERNAL_IMAGE}</docker.image>
     <docker.tag>${project.version}</docker.tag>
-    <plugins.dir>${project.build.directory}/plugins</plugins.dir>
 
     <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- don't need enforcer since we only do a docker build -->
+    <enforcer.skip>true</enforcer.skip>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
       <artifactId>jflyte</artifactId>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>jflyte-google-cloud</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 
   <build>
     <finalName>jflyte</finalName>
     <plugins>
-      <!-- if no plugin is enabled (via provided scope), docker copy will fail due to missing directory -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>create-plugins-dir</id>
-            <phase>prepare-package</phase>
-            <configuration>
-              <target>
-                <delete dir="${plugins.dir}" />
-                <mkdir dir="${plugins.dir}" />
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-plugins</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${plugins.dir}</outputDirectory>
-              <useBaseVersion>false</useBaseVersion>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>provided</includeScope>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-runtime</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <useBaseVersion>false</useBaseVersion>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>runtime</includeScope>
-              <excludeGroupIds>
-                com.google.android,com.google.auto.value,com.google.code.findbugs,findbugs,com.google.errorprone
-              </excludeGroupIds>
-              <excludeArtifactIds>
-                animal-sniffer-annotations,j2objc-annotations
-              </excludeArtifactIds>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
         <configuration>
           <repository>${docker.image}</repository>
           <tag>${docker.tag}</tag>
+          <buildArgs>
+            <FLYTE_INTERNAL_IMAGE>${docker.image}:${docker.tag}</FLYTE_INTERNAL_IMAGE>
+          </buildArgs>
+          <contextDirectory>${project.parent.basedir}</contextDirectory>
         </configuration>
       </plugin>
     </plugins>

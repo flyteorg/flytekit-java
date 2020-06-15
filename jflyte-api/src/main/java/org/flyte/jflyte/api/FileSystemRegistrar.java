@@ -16,37 +16,7 @@
  */
 package org.flyte.jflyte.api;
 
-import java.util.ServiceLoader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /** A registrar that creates {@link FileSystem} instances. */
 public abstract class FileSystemRegistrar {
-  private static final Logger LOG = Logger.getLogger(FileSystemRegistrar.class.getName());
-
-  static {
-    // enable all levels for the actual handler to pick up
-    LOG.setLevel(Level.ALL);
-  }
-
-  public abstract Iterable<FileSystem> load(ClassLoader classLoader);
-
-  public static FileSystem getFileSystem(String scheme, ClassLoader classLoader) {
-    ServiceLoader<FileSystemRegistrar> loader =
-        ServiceLoader.load(FileSystemRegistrar.class, classLoader);
-
-    LOG.fine("Discovering FileSystemRegistrar");
-
-    for (FileSystemRegistrar registrar : loader) {
-      for (FileSystem fileSystem : registrar.load(classLoader)) {
-        LOG.fine(String.format("Discovered FileSystem [%s]", fileSystem.getClass().getName()));
-
-        if (scheme.equals(fileSystem.getScheme())) {
-          return fileSystem;
-        }
-      }
-    }
-
-    return null;
-  }
+  public abstract Iterable<FileSystem> load();
 }

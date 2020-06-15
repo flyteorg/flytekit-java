@@ -25,7 +25,7 @@ import org.flyte.jflyte.api.FileSystemRegistrar;
 @AutoService(FileSystemRegistrar.class)
 public class GcsFileSystemRegistrar extends FileSystemRegistrar {
   @Override
-  public Iterable<FileSystem> load(ClassLoader classLoader) {
+  public Iterable<FileSystem> load() {
     return Collections.singletonList(new GcsFileSystem());
   }
 }

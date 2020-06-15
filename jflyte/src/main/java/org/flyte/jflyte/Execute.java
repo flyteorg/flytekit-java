@@ -16,12 +16,13 @@
  */
 package org.flyte.jflyte;
 
+import static org.flyte.jflyte.ClassLoaders.withClassLoader;
+
 import flyteidl.core.Errors;
 import flyteidl.core.Literals;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -39,7 +40,6 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.jflyte.api.FileSystem;
-import org.flyte.jflyte.api.FileSystemRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -47,7 +47,7 @@ import picocli.CommandLine.Option;
 
 /** Handler for "execute" command. */
 @Command(name = "execute")
-class Execute implements Callable<Integer> {
+public class Execute implements Callable<Integer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
   private static final String OUTPUTS_PB = "outputs.pb";
@@ -82,32 +82,29 @@ class Execute implements Callable<Integer> {
 
   private void execute() {
     Config config = Config.load();
-    ClassLoader pluginClassLoader = ClassLoaders.forDirectory(config.pluginDir());
-    List<String> stagedFiles = readStagedFiles(pluginClassLoader, indexFileLocation);
+    List<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
+    Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
+    List<String> stagedFiles = readStagedFiles(fileSystems, indexFileLocation);
 
-    ClassLoader packageClassLoader = loadPackage(stagedFiles, pluginClassLoader);
+    ClassLoader packageClassLoader = loadPackage(fileSystems, stagedFiles);
 
-    FileSystem inputFs =
-        FileSystemRegistrar.getFileSystem(URI.create(inputs).getScheme(), pluginClassLoader);
-    FileSystem outputFs =
-        FileSystemRegistrar.getFileSystem(URI.create(outputPrefix).getScheme(), pluginClassLoader);
+    FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
+    FileSystem outputFs = FileSystemLoader.getFileSystem(fileSystems, outputPrefix);
 
     try {
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,
       // FileSystemRegister in Apache Beam
-      ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
-      Thread.currentThread().setContextClassLoader(packageClassLoader);
 
-      Map<String, Literal> outputs;
-      try {
-        Map<String, Literal> input = getInput(inputFs, inputs);
-        RunnableTask runnableTask = getTask(task);
+      Map<String, Literal> outputs =
+          withClassLoader(
+              packageClassLoader,
+              () -> {
+                Map<String, Literal> input = getInput(inputFs, inputs);
+                RunnableTask runnableTask = getTask(task);
 
-        outputs = runnableTask.run(input);
-      } finally {
-        Thread.currentThread().setContextClassLoader(originalContextClassLoader);
-      }
+                return runnableTask.run(input);
+              });
 
       writeOutputs(outputFs, outputPrefix, outputs);
     } catch (ContainerError e) {
@@ -197,13 +194,11 @@ class Execute implements Callable<Integer> {
   }
 
   private static List<String> readStagedFiles(
-      ClassLoader pluginClassLoader, String indexFileLocation) {
-    FileSystem fs =
-        FileSystemRegistrar.getFileSystem(
-            URI.create(indexFileLocation).getScheme(), pluginClassLoader);
+      Map<String, FileSystem> fileSystems, String indexFileLocation) {
+    FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, indexFileLocation);
     List<String> files = new ArrayList<>();
 
-    try (ReadableByteChannel reader = fs.reader(indexFileLocation)) {
+    try (ReadableByteChannel reader = fileSystem.reader(indexFileLocation)) {
       Scanner scanner = new Scanner(Channels.newInputStream(reader), "UTF-8");
 
       while (scanner.hasNext()) {
@@ -222,17 +217,16 @@ class Execute implements Callable<Integer> {
     }
   }
 
-  private static ClassLoader loadPackage(List<String> stagedFiles, ClassLoader pluginClassLoader) {
+  private static ClassLoader loadPackage(
+      Map<String, FileSystem> fileSystems, List<String> stagedFiles) {
     try {
       Path tmp = Files.createTempDirectory("tasks");
 
-      // FIXME we assume all files use the same filesystem
       // TODO do in parallel
 
-      String scheme = URI.create(stagedFiles.get(0)).getScheme();
-      FileSystem fileSystem = FileSystemRegistrar.getFileSystem(scheme, pluginClassLoader);
-
       for (String stagedFile : stagedFiles) {
+        FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, stagedFile);
+
         try (ReadableByteChannel reader = fileSystem.reader(stagedFile)) {
           // FIXME beam doesn't like = in jar names
           // we should preserve original jar name, for now, just remove "="
@@ -251,7 +245,7 @@ class Execute implements Callable<Integer> {
         }
       }
 
-      return ClassLoaders.forDirectory(tmp.toFile().getAbsolutePath());
+      return ClassLoaders.forDirectory(tmp.toFile());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

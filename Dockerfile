@@ -1,12 +1,16 @@
 FROM gcr.io/distroless/java:8
 
-COPY target/lib /jflyte
-COPY target/plugins /jflyte/plugins/
+ARG FLYTE_INTERNAL_IMAGE
 
-ENV FLYTE_INTERNAL_PLUGIN_DIR "/jflyte/plugins"
+COPY jflyte/target/lib /jflyte/
+
+# plugins
+COPY jflyte-google-cloud/target/lib /jflyte/modules/jflyte-google-cloud
+
+ENV FLYTE_INTERNAL_MODULE_DIR "/jflyte/modules"
+ENV FLYTE_INTERNAL_IMAGE=$FLYTE_INTERNAL_IMAGE
 
 ENV FLYTE_PLATFORM_URL "CHANGEME"
-ENV FLYTE_INTERNAL_IMAGE "CHANGEME"
 ENV FLYTE_STAGING_LOCATION "CHANGEME"
 ENV FLYTE_PLATFORM_INSECURE "False"
 

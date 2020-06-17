@@ -379,19 +379,6 @@
           </executions>
         </plugin>
         <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.2.0</version>
-          <executions>
-            <execution>
-              <id>default-jar</id>
-              <phase>prepare-package</phase>
-              <goals>
-                <goal>jar</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>com.spotify</groupId>
           <artifactId>dockerfile-maven-plugin</artifactId>
           <version>1.4.9</version>
@@ -541,6 +528,15 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.2.0</version>
+          <executions>
+            <execution>
+              <id>default-jar</id>
+              <phase>prepare-package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
           <configuration>
             <outputDirectory>${project.build.directory}/lib</outputDirectory>
           </configuration>

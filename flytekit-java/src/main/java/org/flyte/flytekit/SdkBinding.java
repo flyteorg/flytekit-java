@@ -16,8 +16,13 @@
  */
 package org.flyte.flytekit;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SdkBinding {
   private final SdkWorkflowBuilder builder;
@@ -35,5 +40,57 @@ public class SdkBinding {
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
     return builder.applyInternal(nodeId, transform, upstreamNodeIds, bindingData);
+  }
+
+  public static Builder builder(SdkWorkflowBuilder workflowBuilder) {
+    return new Builder(workflowBuilder);
+  }
+
+  public static class Builder {
+    private final SdkWorkflowBuilder workflowBuilder;
+    private final Map<String, SdkBindingData> inputs = new HashMap<>();
+    private final List<String> upstreamNodeIds = new ArrayList<>();
+
+    private Builder(SdkWorkflowBuilder workflowBuilder) {
+      this.workflowBuilder = workflowBuilder;
+    }
+
+    public Builder put(String name, SdkBindingData data) {
+      SdkBindingData previous = inputs.put(name, data);
+
+      if (previous != null) {
+        throw new IllegalArgumentException(String.format("Duplicate input: [%s]", name));
+      }
+
+      return this;
+    }
+
+    public Builder add(SdkNode node) {
+      // explicitly specify upstreamNodeIds if we don't use any outputs to preserve the execution
+      // order
+      if (node.getOutputs().isEmpty()) {
+        upstreamNodeIds.add(node.getNodeId());
+      }
+
+      Set<String> duplicateInputs =
+          node.getOutputs().keySet().stream()
+              .filter(inputs::containsKey)
+              .collect(Collectors.toSet());
+
+      if (!duplicateInputs.isEmpty()) {
+        throw new IllegalArgumentException(String.format("Duplicate inputs: %s", duplicateInputs));
+      }
+
+      inputs.putAll(node.getOutputs());
+
+      return this;
+    }
+
+    public SdkBinding build() {
+      return new SdkBinding(
+          workflowBuilder,
+          Collections.unmodifiableList(new ArrayList<>(upstreamNodeIds)),
+          Collections.unmodifiableMap(new HashMap<>(inputs)));
+    }
   }
 }

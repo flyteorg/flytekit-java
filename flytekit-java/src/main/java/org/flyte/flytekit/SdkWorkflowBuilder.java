@@ -17,11 +17,9 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import java.time.Duration;
@@ -31,7 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
@@ -55,8 +52,8 @@ public class SdkWorkflowBuilder {
     this.outputBindings = new LinkedHashMap<>();
   }
 
-  public SdkNode apply(String nodeId, SdkRunnableTask<?, ?> task) {
-    return applyInternal(nodeId, task, emptyList(), Collections.emptyMap());
+  public SdkNode apply(String nodeId, SdkTransform transform) {
+    return applyInternal(nodeId, transform, emptyList(), Collections.emptyMap());
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
@@ -99,15 +96,12 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkBinding mapOf(String name1, SdkBindingData value1) {
-    return new SdkBinding(this, emptyList(), singletonMap(name1, value1));
+    return SdkBinding.builder(this).put(name1, value1).build();
   }
 
   public SdkBinding mapOf(
       String name1, SdkBindingData value1, String name2, SdkBindingData value2) {
-    Map<String, SdkBindingData> map = new HashMap<>();
-    map.put(name1, value1);
-    map.put(name2, value2);
-    return new SdkBinding(this, emptyList(), unmodifiableMap(map));
+    return SdkBinding.builder(this).put(name1, value1).put(name2, value2).build();
   }
 
   public SdkBinding mapOf(
@@ -117,30 +111,58 @@ public class SdkWorkflowBuilder {
       SdkBindingData value2,
       String name3,
       SdkBindingData value3) {
-    Map<String, SdkBindingData> map = new HashMap<>();
-    map.put(name1, value1);
-    map.put(name2, value2);
-    map.put(name3, value3);
-    return new SdkBinding(this, emptyList(), unmodifiableMap(map));
+    return SdkBinding.builder(this)
+        .put(name1, value1)
+        .put(name2, value2)
+        .put(name3, value3)
+        .build();
+  }
+
+  public SdkBinding mapOf(
+      String name1,
+      SdkBindingData value1,
+      String name2,
+      SdkBindingData value2,
+      String name3,
+      SdkBindingData value3,
+      String name4,
+      SdkBindingData value4) {
+    return SdkBinding.builder(this)
+        .put(name1, value1)
+        .put(name2, value2)
+        .put(name3, value3)
+        .put(name4, value4)
+        .build();
+  }
+
+  public SdkBinding mapOf(
+      String name1,
+      SdkBindingData value1,
+      String name2,
+      SdkBindingData value2,
+      String name3,
+      SdkBindingData value3,
+      String name4,
+      SdkBindingData value4,
+      String name5,
+      SdkBindingData value5) {
+    return SdkBinding.builder(this)
+        .put(name1, value1)
+        .put(name2, value2)
+        .put(name3, value3)
+        .put(name4, value4)
+        .put(name5, value5)
+        .build();
   }
 
   public SdkBinding tupleOf(SdkNode... nodes) {
-    Map<String, SdkBindingData> inputs =
-        Stream.of(nodes)
-            .flatMap(x -> x.getOutputs().entrySet().stream())
-            .collect(
-                collectingAndThen(
-                    toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
+    SdkBinding.Builder builder = SdkBinding.builder(this);
 
-    // explicitly specify upstreamNodeIds if we don't use any outputs to preserve the execution
-    // order
-    List<String> upstreamNodeIds =
-        Stream.of(nodes)
-            .filter(x -> x.getOutputs().isEmpty())
-            .map(SdkNode::getNodeId)
-            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+    for (SdkNode node : nodes) {
+      builder.add(node);
+    }
 
-    return new SdkBinding(this, upstreamNodeIds, inputs);
+    return builder.build();
   }
 
   public SdkBindingData inputOfInteger(String name) {

@@ -85,6 +85,10 @@ public class ExecuteLocal implements Callable<Integer> {
 
     CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.create();
     spec.usageMessage().customSynopsis(getCustomSynopsis());
+    workflow
+        .interface_()
+        .inputs()
+        .forEach((name, variable) -> spec.addOption(getOption(name, variable)));
 
     Map<String, Literal> inputs = parseInputs(spec, workflow.interface_().inputs(), inputArgs);
 
@@ -169,27 +173,32 @@ public class ExecuteLocal implements Callable<Integer> {
     }
   }
 
-  static Map<String, Literal> parseInputs(
-      CommandLine.Model.CommandSpec spec, Map<String, Variable> variableMap, String[] inputs) {
-    for (Map.Entry<String, Variable> entry : variableMap.entrySet()) {
-      Variable variable = entry.getValue();
+  /**
+   * Override to customize how options are parsed, and provide default values if necessary.
+   *
+   * @param name option name
+   * @param variable variable
+   * @return option spec
+   */
+  protected CommandLine.Model.OptionSpec getOption(String name, Variable variable) {
+    // FIXME we assume for now that there are only simple types, because everything else isn't
+    // implemented, we should improve error message once we support other cases
+    SimpleType simpleType = variable.literalType().simpleType();
 
-      // FIXME we assume for now that there are only simple types, because everything else isn't
-      // implemented, we should improve error message once we support other cases
-      SimpleType simpleType = variable.literalType().simpleType();
+    CommandLine.Model.OptionSpec.Builder builder =
+        CommandLine.Model.OptionSpec.builder("--" + name)
+            .converters(new LiteralTypeConverter(simpleType))
+            .required(true);
 
-      CommandLine.Model.OptionSpec.Builder builder =
-          CommandLine.Model.OptionSpec.builder("--" + entry.getKey())
-              .converters(new LiteralTypeConverter(simpleType))
-              .required(true);
-
-      if (variable.description() != null) {
-        builder.description(variable.description());
-      }
-
-      spec.addOption(builder.build());
+    if (variable.description() != null) {
+      builder.description(variable.description());
     }
 
+    return builder.build();
+  }
+
+  static Map<String, Literal> parseInputs(
+      CommandLine.Model.CommandSpec spec, Map<String, Variable> variableMap, String[] inputs) {
     CommandLine.ParseResult result =
         new CommandLine(spec).parseArgs(inputs != null ? inputs : new String[0]);
 

@@ -40,8 +40,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_string() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("string", variableOf(SimpleType.STRING)),
             new String[] {"--string=string_value"});
 
@@ -51,8 +50,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_integer() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("integer", variableOf(SimpleType.INTEGER)),
             new String[] {"--integer=42"});
 
@@ -62,10 +60,8 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_float() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
-            ImmutableMap.of("float", variableOf(SimpleType.FLOAT)),
-            new String[] {"--float=42.4"});
+        parseInputs(
+            ImmutableMap.of("float", variableOf(SimpleType.FLOAT)), new String[] {"--float=42.4"});
 
     double inputFloat = inputs.get("float").scalar().primitive().float_();
 
@@ -75,8 +71,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_dateTime_isoDate() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
             new String[] {"--datetime=2020-02-01"});
 
@@ -88,8 +83,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_dateTime_epochDate() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-01"});
 
@@ -100,8 +94,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_dateTime_epochZonedDateTime() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-01T01:00:00+01:00"});
 
@@ -112,8 +105,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_dateTime_epochZonedDate() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-02+01:00"});
 
@@ -125,8 +117,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_dateTime_isoInstantUtc() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
             new String[] {"--datetime=2020-02-01T03:04:05Z"});
 
@@ -138,8 +129,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_boolean() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of(
                 "true_arg", variableOf(SimpleType.BOOLEAN),
                 "false_arg", variableOf(SimpleType.BOOLEAN)),
@@ -155,8 +145,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_duration() {
     Map<String, Literal> inputs =
-        ExecuteLocal.parseInputs(
-            CommandLine.Model.CommandSpec.create(),
+        parseInputs(
             ImmutableMap.of("duration", variableOf(SimpleType.DURATION)),
             new String[] {"--duration=P1DT2H"});
 
@@ -172,10 +161,7 @@ public class ExecuteLocalTest {
         Assertions.assertThrows(
             CommandLine.ParameterException.class,
             () ->
-                ExecuteLocal.parseInputs(
-                    CommandLine.Model.CommandSpec.create(),
-                    ImmutableMap.of("arg", variableOf(SimpleType.STRING)),
-                    new String[0]));
+                parseInputs(ImmutableMap.of("arg", variableOf(SimpleType.STRING)), new String[0]));
 
     assertEquals("Missing required option '--arg'", exception.getMessage());
   }
@@ -186,13 +172,21 @@ public class ExecuteLocalTest {
         Assertions.assertThrows(
             CommandLine.ParameterException.class,
             () ->
-                ExecuteLocal.parseInputs(
-                    CommandLine.Model.CommandSpec.create(),
+                parseInputs(
                     ImmutableMap.of("arg", variableOf(SimpleType.INTEGER)),
                     new String[] {"--arg=string_value"}));
 
     assertEquals(
         "Invalid value for option '--arg': 'string_value' is not a long", exception.getMessage());
+  }
+
+  private static Map<String, Literal> parseInputs(
+      Map<String, Variable> variableMap, String[] args) {
+    CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.create();
+    ExecuteLocal cmd = new ExecuteLocal();
+    variableMap.forEach((name, variable) -> spec.addOption(cmd.getOption(name, variable)));
+
+    return ExecuteLocal.parseInputs(spec, variableMap, args);
   }
 
   private static Literal literalOf(Primitive primitive) {

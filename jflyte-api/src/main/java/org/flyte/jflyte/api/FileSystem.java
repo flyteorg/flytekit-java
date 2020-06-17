@@ -36,7 +36,12 @@ public interface FileSystem {
   @MustBeClosed
   WritableByteChannel writer(String uri);
 
-  /** Returns Manifest for given resource, or null if it doesn't exist. */
+  /**
+   * Returns Manifest for given resource, or null if it doesn't exist.
+   *
+   * @param uri uri
+   * @return manifest
+   */
   @Nullable
   Manifest getManifest(String uri);
 }

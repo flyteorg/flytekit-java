@@ -54,6 +54,10 @@ class ExecutionNodeCompiler {
   /**
    * Given a list of flytekit-api nodes, validates them, and determines their sequential execution
    * order.
+   *
+   * @param nodes nodes
+   * @param runnableTasks runnable tasks
+   * @return execution nodes
    */
   static List<ExecutionNode> compile(List<Node> nodes, Map<String, RunnableTask> runnableTasks) {
     List<ExecutionNode> executableNodes =
@@ -91,6 +95,9 @@ class ExecutionNodeCompiler {
    * priority. If two nodes have the same depth, relative order in input list is used. Because of
    * that, the implementation is slightly different from what you would normally see for topological
    * sorting.
+   *
+   * @param nodes nodes
+   * @return execution nodes
    */
   static List<ExecutionNode> sort(List<ExecutionNode> nodes) {
     // priority is initial order in the list, node earlier in the list

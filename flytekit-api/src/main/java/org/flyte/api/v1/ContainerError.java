@@ -49,12 +49,18 @@ public class ContainerError extends RuntimeException {
 
   /**
    * Returns a simplified code for errors, so that we can provide a glossary of all possible errors.
+   *
+   * @return error code
    */
   public String getCode() {
     return code;
   }
 
-  /** Returns an abstract error kind for this error. */
+  /**
+   * Returns an abstract error kind for this error.
+   *
+   * @return error kind
+   */
   public Kind getKind() {
     return kind;
   }

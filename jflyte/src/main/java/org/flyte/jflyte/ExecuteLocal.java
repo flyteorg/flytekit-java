@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.SimpleType;
@@ -174,7 +175,7 @@ public class ExecuteLocal implements Callable<Integer> {
   }
 
   /**
-   * Override to customize how options are parsed, and provide default values if necessary.
+   * Override to provide default values if necessary.
    *
    * @param name option name
    * @param variable variable
@@ -185,10 +186,16 @@ public class ExecuteLocal implements Callable<Integer> {
     // implemented, we should improve error message once we support other cases
     SimpleType simpleType = variable.literalType().simpleType();
 
+    String defaultValue = getDefaultValue(name);
+
     CommandLine.Model.OptionSpec.Builder builder =
         CommandLine.Model.OptionSpec.builder("--" + name)
             .converters(new LiteralTypeConverter(simpleType))
-            .required(true);
+            .required(defaultValue == null);
+
+    if (defaultValue != null) {
+      builder.defaultValue(defaultValue);
+    }
 
     if (variable.description() != null) {
       builder.description(variable.description());
@@ -197,13 +204,40 @@ public class ExecuteLocal implements Callable<Integer> {
     return builder.build();
   }
 
-  static Map<String, Literal> parseInputs(
+  /**
+   * Override to provide default values if necessary.
+   *
+   * @param name parameter name
+   * @return literal
+   */
+  @Nullable
+  protected String getDefaultValue(String name) {
+    return null;
+  }
+
+  protected Map<String, Literal> parseInputs(
       CommandLine.Model.CommandSpec spec, Map<String, Variable> variableMap, String[] inputs) {
     CommandLine.ParseResult result =
         new CommandLine(spec).parseArgs(inputs != null ? inputs : new String[0]);
 
-    return variableMap.keySet().stream()
-        .map(name -> Maps.immutableEntry(name, result.matchedOptionValue(name, (Literal) null)))
+    return variableMap.entrySet().stream()
+        .map(
+            kv -> {
+              String name = kv.getKey();
+              Literal defaultValue = getDefaultValueAsLiteral(name, kv.getValue());
+
+              return Maps.immutableEntry(name, result.matchedOptionValue(name, defaultValue));
+            })
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private Literal getDefaultValueAsLiteral(String name, Variable variable) {
+    String defaultValueString = getDefaultValue(name);
+    if (defaultValueString == null) {
+      return null;
+    }
+
+    SimpleType simpleType = variable.literalType().simpleType();
+    return new LiteralTypeConverter(simpleType).convert(defaultValueString);
   }
 }

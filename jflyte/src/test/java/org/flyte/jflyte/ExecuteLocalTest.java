@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -156,6 +157,16 @@ public class ExecuteLocalTest {
   }
 
   @Test
+  public void testParseInputs_defaultValues() {
+    ExecuteLocal cmd = new ExecuteLocalWithDefaultValues(ImmutableMap.of("arg", "foo"));
+
+    Map<String, Literal> inputs =
+        parseInputs(ImmutableMap.of("arg", variableOf(SimpleType.STRING)), new String[0], cmd);
+
+    assertEquals(ImmutableMap.of("arg", literalOf(Primitive.ofString("foo"))), inputs);
+  }
+
+  @Test
   public void testParseInputs_missingArgument() {
     CommandLine.ParameterException exception =
         Assertions.assertThrows(
@@ -182,11 +193,15 @@ public class ExecuteLocalTest {
 
   private static Map<String, Literal> parseInputs(
       Map<String, Variable> variableMap, String[] args) {
+    return parseInputs(variableMap, args, new ExecuteLocal());
+  }
+
+  private static Map<String, Literal> parseInputs(
+      Map<String, Variable> variableMap, String[] args, ExecuteLocal cmd) {
     CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.create();
-    ExecuteLocal cmd = new ExecuteLocal();
     variableMap.forEach((name, variable) -> spec.addOption(cmd.getOption(name, variable)));
 
-    return ExecuteLocal.parseInputs(spec, variableMap, args);
+    return cmd.parseInputs(spec, variableMap, args);
   }
 
   private static Literal literalOf(Primitive primitive) {
@@ -198,5 +213,20 @@ public class ExecuteLocalTest {
         .description("description")
         .literalType(LiteralType.builder().simpleType(simpleType).build())
         .build();
+  }
+
+  private static class ExecuteLocalWithDefaultValues extends ExecuteLocal {
+
+    private final ImmutableMap<String, String> defaultValues;
+
+    public ExecuteLocalWithDefaultValues(ImmutableMap<String, String> defaultValues) {
+      this.defaultValues = defaultValues;
+    }
+
+    @Nullable
+    @Override
+    protected String getDefaultValue(String name) {
+      return defaultValues.get(name);
+    }
   }
 }

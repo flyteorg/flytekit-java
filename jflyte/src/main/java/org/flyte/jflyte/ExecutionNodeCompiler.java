@@ -80,7 +80,9 @@ class ExecutionNodeCompiler {
       upstreamNodeIds.add(START_NODE_ID);
     }
 
-    RunnableTask runnableTask = runnableTasks.get(node.taskNode().referenceId().name());
+    String taskName = node.taskNode().referenceId().name();
+    RunnableTask runnableTask = runnableTasks.get(taskName);
+    Verify.verifyNotNull(runnableTask, "Couldn't find task named:", taskName);
 
     return ExecutionNode.builder()
         .nodeId(node.id())

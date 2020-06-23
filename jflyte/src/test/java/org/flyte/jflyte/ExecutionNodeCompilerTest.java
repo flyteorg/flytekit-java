@@ -18,18 +18,22 @@ package org.flyte.jflyte;
 
 import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.VerifyException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
 import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExecutionNodeCompilerTest {
@@ -70,7 +74,7 @@ class ExecutionNodeCompilerTest {
     ExecutionNode node4 = createExecutionNode("node-4", ImmutableList.of("node-3"));
 
     VerifyException e =
-        Assertions.assertThrows(
+        assertThrows(
             VerifyException.class,
             () -> ExecutionNodeCompiler.sort(ImmutableList.of(node1, node2, node3, node4)));
 
@@ -82,7 +86,7 @@ class ExecutionNodeCompilerTest {
     ExecutionNode node1 = createExecutionNode("node-1", ImmutableList.of("node-2"));
 
     VerifyException e =
-        Assertions.assertThrows(
+        assertThrows(
             VerifyException.class, () -> ExecutionNodeCompiler.sort(ImmutableList.of(node1)));
 
     Assert.assertEquals("workflow graph isn't connected or has a cycle", e.getMessage());
@@ -94,7 +98,7 @@ class ExecutionNodeCompilerTest {
     ExecutionNode node2 = createExecutionNode("node-2", ImmutableList.of("node-2", "node-3"));
 
     VerifyException e =
-        Assertions.assertThrows(
+        assertThrows(
             VerifyException.class,
             () -> ExecutionNodeCompiler.sort(ImmutableList.of(node1, node2)));
 
@@ -106,7 +110,7 @@ class ExecutionNodeCompilerTest {
     ExecutionNode node1 = createExecutionNode("node-1", ImmutableList.of(START_NODE_ID));
 
     VerifyException e =
-        Assertions.assertThrows(
+        assertThrows(
             VerifyException.class,
             () -> ExecutionNodeCompiler.sort(ImmutableList.of(node1, node1)));
 
@@ -129,6 +133,18 @@ class ExecutionNodeCompilerTest {
     assertEquals(ImmutableList.of("node-1", "node-3", "node-4", "node-2"), getNodeIds(sorted));
   }
 
+  @Test
+  void testCompile_unknownTask() {
+    Node node = createNode("node-1", ImmutableList.of(START_NODE_ID));
+
+    RuntimeException exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> ExecutionNodeCompiler.compile(node, Collections.emptyMap()));
+
+    assertEquals("Couldn't find task named: [unknownTask]", exception.getMessage());
+  }
+
   private static List<String> getNodeIds(List<ExecutionNode> nodes) {
     return nodes.stream().map(ExecutionNode::nodeId).collect(Collectors.toList());
   }
@@ -139,6 +155,18 @@ class ExecutionNodeCompilerTest {
         .upstreamNodeIds(upstreamNodeIds)
         .runnableTask(new EmptyRunnableTask())
         .bindings(ImmutableList.of())
+        .build();
+  }
+
+  private static Node createNode(String nodeId, List<String> upstreamNodeIds) {
+    return Node.builder()
+        .id(nodeId)
+        .taskNode(
+            TaskNode.builder()
+                .referenceId(PartialTaskIdentifier.builder().name("unknownTask").build())
+                .build())
+        .upstreamNodeIds(upstreamNodeIds)
+        .inputs(ImmutableList.of())
         .build();
   }
 

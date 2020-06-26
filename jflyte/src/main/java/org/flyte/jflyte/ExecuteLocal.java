@@ -23,10 +23,10 @@ import static org.flyte.jflyte.ClassLoaders.withClassLoader;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SortedSetMultimap;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -153,7 +153,8 @@ public class ExecuteLocal implements Callable<Integer> {
 
   private static <ItemT> void verifyNoDuplicateItems(
       Map<String, Map<String, ItemT>> itemsBySources) {
-    ListMultimap<String, String> sourcesByItemId = ArrayListMultimap.create();
+    SortedSetMultimap<String, String> sourcesByItemId =
+        MultimapBuilder.treeKeys().treeSetValues().build();
     itemsBySources.forEach(
         (source, items) -> items.keySet().forEach(itemId -> sourcesByItemId.put(itemId, source)));
 
@@ -165,8 +166,8 @@ public class ExecuteLocal implements Callable<Integer> {
     if (!duplicateItemsId.isEmpty()) {
       String errorMessage =
           duplicateItemsId.stream()
-              .map(itemId -> String.format("[%s -> %s]", itemId, sourcesByItemId.get(itemId)))
-              .collect(joining(";", "Found duplicate items among the modules: ", ""));
+              .map(itemId -> String.format("{%s -> %s}", itemId, sourcesByItemId.get(itemId)))
+              .collect(joining("; ", "Found duplicate items among the modules: ", ""));
       throw new RuntimeException(errorMessage);
     }
   }

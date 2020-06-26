@@ -29,6 +29,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -82,7 +83,7 @@ public class Execute implements Callable<Integer> {
 
   private void execute() {
     Config config = Config.load();
-    List<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
+    Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
     Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
     List<String> stagedFiles = readStagedFiles(fileSystems, indexFileLocation);
 

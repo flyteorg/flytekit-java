@@ -20,6 +20,7 @@ import com.google.common.base.Verify;
 import com.google.common.collect.ImmutableMap;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
 class FileSystemLoader {
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemLoader.class);
 
-  static Map<String, FileSystem> loadFileSystems(List<ClassLoader> modules) {
+  static Map<String, FileSystem> loadFileSystems(Collection<ClassLoader> modules) {
     return modules.stream()
         .flatMap(module -> ClassLoaders.withClassLoader(module, () -> loadFileSystems().stream()))
         .collect(Collectors.toMap(FileSystem::getScheme, x -> x));

@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class RegisterWorkflows implements Callable<Integer> {
       }
 
       URI stagingUri = new URI(stagingLocation);
-      List<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
+      Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
       Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
       FileSystem stagingFileSystem = FileSystemLoader.getFileSystem(fileSystems, stagingUri);
 

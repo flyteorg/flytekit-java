@@ -16,17 +16,22 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.flyte.jflyte.ClassLoaders.withClassLoader;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
@@ -62,7 +67,7 @@ public class ExecuteLocal implements Callable<Integer> {
 
   @Override
   public Integer call() {
-    List<ClassLoader> modules = loadModules();
+    Map<String, ClassLoader> modules = loadModules();
 
     Map<String, String> env =
         ImmutableMap.of(
@@ -70,15 +75,8 @@ public class ExecuteLocal implements Callable<Integer> {
             "JFLYTE_VERSION", "test",
             "JFLYTE_PROJECT", "flytetester");
 
-    Map<String, RunnableTask> tasks =
-        modules.stream()
-            .flatMap(module -> loadTasks(module, env).entrySet().stream())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    Map<String, WorkflowTemplate> workflows =
-        modules.stream()
-            .flatMap(module -> loadWorkflows(module, env).entrySet().stream())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, RunnableTask> tasks = loadAll(modules, ExecuteLocal::loadTasks, env);
+    Map<String, WorkflowTemplate> workflows = loadAll(modules, ExecuteLocal::loadWorkflows, env);
 
     WorkflowTemplate workflow =
         Preconditions.checkNotNull(
@@ -120,16 +118,56 @@ public class ExecuteLocal implements Callable<Integer> {
     return sb.toString();
   }
 
-  private List<ClassLoader> loadModules() {
+  private Map<String, ClassLoader> loadModules() {
     Config config = Config.load();
-    List<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
+    Map<String, ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir());
 
     if (packageDir != null) {
       ClassLoader packageClassLoader = ClassLoaders.forDirectory(new File(packageDir));
 
-      return ImmutableList.<ClassLoader>builder().addAll(modules).add(packageClassLoader).build();
+      return ImmutableMap.<String, ClassLoader>builder()
+          .putAll(modules)
+          .put(packageDir, packageClassLoader)
+          .build();
     } else {
       return modules;
+    }
+  }
+
+  @VisibleForTesting
+  static <ItemT> Map<String, ItemT> loadAll(
+      Map<String, ClassLoader> modules,
+      BiFunction<ClassLoader, Map<String, String>, Map<String, ItemT>> loader,
+      Map<String, String> env) {
+    Map<String, Map<String, ItemT>> loadedItemsBySource =
+        modules.entrySet().stream()
+            .map(mod -> Maps.immutableEntry(mod.getKey(), loader.apply(mod.getValue(), env)))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    verifyNoDuplicateItems(loadedItemsBySource);
+
+    return loadedItemsBySource.values().stream()
+        .flatMap(items -> items.entrySet().stream())
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private static <ItemT> void verifyNoDuplicateItems(
+      Map<String, Map<String, ItemT>> itemsBySources) {
+    ListMultimap<String, String> sourcesByItemId = ArrayListMultimap.create();
+    itemsBySources.forEach(
+        (source, items) -> items.keySet().forEach(itemId -> sourcesByItemId.put(itemId, source)));
+
+    List<String> duplicateItemsId =
+        sourcesByItemId.keySet().stream()
+            .filter(itemId -> sourcesByItemId.get(itemId).size() > 1)
+            .collect(toList());
+
+    if (!duplicateItemsId.isEmpty()) {
+      String errorMessage =
+          duplicateItemsId.stream()
+              .map(itemId -> String.format("[%s -> %s]", itemId, sourcesByItemId.get(itemId)))
+              .collect(joining(";", "Found duplicate items among the modules: ", ""));
+      throw new RuntimeException(errorMessage);
     }
   }
 
@@ -138,7 +176,7 @@ public class ExecuteLocal implements Callable<Integer> {
 
     return tasks.entrySet().stream()
         .collect(
-            Collectors.toMap(
+            toMap(
                 Map.Entry::getKey,
                 entry -> new RunnableTaskWithClassLoader(entry.getValue(), classLoader)));
   }
@@ -228,7 +266,7 @@ public class ExecuteLocal implements Callable<Integer> {
 
               return Maps.immutableEntry(name, result.matchedOptionValue(name, defaultValue));
             })
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private Literal getDefaultValueAsLiteral(String name, Variable variable) {

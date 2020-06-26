@@ -18,12 +18,14 @@ package org.flyte.jflyte;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -38,11 +40,11 @@ class ClassLoaders {
     throw new UnsupportedOperationException();
   }
 
-  static List<ClassLoader> forModuleDir(String dir) {
+  static Map<String, ClassLoader> forModuleDir(String dir) {
     return listDirectory(new File(dir)).stream()
         .filter(File::isDirectory)
-        .map(ClassLoaders::forDirectory)
-        .collect(Collectors.toList());
+        .map(subDir -> Maps.immutableEntry(subDir.getAbsolutePath(), forDirectory(subDir)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   static ClassLoader forDirectory(File dir) {

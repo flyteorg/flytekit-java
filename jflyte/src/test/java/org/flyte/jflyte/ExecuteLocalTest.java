@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import java.time.Duration;
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
@@ -32,7 +34,8 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
-import org.junit.jupiter.api.Assertions;
+import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
@@ -169,7 +172,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_missingArgument() {
     CommandLine.ParameterException exception =
-        Assertions.assertThrows(
+        assertThrows(
             CommandLine.ParameterException.class,
             () ->
                 parseInputs(ImmutableMap.of("arg", variableOf(SimpleType.STRING)), new String[0]));
@@ -180,7 +183,7 @@ public class ExecuteLocalTest {
   @Test
   public void testParseInputs_invalidArgument() {
     CommandLine.ParameterException exception =
-        Assertions.assertThrows(
+        assertThrows(
             CommandLine.ParameterException.class,
             () ->
                 parseInputs(
@@ -189,6 +192,52 @@ public class ExecuteLocalTest {
 
     assertEquals(
         "Invalid value for option '--arg': 'string_value' is not a long", exception.getMessage());
+  }
+
+  @Test
+  void testLoadAll_withoutDuplicates() {
+    ClassLoader classLoader1 = new TestClassLoader();
+    ClassLoader classLoader2 = new TestClassLoader();
+    TestTask task1 = new TestTask();
+    TestTask task2 = new TestTask();
+
+    Map<String, ClassLoader> modules =
+        ImmutableMap.of("source1", classLoader1, "source2", classLoader2);
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
+        ImmutableMap.of(
+            classLoader1, ImmutableMap.of("task1", task1),
+            classLoader2, ImmutableMap.of("task2", task2));
+
+    Map<String, SdkRunnableTask<?, ?>> tasksByName =
+        ExecuteLocal.loadAll(
+            modules, (cl, __) -> tasksPerClassLoader.get(cl), Collections.emptyMap());
+
+    assertEquals(ImmutableMap.of("task1", task1, "task2", task2), tasksByName);
+  }
+
+  @Test
+  void testLoadAll_withDuplicates() {
+    ClassLoader classLoader1 = new TestClassLoader();
+    ClassLoader classLoader2 = new TestClassLoader();
+    TestTask duplicateTask = new TestTask();
+
+    Map<String, ClassLoader> modules =
+        ImmutableMap.of("source1", classLoader1, "source2", classLoader2);
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
+        ImmutableMap.of(
+            classLoader1, ImmutableMap.of("duplicateTask", duplicateTask),
+            classLoader2, ImmutableMap.of("duplicateTask", duplicateTask));
+
+    RuntimeException exception =
+        assertThrows(
+            RuntimeException.class,
+            () ->
+                ExecuteLocal.loadAll(
+                    modules, (cl, __) -> tasksPerClassLoader.get(cl), Collections.emptyMap()));
+
+    assertEquals(
+        "Found duplicate items among the modules: [duplicateTask -> [source1, source2]]",
+        exception.getMessage());
   }
 
   private static Map<String, Literal> parseInputs(
@@ -229,4 +278,19 @@ public class ExecuteLocalTest {
       return defaultValues.get(name);
     }
   }
+
+  private static class TestTask extends SdkRunnableTask<Void, Void> {
+    private static final long serialVersionUID = -2949483398581210936L;
+
+    private TestTask() {
+      super(SdkTypes.nulls(), SdkTypes.nulls());
+    }
+
+    @Override
+    public Void run(Void input) {
+      return null;
+    }
+  }
+
+  private static class TestClassLoader extends ClassLoader {}
 }

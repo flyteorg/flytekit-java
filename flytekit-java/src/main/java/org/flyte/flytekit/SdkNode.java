@@ -46,11 +46,11 @@ public abstract class SdkNode {
 
   public abstract Node toIdl();
 
-  public SdkNode apply(String id, SdkRunnableTask<?, ?> task) {
+  public SdkNode apply(String id, SdkTransform transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
-    return builder.applyInternal(id, task, upstreamNodeIds, getOutputs());
+    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputs());
   }
 }

@@ -34,6 +34,7 @@ import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
@@ -396,6 +397,26 @@ class ProtoUtil {
     return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
   }
 
+  private static Literals.LiteralCollection serialize(@Nullable List<Literal> literals) {
+    if (literals == null) {
+      return null;
+    }
+
+    Literals.LiteralCollection.Builder builder = Literals.LiteralCollection.newBuilder();
+    literals.forEach(literal -> builder.addLiterals(serialize(literal)));
+    return builder.build();
+  }
+
+  private static Literals.LiteralMap serialize(@Nullable Map<String, Literal> literals) {
+    if (literals == null) {
+      return null;
+    }
+
+    Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
+    literals.forEach((name, literal) -> builder.putLiterals(name, serialize(literal)));
+    return builder.build();
+  }
+
   @VisibleForTesting
   static Literals.Primitive serialize(Primitive primitive) {
     Literals.Primitive.Builder builder = Literals.Primitive.newBuilder();
@@ -442,13 +463,18 @@ class ProtoUtil {
     return builder.build();
   }
 
-  private static Literals.Literal serialize(Literal value) {
+  static Literals.Literal serialize(Literal value) {
     Literals.Literal.Builder builder = Literals.Literal.newBuilder();
 
     switch (value.kind()) {
       case SCALAR:
         builder.setScalar(serialize(value.scalar()));
-
+        return builder.build();
+      case COLLECTION:
+        builder.setCollection(serialize(value.collection()));
+        return builder.build();
+      case MAP:
+        builder.setMap(serialize(value.map()));
         return builder.build();
     }
 

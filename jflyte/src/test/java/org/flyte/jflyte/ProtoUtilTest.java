@@ -39,6 +39,7 @@ import flyteidl.core.Workflow;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -455,6 +456,37 @@ class ProtoUtilTest {
                         .setSeconds(seconds)
                         .setNanos(nanos)
                         .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createSerializeLiteralsArguments")
+  void shouldSerializeLiterals(Literal input, Literals.Literal expected) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createSerializeLiteralsArguments() {
+    Literal apiLiteral = Literal.of(Scalar.of(Primitive.ofInteger(123)));
+    Literals.Literal protoLiteral =
+        Literals.Literal.newBuilder()
+            .setScalar(
+                Literals.Scalar.newBuilder()
+                    .setPrimitive(Literals.Primitive.newBuilder().setInteger(123).build())
+                    .build())
+            .build();
+
+    return Stream.of(
+        Arguments.of(apiLiteral, protoLiteral),
+        Arguments.of(
+            Literal.of(Collections.singletonList(apiLiteral)),
+            Literals.Literal.newBuilder()
+                .setCollection(
+                    Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())
+                .build()),
+        Arguments.of(
+            Literal.of(Collections.singletonMap("name", apiLiteral)),
+            Literals.Literal.newBuilder()
+                .setMap(Literals.LiteralMap.newBuilder().putLiterals("name", protoLiteral).build())
                 .build()));
   }
 

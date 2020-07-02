@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import static java.util.Collections.emptyMap;
+import static org.flyte.jflyte.ApiUtils.createVar;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,7 +30,6 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -45,7 +45,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_string() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("string", variableOf(SimpleType.STRING)),
+            ImmutableMap.of("string", createVar(SimpleType.STRING)),
             new String[] {"--string=string_value"});
 
     assertEquals(ImmutableMap.of("string", literalOf(Primitive.ofString("string_value"))), inputs);
@@ -55,7 +55,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_integer() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("integer", variableOf(SimpleType.INTEGER)),
+            ImmutableMap.of("integer", createVar(SimpleType.INTEGER)),
             new String[] {"--integer=42"});
 
     assertEquals(ImmutableMap.of("integer", literalOf(Primitive.ofInteger(42))), inputs);
@@ -65,7 +65,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_float() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("float", variableOf(SimpleType.FLOAT)), new String[] {"--float=42.4"});
+            ImmutableMap.of("float", createVar(SimpleType.FLOAT)), new String[] {"--float=42.4"});
 
     double inputFloat = inputs.get("float").scalar().primitive().float_();
 
@@ -76,7 +76,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_dateTime_isoDate() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
+            ImmutableMap.of("datetime", createVar(SimpleType.DATETIME)),
             new String[] {"--datetime=2020-02-01"});
 
     Instant expected = LocalDate.of(2020, 2, 1).atStartOfDay().toInstant(ZoneOffset.UTC);
@@ -88,7 +88,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_dateTime_epochDate() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
+            ImmutableMap.of("datetime", createVar(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-01"});
 
     assertEquals(
@@ -99,7 +99,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_dateTime_epochZonedDateTime() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
+            ImmutableMap.of("datetime", createVar(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-01T01:00:00+01:00"});
 
     assertEquals(
@@ -110,7 +110,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_dateTime_epochZonedDate() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
+            ImmutableMap.of("datetime", createVar(SimpleType.DATETIME)),
             new String[] {"--datetime=1970-01-02+01:00"});
 
     Instant expected = Instant.EPOCH.plus(Duration.ofHours(23));
@@ -122,7 +122,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_dateTime_isoInstantUtc() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("datetime", variableOf(SimpleType.DATETIME)),
+            ImmutableMap.of("datetime", createVar(SimpleType.DATETIME)),
             new String[] {"--datetime=2020-02-01T03:04:05Z"});
 
     Instant expected = LocalDateTime.of(2020, 2, 1, 3, 4, 5).toInstant(ZoneOffset.UTC);
@@ -135,8 +135,8 @@ public class ExecuteLocalTest {
     Map<String, Literal> inputs =
         parseInputs(
             ImmutableMap.of(
-                "true_arg", variableOf(SimpleType.BOOLEAN),
-                "false_arg", variableOf(SimpleType.BOOLEAN)),
+                "true_arg", createVar(SimpleType.BOOLEAN),
+                "false_arg", createVar(SimpleType.BOOLEAN)),
             new String[] {"--true_arg=true", "--false_arg=false"});
 
     assertEquals(
@@ -150,7 +150,7 @@ public class ExecuteLocalTest {
   public void testParseInputs_duration() {
     Map<String, Literal> inputs =
         parseInputs(
-            ImmutableMap.of("duration", variableOf(SimpleType.DURATION)),
+            ImmutableMap.of("duration", createVar(SimpleType.DURATION)),
             new String[] {"--duration=P1DT2H"});
 
     assertEquals(
@@ -164,7 +164,7 @@ public class ExecuteLocalTest {
     ExecuteLocal cmd = new ExecuteLocalWithDefaultValues(ImmutableMap.of("arg", "foo"));
 
     Map<String, Literal> inputs =
-        parseInputs(ImmutableMap.of("arg", variableOf(SimpleType.STRING)), new String[0], cmd);
+        parseInputs(ImmutableMap.of("arg", createVar(SimpleType.STRING)), new String[0], cmd);
 
     assertEquals(ImmutableMap.of("arg", literalOf(Primitive.ofString("foo"))), inputs);
   }
@@ -174,8 +174,7 @@ public class ExecuteLocalTest {
     CommandLine.ParameterException exception =
         assertThrows(
             CommandLine.ParameterException.class,
-            () ->
-                parseInputs(ImmutableMap.of("arg", variableOf(SimpleType.STRING)), new String[0]));
+            () -> parseInputs(ImmutableMap.of("arg", createVar(SimpleType.STRING)), new String[0]));
 
     assertEquals("Missing required option '--arg'", exception.getMessage());
   }
@@ -187,7 +186,7 @@ public class ExecuteLocalTest {
             CommandLine.ParameterException.class,
             () ->
                 parseInputs(
-                    ImmutableMap.of("arg", variableOf(SimpleType.INTEGER)),
+                    ImmutableMap.of("arg", createVar(SimpleType.INTEGER)),
                     new String[] {"--arg=string_value"}));
 
     assertEquals(
@@ -258,13 +257,6 @@ public class ExecuteLocalTest {
 
   private static Literal literalOf(Primitive primitive) {
     return Literal.of(Scalar.of(primitive));
-  }
-
-  private static Variable variableOf(SimpleType simpleType) {
-    return Variable.builder()
-        .description("description")
-        .literalType(LiteralType.builder().simpleType(simpleType).build())
-        .build();
   }
 
   private static class ExecuteLocalWithDefaultValues extends ExecuteLocal {

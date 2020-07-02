@@ -16,7 +16,8 @@
  */
 package org.flyte.jflyte;
 
-import org.flyte.api.v1.LiteralType;
+import static org.flyte.api.v1.LiteralType.ofSimpleType;
+
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 
@@ -28,9 +29,6 @@ class ApiUtils {
   }
 
   static Variable createVar(SimpleType type) {
-    return Variable.builder()
-        .literalType(LiteralType.builder().simpleType(type).build())
-        .description(null)
-        .build();
+    return Variable.builder().literalType(ofSimpleType(type)).description(null).build();
   }
 }

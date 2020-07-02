@@ -117,42 +117,42 @@ object SdkScalaType {
 
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
-      LiteralType.builder().simpleType(SimpleType.STRING).build(),
+      LiteralType.ofSimpleType(SimpleType.STRING),
       value => Literal.of(Scalar.of(Primitive.ofString(value))),
       _.scalar().primitive().string()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
-      LiteralType.builder().simpleType(SimpleType.INTEGER).build(),
+      LiteralType.ofSimpleType(SimpleType.INTEGER),
       value => Literal.of(Scalar.of(Primitive.ofInteger(value))),
       _.scalar().primitive().integer()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
-      LiteralType.builder().simpleType(SimpleType.FLOAT).build(),
+      LiteralType.ofSimpleType(SimpleType.FLOAT),
       value => Literal.of(Scalar.of(Primitive.ofFloat(value))),
       literal => literal.scalar().primitive().float_()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
-      LiteralType.builder().simpleType(SimpleType.BOOLEAN).build(),
+      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
       value => Literal.of(Scalar.of(Primitive.ofBoolean(value))),
       _.scalar().primitive().boolean_()
     )
 
   implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
     SdkScalaLiteralType[Instant](
-      LiteralType.builder().simpleType(SimpleType.DATETIME).build(),
+      LiteralType.ofSimpleType(SimpleType.DATETIME),
       value => Literal.of(Scalar.of(Primitive.ofDatetime(value))),
       _.scalar().primitive().datetime()
     )
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     SdkScalaLiteralType[Duration](
-      LiteralType.builder().simpleType(SimpleType.DURATION).build(),
+      LiteralType.ofSimpleType(SimpleType.DURATION),
       value => Literal.of(Scalar.of(Primitive.ofDuration(value))),
       _.scalar().primitive().duration()
     )

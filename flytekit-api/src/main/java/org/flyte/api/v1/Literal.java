@@ -17,6 +17,8 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoOneOf;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple value. This supports any level of nesting (e.g. array of array of array of Blobs) as
@@ -26,14 +28,33 @@ import com.google.auto.value.AutoOneOf;
 public abstract class Literal {
 
   public enum Kind {
-    SCALAR
+    /** A simple value. */
+    SCALAR,
+
+    /** A collection of literals to allow nesting. */
+    COLLECTION,
+
+    /** A map of strings to literals. */
+    MAP
   }
 
   public abstract Kind kind();
 
   public abstract Scalar scalar();
 
+  public abstract List<Literal> collection();
+
+  public abstract Map<String, Literal> map();
+
   public static Literal of(Scalar scalar) {
     return AutoOneOf_Literal.scalar(scalar);
+  }
+
+  public static Literal of(List<Literal> collection) {
+    return AutoOneOf_Literal.collection(collection);
+  }
+
+  public static Literal of(Map<String, Literal> map) {
+    return AutoOneOf_Literal.map(map);
   }
 }

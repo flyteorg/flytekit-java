@@ -214,7 +214,7 @@ public class SdkWorkflowBuilder {
   }
 
   private SdkBindingData inputOf(String name, SimpleType type, String help) {
-    LiteralType literalType = LiteralTypes.ofSimpleType(type);
+    LiteralType literalType = LiteralType.ofSimpleType(type);
     Variable variable = Variable.builder().literalType(literalType).description(help).build();
     SdkBindingData bindingData = SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
     inputs.put(name, variable);

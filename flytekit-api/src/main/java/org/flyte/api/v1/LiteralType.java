@@ -16,25 +16,58 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
+import com.google.auto.value.AutoOneOf;
 
 /** Defines a strong type to allow type checking between interfaces. */
-@AutoValue
+@AutoOneOf(LiteralType.Kind.class)
 public abstract class LiteralType {
 
-  @Nullable
-  public abstract SimpleType simpleType();
+  public enum Kind {
+    // A simple type that can be compared one-to-one with another.
+    SIMPLE_TYPE,
 
-  public static Builder builder() {
-    return new AutoValue_LiteralType.Builder();
+    // A complex type that requires matching of inner fields.
+    SCHEMA_TYPE,
+
+    // Defines the type of the value of a collection. Only homogeneous collections are allowed.
+    COLLECTION_TYPE,
+
+    // Defines the type of the value of a map type. The type of the key is always a string.
+    MAP_VALUE_TYPE,
+
+    // A blob might have specialized implementation details depending on associated metadata.
+    BLOB_TYPE
   }
 
-  @AutoValue.Builder
-  public abstract static class Builder {
+  public abstract Kind getKind();
 
-    public abstract Builder simpleType(SimpleType simpleType);
+  public abstract SimpleType simpleType();
 
-    public abstract LiteralType build();
+  public abstract SchemaType schemaType();
+
+  public abstract LiteralType collectionType();
+
+  public abstract LiteralType mapValueType();
+
+  public abstract BlobType blobType();
+
+  public static LiteralType ofSimpleType(SimpleType simpleType) {
+    return AutoOneOf_LiteralType.simpleType(simpleType);
+  }
+
+  public static LiteralType ofSchemaType(SchemaType schemaType) {
+    return AutoOneOf_LiteralType.schemaType(schemaType);
+  }
+
+  public static LiteralType ofCollectionType(LiteralType collectionType) {
+    return AutoOneOf_LiteralType.collectionType(collectionType);
+  }
+
+  public static LiteralType ofMapValueType(LiteralType mapValueType) {
+    return AutoOneOf_LiteralType.mapValueType(mapValueType);
+  }
+
+  public static LiteralType ofBlobType(BlobType blobType) {
+    return AutoOneOf_LiteralType.blobType(blobType);
   }
 }

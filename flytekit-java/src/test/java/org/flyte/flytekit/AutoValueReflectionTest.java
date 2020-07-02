@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
+import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -181,10 +182,7 @@ class AutoValueReflectionTest {
     }
 
     private static Variable createVar(SimpleType simpleType) {
-      return Variable.builder()
-          .literalType(LiteralTypes.ofSimpleType(simpleType))
-          .description("")
-          .build();
+      return Variable.builder().literalType(ofSimpleType(simpleType)).description("").build();
     }
 
     static AutoValueInput create(long i, double f, String s, boolean b, Instant t, Duration d) {

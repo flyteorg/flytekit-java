@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit;
 
+import static org.flyte.api.v1.LiteralType.ofSimpleType;
+
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 
@@ -26,8 +28,4 @@ class LiteralTypes {
   static final LiteralType BOOLEAN = ofSimpleType(SimpleType.BOOLEAN);
   static final LiteralType DATETIME = ofSimpleType(SimpleType.DATETIME);
   static final LiteralType DURATION = ofSimpleType(SimpleType.DURATION);
-
-  static LiteralType ofSimpleType(SimpleType type) {
-    return LiteralType.builder().simpleType(type).build();
-  }
 }

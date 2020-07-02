@@ -60,12 +60,7 @@ class SdkScalaTypeTest {
   private def createVar(simpleType: SimpleType) = {
     Variable
       .builder()
-      .literalType(
-        LiteralType
-          .builder()
-          .simpleType(simpleType)
-          .build()
-      )
+      .literalType(LiteralType.ofSimpleType(simpleType))
       .description("")
       .build()
   }

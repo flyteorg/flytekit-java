@@ -74,7 +74,7 @@ public abstract class SdkBindingData {
 
   public static SdkBindingData ofPrimitive(Primitive primitive) {
     BindingData bindingData = BindingData.of(Scalar.of(primitive));
-    LiteralType literalType = LiteralTypes.ofSimpleType(primitive.type());
+    LiteralType literalType = LiteralType.ofSimpleType(primitive.type());
     return create(bindingData, literalType);
   }
 }

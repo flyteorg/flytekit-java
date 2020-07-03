@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import com.google.auto.value.AutoValue;
@@ -35,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
@@ -210,7 +212,7 @@ class AutoValueReflection {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
       return LiteralTypes.FLOAT;
-    } else if (String.class.isAssignableFrom(type)) {
+    } else if (String.class == type) {
       return LiteralTypes.STRING;
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
       return LiteralTypes.BOOLEAN;
@@ -218,20 +220,56 @@ class AutoValueReflection {
       return LiteralTypes.DATETIME;
     } else if (Duration.class.isAssignableFrom(type)) {
       return LiteralTypes.DURATION;
+    } else if (List.class.isAssignableFrom(type)) {
+      // TODO: Support Literal Collections of any LiteralType. Now we support only strings
+      return LiteralType.ofCollectionType(LiteralTypes.STRING);
+    } else if (Map.class.isAssignableFrom(type)) {
+      // TODO: Support Literal Maps of any LiteralType. Now we support only strings for values
+      return LiteralType.ofMapValueType(LiteralTypes.STRING);
     }
 
     throw new UnsupportedOperationException(
         String.format("Unsupported type: [%s]", type.getName()));
   }
 
+  @SuppressWarnings("unchecked")
   private static Literal toLiteral(Object value, LiteralType literalType) {
-    SimpleType simpleType = literalType.simpleType();
-
-    if (simpleType == null) {
-      throw new UnsupportedOperationException(
-          String.format("Unsupported literal type: [%s]", literalType));
+    switch (literalType.getKind()) {
+      case SIMPLE_TYPE:
+        SimpleType simpleType = literalType.simpleType();
+        return toLiteral(value, simpleType);
+      case COLLECTION_TYPE:
+        List<?> list = (List<?>) value;
+        LiteralType elementType = literalType.collectionType();
+        return Literal.of(
+            list.stream()
+                .map(element -> toLiteral(element, elementType))
+                .<List<Literal>, Object>collect(
+                    collectingAndThen(toList(), Collections::unmodifiableList)));
+      case MAP_VALUE_TYPE:
+        Map<String, ?> map = (Map<String, ?>) value;
+        LiteralType valuesType = literalType.mapValueType();
+        return Literal.of(
+            map.entrySet().stream()
+                .map(
+                    entry ->
+                        new SimpleImmutableEntry<>(
+                            entry.getKey(), toLiteral(entry.getValue(), valuesType)))
+                .<Map<String, Literal>, Object>collect(
+                    collectingAndThen(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue),
+                        Collections::unmodifiableMap)));
+      case SCHEMA_TYPE:
+        // TODO: Add support for Schema Types
+      case BLOB_TYPE:
+        // TODO: Add support for Blob Types
     }
 
+    throw new UnsupportedOperationException(
+        String.format("Unsupported literal type: [%s]", literalType));
+  }
+
+  private static Literal toLiteral(Object value, SimpleType simpleType) {
     switch (simpleType) {
       case INTEGER:
         return toLiteral(Primitive.ofInteger((Long) value));
@@ -284,18 +322,26 @@ class AutoValueReflection {
 
   private static Map<String, Object> toJavaMap(Map<String, Literal> literalMap) {
     Map<String, Object> javaMap = new HashMap<>();
+    literalMap.forEach((key, value) -> javaMap.put(key, toJavaObject(value)));
+    return javaMap;
+  }
 
-    for (Map.Entry<String, Literal> entry : literalMap.entrySet()) {
-      Literal literal = entry.getValue();
-
-      if (literal.scalar() != null) {
-        javaMap.put(entry.getKey(), toJavaObject(literal.scalar()));
-      } else {
-        throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
-      }
+  private static Object toJavaObject(Literal literal) {
+    switch (literal.kind()) {
+      case SCALAR:
+        return toJavaObject(literal.scalar());
+      case COLLECTION:
+        return literal.collection().stream()
+            .map(AutoValueReflection::toJavaObject)
+            .collect(toList());
+      case MAP:
+        return literal.map().entrySet().stream()
+            .map(
+                entry -> new SimpleImmutableEntry<>(entry.getKey(), toJavaObject(entry.getValue())))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    return javaMap;
+    throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
   }
 
   private static Object toJavaObject(Scalar scalar) {

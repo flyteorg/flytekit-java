@@ -21,7 +21,7 @@ import com.google.auto.value.AutoOneOf;
 /** A simple value. */
 @AutoOneOf(Scalar.Kind.class)
 public abstract class Scalar {
-  enum Kind {
+  public enum Kind {
     PRIMITIVE
     // TODO: Add the rest of the types
   }

@@ -16,9 +16,16 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 import static org.flyte.api.v1.LiteralType.ofSimpleType;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralBoolean;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralDatetime;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralDuration;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralFloat;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralInteger;
+import static org.flyte.flytekit.LiteralMatchers.matchesLiteralString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -30,9 +37,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
@@ -87,6 +96,8 @@ class AutoValueReflectionTest {
     inputMap.put("b", literalOf(Primitive.ofBoolean(true)));
     inputMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     inputMap.put("d", literalOf(Primitive.ofDuration(duration)));
+    inputMap.put("l", Literal.of(singletonList(literalOf(Primitive.ofString("123")))));
+    inputMap.put("m", Literal.of(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
 
     AutoValueInput input = AutoValueReflection.readValue(inputMap, AutoValueInput.class);
 
@@ -96,6 +107,8 @@ class AutoValueReflectionTest {
     assertThat(input.b(), equalTo(true));
     assertThat(input.t(), equalTo(datetime));
     assertThat(input.d(), equalTo(duration));
+    assertThat(input.l(), equalTo(singletonList("123")));
+    assertThat(input.m(), equalTo(singletonMap("marco", "polo")));
   }
 
   @Test
@@ -127,19 +140,30 @@ class AutoValueReflectionTest {
     Map<String, Literal> literalMap =
         AutoValueReflection.toLiteralMap(
             AutoValueInput.create(
-                42L, 42.0d, "42", false, Instant.ofEpochSecond(42, 1), Duration.ofSeconds(1, 42)),
+                42L,
+                42.0d,
+                "42",
+                false,
+                Instant.ofEpochSecond(42, 1),
+                Duration.ofSeconds(1, 42),
+                singletonList("foo"),
+                singletonMap("marco", "polo")),
             AutoValueInput.class);
-    assertThat(literalMap.size(), is(6));
-    assertThat(requireNonNull(literalMap.get("i").scalar().primitive()).integer(), is(42L));
-    assertThat(requireNonNull(literalMap.get("f").scalar().primitive()).float_(), is(42.0));
-    assertThat(requireNonNull(literalMap.get("s").scalar().primitive()).string(), is("42"));
-    assertThat(requireNonNull(literalMap.get("b").scalar().primitive()).boolean_(), is(false));
-    assertThat(
-        requireNonNull(literalMap.get("t").scalar().primitive().datetime()),
-        is(Instant.ofEpochSecond(42, 1)));
-    assertThat(
-        requireNonNull(literalMap.get("d").scalar().primitive()).duration(),
-        is(Duration.ofSeconds(1, 42)));
+    assertThat(literalMap.size(), is(8));
+    assertThat(literalMap.get("i"), matchesLiteralInteger(is(42L)));
+    assertThat(literalMap.get("f"), matchesLiteralFloat(is(42.0)));
+    assertThat(literalMap.get("s"), matchesLiteralString(is("42")));
+    assertThat(literalMap.get("b"), matchesLiteralBoolean(is(false)));
+    assertThat(literalMap.get("t"), matchesLiteralDatetime(is(Instant.ofEpochSecond(42, 1))));
+    assertThat(literalMap.get("d"), matchesLiteralDuration(is(Duration.ofSeconds(1, 42))));
+    requireNonNull(literalMap.get("l").collection())
+        .forEach(elem -> assertThat(elem, matchesLiteralString(is("foo"))));
+    requireNonNull(literalMap.get("m").map())
+        .forEach(
+            (name, value) -> {
+              assertThat(name, is("marco"));
+              assertThat(value, matchesLiteralString(is("polo")));
+            });
   }
 
   static Stream<Arguments> createInputMaps() {
@@ -170,6 +194,10 @@ class AutoValueReflectionTest {
 
     abstract Duration d();
 
+    abstract List<String> l();
+
+    abstract Map<String, String> m();
+
     static final Map<String, Variable> INTERFACE = new HashMap<>();
 
     static {
@@ -179,14 +207,28 @@ class AutoValueReflectionTest {
       INTERFACE.put("b", createVar(SimpleType.BOOLEAN));
       INTERFACE.put("t", createVar(SimpleType.DATETIME));
       INTERFACE.put("d", createVar(SimpleType.DURATION));
+      INTERFACE.put("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))));
+      INTERFACE.put("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING))));
     }
 
     private static Variable createVar(SimpleType simpleType) {
-      return Variable.builder().literalType(ofSimpleType(simpleType)).description("").build();
+      return createVar(ofSimpleType(simpleType));
     }
 
-    static AutoValueInput create(long i, double f, String s, boolean b, Instant t, Duration d) {
-      return new AutoValue_AutoValueReflectionTest_AutoValueInput(i, f, s, b, t, d);
+    private static Variable createVar(LiteralType literalType) {
+      return Variable.builder().literalType(literalType).description("").build();
+    }
+
+    public static AutoValueInput create(
+        long i,
+        double f,
+        String s,
+        boolean b,
+        Instant t,
+        Duration d,
+        List<String> l,
+        Map<String, String> m) {
+      return new AutoValue_AutoValueReflectionTest_AutoValueInput(i, f, s, b, t, d, l, m);
     }
   }
 

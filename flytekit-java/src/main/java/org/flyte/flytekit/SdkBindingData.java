@@ -16,11 +16,18 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
@@ -75,6 +82,79 @@ public abstract class SdkBindingData {
   public static SdkBindingData ofPrimitive(Primitive primitive) {
     BindingData bindingData = BindingData.of(Scalar.of(primitive));
     LiteralType literalType = LiteralType.ofSimpleType(primitive.type());
+    return create(bindingData, literalType);
+  }
+
+  public static SdkBindingData ofIntegerCollection(List<Long> elements) {
+    return ofCollection(elements, Primitive::ofInteger, LiteralTypes.INTEGER);
+  }
+
+  public static SdkBindingData ofDoubleCollection(List<Double> elements) {
+    return ofCollection(elements, Primitive::ofFloat, LiteralTypes.FLOAT);
+  }
+
+  public static SdkBindingData ofStringCollection(List<String> elements) {
+    return ofCollection(elements, Primitive::ofString, LiteralTypes.STRING);
+  }
+
+  public static SdkBindingData ofBooleanCollection(List<Boolean> elements) {
+    return ofCollection(elements, Primitive::ofBoolean, LiteralTypes.BOOLEAN);
+  }
+
+  public static SdkBindingData ofDatetimeCollection(List<Instant> elements) {
+    return ofCollection(elements, Primitive::ofDatetime, LiteralTypes.DATETIME);
+  }
+
+  public static SdkBindingData ofDurationCollection(List<Duration> elements) {
+    return ofCollection(elements, Primitive::ofDuration, LiteralTypes.DURATION);
+  }
+
+  private static <T> SdkBindingData ofCollection(
+      List<T> elements, Function<T, Primitive> f, LiteralType type) {
+    BindingData bindingData =
+        BindingData.of(
+            elements.stream()
+                .map(elem -> BindingData.of(Scalar.of(f.apply(elem))))
+                .collect(Collectors.toList()));
+    LiteralType literalType = LiteralType.ofCollectionType(type);
+    return create(bindingData, literalType);
+  }
+
+  public static SdkBindingData ofIntegerMap(Map<String, Long> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofInteger, LiteralTypes.INTEGER);
+  }
+
+  public static SdkBindingData ofDoubleMap(Map<String, Double> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofFloat, LiteralTypes.FLOAT);
+  }
+
+  public static SdkBindingData ofStringMap(Map<String, String> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofString, LiteralTypes.STRING);
+  }
+
+  public static SdkBindingData ofBooleanMap(Map<String, Boolean> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofBoolean, LiteralTypes.BOOLEAN);
+  }
+
+  public static SdkBindingData ofDatetimeMap(Map<String, Instant> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofDatetime, LiteralTypes.DATETIME);
+  }
+
+  public static SdkBindingData ofDurationMap(Map<String, Duration> elementsByKey) {
+    return ofMap(elementsByKey, Primitive::ofDuration, LiteralTypes.DURATION);
+  }
+
+  private static <T> SdkBindingData ofMap(
+      Map<String, T> elementsByKey, Function<T, Primitive> f, LiteralType type) {
+    BindingData bindingData =
+        BindingData.of(
+            elementsByKey.entrySet().stream()
+                .map(
+                    entry ->
+                        new SimpleImmutableEntry<>(
+                            entry.getKey(), BindingData.of(Scalar.of(f.apply(entry.getValue())))))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    LiteralType literalType = LiteralType.ofMapValueType(type);
     return create(bindingData, literalType);
   }
 }

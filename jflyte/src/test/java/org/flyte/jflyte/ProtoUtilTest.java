@@ -22,9 +22,11 @@ import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -68,7 +70,6 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -137,7 +138,7 @@ class ProtoUtilTest {
 
     Literals.LiteralMap output = ProtoUtil.serializeLiteralMap(input);
 
-    Assert.assertEquals(expected, output);
+    assertEquals(expected, output);
   }
 
   @Test
@@ -148,22 +149,47 @@ class ProtoUtilTest {
 
     Types.OutputReference output = ProtoUtil.serialize(input);
 
-    Assert.assertEquals(expected, output);
+    assertEquals(expected, output);
   }
 
-  @Test
-  void shouldSerializeBindingData() {
-    BindingData input = BindingData.of(Scalar.of(Primitive.ofInteger(1337L)));
-    Literals.Scalar expectedScalar =
-        Literals.Scalar.newBuilder()
-            .setPrimitive(Literals.Primitive.newBuilder().setInteger(1337L).build())
-            .build();
-    Literals.BindingData expected =
-        Literals.BindingData.newBuilder().setScalar(expectedScalar).build();
-
+  @ParameterizedTest
+  @MethodSource("provideArgsForShouldSerializeBindingData")
+  void shouldSerializeBindingData(BindingData input, Literals.BindingData expected) {
     Literals.BindingData output = ProtoUtil.serialize(input);
 
-    Assert.assertEquals(expected, output);
+    assertEquals(expected, output);
+  }
+
+  static Stream<Arguments> provideArgsForShouldSerializeBindingData() {
+    BindingData apiScalar = BindingData.of(Scalar.of(Primitive.ofInteger(1337L)));
+    Literals.BindingData protoScalar =
+        Literals.BindingData.newBuilder()
+            .setScalar(
+                Literals.Scalar.newBuilder()
+                    .setPrimitive(Literals.Primitive.newBuilder().setInteger(1337L).build())
+                    .build())
+            .build();
+
+    return Stream.of(
+        Arguments.of(apiScalar, protoScalar),
+        Arguments.of(
+            BindingData.of(singletonList(apiScalar)),
+            Literals.BindingData.newBuilder()
+                .setCollection(
+                    Literals.BindingDataCollection.newBuilder().addBindings(protoScalar).build())
+                .build()),
+        Arguments.of(
+            BindingData.of(singletonMap("foo", apiScalar)),
+            Literals.BindingData.newBuilder()
+                .setMap(
+                    Literals.BindingDataMap.newBuilder().putBindings("foo", protoScalar).build())
+                .build()),
+        Arguments.of(
+            BindingData.of(OutputReference.builder().nodeId("node-id").var("var").build()),
+            Literals.BindingData.newBuilder()
+                .setPromise(
+                    Types.OutputReference.newBuilder().setNodeId("node-id").setVar("var").build())
+                .build()));
   }
 
   @Test
@@ -478,7 +504,7 @@ class ProtoUtilTest {
     return Stream.of(
         Arguments.of(apiLiteral, protoLiteral),
         Arguments.of(
-            Literal.of(Collections.singletonList(apiLiteral)),
+            Literal.of(singletonList(apiLiteral)),
             Literals.Literal.newBuilder()
                 .setCollection(
                     Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())

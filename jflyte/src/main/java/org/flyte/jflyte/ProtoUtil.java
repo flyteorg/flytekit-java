@@ -369,8 +369,12 @@ class ProtoUtil {
     switch (binding.kind()) {
       case SCALAR:
         return builder.setScalar(serialize(binding.scalar())).build();
+      case COLLECTION:
+        return builder.setCollection(serializeBindingCollection(binding.collection())).build();
       case PROMISE:
         return builder.setPromise(serialize(binding.promise())).build();
+      case MAP:
+        return builder.setMap(serializeBindingMap(binding.map())).build();
     }
 
     throw new AssertionError("unexpected BindingData.Kind: " + binding.kind());
@@ -395,6 +399,26 @@ class ProtoUtil {
     Primitive primitive = requireNonNull(scalar.primitive(), "Only primitive scalar are supported");
 
     return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
+  }
+
+  private static Literals.BindingDataCollection serializeBindingCollection(
+      @Nullable List<BindingData> collection) {
+    if (collection == null) {
+      return null;
+    }
+    Literals.BindingDataCollection.Builder builder = Literals.BindingDataCollection.newBuilder();
+    collection.forEach(binding -> builder.addBindings(serialize(binding)));
+    return builder.build();
+  }
+
+  private static Literals.BindingDataMap serializeBindingMap(Map<String, BindingData> map) {
+    if (map == null) {
+      return null;
+    }
+
+    Literals.BindingDataMap.Builder builder = Literals.BindingDataMap.newBuilder();
+    map.forEach((key, value) -> builder.putBindings(key, serialize(value)));
+    return builder.build();
   }
 
   private static Literals.LiteralCollection serialize(@Nullable List<Literal> literals) {

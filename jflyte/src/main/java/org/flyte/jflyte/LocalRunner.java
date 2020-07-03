@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.common.base.Verify;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,12 @@ public class LocalRunner {
       case SCALAR:
         return Literal.of(bindingData.scalar());
 
+      case COLLECTION:
+        return Literal.of(
+            bindingData.collection().stream()
+                .map(binding -> getLiteral(nodeOutputs, binding))
+                .collect(Collectors.toList()));
+
       case PROMISE:
         String nodeId = bindingData.promise().nodeId();
         Map<String, Literal> outputs = nodeOutputs.get(nodeId);
@@ -85,6 +92,15 @@ public class LocalRunner {
         Verify.verifyNotNull(outputs, "missing output for node [%s]", nodeId);
 
         return outputs.get(bindingData.promise().var());
+
+      case MAP:
+        return Literal.of(
+            bindingData.map().entrySet().stream()
+                .map(
+                    entry ->
+                        new SimpleImmutableEntry<>(
+                            entry.getKey(), getLiteral(nodeOutputs, entry.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     throw new AssertionError("Unexpected BindingData.Kind: " + bindingData.kind());

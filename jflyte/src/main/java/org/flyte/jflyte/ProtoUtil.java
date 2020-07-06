@@ -27,6 +27,7 @@ import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
 import flyteidl.core.Types;
+import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,6 +38,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Identifier;
@@ -49,6 +51,7 @@ import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
@@ -194,16 +197,30 @@ class ProtoUtil {
     return builder.build();
   }
 
-  private static Types.LiteralType serialize(LiteralType literalType) {
-    return Types.LiteralType.newBuilder().setSimple(serialize(literalType.simpleType())).build();
+  @VisibleForTesting
+  static Types.LiteralType serialize(LiteralType literalType) {
+    Types.LiteralType.Builder builder = Types.LiteralType.newBuilder();
+    switch (literalType.getKind()) {
+      case SIMPLE_TYPE:
+        builder.setSimple(serialize(literalType.simpleType()));
+        break;
+      case SCHEMA_TYPE:
+        builder.setSchema(serialize(literalType.schemaType()));
+        break;
+      case COLLECTION_TYPE:
+        builder.setCollectionType(serialize(literalType.collectionType()));
+        break;
+      case MAP_VALUE_TYPE:
+        builder.setMapValueType(serialize(literalType.mapValueType()));
+        break;
+      case BLOB_TYPE:
+        builder.setBlob(serialize(literalType.blobType()));
+        break;
+    }
+    return builder.build();
   }
 
-  @Nullable
-  private static Types.SimpleType serialize(@Nullable SimpleType simpleType) {
-    if (simpleType == null) {
-      return null;
-    }
-
+  private static Types.SimpleType serialize(SimpleType simpleType) {
     switch (simpleType) {
       case INTEGER:
         return Types.SimpleType.INTEGER;
@@ -220,6 +237,56 @@ class ProtoUtil {
     }
 
     return Types.SimpleType.UNRECOGNIZED;
+  }
+
+  private static Types.SchemaType serialize(SchemaType schemaType) {
+    Types.SchemaType.Builder builder = Types.SchemaType.newBuilder();
+    schemaType.columns().forEach(column -> builder.addColumns(serialize(column)));
+    return builder.build();
+  }
+
+  private static Types.SchemaType.SchemaColumn serialize(SchemaType.Column schemaColumn) {
+    return Types.SchemaType.SchemaColumn.newBuilder()
+        .setName(schemaColumn.name())
+        .setType(serialize(schemaColumn.type()))
+        .build();
+  }
+
+  private static Types.SchemaType.SchemaColumn.SchemaColumnType serialize(
+      SchemaType.ColumnType columnType) {
+    switch (columnType) {
+      case INTEGER:
+        return SchemaColumnType.INTEGER;
+      case FLOAT:
+        return SchemaColumnType.FLOAT;
+      case STRING:
+        return SchemaColumnType.STRING;
+      case BOOLEAN:
+        return SchemaColumnType.BOOLEAN;
+      case DATETIME:
+        return SchemaColumnType.DATETIME;
+      case DURATION:
+        return SchemaColumnType.DURATION;
+    }
+    return SchemaColumnType.UNRECOGNIZED;
+  }
+
+  private static Types.BlobType serialize(BlobType blobType) {
+    return Types.BlobType.newBuilder()
+        .setFormat(blobType.format())
+        .setDimensionality(serialize(blobType.dimensionality()))
+        .build();
+  }
+
+  private static Types.BlobType.BlobDimensionality serialize(
+      BlobType.BlobDimensionality dimensionality) {
+    switch (dimensionality) {
+      case SINGLE:
+        return Types.BlobType.BlobDimensionality.SINGLE;
+      case MULTIPART:
+        return Types.BlobType.BlobDimensionality.MULTIPART;
+    }
+    return Types.BlobType.BlobDimensionality.UNRECOGNIZED;
   }
 
   private static Tasks.Container serialize(Container container) {

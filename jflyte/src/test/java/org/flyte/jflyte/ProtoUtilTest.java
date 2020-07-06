@@ -34,6 +34,7 @@ import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
 import flyteidl.core.Types;
+import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
 import java.time.Duration;
 import java.time.Instant;
@@ -43,17 +44,20 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
@@ -452,6 +456,110 @@ class ProtoUtilTest {
                         .setNanos(nanos)
                         .build())
                 .build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createSimpleSerializeLiteralArguments")
+  void shouldSerializeSimpleLiteralTypes(LiteralType input, Types.LiteralType expected) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createSimpleSerializeLiteralArguments() {
+    ImmutableMap<SimpleType, Types.SimpleType> types =
+        ImmutableMap.<SimpleType, Types.SimpleType>builder()
+            .put(SimpleType.INTEGER, Types.SimpleType.INTEGER)
+            .put(SimpleType.FLOAT, Types.SimpleType.FLOAT)
+            .put(SimpleType.STRING, Types.SimpleType.STRING)
+            .put(SimpleType.BOOLEAN, Types.SimpleType.BOOLEAN)
+            .put(SimpleType.DATETIME, Types.SimpleType.DATETIME)
+            .put(SimpleType.DURATION, Types.SimpleType.DURATION)
+            .build();
+
+    return types.entrySet().stream()
+        .map(
+            entry ->
+                Arguments.of(
+                    LiteralType.ofSimpleType(entry.getKey()),
+                    Types.LiteralType.newBuilder().setSimple(entry.getValue()).build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createSerializeComplexLiteralArguments")
+  void shouldSerializeComplexLiteralTypes(LiteralType input, Types.LiteralType expected) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createSerializeComplexLiteralArguments() {
+    return Stream.of(
+        Arguments.of(
+            LiteralType.ofBlobType(
+                BlobType.builder()
+                    .format("avro")
+                    .dimensionality(BlobType.BlobDimensionality.SINGLE)
+                    .build()),
+            Types.LiteralType.newBuilder()
+                .setBlob(
+                    Types.BlobType.newBuilder()
+                        .setFormat("avro")
+                        .setDimensionality(Types.BlobType.BlobDimensionality.SINGLE)
+                        .build())
+                .build()),
+        Arguments.of(
+            LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+            Types.LiteralType.newBuilder()
+                .setCollectionType(
+                    Types.LiteralType.newBuilder().setSimple(Types.SimpleType.INTEGER).build())
+                .build()),
+        Arguments.of(
+            LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.FLOAT)),
+            Types.LiteralType.newBuilder()
+                .setMapValueType(
+                    Types.LiteralType.newBuilder().setSimple(Types.SimpleType.FLOAT).build())
+                .build()),
+        Arguments.of(
+            LiteralType.ofSchemaType(
+                SchemaType.builder()
+                    .columns(
+                        Arrays.asList(
+                            apiColumn("i", SchemaType.ColumnType.INTEGER),
+                            apiColumn("f", SchemaType.ColumnType.FLOAT),
+                            apiColumn("s", SchemaType.ColumnType.STRING),
+                            apiColumn("b", SchemaType.ColumnType.BOOLEAN),
+                            apiColumn("t", SchemaType.ColumnType.DATETIME),
+                            apiColumn("d", SchemaType.ColumnType.DURATION)))
+                    .build()),
+            Types.LiteralType.newBuilder()
+                .setSchema(
+                    Types.SchemaType.newBuilder()
+                        .addColumns(protoColumn("i", SchemaColumnType.INTEGER))
+                        .addColumns(protoColumn("f", SchemaColumnType.FLOAT))
+                        .addColumns(protoColumn("s", SchemaColumnType.STRING))
+                        .addColumns(protoColumn("b", SchemaColumnType.BOOLEAN))
+                        .addColumns(protoColumn("t", SchemaColumnType.DATETIME))
+                        .addColumns(protoColumn("d", SchemaColumnType.DURATION))
+                        .build())
+                .build()),
+        // Testing nesting complex literal types
+        Arguments.of(
+            LiteralType.ofMapValueType(
+                LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER))),
+            Types.LiteralType.newBuilder()
+                .setMapValueType(
+                    Types.LiteralType.newBuilder()
+                        .setCollectionType(
+                            Types.LiteralType.newBuilder()
+                                .setSimple(Types.SimpleType.INTEGER)
+                                .build())
+                        .build())
+                .build()));
+  }
+
+  private static SchemaType.Column apiColumn(String name, SchemaType.ColumnType type) {
+    return SchemaType.Column.builder().name(name).type(type).build();
+  }
+
+  private static Types.SchemaType.SchemaColumn protoColumn(String name, SchemaColumnType type) {
+    return Types.SchemaType.SchemaColumn.newBuilder().setName(name).setType(type).build();
   }
 
   @Test

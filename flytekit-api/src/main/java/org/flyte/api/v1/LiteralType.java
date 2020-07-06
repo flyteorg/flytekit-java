@@ -23,19 +23,19 @@ import com.google.auto.value.AutoOneOf;
 public abstract class LiteralType {
 
   public enum Kind {
-    // A simple type that can be compared one-to-one with another.
+    /** A simple type that can be compared one-to-one with another. */
     SIMPLE_TYPE,
 
-    // A complex type that requires matching of inner fields.
+    /** A complex type that requires matching of inner fields. */
     SCHEMA_TYPE,
 
-    // Defines the type of the value of a collection. Only homogeneous collections are allowed.
+    /** Defines the type of the value of a collection. Only homogeneous collections are allowed. */
     COLLECTION_TYPE,
 
-    // Defines the type of the value of a map type. The type of the key is always a string.
+    /** Defines the type of the value of a map type. The type of the key is always a string. */
     MAP_VALUE_TYPE,
 
-    // A blob might have specialized implementation details depending on associated metadata.
+    /** A blob might have specialized implementation details depending on associated metadata. */
     BLOB_TYPE
   }
 

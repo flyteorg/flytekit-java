@@ -19,6 +19,7 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 import java.util.List;
 
+/** Defines schema columns and types to strongly type-validate schemas interoperability. */
 @AutoValue
 public abstract class SchemaType {
   public enum ColumnType {
@@ -32,10 +33,10 @@ public abstract class SchemaType {
 
   @AutoValue
   public abstract static class Column {
-    // A unique name -within the schema type- for the column
+    /** @return A unique name -within the schema type- for the column. */
     public abstract String name();
 
-    // The column type. This allows a limited set of types currently.
+    /** @return The column type. This allows a limited set of types currently. */
     public abstract ColumnType type();
 
     public static Builder builder() {
@@ -53,7 +54,7 @@ public abstract class SchemaType {
     }
   }
 
-  // A list of ordered columns this schema comprises of.
+  /** @return A list of ordered columns this schema comprises of. */
   public abstract List<Column> columns();
 
   public static Builder builder() {

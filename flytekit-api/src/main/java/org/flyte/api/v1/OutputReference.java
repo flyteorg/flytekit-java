@@ -18,10 +18,16 @@ package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
 
+/**
+ * A reference to an output produced by a node. The type can be retrieved -and validated- from the
+ * underlying interface of the node.
+ */
 @AutoValue
 public abstract class OutputReference {
+  /** @return Node id referenced. Node id must exist at the graph layer. */
   public abstract String nodeId();
 
+  /** @return Variable reference. Variable name must refer to an output variable for the node. */
   public abstract String var();
 
   public static Builder builder() {

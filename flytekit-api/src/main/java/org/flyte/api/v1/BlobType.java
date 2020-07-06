@@ -18,6 +18,7 @@ package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
 
+/** Defines type behavior for blob objects. */
 @AutoValue
 public abstract class BlobType {
   public enum BlobDimensionality {
@@ -25,11 +26,13 @@ public abstract class BlobType {
     MULTIPART
   }
 
-  // Format can be a free form string understood by SDK/UI etc like
-  // csv, parquet etc
-  abstract String format();
+  /**
+   * @return the format of the Blob. Format can be a free form string understood by SDK/UI etc like
+   *     csv, parquet etc.
+   */
+  public abstract String format();
 
-  abstract BlobDimensionality dimensionality();
+  public abstract BlobDimensionality dimensionality();
 
   public static Builder builder() {
     return new AutoValue_BlobType.Builder();

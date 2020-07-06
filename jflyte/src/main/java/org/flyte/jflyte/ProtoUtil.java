@@ -36,7 +36,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BlobType;
@@ -380,62 +379,39 @@ class ProtoUtil {
     throw new AssertionError("unexpected BindingData.Kind: " + binding.kind());
   }
 
-  static Types.OutputReference serialize(@Nullable OutputReference promise) {
-    if (promise == null) {
-      return null;
-    }
-
+  static Types.OutputReference serialize(OutputReference promise) {
     return Types.OutputReference.newBuilder()
         .setNodeId(promise.nodeId())
         .setVar(promise.var())
         .build();
   }
 
-  private static Literals.Scalar serialize(@Nullable Scalar scalar) {
-    if (scalar == null) {
-      return null;
-    }
-
+  private static Literals.Scalar serialize(Scalar scalar) {
     Primitive primitive = requireNonNull(scalar.primitive(), "Only primitive scalar are supported");
 
     return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
   }
 
   private static Literals.BindingDataCollection serializeBindingCollection(
-      @Nullable List<BindingData> collection) {
-    if (collection == null) {
-      return null;
-    }
+      List<BindingData> collection) {
     Literals.BindingDataCollection.Builder builder = Literals.BindingDataCollection.newBuilder();
     collection.forEach(binding -> builder.addBindings(serialize(binding)));
     return builder.build();
   }
 
   private static Literals.BindingDataMap serializeBindingMap(Map<String, BindingData> map) {
-    if (map == null) {
-      return null;
-    }
-
     Literals.BindingDataMap.Builder builder = Literals.BindingDataMap.newBuilder();
     map.forEach((key, value) -> builder.putBindings(key, serialize(value)));
     return builder.build();
   }
 
-  private static Literals.LiteralCollection serialize(@Nullable List<Literal> literals) {
-    if (literals == null) {
-      return null;
-    }
-
+  private static Literals.LiteralCollection serialize(List<Literal> literals) {
     Literals.LiteralCollection.Builder builder = Literals.LiteralCollection.newBuilder();
     literals.forEach(literal -> builder.addLiterals(serialize(literal)));
     return builder.build();
   }
 
-  private static Literals.LiteralMap serialize(@Nullable Map<String, Literal> literals) {
-    if (literals == null) {
-      return null;
-    }
-
+  private static Literals.LiteralMap serialize(Map<String, Literal> literals) {
     Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
     literals.forEach((name, literal) -> builder.putLiterals(name, serialize(literal)));
     return builder.build();

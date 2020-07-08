@@ -25,22 +25,14 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 public class FibonacciWorkflow extends SdkWorkflow {
 
   @Override
-  @SuppressWarnings("UnusedVariable")
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
     SdkBindingData fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
 
-    SdkBindingData fib2 =
-        builder.mapOf("a", fib0, "b", fib1).apply("fib-2", new SumTask()).getOutput("c");
-
-    SdkBindingData fib3 =
-        builder.mapOf("a", fib1, "b", fib2).apply("fib-3", new SumTask()).getOutput("c");
-
-    SdkBindingData fib4 =
-        builder.mapOf("a", fib2, "b", fib3).apply("fib-4", new SumTask()).getOutput("c");
-
-    SdkBindingData fib5 =
-        builder.mapOf("a", fib3, "b", fib4).apply("fib-5", new SumTask()).getOutput("c");
+    SdkBindingData fib2 = builder.apply("fib-2", SumTask.of(fib0, fib1)).getOutput("c");
+    SdkBindingData fib3 = builder.apply("fib-3", SumTask.of(fib1, fib2)).getOutput("c");
+    SdkBindingData fib4 = builder.apply("fib-4", SumTask.of(fib2, fib3)).getOutput("c");
+    SdkBindingData fib5 = builder.apply("fib-5", SumTask.of(fib3, fib4)).getOutput("c");
 
     builder.output("fib5", fib5, "Value for Fib5");
   }

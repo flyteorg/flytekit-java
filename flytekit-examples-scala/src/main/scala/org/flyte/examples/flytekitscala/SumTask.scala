@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.SdkRunnableTask
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class SumTaskInput(a: Long, b: Long)
@@ -31,4 +31,9 @@ class SumTask
   override def run(input: SumTaskInput): SumTaskOutput = {
     SumTaskOutput(input.a + input.b)
   }
+}
+
+object SumTask {
+  def apply(a: SdkBindingData, b: SdkBindingData): SdkTransform =
+    new SumTask().withInput("a", a).withInput("b", b)
 }

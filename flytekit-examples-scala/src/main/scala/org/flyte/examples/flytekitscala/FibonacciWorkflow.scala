@@ -16,37 +16,19 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger
 import org.flyte.flytekit.{SdkWorkflow, SdkWorkflowBuilder}
 
 class FibonacciWorkflow extends SdkWorkflow {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
-    val fib0 = literalOfInteger(0L);
-    val fib1 = literalOfInteger(1L);
+    val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")
+    val fib1 = builder.inputOfInteger("fib1", "Value for Fib1")
 
-    val fib2 =
-      builder
-        .mapOf("a", fib0, "b", fib1)
-        .apply("fib-2", new SumTask())
-        .getOutput("c");
+    val fib2 = builder.apply("fib-2", SumTask(fib0, fib1)).getOutput("c")
+    val fib3 = builder.apply("fib-3", SumTask(fib1, fib2)).getOutput("c")
+    val fib4 = builder.apply("fib-4", SumTask(fib2, fib3)).getOutput("c")
+    val fib5 = builder.apply("fib-5", SumTask(fib3, fib4)).getOutput("c")
 
-    val fib3 =
-      builder
-        .mapOf("a", fib1, "b", fib2)
-        .apply("fib-3", new SumTask())
-        .getOutput("c");
-
-    val fib4 =
-      builder
-        .mapOf("a", fib2, "b", fib3)
-        .apply("fib-4", new SumTask())
-        .getOutput("c");
-
-    // fib5 =
-    builder
-      .mapOf("a", fib3, "b", fib4)
-      .apply("fib-5", new SumTask())
-      .getOutput("c");
+    builder.output("fib5", fib5, "Value for Fib5");
   }
 }

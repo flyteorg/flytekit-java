@@ -387,9 +387,13 @@ class ProtoUtil {
   }
 
   private static Literals.Scalar serialize(Scalar scalar) {
-    Primitive primitive = requireNonNull(scalar.primitive(), "Only primitive scalar are supported");
+    switch (scalar.kind()) {
+      case PRIMITIVE:
+        Primitive primitive = scalar.primitive();
+        return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
+    }
 
-    return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
+    throw new AssertionError("Unexpected Scalar.Kind: " + scalar.kind());
   }
 
   private static Literals.BindingDataCollection serializeBindingCollection(

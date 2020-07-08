@@ -27,16 +27,23 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import picocli.CommandLine;
 
 public class ExecuteLocalTest {
@@ -159,14 +166,96 @@ public class ExecuteLocalTest {
         inputs);
   }
 
+  @ParameterizedTest
+  @MethodSource("provideArgumentsFor_testParseInputs_unsupportedTypes")
+  public void testParseInputs_unsupportedTypes(LiteralType unsupportedType) {
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                parseInputs(
+                    ImmutableMap.of("unsupported", createVar(unsupportedType)),
+                    new String[] {"--duration=foo"}));
+
+    assertEquals(
+        "Type of [unsupported] input parameter is not supported: " + unsupportedType,
+        exception.getMessage());
+  }
+
+  static Stream<LiteralType> provideArgumentsFor_testParseInputs_unsupportedTypes() {
+    LiteralType simpleType = LiteralType.ofSimpleType(SimpleType.INTEGER);
+    return Stream.of(
+        LiteralType.ofBlobType(
+            BlobType.builder()
+                .format("avro")
+                .dimensionality(BlobType.BlobDimensionality.SINGLE)
+                .build()),
+        LiteralType.ofCollectionType(simpleType),
+        LiteralType.ofMapValueType(simpleType),
+        LiteralType.ofSchemaType(
+            SchemaType.builder()
+                .columns(
+                    Collections.singletonList(
+                        SchemaType.Column.builder()
+                            .name("foo")
+                            .type(SchemaType.ColumnType.INTEGER)
+                            .build()))
+                .build()));
+  }
+
   @Test
   public void testParseInputs_defaultValues() {
-    ExecuteLocal cmd = new ExecuteLocalWithDefaultValues(ImmutableMap.of("arg", "foo"));
+    ExecuteLocal cmd =
+        new ExecuteLocalWithDefaultValues(
+            ImmutableMap.<String, String>builder()
+                .put("i", "1")
+                .put("f", "2.0")
+                .put("s", "3")
+                .put("b", "true")
+                .put("t", LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC).toString())
+                .put("d", "P1D")
+                .build());
+    ImmutableMap<String, Literal> expected =
+        ImmutableMap.<String, Literal>builder()
+            .put("i", literalOf(Primitive.ofInteger(1)))
+            .put("f", literalOf(Primitive.ofFloat(2.0)))
+            .put("s", literalOf(Primitive.ofString("3")))
+            .put("b", literalOf(Primitive.ofBoolean(true)))
+            .put("t", literalOf(Primitive.ofDatetime(Instant.EPOCH)))
+            .put("d", literalOf(Primitive.ofDuration(Duration.ofDays(1))))
+            .build();
 
     Map<String, Literal> inputs =
-        parseInputs(ImmutableMap.of("arg", createVar(SimpleType.STRING)), new String[0], cmd);
+        parseInputs(
+            ImmutableMap.<String, Variable>builder()
+                .put("i", createVar(SimpleType.INTEGER))
+                .put("f", createVar(SimpleType.FLOAT))
+                .put("s", createVar(SimpleType.STRING))
+                .put("b", createVar(SimpleType.BOOLEAN))
+                .put("t", createVar(SimpleType.DATETIME))
+                .put("d", createVar(SimpleType.DURATION))
+                .build(),
+            new String[0],
+            cmd);
 
-    assertEquals(ImmutableMap.of("arg", literalOf(Primitive.ofString("foo"))), inputs);
+    assertEquals(expected, inputs);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideArgumentsFor_testParseInputs_unsupportedTypes")
+  public void testParseInputs_unsupported_defaultValues(LiteralType unsupportedType) {
+    ExecuteLocal cmd = new ExecuteLocalWithDefaultValues(ImmutableMap.of("arg", "foo"));
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                parseInputs(
+                    ImmutableMap.of("arg", createVar(unsupportedType)), new String[0], cmd));
+
+    assertEquals(
+        "Type of [arg] input parameter is not supported: " + unsupportedType,
+        exception.getMessage());
   }
 
   @Test

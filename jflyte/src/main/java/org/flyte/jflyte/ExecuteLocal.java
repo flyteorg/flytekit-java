@@ -34,8 +34,8 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.RunnableTask;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -221,15 +221,11 @@ public class ExecuteLocal implements Callable<Integer> {
    * @return option spec
    */
   protected CommandLine.Model.OptionSpec getOption(String name, Variable variable) {
-    // FIXME we assume for now that there are only simple types, because everything else isn't
-    // implemented, we should improve error message once we support other cases
-    SimpleType simpleType = variable.literalType().simpleType();
-
     String defaultValue = getDefaultValue(name);
 
     CommandLine.Model.OptionSpec.Builder builder =
         CommandLine.Model.OptionSpec.builder("--" + name)
-            .converters(new LiteralTypeConverter(simpleType))
+            .converters(getLiteralTypeConverter(name, variable))
             .required(defaultValue == null);
 
     if (defaultValue != null) {
@@ -241,6 +237,23 @@ public class ExecuteLocal implements Callable<Integer> {
     }
 
     return builder.build();
+  }
+
+  private LiteralTypeConverter getLiteralTypeConverter(String name, Variable variable) {
+    LiteralType literalType = variable.literalType();
+    switch (literalType.getKind()) {
+      case SIMPLE_TYPE:
+        return new LiteralTypeConverter(literalType.simpleType());
+
+      case SCHEMA_TYPE:
+      case COLLECTION_TYPE:
+      case MAP_VALUE_TYPE:
+      case BLOB_TYPE:
+        // TODO: implements other types
+        throw new IllegalArgumentException(
+            String.format("Type of [%s] input parameter is not supported: %s", name, literalType));
+    }
+    throw new AssertionError("Unexpected LiteralType.Kind: " + literalType.getKind());
   }
 
   /**
@@ -270,13 +283,13 @@ public class ExecuteLocal implements Callable<Integer> {
         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
+  @Nullable
   private Literal getDefaultValueAsLiteral(String name, Variable variable) {
     String defaultValueString = getDefaultValue(name);
     if (defaultValueString == null) {
       return null;
     }
 
-    SimpleType simpleType = variable.literalType().simpleType();
-    return new LiteralTypeConverter(simpleType).convert(defaultValueString);
+    return getLiteralTypeConverter(name, variable).convert(defaultValueString);
   }
 }

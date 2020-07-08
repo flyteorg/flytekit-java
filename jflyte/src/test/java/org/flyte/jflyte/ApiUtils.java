@@ -16,8 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import static org.flyte.api.v1.LiteralType.ofSimpleType;
-
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 
@@ -28,7 +27,11 @@ class ApiUtils {
     throw new UnsupportedOperationException("Not meant to be created");
   }
 
-  static Variable createVar(SimpleType type) {
-    return Variable.builder().literalType(ofSimpleType(type)).description(null).build();
+  static Variable createVar(SimpleType simpleType) {
+    return createVar(LiteralType.ofSimpleType(simpleType));
+  }
+
+  static Variable createVar(LiteralType type) {
+    return Variable.builder().literalType(type).description(null).build();
   }
 }

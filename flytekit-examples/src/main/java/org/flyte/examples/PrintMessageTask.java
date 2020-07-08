@@ -18,7 +18,9 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkTypes;
 
 /** Receives message as an input, and prints its. */
@@ -27,6 +29,10 @@ public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Vo
 
   public PrintMessageTask() {
     super(SdkTypes.autoValue(Input.class), SdkTypes.nulls());
+  }
+
+  public static SdkTransform of(SdkBindingData message) {
+    return new PrintMessageTask().withInput("message", message);
   }
 
   /** Input for {@link PrintMessageTask}. */

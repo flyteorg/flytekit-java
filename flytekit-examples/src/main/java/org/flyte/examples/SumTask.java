@@ -18,13 +18,19 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkTypes;
 
 @AutoService(SdkRunnableTask.class)
 public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
   public SumTask() {
     super(SdkTypes.autoValue(SumInput.class), SdkTypes.autoValue(SumOutput.class));
+  }
+
+  public static SdkTransform of(SdkBindingData a, SdkBindingData b) {
+    return new SumTask().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue

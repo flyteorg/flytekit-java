@@ -20,7 +20,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.auto.value.AutoValue;
 import java.util.Arrays;
@@ -37,6 +37,7 @@ import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SdkWorkflowBuilderTest {
@@ -55,6 +56,64 @@ class SdkWorkflowBuilderTest {
             .nodes(expectedNodes())
             .build();
     assertEquals(expected, builder.toIdlTemplate());
+  }
+
+  @Test
+  void testUpstreamNode_withUpstreamNode() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData el0 = builder.inputOfInteger("el0");
+    SdkBindingData el1 = builder.inputOfInteger("el1");
+
+    SdkNode el2 =
+        builder.apply("el2", new MultiplicationTask().withInput("a", el0).withInput("b", el1));
+
+    SdkNode el3 =
+        builder.apply(
+            "el3",
+            new MultiplicationTask().withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
+
+    assertEquals(singletonList("el2"), el3.toIdl().upstreamNodeIds());
+  }
+
+  @Test
+  void testUpstreamNode_apply() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkNode node1 = builder.apply("node1", new PrintHello());
+    SdkNode node2 = node1.apply("node2", new PrintHello());
+
+    assertEquals(singletonList("node1"), node2.toIdl().upstreamNodeIds());
+  }
+
+  @Test
+  void testUpstreamNode_duplicate() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkNode node1 = builder.apply("node1", new PrintHello());
+
+    IllegalArgumentException e =
+        Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> node1.apply("node2", new PrintHello().withUpstreamNode(node1)));
+
+    assertEquals("Duplicate upstream node ids [node1]", e.getMessage());
+  }
+
+  @Test
+  void testUpstreamNode_duplicateWithNode() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkNode node1 = builder.apply("node1", new PrintHello());
+
+    IllegalArgumentException e =
+        Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                builder.apply(
+                    "node2", new PrintHello().withUpstreamNode(node1).withUpstreamNode(node1)));
+
+    assertEquals("Duplicate upstream node id [node1]", e.getMessage());
   }
 
   @Test
@@ -179,6 +238,21 @@ class SdkWorkflowBuilderTest {
     @Override
     public Output run(Input input) {
       return Output.create(input.a() * input.b());
+    }
+  }
+
+  static class PrintHello extends SdkRunnableTask<Void, Void> {
+    private static final long serialVersionUID = -1971936360636181781L;
+
+    PrintHello() {
+      super(SdkTypes.nulls(), SdkTypes.nulls());
+    }
+
+    @Override
+    public Void run(Void input) {
+      System.out.println("Hello World");
+
+      return null;
     }
   }
 }

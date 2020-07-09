@@ -16,17 +16,18 @@
  */
 package org.flyte.jflyte;
 
-import static java.util.Collections.emptyMap;
 import static org.flyte.jflyte.ApiUtils.createVar;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -39,15 +40,12 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import picocli.CommandLine;
 
-public class ExecuteLocalTest {
-
+public class ExecuteLocalArgsParserTest {
   @Test
   public void testParseInputs_string() {
     Map<String, Literal> inputs =
@@ -203,55 +201,19 @@ public class ExecuteLocalTest {
                 .build()));
   }
 
-  @Test
-  public void testParseInputs_defaultValues() {
-    ExecuteLocal cmd =
-        new ExecuteLocalWithDefaultValues(
-            ImmutableMap.<String, String>builder()
-                .put("i", "1")
-                .put("f", "2.0")
-                .put("s", "3")
-                .put("b", "true")
-                .put("t", LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC).toString())
-                .put("d", "P1D")
-                .build());
-    ImmutableMap<String, Literal> expected =
-        ImmutableMap.<String, Literal>builder()
-            .put("i", literalOf(Primitive.ofInteger(1)))
-            .put("f", literalOf(Primitive.ofFloat(2.0)))
-            .put("s", literalOf(Primitive.ofString("3")))
-            .put("b", literalOf(Primitive.ofBoolean(true)))
-            .put("t", literalOf(Primitive.ofDatetime(Instant.EPOCH)))
-            .put("d", literalOf(Primitive.ofDuration(Duration.ofDays(1))))
-            .build();
-
-    Map<String, Literal> inputs =
-        parseInputs(
-            ImmutableMap.<String, Variable>builder()
-                .put("i", createVar(SimpleType.INTEGER))
-                .put("f", createVar(SimpleType.FLOAT))
-                .put("s", createVar(SimpleType.STRING))
-                .put("b", createVar(SimpleType.BOOLEAN))
-                .put("t", createVar(SimpleType.DATETIME))
-                .put("d", createVar(SimpleType.DURATION))
-                .build(),
-            new String[0],
-            cmd);
-
-    assertEquals(expected, inputs);
-  }
-
   @ParameterizedTest
   @MethodSource("provideArgumentsFor_testParseInputs_unsupportedTypes")
   public void testParseInputs_unsupported_defaultValues(LiteralType unsupportedType) {
-    ExecuteLocal cmd = new ExecuteLocalWithDefaultValues(ImmutableMap.of("arg", "foo"));
+    ExecuteLocalArgsParser parser = new ArgsParserWithDefaultValues(ImmutableMap.of("arg", "foo"));
 
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
             () ->
-                parseInputs(
-                    ImmutableMap.of("arg", createVar(unsupportedType)), new String[0], cmd));
+                parser.parseInputs(
+                    "flyte",
+                    ImmutableMap.of("arg", createVar(unsupportedType)),
+                    ImmutableList.of()));
 
     assertEquals(
         "Type of [arg] input parameter is not supported: " + unsupportedType,
@@ -283,76 +245,48 @@ public class ExecuteLocalTest {
   }
 
   @Test
-  void testLoadAll_withoutDuplicates() {
-    ClassLoader classLoader1 = new TestClassLoader();
-    ClassLoader classLoader2 = new TestClassLoader();
-    TestTask task1 = new TestTask();
-    TestTask task2 = new TestTask();
+  public void testParseInputs_defaultValues() {
+    ArgsParserWithDefaultValues parser =
+        new ArgsParserWithDefaultValues(
+            ImmutableMap.<String, String>builder()
+                .put("i", "1")
+                .put("f", "2.0")
+                .put("s", "3")
+                .put("b", "true")
+                .put("t", LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC).toString())
+                .put("d", "P1D")
+                .build());
+    ImmutableMap<String, Literal> expected =
+        ImmutableMap.<String, Literal>builder()
+            .put("i", literalOf(Primitive.ofInteger(1)))
+            .put("f", literalOf(Primitive.ofFloat(2.0)))
+            .put("s", literalOf(Primitive.ofString("3")))
+            .put("b", literalOf(Primitive.ofBoolean(true)))
+            .put("t", literalOf(Primitive.ofDatetime(Instant.EPOCH)))
+            .put("d", literalOf(Primitive.ofDuration(Duration.ofDays(1))))
+            .build();
 
-    Map<String, ClassLoader> modules =
-        ImmutableMap.of("source1", classLoader1, "source2", classLoader2);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
-        ImmutableMap.of(
-            classLoader1, ImmutableMap.of("task1", task1),
-            classLoader2, ImmutableMap.of("task2", task2));
+    Map<String, Literal> inputs =
+        parser.parseInputs(
+            "jflyte",
+            ImmutableMap.<String, Variable>builder()
+                .put("i", createVar(SimpleType.INTEGER))
+                .put("f", createVar(SimpleType.FLOAT))
+                .put("s", createVar(SimpleType.STRING))
+                .put("b", createVar(SimpleType.BOOLEAN))
+                .put("t", createVar(SimpleType.DATETIME))
+                .put("d", createVar(SimpleType.DURATION))
+                .build(),
+            ImmutableList.of());
 
-    Map<String, SdkRunnableTask<?, ?>> tasksByName =
-        ExecuteLocal.loadAll(modules, (cl, __) -> tasksPerClassLoader.get(cl), emptyMap());
-
-    assertEquals(ImmutableMap.of("task1", task1, "task2", task2), tasksByName);
+    assertEquals(expected, inputs);
   }
 
-  @Test
-  void testLoadAll_withDuplicates() {
-    ClassLoader classLoader1 = new TestClassLoader();
-    ClassLoader classLoader2 = new TestClassLoader();
-    ClassLoader classLoader3 = new TestClassLoader();
-    TestTask duplicateTask1 = new TestTask();
-    TestTask duplicateTask2 = new TestTask();
-    TestTask uniqueTask = new TestTask();
-
-    Map<String, ClassLoader> modules =
-        ImmutableMap.of("source1", classLoader1, "source2", classLoader2, "source3", classLoader3);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
-        ImmutableMap.of(
-            classLoader1, ImmutableMap.of("dupTask1", duplicateTask1, "unqTask", uniqueTask),
-            classLoader2, ImmutableMap.of("dupTask1", duplicateTask1, "dupTask2", duplicateTask2),
-            classLoader3, ImmutableMap.of("dupTask2", duplicateTask2));
-
-    RuntimeException exception =
-        assertThrows(
-            RuntimeException.class,
-            () ->
-                ExecuteLocal.loadAll(modules, (cl, __) -> tasksPerClassLoader.get(cl), emptyMap()));
-
-    assertEquals(
-        "Found duplicate items among the modules: "
-            + "{dupTask1 -> [source1, source2]}; {dupTask2 -> [source2, source3]}",
-        exception.getMessage());
-  }
-
-  private static Map<String, Literal> parseInputs(
-      Map<String, Variable> variableMap, String[] args) {
-    return parseInputs(variableMap, args, new ExecuteLocal());
-  }
-
-  private static Map<String, Literal> parseInputs(
-      Map<String, Variable> variableMap, String[] args, ExecuteLocal cmd) {
-    CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.create();
-    variableMap.forEach((name, variable) -> spec.addOption(cmd.getOption(name, variable)));
-
-    return cmd.parseInputs(spec, variableMap, args);
-  }
-
-  private static Literal literalOf(Primitive primitive) {
-    return Literal.of(Scalar.of(primitive));
-  }
-
-  private static class ExecuteLocalWithDefaultValues extends ExecuteLocal {
+  private static class ArgsParserWithDefaultValues extends ExecuteLocalArgsParser {
 
     private final ImmutableMap<String, String> defaultValues;
 
-    public ExecuteLocalWithDefaultValues(ImmutableMap<String, String> defaultValues) {
+    public ArgsParserWithDefaultValues(ImmutableMap<String, String> defaultValues) {
       this.defaultValues = defaultValues;
     }
 
@@ -363,18 +297,14 @@ public class ExecuteLocalTest {
     }
   }
 
-  private static class TestTask extends SdkRunnableTask<Void, Void> {
-    private static final long serialVersionUID = -2949483398581210936L;
-
-    private TestTask() {
-      super(SdkTypes.nulls(), SdkTypes.nulls());
-    }
-
-    @Override
-    public Void run(Void input) {
-      return null;
-    }
+  private static Literal literalOf(Primitive primitive) {
+    return Literal.of(Scalar.of(primitive));
   }
 
-  private static class TestClassLoader extends ClassLoader {}
+  private static Map<String, Literal> parseInputs(
+      Map<String, Variable> variableMap, String[] args) {
+    ExecuteLocalArgsParser parser = new ExecuteLocalArgsParser();
+
+    return parser.parseInputs("jflyte", variableMap, Arrays.asList(args));
+  }
 }

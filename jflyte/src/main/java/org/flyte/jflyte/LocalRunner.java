@@ -36,16 +36,27 @@ public class LocalRunner {
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, Literal> inputs) {
+    return compileAndExecute(template, runnableTasks, inputs, new NoopExecutionListener());
+  }
+
+  static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, Literal> inputs,
+      ExecutionListener listener) {
     List<ExecutionNode> executionNodes =
         ExecutionNodeCompiler.compile(template.nodes(), runnableTasks);
 
-    return execute(executionNodes, inputs, template.outputs());
+    return execute(executionNodes, inputs, template.outputs(), listener);
   }
 
   static Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
       Map<String, Literal> workflowInputs,
-      List<Binding> bindings) {
+      List<Binding> bindings,
+      ExecutionListener listener) {
+
+    executionNodes.forEach(listener::pending);
 
     Map<String, Map<String, Literal>> nodeOutputs = new HashMap<>();
     nodeOutputs.put(START_NODE_ID, workflowInputs);
@@ -53,12 +64,21 @@ public class LocalRunner {
     for (ExecutionNode executionNode : executionNodes) {
       Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
 
-      Map<String, Literal> outputs = executionNode.runnableTask().run(inputs);
-      Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
+      listener.starting(executionNode, inputs);
 
-      nodeOutputs.put(executionNode.nodeId(), outputs);
+      try {
+        Map<String, Literal> outputs = executionNode.runnableTask().run(inputs);
+        Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
+        nodeOutputs.put(executionNode.nodeId(), outputs);
 
-      Verify.verify(previous == null, "invariant failed");
+        listener.completed(executionNode, inputs, outputs);
+
+        Verify.verify(previous == null, "invariant failed");
+      } catch (Throwable e) {
+        listener.error(executionNode, inputs, e);
+
+        throw e;
+      }
     }
 
     return getLiteralMap(nodeOutputs, bindings);

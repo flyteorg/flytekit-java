@@ -16,9 +16,14 @@
  */
 package org.flyte.jflyte;
 
+import static org.flyte.jflyte.TestingListener.ofCompleted;
+import static org.flyte.jflyte.TestingListener.ofPending;
+import static org.flyte.jflyte.TestingListener.ofStarting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
@@ -42,6 +47,8 @@ class LocalRunnerTest {
 
     Literal fib0 = Literal.of(Scalar.of(Primitive.ofInteger(0L)));
     Literal fib1 = Literal.of(Scalar.of(Primitive.ofInteger(1L)));
+    Literal fib2 = Literal.of(Scalar.of(Primitive.ofInteger(1L)));
+    Literal fib3 = Literal.of(Scalar.of(Primitive.ofInteger(2L)));
     Literal fib4 = Literal.of(Scalar.of(Primitive.ofInteger(3L)));
     Literal fib5 = Literal.of(Scalar.of(Primitive.ofInteger(5L)));
 
@@ -49,9 +56,36 @@ class LocalRunnerTest {
     Map<String, RunnableTask> tasks = Modules.loadTasks(env);
     WorkflowTemplate workflow = workflows.get(workflowName);
 
+    TestingListener listener = new TestingListener();
+
     Map<String, Literal> outputs =
-        LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of("fib0", fib0, "fib1", fib1));
+        LocalRunner.compileAndExecute(
+            workflow, tasks, ImmutableMap.of("fib0", fib0, "fib1", fib1), listener);
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
+    assertEquals(
+        ImmutableList.<List<Object>>builder()
+            .add(ofPending("fib-2"))
+            .add(ofPending("fib-3"))
+            .add(ofPending("fib-4"))
+            .add(ofPending("fib-5"))
+            .add(ofStarting("fib-2", ImmutableMap.of("a", fib0, "b", fib1)))
+            .add(
+                ofCompleted(
+                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("c", fib2)))
+            .add(ofStarting("fib-3", ImmutableMap.of("a", fib1, "b", fib2)))
+            .add(
+                ofCompleted(
+                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("c", fib3)))
+            .add(ofStarting("fib-4", ImmutableMap.of("a", fib2, "b", fib3)))
+            .add(
+                ofCompleted(
+                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("c", fib4)))
+            .add(ofStarting("fib-5", ImmutableMap.of("a", fib3, "b", fib4)))
+            .add(
+                ofCompleted(
+                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
+            .build(),
+        listener.actions);
   }
 }

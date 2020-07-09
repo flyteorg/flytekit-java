@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 
 import java.time.Duration;
@@ -57,5 +58,9 @@ public abstract class SdkTransform {
 
   public SdkTransform withInput(String name, SdkBindingData value) {
     return SdkPartialTransform.of(this, singletonMap(name, value));
+  }
+
+  public SdkTransform withUpstreamNode(SdkNode node) {
+    return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
   }
 }

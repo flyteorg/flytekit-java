@@ -78,7 +78,9 @@ public class ExecuteLocal implements Callable<Integer> {
       // TODO, use logging listener here
       ExecutionListener listener = new NoopExecutionListener();
 
-      LocalRunner.compileAndExecute(workflow, tasks, inputs, listener);
+      Map<String, Literal> outputs =
+          LocalRunner.compileAndExecute(workflow, tasks, inputs, listener);
+      LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;
     } catch (Throwable e) {

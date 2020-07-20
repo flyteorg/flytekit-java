@@ -75,12 +75,12 @@ public abstract class SdkBindingData {
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar, LiteralType type) {
-    BindingData idl = BindingData.of(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
+    BindingData idl = BindingData.ofOutputReference(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
     return create(idl, type);
   }
 
   public static SdkBindingData ofPrimitive(Primitive primitive) {
-    BindingData bindingData = BindingData.of(Scalar.of(primitive));
+    BindingData bindingData = BindingData.ofScalar(Scalar.ofPrimitive(primitive));
     LiteralType literalType = LiteralType.ofSimpleType(primitive.type());
     return create(bindingData, literalType);
   }
@@ -112,9 +112,9 @@ public abstract class SdkBindingData {
   private static <T> SdkBindingData ofCollection(
       List<T> elements, Function<T, Primitive> f, LiteralType type) {
     BindingData bindingData =
-        BindingData.of(
+        BindingData.ofCollection(
             elements.stream()
-                .map(elem -> BindingData.of(Scalar.of(f.apply(elem))))
+                .map(elem -> BindingData.ofScalar(Scalar.ofPrimitive(f.apply(elem))))
                 .collect(Collectors.toList()));
     LiteralType literalType = LiteralType.ofCollectionType(type);
     return create(bindingData, literalType);
@@ -147,12 +147,12 @@ public abstract class SdkBindingData {
   private static <T> SdkBindingData ofMap(
       Map<String, T> elementsByKey, Function<T, Primitive> f, LiteralType type) {
     BindingData bindingData =
-        BindingData.of(
+        BindingData.ofMap(
             elementsByKey.entrySet().stream()
                 .map(
                     entry ->
                         new SimpleImmutableEntry<>(
-                            entry.getKey(), BindingData.of(Scalar.of(f.apply(entry.getValue())))))
+                            entry.getKey(), BindingData.ofScalar(Scalar.ofPrimitive(f.apply(entry.getValue())))))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
     LiteralType literalType = LiteralType.ofMapValueType(type);
     return create(bindingData, literalType);

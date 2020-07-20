@@ -45,12 +45,12 @@ class LocalRunnerTest {
 
     String workflowName = new FibonacciWorkflow().getName();
 
-    Literal fib0 = Literal.of(Scalar.of(Primitive.ofInteger(0L)));
-    Literal fib1 = Literal.of(Scalar.of(Primitive.ofInteger(1L)));
-    Literal fib2 = Literal.of(Scalar.of(Primitive.ofInteger(1L)));
-    Literal fib3 = Literal.of(Scalar.of(Primitive.ofInteger(2L)));
-    Literal fib4 = Literal.of(Scalar.of(Primitive.ofInteger(3L)));
-    Literal fib5 = Literal.of(Scalar.of(Primitive.ofInteger(5L)));
+    Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(0L)));
+    Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
+    Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
+    Literal fib3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(2L)));
+    Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3L)));
+    Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(5L)));
 
     Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
     Map<String, RunnableTask> tasks = Modules.loadTasks(env);

@@ -46,15 +46,15 @@ public abstract class Literal {
 
   public abstract Map<String, Literal> map();
 
-  public static Literal of(Scalar scalar) {
+  public static Literal ofScalar(Scalar scalar) {
     return AutoOneOf_Literal.scalar(scalar);
   }
 
-  public static Literal of(List<Literal> collection) {
+  public static Literal ofCollection(List<Literal> collection) {
     return AutoOneOf_Literal.collection(collection);
   }
 
-  public static Literal of(Map<String, Literal> map) {
+  public static Literal ofMap(Map<String, Literal> map) {
     return AutoOneOf_Literal.map(map);
   }
 }

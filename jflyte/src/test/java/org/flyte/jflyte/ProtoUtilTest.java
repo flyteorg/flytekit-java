@@ -126,7 +126,7 @@ class ProtoUtilTest {
   @Test
   void shouldSerializeLiteralMap() {
     Map<String, Literal> input =
-        ImmutableMap.of("a", Literal.of(Scalar.of(Primitive.ofInteger(1337L))));
+        ImmutableMap.of("a", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))));
     Literals.Primitive expectedPrimitive =
         Literals.Primitive.newBuilder().setInteger(1337L).build();
     Literals.Scalar expectedScalar =
@@ -161,7 +161,7 @@ class ProtoUtilTest {
   }
 
   static Stream<Arguments> provideArgsForShouldSerializeBindingData() {
-    BindingData apiScalar = BindingData.of(Scalar.of(Primitive.ofInteger(1337L)));
+    BindingData apiScalar = BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L)));
     Literals.BindingData protoScalar =
         Literals.BindingData.newBuilder()
             .setScalar(
@@ -173,19 +173,19 @@ class ProtoUtilTest {
     return Stream.of(
         Arguments.of(apiScalar, protoScalar),
         Arguments.of(
-            BindingData.of(singletonList(apiScalar)),
+            BindingData.ofCollection(singletonList(apiScalar)),
             Literals.BindingData.newBuilder()
                 .setCollection(
                     Literals.BindingDataCollection.newBuilder().addBindings(protoScalar).build())
                 .build()),
         Arguments.of(
-            BindingData.of(singletonMap("foo", apiScalar)),
+            BindingData.ofMap(singletonMap("foo", apiScalar)),
             Literals.BindingData.newBuilder()
                 .setMap(
                     Literals.BindingDataMap.newBuilder().putBindings("foo", protoScalar).build())
                 .build()),
         Arguments.of(
-            BindingData.of(OutputReference.builder().nodeId("node-id").var("var").build()),
+            BindingData.ofOutputReference(OutputReference.builder().nodeId("node-id").var("var").build()),
             Literals.BindingData.newBuilder()
                 .setPromise(
                     Types.OutputReference.newBuilder().setNodeId("node-id").setVar("var").build())
@@ -492,7 +492,7 @@ class ProtoUtilTest {
   }
 
   static Stream<Arguments> createSerializeLiteralsArguments() {
-    Literal apiLiteral = Literal.of(Scalar.of(Primitive.ofInteger(123)));
+    Literal apiLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(123)));
     Literals.Literal protoLiteral =
         Literals.Literal.newBuilder()
             .setScalar(
@@ -504,13 +504,13 @@ class ProtoUtilTest {
     return Stream.of(
         Arguments.of(apiLiteral, protoLiteral),
         Arguments.of(
-            Literal.of(singletonList(apiLiteral)),
+            Literal.ofCollection(singletonList(apiLiteral)),
             Literals.Literal.newBuilder()
                 .setCollection(
                     Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())
                 .build()),
         Arguments.of(
-            Literal.of(Collections.singletonMap("name", apiLiteral)),
+            Literal.ofMap(Collections.singletonMap("name", apiLiteral)),
             Literals.Literal.newBuilder()
                 .setMap(Literals.LiteralMap.newBuilder().putLiterals("name", protoLiteral).build())
                 .build()));
@@ -671,7 +671,7 @@ class ProtoUtilTest {
         singletonList(
             Binding.builder()
                 .var_(input_name)
-                .binding(BindingData.of(Scalar.of(Primitive.ofString(input_scalar))))
+                .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofString(input_scalar))))
                 .build());
 
     return Node.builder()

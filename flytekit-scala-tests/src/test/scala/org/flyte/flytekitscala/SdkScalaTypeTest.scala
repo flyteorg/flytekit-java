@@ -68,15 +68,15 @@ class SdkScalaTypeTest {
   @Test
   def testFromLiteralMap(): Unit = {
     val input = Map(
-      "string" -> Literal.of(Scalar.of(Primitive.ofString("string"))),
-      "integer" -> Literal.of(Scalar.of(Primitive.ofInteger(1337L))),
-      "float" -> Literal.of(Scalar.of(Primitive.ofFloat(42.0))),
-      "boolean" -> Literal.of(Scalar.of(Primitive.ofBoolean(true))),
-      "datetime" -> Literal.of(
-        Scalar.of(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
+      "string" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))),
+      "integer" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))),
+      "float" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(42.0))),
+      "boolean" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))),
+      "datetime" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
       ),
-      "duration" -> Literal.of(
-        Scalar.of(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      "duration" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
       )
     )
 
@@ -108,15 +108,15 @@ class SdkScalaTypeTest {
       )
 
     val expected = Map(
-      "string" -> Literal.of(Scalar.of(Primitive.ofString("string"))),
-      "integer" -> Literal.of(Scalar.of(Primitive.ofInteger(1337L))),
-      "float" -> Literal.of(Scalar.of(Primitive.ofFloat(42.0))),
-      "boolean" -> Literal.of(Scalar.of(Primitive.ofBoolean(true))),
-      "datetime" -> Literal.of(
-        Scalar.of(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
+      "string" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))),
+      "integer" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))),
+      "float" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(42.0))),
+      "boolean" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))),
+      "datetime" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
       ),
-      "duration" -> Literal.of(
-        Scalar.of(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      "duration" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
       )
     )
 

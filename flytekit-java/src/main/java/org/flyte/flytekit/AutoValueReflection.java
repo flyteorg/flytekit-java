@@ -239,23 +239,22 @@ class AutoValueReflection {
         SimpleType simpleType = literalType.simpleType();
         return toLiteral(value, simpleType);
       case COLLECTION_TYPE:
-        List<?> list = (List<?>) value;
+        List<?> list = (List) value;
         LiteralType elementType = literalType.collectionType();
-        return Literal.of(
+        return Literal.ofCollection(
             list.stream()
                 .map(element -> toLiteral(element, elementType))
-                .<List<Literal>, Object>collect(
-                    collectingAndThen(toList(), Collections::unmodifiableList)));
+                .collect(collectingAndThen(toList(), Collections::unmodifiableList)));
       case MAP_VALUE_TYPE:
         Map<String, ?> map = (Map<String, ?>) value;
         LiteralType valuesType = literalType.mapValueType();
-        return Literal.of(
+        return Literal.ofMap(
             map.entrySet().stream()
                 .map(
                     entry ->
                         new SimpleImmutableEntry<>(
                             entry.getKey(), toLiteral(entry.getValue(), valuesType)))
-                .<Map<String, Literal>, Object>collect(
+                .collect(
                     collectingAndThen(
                         toMap(Map.Entry::getKey, Map.Entry::getValue),
                         Collections::unmodifiableMap)));
@@ -290,7 +289,7 @@ class AutoValueReflection {
   }
 
   private static Literal toLiteral(Primitive primitive) {
-    return Literal.of(Scalar.of(primitive));
+    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
   @SuppressWarnings("unchecked")

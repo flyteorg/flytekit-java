@@ -127,7 +127,7 @@ class LiteralTypeConverter implements CommandLine.ITypeConverter<Literal> {
   }
 
   private static Literal literalOfPrimitive(Primitive primitive) {
-    return Literal.of(Scalar.of(primitive));
+    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
   // approach taken from picocli to be consistent with their converters

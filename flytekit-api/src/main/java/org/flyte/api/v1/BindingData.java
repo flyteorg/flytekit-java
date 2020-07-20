@@ -49,19 +49,19 @@ public abstract class BindingData {
 
   public abstract Map<String, BindingData> map();
 
-  public static BindingData of(Scalar scalar) {
+  public static BindingData ofScalar(Scalar scalar) {
     return AutoOneOf_BindingData.scalar(scalar);
   }
 
-  public static BindingData of(List<BindingData> collection) {
+  public static BindingData ofCollection(List<BindingData> collection) {
     return AutoOneOf_BindingData.collection(collection);
   }
 
-  public static BindingData of(OutputReference outputReference) {
+  public static BindingData ofOutputReference(OutputReference outputReference) {
     return AutoOneOf_BindingData.promise(outputReference);
   }
 
-  public static BindingData of(Map<String, BindingData> map) {
+  public static BindingData ofMap(Map<String, BindingData> map) {
     return AutoOneOf_BindingData.map(map);
   }
 }

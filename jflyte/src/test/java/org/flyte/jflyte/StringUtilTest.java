@@ -37,20 +37,20 @@ public class StringUtilTest {
   void shouldSerializeLiteralMap() {
     Map<String, Literal> input = new HashMap<>();
 
-    Literal integer = Literal.of(Scalar.of(Primitive.ofInteger(1337L)));
-    Literal map = Literal.of(singletonMap("b", integer));
-    Literal list = Literal.of(singletonList(integer));
+    Literal integer = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L)));
+    Literal map = Literal.ofMap(singletonMap("b", integer));
+    Literal list = Literal.ofCollection(singletonList(integer));
 
-    input.put("string", Literal.of(Scalar.of(Primitive.ofString("string"))));
+    input.put("string", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))));
     input.put("integer", integer);
-    input.put("float", Literal.of(Scalar.of(Primitive.ofFloat(2.0))));
-    input.put("boolean", Literal.of(Scalar.of(Primitive.ofBoolean(true))));
-    input.put("datetime", Literal.of(Scalar.of(Primitive.ofDatetime(Instant.ofEpochSecond(60L)))));
-    input.put("duration", Literal.of(Scalar.of(Primitive.ofDuration(Duration.ofSeconds(61)))));
+    input.put("float", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(2.0))));
+    input.put("boolean", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))));
+    input.put("datetime", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochSecond(60L)))));
+    input.put("duration", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(61)))));
     input.put("list", list);
     input.put("map", map);
-    input.put("listOfList", Literal.of(ImmutableList.of(list, integer)));
-    input.put("mapOfMap", Literal.of(ImmutableMap.of("a", map, "c", integer)));
+    input.put("listOfList", Literal.ofCollection(ImmutableList.of(list, integer)));
+    input.put("mapOfMap", Literal.ofMap(ImmutableMap.of("a", map, "c", integer)));
 
     Map<String, String> expected = new HashMap<>();
     expected.put("string", "string");

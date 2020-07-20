@@ -96,8 +96,8 @@ class AutoValueReflectionTest {
     inputMap.put("b", literalOf(Primitive.ofBoolean(true)));
     inputMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     inputMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    inputMap.put("l", Literal.of(singletonList(literalOf(Primitive.ofString("123")))));
-    inputMap.put("m", Literal.of(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
+    inputMap.put("l", Literal.ofCollection(singletonList(literalOf(Primitive.ofString("123")))));
+    inputMap.put("m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
 
     AutoValueInput input = AutoValueReflection.readValue(inputMap, AutoValueInput.class);
 
@@ -177,7 +177,7 @@ class AutoValueReflectionTest {
   }
 
   private static Literal literalOf(Primitive primitive) {
-    return Literal.of(Scalar.of(primitive));
+    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
   @AutoValue

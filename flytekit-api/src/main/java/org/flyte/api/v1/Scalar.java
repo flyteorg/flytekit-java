@@ -32,7 +32,7 @@ public abstract class Scalar {
 
   // TODO add the rest of the cases
 
-  public static Scalar of(Primitive primitive) {
+  public static Scalar ofPrimitive(Primitive primitive) {
     return AutoOneOf_Scalar.primitive(primitive);
   }
 }

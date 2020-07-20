@@ -97,10 +97,10 @@ public class LocalRunner {
       Map<String, Map<String, Literal>> nodeOutputs, BindingData bindingData) {
     switch (bindingData.kind()) {
       case SCALAR:
-        return Literal.of(bindingData.scalar());
+        return Literal.ofScalar(bindingData.scalar());
 
       case COLLECTION:
-        return Literal.of(
+        return Literal.ofCollection(
             bindingData.collection().stream()
                 .map(binding -> getLiteral(nodeOutputs, binding))
                 .collect(Collectors.toList()));
@@ -114,7 +114,7 @@ public class LocalRunner {
         return outputs.get(bindingData.promise().var());
 
       case MAP:
-        return Literal.of(
+        return Literal.ofMap(
             bindingData.map().entrySet().stream()
                 .map(
                     entry ->

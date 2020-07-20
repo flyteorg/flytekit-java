@@ -174,7 +174,7 @@ public class FlyteAdminClientTest {
                 ImmutableList.of(
                     Binding.builder()
                         .var_(VAR_NAME)
-                        .binding(BindingData.of(Scalar.of(Primitive.ofString(SCALAR))))
+                        .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofString(SCALAR))))
                         .build()))
             .upstreamNodeIds(emptyList())
             .build();

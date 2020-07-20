@@ -50,8 +50,8 @@ public class ChainedExecutionListenerTest {
             .runnableTask(new EmptyRunnableTask())
             .build();
 
-    Literal a = Literal.of(Scalar.of(Primitive.ofInteger(42L)));
-    Literal b = Literal.of(Scalar.of(Primitive.ofInteger(1337L)));
+    Literal a = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(42L)));
+    Literal b = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L)));
 
     chained.pending(node);
     chained.starting(node, ImmutableMap.of("a", a));

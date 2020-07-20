@@ -118,42 +118,42 @@ object SdkScalaType {
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
       LiteralType.ofSimpleType(SimpleType.STRING),
-      value => Literal.of(Scalar.of(Primitive.ofString(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString(value))),
       _.scalar().primitive().string()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
       LiteralType.ofSimpleType(SimpleType.INTEGER),
-      value => Literal.of(Scalar.of(Primitive.ofInteger(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
       _.scalar().primitive().integer()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
       LiteralType.ofSimpleType(SimpleType.FLOAT),
-      value => Literal.of(Scalar.of(Primitive.ofFloat(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
       literal => literal.scalar().primitive().float_()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
       LiteralType.ofSimpleType(SimpleType.BOOLEAN),
-      value => Literal.of(Scalar.of(Primitive.ofBoolean(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
       _.scalar().primitive().boolean_()
     )
 
   implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
     SdkScalaLiteralType[Instant](
       LiteralType.ofSimpleType(SimpleType.DATETIME),
-      value => Literal.of(Scalar.of(Primitive.ofDatetime(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))),
       _.scalar().primitive().datetime()
     )
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     SdkScalaLiteralType[Duration](
       LiteralType.ofSimpleType(SimpleType.DURATION),
-      value => Literal.of(Scalar.of(Primitive.ofDuration(value))),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
       _.scalar().primitive().duration()
     )
 

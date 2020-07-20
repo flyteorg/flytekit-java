@@ -186,7 +186,7 @@ class SdkWorkflowBuilderTest {
     return singletonList(
         Binding.builder()
             .var_("out")
-            .binding(BindingData.of(OutputReference.builder().var("c").nodeId("square").build()))
+            .binding(BindingData.ofOutputReference(OutputReference.builder().var("c").nodeId("square").build()))
             .build());
   }
 
@@ -206,7 +206,7 @@ class SdkWorkflowBuilderTest {
                     Binding.builder()
                         .var_("a")
                         .binding(
-                            BindingData.of(
+                            BindingData.ofOutputReference(
                                 OutputReference.builder()
                                     .var("in")
                                     .nodeId(Node.START_NODE_ID)
@@ -214,7 +214,7 @@ class SdkWorkflowBuilderTest {
                         .build(),
                     Binding.builder()
                         .var_("b")
-                        .binding(BindingData.of(Scalar.of(Primitive.ofInteger(2L))))
+                        .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(2L))))
                         .build()))
             .upstreamNodeIds(emptyList())
             .build());

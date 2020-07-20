@@ -85,7 +85,7 @@ class ProtoUtil {
 
   static Literal deserialize(Literals.Literal literal) {
     if (literal.getScalar() != null) {
-      return Literal.of(deserialize(literal.getScalar()));
+      return Literal.ofScalar(deserialize(literal.getScalar()));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
@@ -93,7 +93,7 @@ class ProtoUtil {
 
   static Scalar deserialize(Literals.Scalar scalar) {
     if (scalar.getPrimitive() != null) {
-      return Scalar.of(deserialize(scalar.getPrimitive()));
+      return Scalar.ofPrimitive(deserialize(scalar.getPrimitive()));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));

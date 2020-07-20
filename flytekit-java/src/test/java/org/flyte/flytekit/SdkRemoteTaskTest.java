@@ -78,11 +78,11 @@ class SdkRemoteTaskTest {
                             Arrays.asList(
                                 Binding.builder()
                                     .var_("a")
-                                    .binding(BindingData.of(Scalar.of(Primitive.ofInteger(1))))
+                                    .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1))))
                                     .build(),
                                 Binding.builder()
                                     .var_("b")
-                                    .binding(BindingData.of(Scalar.of(Primitive.ofString("2"))))
+                                    .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofString("2"))))
                                     .build()))
                         .build())),
         () ->

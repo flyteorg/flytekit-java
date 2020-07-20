@@ -298,7 +298,7 @@ public class ExecuteLocalArgsParserTest {
   }
 
   private static Literal literalOf(Primitive primitive) {
-    return Literal.of(Scalar.of(primitive));
+    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
   private static Map<String, Literal> parseInputs(

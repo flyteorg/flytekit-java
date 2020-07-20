@@ -65,8 +65,15 @@ public class SdkWorkflowBuilder {
       SdkTransform transform,
       List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs) {
+
+    if (allNodes.containsKey(nodeId)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Node id [%s] already exists. Node ids must be unique within one workflow.", nodeId));
+    }
+
     SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, inputs);
-    applyInternal(sdkNode);
+    allNodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;
   }
@@ -249,9 +256,7 @@ public class SdkWorkflowBuilder {
     return Binding.builder().var_(var_).binding(bindingData.idl()).build();
   }
 
-  public void applyInternal(SdkNode node) {
-    allNodes.put(node.getNodeId(), node);
-  }
+  void applyInternal(SdkNode node) {}
 
   private List<Node> nodesToIdl() {
     return allNodes.values().stream()

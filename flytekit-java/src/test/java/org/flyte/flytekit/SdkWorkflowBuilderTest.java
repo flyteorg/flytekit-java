@@ -21,6 +21,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
 import java.util.Arrays;
@@ -37,7 +38,6 @@ import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SdkWorkflowBuilderTest {
@@ -56,6 +56,27 @@ class SdkWorkflowBuilderTest {
             .nodes(expectedNodes())
             .build();
     assertEquals(expected, builder.toIdlTemplate());
+  }
+
+  @Test
+  void testDuplicateNodeId() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData b = builder.inputOfInteger("b");
+
+    builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
+            });
+
+    assertEquals(
+        "Node id [node-1] already exists. Node ids must be unique within one workflow.",
+        e.getMessage());
   }
 
   @Test
@@ -93,7 +114,7 @@ class SdkWorkflowBuilderTest {
     SdkNode node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
-        Assertions.assertThrows(
+        assertThrows(
             IllegalArgumentException.class,
             () -> node1.apply("node2", new PrintHello().withUpstreamNode(node1)));
 
@@ -107,7 +128,7 @@ class SdkWorkflowBuilderTest {
     SdkNode node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
-        Assertions.assertThrows(
+        assertThrows(
             IllegalArgumentException.class,
             () ->
                 builder.apply(

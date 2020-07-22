@@ -68,10 +68,16 @@ class SdkScalaTypeTest {
   @Test
   def testFromLiteralMap(): Unit = {
     val input = Map(
-      "string" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))),
-      "integer" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))),
+      "string" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofString("string"))
+      ),
+      "integer" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofInteger(1337L))
+      ),
       "float" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(42.0))),
-      "boolean" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))),
+      "boolean" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofBoolean(true))
+      ),
       "datetime" -> Literal.ofScalar(
         Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
       ),
@@ -108,10 +114,16 @@ class SdkScalaTypeTest {
       )
 
     val expected = Map(
-      "string" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))),
-      "integer" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))),
+      "string" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofString("string"))
+      ),
+      "integer" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofInteger(1337L))
+      ),
       "float" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(42.0))),
-      "boolean" -> Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))),
+      "boolean" -> Literal.ofScalar(
+        Scalar.ofPrimitive(Primitive.ofBoolean(true))
+      ),
       "datetime" -> Literal.ofScalar(
         Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochMilli(123456L)))
       ),

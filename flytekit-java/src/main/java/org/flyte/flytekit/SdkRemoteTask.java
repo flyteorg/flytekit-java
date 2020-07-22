@@ -60,8 +60,11 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
       Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId =
         PartialTaskIdentifier.builder().name(name()).project(project()).domain(domain()).build();
+    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
 
-    // TODO put type checking here
+    if (!errors.isEmpty()) {
+      throw new CompilerException(errors);
+    }
 
     return new SdkTaskNode(
         builder, nodeId, taskId, upstreamNodeIds, inputs, outputs().getVariableMap());

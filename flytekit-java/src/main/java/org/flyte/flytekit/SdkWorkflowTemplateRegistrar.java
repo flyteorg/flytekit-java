@@ -60,7 +60,7 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
       sdkWorkflow.expand(builder);
 
-      WorkflowTemplate workflow = builder.toIdlTemplate();
+      WorkflowTemplate workflow = WorkflowTemplateIdl.ofBuilder(builder);
       WorkflowTemplate previous = workflows.put(workflowId, workflow);
 
       if (previous != null) {

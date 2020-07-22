@@ -67,15 +67,99 @@ class SdkWorkflowBuilderTest {
 
     builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
-    IllegalArgumentException e =
+    CompilerException e =
         assertThrows(
-            IllegalArgumentException.class,
-            () -> {
-              builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
-            });
+            CompilerException.class,
+            () ->
+                builder.apply(
+                    "node-1", new MultiplicationTask().withInput("a", a).withInput("b", b)));
 
     assertEquals(
-        "Node id [node-1] already exists. Node ids must be unique within one workflow.",
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: DUPLICATE_NODE_ID, Node Id: node-1, Description: Trying to insert two nodes with the same id.\n",
+        e.getMessage());
+  }
+
+  @Test
+  void testVariableNameNotFound_output() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData b = builder.inputOfInteger("b");
+
+    SdkNode node1 =
+        builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
+
+    CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
+
+    assertEquals(
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].\n",
+        e.getMessage());
+  }
+
+  @Test
+  void testVariableNameNotFound_input() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData b = builder.inputOfInteger("b");
+    SdkBindingData foo = builder.inputOfInteger("foo");
+
+    CompilerException e =
+        assertThrows(
+            CompilerException.class,
+            () ->
+                builder.apply(
+                    "node-1",
+                    new MultiplicationTask()
+                        .withInput("a", a)
+                        .withInput("b", b)
+                        .withInput("foo", foo)));
+
+    assertEquals(
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].\n",
+        e.getMessage());
+  }
+
+  @Test
+  void testParameterNotBound() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData a = builder.inputOfInteger("a");
+
+    CompilerException e =
+        assertThrows(
+            CompilerException.class,
+            () -> builder.apply("node-1", new MultiplicationTask().withInput("a", a)));
+
+    assertEquals(
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: PARAMETER_NOT_BOUND, Node Id: node-1, Description: Parameter not bound [b].\n",
+        e.getMessage());
+  }
+
+  @Test
+  void tesMismatchingTypes() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData a = builder.inputOfString("a");
+    SdkBindingData b = builder.inputOfString("b");
+
+    CompilerException e =
+        assertThrows(
+            CompilerException.class,
+            () ->
+                builder.apply(
+                    "node-1", new MultiplicationTask().withInput("a", a).withInput("b", b)));
+
+    // TODO need to implement pretty-printer for types, not it isn't super readable
+
+    assertEquals(
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: MISMATCHING_TYPES, Node Id: node-1, Description: Variable [a] (type [LiteralType{simpleType=STRING}]) doesn't match expected type [LiteralType{simpleType=INTEGER}].\n"
+            + "Error 1: Code: MISMATCHING_TYPES, Node Id: node-1, Description: Variable [b] (type [LiteralType{simpleType=STRING}]) doesn't match expected type [LiteralType{simpleType=INTEGER}].\n",
         e.getMessage());
   }
 
@@ -186,7 +270,9 @@ class SdkWorkflowBuilderTest {
     return singletonList(
         Binding.builder()
             .var_("out")
-            .binding(BindingData.ofOutputReference(OutputReference.builder().var("c").nodeId("square").build()))
+            .binding(
+                BindingData.ofOutputReference(
+                    OutputReference.builder().var("c").nodeId("square").build()))
             .build());
   }
 
@@ -227,7 +313,10 @@ class SdkWorkflowBuilderTest {
       SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData two = literalOfInteger(2L);
       SdkBindingData out =
-          builder.mapOf("a", in, "b", two).apply("square", new MultiplicationTask()).getOutput("c");
+          builder
+              .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .getOutput("c");
+
       builder.output("out", out);
     }
   }

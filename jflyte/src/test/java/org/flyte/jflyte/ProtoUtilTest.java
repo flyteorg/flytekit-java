@@ -185,7 +185,8 @@ class ProtoUtilTest {
                     Literals.BindingDataMap.newBuilder().putBindings("foo", protoScalar).build())
                 .build()),
         Arguments.of(
-            BindingData.ofOutputReference(OutputReference.builder().nodeId("node-id").var("var").build()),
+            BindingData.ofOutputReference(
+                OutputReference.builder().nodeId("node-id").var("var").build()),
             Literals.BindingData.newBuilder()
                 .setPromise(
                     Types.OutputReference.newBuilder().setNodeId("node-id").setVar("var").build())

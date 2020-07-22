@@ -44,8 +44,11 @@ public class PhoneBookWorkflow extends SdkWorkflow {
 
     SdkBindingData phoneNumbers =
         builder
-            .mapOf("keyValues", phoneBook, "searchKeys", searchKeys)
-            .apply("search", new BatchLookUpTask())
+            .apply(
+                "search",
+                new BatchLookUpTask()
+                    .withInput("keyValues", phoneBook)
+                    .withInput("searchKeys", searchKeys))
             .getOutput("values");
 
     builder.output("phoneNumbers", phoneNumbers);

@@ -63,8 +63,12 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
       List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
+    List<CompilerError> errors =
+        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
 
-    // TODO put type checking here
+    if (!errors.isEmpty()) {
+      throw new CompilerException(errors);
+    }
 
     return new SdkTaskNode(
         builder, nodeId, taskId, upstreamNodeIds, inputs, outputType.getVariableMap());

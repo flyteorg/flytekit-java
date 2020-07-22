@@ -16,8 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,16 @@ public abstract class SdkNode {
   public SdkBindingData getOutput(String name) {
     SdkBindingData output = getOutputs().get(name);
 
-    requireNonNull(output, String.format("output not found [%s]", name));
+    if (output == null) {
+      String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());
+      CompilerError error =
+          CompilerError.create(
+              CompilerError.Kind.VARIABLE_NAME_NOT_FOUND,
+              /* nodeId= */ getNodeId(),
+              /* message= */ message);
+
+      throw new CompilerException(error);
+    }
 
     return output;
   }

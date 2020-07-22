@@ -75,7 +75,9 @@ public abstract class SdkBindingData {
   }
 
   public static SdkBindingData ofOutputReference(String nodeId, String nodeVar, LiteralType type) {
-    BindingData idl = BindingData.ofOutputReference(OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
+    BindingData idl =
+        BindingData.ofOutputReference(
+            OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
     return create(idl, type);
   }
 
@@ -152,7 +154,8 @@ public abstract class SdkBindingData {
                 .map(
                     entry ->
                         new SimpleImmutableEntry<>(
-                            entry.getKey(), BindingData.ofScalar(Scalar.ofPrimitive(f.apply(entry.getValue())))))
+                            entry.getKey(),
+                            BindingData.ofScalar(Scalar.ofPrimitive(f.apply(entry.getValue())))))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
     LiteralType literalType = LiteralType.ofMapValueType(type);
     return create(bindingData, literalType);

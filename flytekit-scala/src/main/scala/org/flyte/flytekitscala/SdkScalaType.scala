@@ -146,14 +146,16 @@ object SdkScalaType {
   implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
     SdkScalaLiteralType[Instant](
       LiteralType.ofSimpleType(SimpleType.DATETIME),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))),
+      value =>
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))),
       _.scalar().primitive().datetime()
     )
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     SdkScalaLiteralType[Duration](
       LiteralType.ofSimpleType(SimpleType.DURATION),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
+      value =>
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
       _.scalar().primitive().duration()
     )
 

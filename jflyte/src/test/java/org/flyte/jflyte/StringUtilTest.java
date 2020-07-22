@@ -45,8 +45,12 @@ public class StringUtilTest {
     input.put("integer", integer);
     input.put("float", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(2.0))));
     input.put("boolean", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))));
-    input.put("datetime", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochSecond(60L)))));
-    input.put("duration", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(61)))));
+    input.put(
+        "datetime",
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochSecond(60L)))));
+    input.put(
+        "duration",
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(61)))));
     input.put("list", list);
     input.put("map", map);
     input.put("listOfList", Literal.ofCollection(ImmutableList.of(list, integer)));

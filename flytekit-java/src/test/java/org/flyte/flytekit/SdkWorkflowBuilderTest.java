@@ -76,7 +76,7 @@ class SdkWorkflowBuilderTest {
 
     assertEquals(
         "Failed to build workflow with errors:\n"
-            + "Error 0: Code: DUPLICATE_NODE_ID, Node Id: node-1, Description: Trying to insert two nodes with the same id.\n",
+            + "Error 0: Code: DUPLICATE_NODE_ID, Node Id: node-1, Description: Trying to insert two nodes with the same id.",
         e.getMessage());
   }
 
@@ -94,7 +94,7 @@ class SdkWorkflowBuilderTest {
 
     assertEquals(
         "Failed to build workflow with errors:\n"
-            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].\n",
+            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].",
         e.getMessage());
   }
 
@@ -119,7 +119,7 @@ class SdkWorkflowBuilderTest {
 
     assertEquals(
         "Failed to build workflow with errors:\n"
-            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].\n",
+            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].",
         e.getMessage());
   }
 
@@ -136,7 +136,7 @@ class SdkWorkflowBuilderTest {
 
     assertEquals(
         "Failed to build workflow with errors:\n"
-            + "Error 0: Code: PARAMETER_NOT_BOUND, Node Id: node-1, Description: Parameter not bound [b].\n",
+            + "Error 0: Code: PARAMETER_NOT_BOUND, Node Id: node-1, Description: Parameter not bound [b].",
         e.getMessage());
   }
 
@@ -159,7 +159,7 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         "Failed to build workflow with errors:\n"
             + "Error 0: Code: MISMATCHING_TYPES, Node Id: node-1, Description: Variable [a] (type [LiteralType{simpleType=STRING}]) doesn't match expected type [LiteralType{simpleType=INTEGER}].\n"
-            + "Error 1: Code: MISMATCHING_TYPES, Node Id: node-1, Description: Variable [b] (type [LiteralType{simpleType=STRING}]) doesn't match expected type [LiteralType{simpleType=INTEGER}].\n",
+            + "Error 1: Code: MISMATCHING_TYPES, Node Id: node-1, Description: Variable [b] (type [LiteralType{simpleType=STRING}]) doesn't match expected type [LiteralType{simpleType=INTEGER}].",
         e.getMessage());
   }
 

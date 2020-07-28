@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
+import java.io.Serializable;
 
 /**
  * CompilerError represents all possible errors that can be reported while building workflow.
@@ -24,7 +25,9 @@ import com.google.auto.value.AutoValue;
  * <p>See https://github.com/lyft/flytepropeller/blob/master/pkg/compiler/errors/compiler_errors.go.
  */
 @AutoValue
-public abstract class CompilerError {
+public abstract class CompilerError implements Serializable {
+
+  private static final long serialVersionUID = 8867541889252290566L;
 
   public enum Kind {
     /** Two types expected to be compatible but aren't. */

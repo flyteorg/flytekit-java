@@ -19,10 +19,12 @@ package org.flyte.flytekit;
 import static java.util.Collections.singletonList;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CompilerException extends RuntimeException {
-
-  private List<CompilerError> errors;
+  private static final long serialVersionUID = 766444357230118198L;
+  private final List<CompilerError> errors;
 
   // would prefer to use factory methods, but using constructs makes stack traces clean
 
@@ -39,18 +41,19 @@ public class CompilerException extends RuntimeException {
   }
 
   private static String formatMessage(List<CompilerError> errors) {
-    StringBuilder sb = new StringBuilder("Failed to build workflow with errors:\n");
-
-    for (int i = 0; i < errors.size(); i++) {
-      CompilerError error = errors.get(i);
-
-      sb.append(
-          String.format(
-              "Error %s: Code: %s, Node Id: %s, Description: %s\n",
-              i, error.kind(), error.nodeId(), error.message()));
+    if (errors.isEmpty()) {
+      throw new IllegalArgumentException("CompileError list cannot be empty");
     }
 
-    return sb.toString();
+    return IntStream.range(0, errors.size())
+        .mapToObj(
+            i -> {
+              CompilerError error = errors.get(i);
+              return String.format(
+                  "Error %s: Code: %s, Node Id: %s, Description: %s",
+                  i, error.kind(), error.nodeId(), error.message());
+            })
+        .collect(Collectors.joining("\n", "Failed to build workflow with errors:\n", ""));
   }
 
   public List<CompilerError> getErrors() {

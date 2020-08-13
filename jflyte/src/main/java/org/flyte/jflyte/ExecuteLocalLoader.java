@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -139,6 +140,11 @@ public class ExecuteLocalLoader {
     @Override
     public Map<String, Literal> run(Map<String, Literal> inputs) {
       return withClassLoader(classLoader, () -> runnableTask.run(inputs));
+    }
+
+    @Override
+    public RetryStrategy getRetries() {
+      return runnableTask.getRetries();
     }
   }
 }

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
@@ -155,6 +156,7 @@ class ExecutionNodeCompilerTest {
         .upstreamNodeIds(upstreamNodeIds)
         .runnableTask(new EmptyRunnableTask())
         .bindings(ImmutableList.of())
+        .attempts(1)
         .build();
   }
 
@@ -185,6 +187,11 @@ class ExecutionNodeCompilerTest {
     @Override
     public Map<String, Literal> run(Map<String, Literal> inputs) {
       return ImmutableMap.of();
+    }
+
+    @Override
+    public RetryStrategy getRetries() {
+      return RetryStrategy.builder().retries(0).build();
     }
   }
 }

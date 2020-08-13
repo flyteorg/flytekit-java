@@ -50,6 +50,7 @@ import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
@@ -131,8 +132,9 @@ public class FlyteAdminClientTest {
             .env(ImmutableList.of(KeyValuePair.of("key", "value")))
             .build();
 
+    RetryStrategy retries = RetryStrategy.builder().retries(4).build();
     TaskTemplate template =
-        TaskTemplate.builder().container(container).interface_(interface_).build();
+        TaskTemplate.builder().container(container).interface_(interface_).retries(retries).build();
 
     client.createTask(identifier, template);
 
@@ -273,6 +275,7 @@ public class FlyteAdminClientTest {
                                 .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
                                 .setVersion(ProtoUtil.RUNTIME_VERSION)
                                 .build())
+                        .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
                         .build())
                 .setInterface(
                     Interface.TypedInterface.newBuilder()

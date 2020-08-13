@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -59,6 +60,11 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
       OutputT output = sdkTask.run(value);
 
       return sdkTask.getOutputType().toLiteralMap(output);
+    }
+
+    @Override
+    public RetryStrategy getRetries() {
+      return RetryStrategy.builder().retries(sdkTask.getRetries()).build();
     }
 
     @Override

@@ -31,6 +31,11 @@ public class TestingListener implements ExecutionListener {
   }
 
   @Override
+  public void retrying(ExecutionNode node, Map<String, Literal> inputs, Throwable e, int attempt) {
+    actions.add(ofRetrying(node.nodeId(), inputs, e.getMessage(), attempt));
+  }
+
+  @Override
   public void error(ExecutionNode node, Map<String, Literal> inputs, Throwable e) {
     actions.add(ofError(node.nodeId(), inputs, e.getMessage()));
   }
@@ -50,6 +55,11 @@ public class TestingListener implements ExecutionListener {
 
   static List<Object> ofStarting(String nodeId, Map<String, Literal> inputs) {
     return ImmutableList.of("starting", nodeId, inputs);
+  }
+
+  static List<Object> ofRetrying(
+      String nodeId, Map<String, Literal> inputs, String message, int attempt) {
+    return ImmutableList.of("retrying", nodeId, inputs, message, attempt);
   }
 
   static List<Object> ofCompleted(

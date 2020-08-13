@@ -56,6 +56,16 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     return outputType;
   }
 
+  /**
+   * Number of retries. Retries will be consumed when the task fails with a recoverable error. The
+   * number of retries must be less than or equals to 10.
+   *
+   * @return number of retries
+   */
+  public int getRetries() {
+    return 0;
+  }
+
   @Override
   public SdkNode apply(
       SdkWorkflowBuilder builder,

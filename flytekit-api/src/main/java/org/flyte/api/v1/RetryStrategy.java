@@ -17,35 +17,27 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 
-/**
- * A Task structure that uniquely identifies a task in the system. Tasks are registered as a first
- * step in the system.
- */
+/** Retry strategy associated with an executable unit. */
 @AutoValue
-public abstract class TaskTemplate {
+public abstract class RetryStrategy {
 
-  @Nullable
-  public abstract Container container();
-
-  public abstract TypedInterface interface_();
-
-  public abstract RetryStrategy retries();
+  /**
+   * Number of retries. Retries will be consumed when the job fails with a recoverable error. The
+   * number of retries must be less than or equals to 10.
+   *
+   * @return number of retries
+   */
+  public abstract int retries();
 
   public static Builder builder() {
-    return new AutoValue_TaskTemplate.Builder();
+    return new AutoValue_RetryStrategy.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
+    public abstract Builder retries(int retries);
 
-    public abstract Builder container(Container container);
-
-    public abstract Builder interface_(TypedInterface interface_);
-
-    public abstract Builder retries(RetryStrategy retries);
-
-    public abstract TaskTemplate build();
+    public abstract RetryStrategy build();
   }
 }

@@ -59,6 +59,7 @@ import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
@@ -294,8 +295,10 @@ class ProtoUtilTest {
             .outputs(ImmutableMap.of("y", integerVar))
             .build();
 
+    RetryStrategy retries = RetryStrategy.builder().retries(4).build();
+
     TaskTemplate template =
-        TaskTemplate.builder().container(container).interface_(interface_).build();
+        TaskTemplate.builder().container(container).interface_(interface_).retries(retries).build();
 
     Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
 
@@ -322,6 +325,7 @@ class ProtoUtilTest {
                                 .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
                                 .setVersion(ProtoUtil.RUNTIME_VERSION)
                                 .build())
+                        .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
                         .build())
                 .setInterface(
                     Interface.TypedInterface.newBuilder()

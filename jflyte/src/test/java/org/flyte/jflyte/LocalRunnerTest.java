@@ -17,7 +17,9 @@
 package org.flyte.jflyte;
 
 import static org.flyte.jflyte.TestingListener.ofCompleted;
+import static org.flyte.jflyte.TestingListener.ofError;
 import static org.flyte.jflyte.TestingListener.ofPending;
+import static org.flyte.jflyte.TestingListener.ofRetrying;
 import static org.flyte.jflyte.TestingListener.ofStarting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,6 +33,9 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.jflyte.examples.FibonacciWorkflow;
+import org.flyte.jflyte.examples.RetryableTask;
+import org.flyte.jflyte.examples.RetryableWorkflow;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class LocalRunnerTest {
@@ -87,5 +92,86 @@ class LocalRunnerTest {
                     "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
             .build(),
         listener.actions);
+  }
+
+  @Test
+  public void testRetryableTask_completed() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    String workflowName = new RetryableWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
+    Map<String, RunnableTask> tasks = Modules.loadTasks(env);
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    TestingListener listener = new TestingListener();
+
+    // make sure we don't run two tests in parallel
+    synchronized (RetryableTask.class) {
+      RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
+
+      LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener);
+
+      assertEquals(
+          ImmutableList.<List<Object>>builder()
+              .add(ofPending("node-1"))
+              .add(ofStarting("node-1", ImmutableMap.of()))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 1))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 2))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
+              .add(ofCompleted("node-1", ImmutableMap.of(), ImmutableMap.of()))
+              .build(),
+          listener.actions);
+    }
+  }
+
+  @Test
+  public void testRetryableTask_failed() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    String workflowName = new RetryableWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
+    Map<String, RunnableTask> tasks = Modules.loadTasks(env);
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    TestingListener listener = new TestingListener();
+
+    // make sure we don't run two tests in parallel
+    synchronized (RetryableTask.class) {
+      // will never succeed within retry limit
+      RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(10);
+
+      RuntimeException e =
+          Assertions.assertThrows(
+              RuntimeException.class,
+              () -> LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener));
+
+      assertEquals("oops", e.getMessage());
+
+      assertEquals(
+          ImmutableList.<List<Object>>builder()
+              .add(ofPending("node-1"))
+              .add(ofStarting("node-1", ImmutableMap.of()))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 1))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 2))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 6))
+              .add(ofError("node-1", ImmutableMap.of(), "oops"))
+              .build(),
+          listener.actions);
+    }
   }
 }

@@ -32,6 +32,8 @@ public abstract class ExecutionNode {
 
   public abstract RunnableTask runnableTask();
 
+  public abstract int attempts();
+
   public static Builder builder() {
     return new AutoValue_ExecutionNode.Builder();
   }
@@ -45,6 +47,8 @@ public abstract class ExecutionNode {
     public abstract Builder bindings(List<Binding> bindings);
 
     public abstract Builder runnableTask(RunnableTask runnableTask);
+
+    public abstract Builder attempts(int attempts);
 
     public abstract ExecutionNode build();
   }

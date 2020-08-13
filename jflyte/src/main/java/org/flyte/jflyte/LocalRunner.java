@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.common.base.Verify;
+import com.google.errorprone.annotations.Var;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -66,26 +68,51 @@ public class LocalRunner {
 
       listener.starting(executionNode, inputs);
 
-      try {
-        Map<String, Literal> outputs = executionNode.runnableTask().run(inputs);
-        Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
-        nodeOutputs.put(executionNode.nodeId(), outputs);
+      Map<String, Literal> outputs = runWithRetries(executionNode, inputs, listener);
+      Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
 
-        listener.completed(executionNode, inputs, outputs);
+      Verify.verify(previous == null, "invariant failed");
 
-        Verify.verify(previous == null, "invariant failed");
-      } catch (Throwable e) {
-        listener.error(executionNode, inputs, e);
-
-        throw e;
-      }
+      listener.completed(executionNode, inputs, outputs);
     }
 
     return getLiteralMap(nodeOutputs, bindings);
   }
 
-  // TODO we need to take interface into account to do type casting
+  static Map<String, Literal> runWithRetries(
+      ExecutionNode executionNode, Map<String, Literal> inputs, ExecutionListener listener) {
+    int attempts = executionNode.attempts();
+    @Var int attempt = 0;
 
+    Verify.verify(attempts > 0, "invariant failed: attempts > 0");
+
+    while (true) {
+      try {
+        attempt++;
+
+        return executionNode.runnableTask().run(inputs);
+      } catch (Throwable e) {
+        if (!isRecoverable(e) || attempt > attempts) {
+          listener.error(executionNode, inputs, e);
+          throw e;
+        } else {
+          listener.retrying(executionNode, inputs, e, attempt);
+        }
+      }
+    }
+  }
+
+  private static boolean isRecoverable(Throwable e) {
+    if (e instanceof ContainerError) {
+      ContainerError containerError = (ContainerError) e;
+
+      return containerError.getKind() != ContainerError.Kind.NON_RECOVERABLE;
+    }
+
+    return true;
+  }
+
+  // TODO we need to take interface into account to do type casting
   static Map<String, Literal> getLiteralMap(
       Map<String, Map<String, Literal>> nodeOutputs, List<Binding> bindings) {
     return bindings.stream()

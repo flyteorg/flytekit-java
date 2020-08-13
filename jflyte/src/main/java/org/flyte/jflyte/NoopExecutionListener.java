@@ -25,6 +25,9 @@ public class NoopExecutionListener implements ExecutionListener {
   public void pending(ExecutionNode node) {}
 
   @Override
+  public void retrying(ExecutionNode node, Map<String, Literal> inputs, Throwable e, int attempt) {}
+
+  @Override
   public void error(ExecutionNode node, Map<String, Literal> inputs, Throwable e) {}
 
   @Override

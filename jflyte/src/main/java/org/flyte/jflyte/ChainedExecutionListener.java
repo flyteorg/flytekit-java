@@ -34,6 +34,11 @@ public class ChainedExecutionListener implements ExecutionListener {
   }
 
   @Override
+  public void retrying(ExecutionNode node, Map<String, Literal> inputs, Throwable e, int attempt) {
+    listeners.forEach(listener -> listener.retrying(node, inputs, e, attempt));
+  }
+
+  @Override
   public void error(ExecutionNode node, Map<String, Literal> inputs, Throwable e) {
     listeners.forEach(listener -> listener.error(node, inputs, e));
   }

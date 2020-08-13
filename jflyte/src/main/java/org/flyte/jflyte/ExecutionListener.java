@@ -23,6 +23,8 @@ public interface ExecutionListener {
 
   void pending(ExecutionNode node);
 
+  void retrying(ExecutionNode node, Map<String, Literal> inputs, Throwable e, int attempt);
+
   void error(ExecutionNode node, Map<String, Literal> inputs, Throwable e);
 
   void starting(ExecutionNode node, Map<String, Literal> inputs);

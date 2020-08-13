@@ -134,7 +134,11 @@ public class RegisterWorkflows implements Callable<Integer> {
             .env(env)
             .build();
 
-    return TaskTemplate.builder().container(container).interface_(task.getInterface()).build();
+    return TaskTemplate.builder()
+        .container(container)
+        .interface_(task.getInterface())
+        .retries(task.getRetries())
+        .build();
   }
 
   private void registerAll(ArtifactStager stager, String image, FlyteAdminClient adminClient) {

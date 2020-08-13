@@ -50,6 +50,7 @@ import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
@@ -156,7 +157,11 @@ class ProtoUtil {
             .setVersion(RUNTIME_VERSION)
             .build();
 
-    Tasks.TaskMetadata metadata = Tasks.TaskMetadata.newBuilder().setRuntime(runtime).build();
+    Tasks.TaskMetadata metadata =
+        Tasks.TaskMetadata.newBuilder()
+            .setRuntime(runtime)
+            .setRetries(serialize(taskTemplate.retries()))
+            .build();
 
     Container container =
         requireNonNull(
@@ -168,6 +173,10 @@ class ProtoUtil {
         .setInterface(serialize(taskTemplate.interface_()))
         .setType(TASK_TYPE)
         .build();
+  }
+
+  private static Literals.RetryStrategy serialize(RetryStrategy retryStrategy) {
+    return Literals.RetryStrategy.newBuilder().setRetries(retryStrategy.retries()).build();
   }
 
   private static Interface.TypedInterface serialize(TypedInterface interface_) {

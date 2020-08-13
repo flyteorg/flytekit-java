@@ -14,18 +14,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.jflyte.examples;
 
-import java.util.Map;
+import com.google.auto.service.AutoService;
+import org.flyte.flytekit.SdkWorkflow;
+import org.flyte.flytekit.SdkWorkflowBuilder;
 
-/** Building block for tasks that execute Java code. */
-public interface RunnableTask {
-
-  String getName();
-
-  TypedInterface getInterface();
-
-  Map<String, Literal> run(Map<String, Literal> inputs);
-
-  RetryStrategy getRetries();
+@AutoService(SdkWorkflow.class)
+public class RetryableWorkflow extends SdkWorkflow {
+  @Override
+  public void expand(SdkWorkflowBuilder builder) {
+    builder.apply("node-1", new RetryableTask());
+  }
 }

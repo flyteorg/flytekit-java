@@ -84,11 +84,14 @@ class ExecutionNodeCompiler {
     RunnableTask runnableTask = runnableTasks.get(taskName);
     Verify.verifyNotNull(runnableTask, "Couldn't find task named:", taskName);
 
+    int attempts = runnableTask.getRetries().retries() + 1;
+
     return ExecutionNode.builder()
         .nodeId(node.id())
         .bindings(node.inputs())
         .runnableTask(runnableTask)
         .upstreamNodeIds(upstreamNodeIds)
+        .attempts(attempts)
         .build();
   }
 

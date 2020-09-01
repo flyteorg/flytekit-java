@@ -73,6 +73,7 @@ echo "Now you can register your workflows and tasks:"
 echo ""
 echo "$ docker push $EXAMPLES_IMAGE_NAME"
 echo "$ docker run \\
+    --network=host \\
     -e FLYTE_PLATFORM_URL=$FLYTE_PLATFORM_URL \\
     -e FLYTE_PLATFORM_INSECURE=$FLYTE_PLATFORM_INSECURE \\
     $EXAMPLES_IMAGE_NAME \\

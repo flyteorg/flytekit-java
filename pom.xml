@@ -30,6 +30,9 @@
     <auto-service.version>1.0-rc5</auto-service.version>
     <auto-value.version>1.7</auto-value.version>
     <grpc.version>1.27.2</grpc.version>
+    <!-- must be aligned with netty version -->
+    <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
+    <netty.tcnative.version>2.0.26.Final</netty.tcnative.version>
     <picocli.version>4.2.0</picocli.version>
     <protobuf.version>3.11.4</protobuf.version>
     <sl4j.version>1.7.30</sl4j.version>
@@ -112,6 +115,11 @@
         <version>${grpc.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-tcnative-boringssl-static</artifactId>
+        <version>${netty.tcnative.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.code.findbugs</groupId>

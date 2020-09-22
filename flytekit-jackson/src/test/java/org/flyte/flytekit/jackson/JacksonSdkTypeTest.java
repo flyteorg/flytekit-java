@@ -30,16 +30,19 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
@@ -64,15 +67,16 @@ public class JacksonSdkTypeTest {
     Instant datetime = Instant.ofEpochSecond(12, 34);
     Duration duration = Duration.ofSeconds(56, 78);
     Map<String, Literal> literalMap = new HashMap<>();
-    literalMap.put("i", literalOf(Primitive.ofInteger(123L)));
-    literalMap.put("f", literalOf(Primitive.ofFloat(123.0)));
-    literalMap.put("s", literalOf(Primitive.ofString("123")));
-    literalMap.put("b", literalOf(Primitive.ofBoolean(true)));
+    literalMap.put("i", literalOf(Primitive.ofIntegerValue(123L)));
+    literalMap.put("f", literalOf(Primitive.ofFloatValue(123.0)));
+    literalMap.put("s", literalOf(Primitive.ofStringValue("123")));
+    literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    literalMap.put("l", Literal.ofCollection(singletonList(literalOf(Primitive.ofString("123")))));
     literalMap.put(
-        "m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
+        "l", Literal.ofCollection(singletonList(literalOf(Primitive.ofStringValue("123")))));
+    literalMap.put(
+        "m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofStringValue("polo")))));
 
     AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
 
@@ -106,14 +110,16 @@ public class JacksonSdkTypeTest {
                     /* m= */ singletonMap("marco", "polo")));
 
     Map<String, Literal> expected = new HashMap<>();
-    expected.put("i", literalOf(Primitive.ofInteger(42L)));
-    expected.put("f", literalOf(Primitive.ofFloat(42.0d)));
-    expected.put("s", literalOf(Primitive.ofString("42")));
-    expected.put("b", literalOf(Primitive.ofBoolean(false)));
+    expected.put("i", literalOf(Primitive.ofIntegerValue(42L)));
+    expected.put("f", literalOf(Primitive.ofFloatValue(42.0d)));
+    expected.put("s", literalOf(Primitive.ofStringValue("42")));
+    expected.put("b", literalOf(Primitive.ofBooleanValue(false)));
     expected.put("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1))));
     expected.put("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42))));
-    expected.put("l", Literal.ofCollection(singletonList(literalOf(Primitive.ofString("foo")))));
-    expected.put("m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
+    expected.put(
+        "l", Literal.ofCollection(singletonList(literalOf(Primitive.ofStringValue("foo")))));
+    expected.put(
+        "m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofStringValue("polo")))));
 
     assertThat(literalMap, equalTo(expected));
   }
@@ -125,7 +131,7 @@ public class JacksonSdkTypeTest {
 
     Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
 
-    assertThat(literalMap, equalTo(singletonMap("a", literalOf(Primitive.ofInteger(42)))));
+    assertThat(literalMap, equalTo(singletonMap("a", literalOf(Primitive.ofIntegerValue(42)))));
   }
 
   @Test
@@ -135,7 +141,7 @@ public class JacksonSdkTypeTest {
 
     PojoInput pojoInput =
         JacksonSdkType.of(PojoInput.class)
-            .fromLiteralMap(singletonMap("a", literalOf(Primitive.ofInteger(42))));
+            .fromLiteralMap(singletonMap("a", literalOf(Primitive.ofIntegerValue(42))));
 
     assertThat(pojoInput, equalTo(expected));
   }
@@ -151,11 +157,32 @@ public class JacksonSdkTypeTest {
   }
 
   @Test
+  public void testStructRoundtrip() {
+    StructInput input =
+        StructInput.create(
+            StructValueInput.create(
+                /* stringValue= */ "nested-string",
+                /* boolValue= */ false,
+                /* listValue= */ Arrays.asList(1, 2, 3),
+                /* structValue= */ StructValueInput.create(
+                    /* stringValue= */ "nested-nested-string",
+                    /* boolValue= */ true,
+                    /* listValue= */ Arrays.asList(4, 5, 6),
+                    /* structValue= */ null,
+                    /* numberValue= */ 1337.0),
+                /* numberValue= */ 42.0));
+
+    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
+
+    assertThat(sdkType.fromLiteralMap(sdkType.toLiteralMap(input)), equalTo(input));
+  }
+
+  @Test
   public void testConverterToLiteralMap() {
     InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
     Map<String, Literal> expected = new HashMap<>();
-    expected.put("customType", literalOf(Primitive.ofString("ONE")));
-    expected.put("customEnum", literalOf(Primitive.ofString("TWO")));
+    expected.put("customType", literalOf(Primitive.ofStringValue("ONE")));
+    expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
 
     Map<String, Literal> literalMap =
         JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
@@ -167,8 +194,8 @@ public class JacksonSdkTypeTest {
   public void testConverterFromLiteralMap() {
     InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
     Map<String, Literal> literalMap = new HashMap<>();
-    literalMap.put("customType", literalOf(Primitive.ofString("TWO")));
-    literalMap.put("customEnum", literalOf(Primitive.ofString("ONE")));
+    literalMap.put("customType", literalOf(Primitive.ofStringValue("TWO")));
+    literalMap.put("customEnum", literalOf(Primitive.ofStringValue("ONE")));
 
     InputWithCustomType output =
         JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
@@ -242,6 +269,39 @@ public class JacksonSdkTypeTest {
         List<String> l,
         Map<String, String> m) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
+    }
+  }
+
+  @AutoValue
+  public abstract static class StructInput {
+    public abstract StructValueInput structValue();
+
+    public static StructInput create(StructValueInput structValue) {
+      return new AutoValue_JacksonSdkTypeTest_StructInput(structValue);
+    }
+  }
+
+  @AutoValue
+  public abstract static class StructValueInput {
+    public abstract String stringValue();
+
+    public abstract boolean boolValue();
+
+    public abstract List<Integer> listValue();
+
+    @Nullable
+    public abstract StructValueInput structValue();
+
+    public abstract Double numberValue();
+
+    public static StructValueInput create(
+        String stringValue,
+        boolean boolValue,
+        List<Integer> listValue,
+        StructValueInput structValue,
+        Double numberValue) {
+      return new AutoValue_JacksonSdkTypeTest_StructValueInput(
+          stringValue, boolValue, listValue, structValue, numberValue);
     }
   }
 

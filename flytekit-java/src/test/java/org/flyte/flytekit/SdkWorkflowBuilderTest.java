@@ -301,7 +301,8 @@ class SdkWorkflowBuilderTest {
                         .build(),
                     Binding.builder()
                         .var_("b")
-                        .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(2L))))
+                        .binding(
+                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
                         .build()))
             .upstreamNodeIds(emptyList())
             .build());

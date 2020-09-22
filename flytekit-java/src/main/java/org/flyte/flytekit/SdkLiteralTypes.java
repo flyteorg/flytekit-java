@@ -75,12 +75,12 @@ public class SdkLiteralTypes {
 
     @Override
     public Literal toLiteral(Long value) {
-      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value)));
+      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value)));
     }
 
     @Override
     public Long fromLiteral(Literal literal) {
-      return literal.scalar().primitive().integer();
+      return literal.scalar().primitive().integerValue();
     }
   }
 
@@ -94,12 +94,12 @@ public class SdkLiteralTypes {
 
     @Override
     public Literal toLiteral(Double value) {
-      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value)));
+      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value)));
     }
 
     @Override
     public Double fromLiteral(Literal literal) {
-      return literal.scalar().primitive().float_();
+      return literal.scalar().primitive().floatValue();
     }
   }
 
@@ -113,12 +113,12 @@ public class SdkLiteralTypes {
 
     @Override
     public Literal toLiteral(String value) {
-      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString(value)));
+      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value)));
     }
 
     @Override
     public String fromLiteral(Literal literal) {
-      return literal.scalar().primitive().string();
+      return literal.scalar().primitive().stringValue();
     }
   }
 
@@ -132,12 +132,12 @@ public class SdkLiteralTypes {
 
     @Override
     public Literal toLiteral(Boolean value) {
-      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value)));
+      return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value)));
     }
 
     @Override
     public Boolean fromLiteral(Literal literal) {
-      return literal.scalar().primitive().boolean_();
+      return literal.scalar().primitive().booleanValue();
     }
   }
 

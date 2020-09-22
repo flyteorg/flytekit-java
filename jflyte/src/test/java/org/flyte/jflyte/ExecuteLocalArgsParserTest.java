@@ -53,7 +53,8 @@ public class ExecuteLocalArgsParserTest {
             ImmutableMap.of("string", createVar(SimpleType.STRING)),
             new String[] {"--string=string_value"});
 
-    assertEquals(ImmutableMap.of("string", literalOf(Primitive.ofString("string_value"))), inputs);
+    assertEquals(
+        ImmutableMap.of("string", literalOf(Primitive.ofStringValue("string_value"))), inputs);
   }
 
   @Test
@@ -63,7 +64,7 @@ public class ExecuteLocalArgsParserTest {
             ImmutableMap.of("integer", createVar(SimpleType.INTEGER)),
             new String[] {"--integer=42"});
 
-    assertEquals(ImmutableMap.of("integer", literalOf(Primitive.ofInteger(42))), inputs);
+    assertEquals(ImmutableMap.of("integer", literalOf(Primitive.ofIntegerValue(42))), inputs);
   }
 
   @Test
@@ -72,7 +73,7 @@ public class ExecuteLocalArgsParserTest {
         parseInputs(
             ImmutableMap.of("float", createVar(SimpleType.FLOAT)), new String[] {"--float=42.4"});
 
-    double inputFloat = inputs.get("float").scalar().primitive().float_();
+    double inputFloat = inputs.get("float").scalar().primitive().floatValue();
 
     assertEquals(42.4, inputFloat, 0.00001);
   }
@@ -146,8 +147,8 @@ public class ExecuteLocalArgsParserTest {
 
     assertEquals(
         ImmutableMap.of(
-            "true_arg", literalOf(Primitive.ofBoolean(true)),
-            "false_arg", literalOf(Primitive.ofBoolean(false))),
+            "true_arg", literalOf(Primitive.ofBooleanValue(true)),
+            "false_arg", literalOf(Primitive.ofBooleanValue(false))),
         inputs);
   }
 
@@ -258,10 +259,10 @@ public class ExecuteLocalArgsParserTest {
                 .build());
     ImmutableMap<String, Literal> expected =
         ImmutableMap.<String, Literal>builder()
-            .put("i", literalOf(Primitive.ofInteger(1)))
-            .put("f", literalOf(Primitive.ofFloat(2.0)))
-            .put("s", literalOf(Primitive.ofString("3")))
-            .put("b", literalOf(Primitive.ofBoolean(true)))
+            .put("i", literalOf(Primitive.ofIntegerValue(1)))
+            .put("f", literalOf(Primitive.ofFloatValue(2.0)))
+            .put("s", literalOf(Primitive.ofStringValue("3")))
+            .put("b", literalOf(Primitive.ofBooleanValue(true)))
             .put("t", literalOf(Primitive.ofDatetime(Instant.EPOCH)))
             .put("d", literalOf(Primitive.ofDuration(Duration.ofDays(1))))
             .build();

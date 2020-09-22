@@ -18,11 +18,13 @@ package org.flyte.flytekit.jackson;
 
 import static java.util.Collections.unmodifiableMap;
 
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
@@ -96,7 +99,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     return unmodifiableMap(new HashMap<>(builder));
   }
 
-  private static LiteralType toLiteralType(JavaType javaType) {
+  private LiteralType toLiteralType(JavaType javaType) {
     Class<?> type = javaType.getRawClass();
 
     if (isPrimitiveAssignableFrom(Long.class, type)) {
@@ -127,8 +130,16 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       return LiteralType.ofMapValueType(toLiteralType(valueType));
     }
 
-    throw new UnsupportedOperationException(
-        String.format("Unsupported type: [%s]", type.getName()));
+    BeanDescription bean = getProvider().getConfig().introspect(javaType);
+    List<BeanPropertyDefinition> properties = bean.findProperties();
+
+    if (properties.isEmpty()) {
+      // doesn't look like a bean, can be java.lang.Integer, or something else
+      throw new UnsupportedOperationException(
+          String.format("Unsupported type: [%s]", type.getName()));
+    } else {
+      return LiteralType.ofSimpleType(SimpleType.STRUCT);
+    }
   }
 
   private static boolean isPrimitiveAssignableFrom(Class<?> fromClass, Class<?> toClass) {

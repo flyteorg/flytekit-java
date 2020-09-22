@@ -25,19 +25,19 @@ import org.flyte.api.v1.Scalar;
 class Literals {
 
   static Literal ofInteger(long value) {
-    return ofPrimitive(Primitive.ofInteger(value));
+    return ofPrimitive(Primitive.ofIntegerValue(value));
   }
 
   static Literal ofFloat(double value) {
-    return ofPrimitive(Primitive.ofFloat(value));
+    return ofPrimitive(Primitive.ofFloatValue(value));
   }
 
   static Literal ofString(String value) {
-    return ofPrimitive(Primitive.ofString(value));
+    return ofPrimitive(Primitive.ofStringValue(value));
   }
 
   static Literal ofBoolean(boolean value) {
-    return ofPrimitive(Primitive.ofBoolean(value));
+    return ofPrimitive(Primitive.ofBooleanValue(value));
   }
 
   static Literal ofDatetime(Instant value) {

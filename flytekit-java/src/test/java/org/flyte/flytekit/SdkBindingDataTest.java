@@ -42,8 +42,8 @@ public class SdkBindingDataTest {
 
     List<BindingData> expected =
         Arrays.asList(
-            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(42L))),
-            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))));
+            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(42L))),
+            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
     SdkBindingData output = SdkBindingData.ofBindingCollection(input);
 
@@ -90,8 +90,8 @@ public class SdkBindingDataTest {
     input.put("b", SdkBindingData.ofInteger(1337L));
 
     Map<String, BindingData> expected = new HashMap<>();
-    expected.put("a", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(42L))));
-    expected.put("b", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))));
+    expected.put("a", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(42L))));
+    expected.put("b", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
     SdkBindingData output = SdkBindingData.ofBindingMap(input);
 

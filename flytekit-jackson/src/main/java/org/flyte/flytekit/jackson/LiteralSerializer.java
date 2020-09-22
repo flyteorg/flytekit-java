@@ -24,6 +24,7 @@ import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Struct;
 
 class LiteralSerializer extends StdSerializer<Literal> {
   private static final long serialVersionUID = 0L;
@@ -37,7 +38,7 @@ class LiteralSerializer extends StdSerializer<Literal> {
       throws IOException {
     switch (value.kind()) {
       case SCALAR:
-        serialize(value.scalar(), gen, serializers);
+        serialize(value.scalar(), gen);
         return;
 
       case MAP:
@@ -63,22 +64,24 @@ class LiteralSerializer extends StdSerializer<Literal> {
     throw new AssertionError("Unexpected Literal.Kind: [" + value.kind() + "]");
   }
 
-  public void serialize(Scalar value, JsonGenerator gen, SerializerProvider serializers)
-      throws IOException {
+  public void serialize(Scalar value, JsonGenerator gen) throws IOException {
     switch (value.kind()) {
       case PRIMITIVE:
-        serialize(value.primitive(), gen, serializers);
+        serialize(value.primitive(), gen);
+        return;
+
+      case GENERIC:
+        serialize(value.generic(), gen);
         return;
     }
 
     throw new AssertionError("Unexpected Scalar.Kind: [" + value.kind() + "]");
   }
 
-  public void serialize(Primitive value, JsonGenerator gen, SerializerProvider serializers)
-      throws IOException {
-    switch (value.type()) {
-      case BOOLEAN:
-        gen.writeBoolean(value.boolean_());
+  public void serialize(Primitive value, JsonGenerator gen) throws IOException {
+    switch (value.kind()) {
+      case BOOLEAN_VALUE:
+        gen.writeBoolean(value.booleanValue());
         return;
 
       case DATETIME:
@@ -89,19 +92,66 @@ class LiteralSerializer extends StdSerializer<Literal> {
         gen.writeString(value.duration().toString());
         return;
 
-      case FLOAT:
-        gen.writeNumber(value.float_());
+      case FLOAT_VALUE:
+        gen.writeNumber(value.floatValue());
         return;
 
-      case INTEGER:
-        gen.writeNumber(value.integer());
+      case INTEGER_VALUE:
+        gen.writeNumber(value.integerValue());
         return;
 
-      case STRING:
-        gen.writeString(value.string());
+      case STRING_VALUE:
+        gen.writeString(value.stringValue());
         return;
     }
 
-    throw new AssertionError("Unexpected SimpleType: [" + value.type() + "]");
+    throw new AssertionError("Unexpected Primitive.Kind: [" + value.kind() + "]");
+  }
+
+  private void serialize(Struct generic, JsonGenerator gen) throws IOException {
+    gen.writeStartObject();
+
+    for (Map.Entry<String, Struct.Value> entry : generic.fields().entrySet()) {
+      gen.writeFieldName(entry.getKey());
+      serialize(entry.getValue(), gen);
+    }
+
+    gen.writeEndObject();
+  }
+
+  private void serialize(Struct.Value value, JsonGenerator gen) throws IOException {
+    switch (value.kind()) {
+      case BOOL_VALUE:
+        gen.writeBoolean(value.boolValue());
+        return;
+
+      case LIST_VALUE:
+        gen.writeStartArray();
+
+        for (Struct.Value element : value.listValue()) {
+          serialize(element, gen);
+        }
+
+        gen.writeEndArray();
+        return;
+
+      case NUMBER_VALUE:
+        gen.writeNumber(value.numberValue());
+        return;
+
+      case STRING_VALUE:
+        gen.writeString(value.stringValue());
+        return;
+
+      case STRUCT_VALUE:
+        serialize(value.structValue(), gen);
+        return;
+
+      case NULL_VALUE:
+        gen.writeNull();
+        return;
+    }
+
+    throw new AssertionError("Unexpected Struct.Value.Kind: [" + value.kind() + "]");
   }
 }

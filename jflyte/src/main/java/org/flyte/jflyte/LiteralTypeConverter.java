@@ -64,14 +64,14 @@ class LiteralTypeConverter implements CommandLine.ITypeConverter<Literal> {
     switch (simpleType) {
       case FLOAT:
         try {
-          return literalOfPrimitive(Primitive.ofFloat(Float.parseFloat(value)));
+          return literalOfPrimitive(Primitive.ofFloatValue(Float.parseFloat(value)));
         } catch (RuntimeException e) {
           throw fail(value, Float.TYPE);
         }
 
       case INTEGER:
         try {
-          return literalOfPrimitive(Primitive.ofInteger(Long.parseLong(value)));
+          return literalOfPrimitive(Primitive.ofIntegerValue(Long.parseLong(value)));
         } catch (RuntimeException e) {
           throw fail(value, Long.TYPE);
         }
@@ -91,14 +91,18 @@ class LiteralTypeConverter implements CommandLine.ITypeConverter<Literal> {
         }
 
       case STRING:
-        return literalOfPrimitive(Primitive.ofString(value));
+        return literalOfPrimitive(Primitive.ofStringValue(value));
 
       case BOOLEAN:
         if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-          return literalOfPrimitive(Primitive.ofBoolean(Boolean.parseBoolean(value)));
+          return literalOfPrimitive(Primitive.ofBooleanValue(Boolean.parseBoolean(value)));
         } else {
           throw fail(value, Boolean.TYPE);
         }
+
+      case STRUCT:
+        throw new IllegalArgumentException(
+            "Struct types aren't supported for command line parameters");
     }
 
     throw new AssertionError("Unexpected SimpleType: " + simpleType);

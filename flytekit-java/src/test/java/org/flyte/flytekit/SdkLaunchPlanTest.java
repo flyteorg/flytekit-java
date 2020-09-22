@@ -38,6 +38,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -114,14 +115,14 @@ class SdkLaunchPlanTest {
     assertThat(
         plan.fixedInputs(),
         allOf(
-            hasEntry("integer", asLiteral(Primitive.ofInteger(123))),
-            hasEntry("float", asLiteral(Primitive.ofFloat(1.23))),
-            hasEntry("string", asLiteral(Primitive.ofString("123"))),
-            hasEntry("boolean", asLiteral(Primitive.ofBoolean(true))),
+            hasEntry("integer", asLiteral(Primitive.ofIntegerValue(123))),
+            hasEntry("float", asLiteral(Primitive.ofFloatValue(1.23))),
+            hasEntry("string", asLiteral(Primitive.ofStringValue("123"))),
+            hasEntry("boolean", asLiteral(Primitive.ofBooleanValue(true))),
             hasEntry("datetime", asLiteral(Primitive.ofDatetime(now))),
             hasEntry("duration", asLiteral(Primitive.ofDuration(duration))),
-            hasEntry("inputsFoo", asLiteral(Primitive.ofInteger(456))),
-            hasEntry("inputsBar", asLiteral(Primitive.ofFloat(4.56)))));
+            hasEntry("inputsFoo", asLiteral(Primitive.ofIntegerValue(456))),
+            hasEntry("inputsBar", asLiteral(Primitive.ofFloatValue(4.56)))));
   }
 
   @Test
@@ -148,12 +149,13 @@ class SdkLaunchPlanTest {
     assertThat(
         plan.defaultInputs(),
         allOf(
-            hasEntry("integer", asParameter(Primitive.ofInteger(123))),
-            hasEntry("float", asParameter(Primitive.ofFloat(1.23))),
-            hasEntry("string", asParameter(Primitive.ofString("123"))),
-            hasEntry("boolean", asParameter(Primitive.ofBoolean(true))),
-            hasEntry("datetime", asParameter(Primitive.ofDatetime(now))),
-            hasEntry("duration", asParameter(Primitive.ofDuration(duration)))));
+            hasEntry("integer", asParameter(Primitive.ofIntegerValue(123), SimpleType.INTEGER)),
+            hasEntry("float", asParameter(Primitive.ofFloatValue(1.23), SimpleType.FLOAT)),
+            hasEntry("string", asParameter(Primitive.ofStringValue("123"), SimpleType.STRING)),
+            hasEntry("boolean", asParameter(Primitive.ofBooleanValue(true), SimpleType.BOOLEAN)),
+            hasEntry("datetime", asParameter(Primitive.ofDatetime(now), SimpleType.DATETIME)),
+            hasEntry(
+                "duration", asParameter(Primitive.ofDuration(duration), SimpleType.DURATION))));
   }
 
   @Test
@@ -233,11 +235,11 @@ class SdkLaunchPlanTest {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
-  private Parameter asParameter(Primitive primitive) {
+  private Parameter asParameter(Primitive primitive, SimpleType simpleType) {
     return Parameter.create(
         Variable.builder()
             .description("")
-            .literalType(LiteralType.ofSimpleType(primitive.type()))
+            .literalType(LiteralType.ofSimpleType(simpleType))
             .build(),
         Literal.ofScalar(Scalar.ofPrimitive(primitive)));
   }

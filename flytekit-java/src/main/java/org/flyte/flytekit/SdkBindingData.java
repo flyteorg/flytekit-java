@@ -35,6 +35,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 
 @AutoValue
 public abstract class SdkBindingData {
@@ -48,19 +49,19 @@ public abstract class SdkBindingData {
   }
 
   public static SdkBindingData ofInteger(long value) {
-    return ofPrimitive(Primitive.ofInteger(value));
+    return ofPrimitive(Primitive.ofIntegerValue(value));
   }
 
   public static SdkBindingData ofFloat(double value) {
-    return ofPrimitive(Primitive.ofFloat(value));
+    return ofPrimitive(Primitive.ofFloatValue(value));
   }
 
   public static SdkBindingData ofString(String value) {
-    return ofPrimitive(Primitive.ofString(value));
+    return ofPrimitive(Primitive.ofStringValue(value));
   }
 
   public static SdkBindingData ofBoolean(boolean value) {
-    return ofPrimitive(Primitive.ofBoolean(value));
+    return ofPrimitive(Primitive.ofBooleanValue(value));
   }
 
   public static SdkBindingData ofDatetime(int year, int month, int day) {
@@ -85,9 +86,28 @@ public abstract class SdkBindingData {
 
   public static SdkBindingData ofPrimitive(Primitive primitive) {
     BindingData bindingData = BindingData.ofScalar(Scalar.ofPrimitive(primitive));
-    LiteralType literalType = LiteralType.ofSimpleType(primitive.type());
+    LiteralType literalType = LiteralType.ofSimpleType(getSimpleType(primitive.kind()));
 
     return create(bindingData, literalType);
+  }
+
+  private static SimpleType getSimpleType(Primitive.Kind kind) {
+    switch (kind) {
+      case INTEGER_VALUE:
+        return SimpleType.INTEGER;
+      case FLOAT_VALUE:
+        return SimpleType.FLOAT;
+      case STRING_VALUE:
+        return SimpleType.STRING;
+      case BOOLEAN_VALUE:
+        return SimpleType.BOOLEAN;
+      case DATETIME:
+        return SimpleType.DATETIME;
+      case DURATION:
+        return SimpleType.DURATION;
+    }
+
+    throw new AssertionError("Unexpected Primitive.Kind: " + kind);
   }
 
   public static SdkBindingData ofBindingCollection(List<SdkBindingData> elements) {

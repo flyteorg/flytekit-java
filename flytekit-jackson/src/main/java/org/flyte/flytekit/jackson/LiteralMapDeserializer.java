@@ -37,6 +37,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 
 class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
   private static final long serialVersionUID = 0L;
@@ -125,12 +126,12 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       case STRING:
         String stringValue = p.readValueAs(String.class);
 
-        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString(stringValue)));
+        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(stringValue)));
 
       case INTEGER:
         Long integerValue = p.readValueAs(Long.class);
 
-        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(integerValue)));
+        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(integerValue)));
 
       case DURATION:
         Duration durationValue = p.readValueAs(Duration.class);
@@ -145,15 +146,91 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       case FLOAT:
         Double floatValue = p.readValueAs(Double.class);
 
-        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(floatValue)));
+        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(floatValue)));
 
       case BOOLEAN:
         Boolean booleanValue = p.readValueAs(Boolean.class);
 
-        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(booleanValue)));
+        return Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(booleanValue)));
+
+      case STRUCT:
+        Struct generic = readValueAsStruct(p);
+
+        return Literal.ofScalar(Scalar.ofGeneric(generic));
     }
 
     throw new AssertionError(String.format("Unexpected SimpleType: [%s]", simpleType));
+  }
+
+  private static Struct readValueAsStruct(JsonParser p) throws IOException {
+    verifyToken(p, JsonToken.START_OBJECT);
+    p.nextToken();
+
+    Map<String, Struct.Value> fields = new HashMap<>();
+
+    while (p.currentToken() != JsonToken.END_OBJECT) {
+      verifyToken(p, JsonToken.FIELD_NAME);
+      String fieldName = p.currentName();
+      p.nextToken();
+
+      fields.put(fieldName, readValueAsStructValue(p));
+
+      p.nextToken();
+    }
+
+    return Struct.create(unmodifiableMap(fields));
+  }
+
+  private static Struct.Value readValueAsStructValue(JsonParser p) throws IOException {
+    switch (p.currentToken()) {
+      case START_ARRAY:
+        p.nextToken();
+
+        List<Struct.Value> valuesList = new ArrayList<>();
+
+        while (p.currentToken() != JsonToken.END_ARRAY) {
+          Struct.Value value = readValueAsStructValue(p);
+          p.nextToken();
+
+          valuesList.add(value);
+        }
+
+        return Struct.Value.ofListValue(unmodifiableList(valuesList));
+
+      case START_OBJECT:
+        Struct struct = readValueAsStruct(p);
+
+        return Struct.Value.ofStructValue(struct);
+
+      case VALUE_STRING:
+        String stringValue = p.readValueAs(String.class);
+
+        return Struct.Value.ofStringValue(stringValue);
+
+      case VALUE_NUMBER_FLOAT:
+      case VALUE_NUMBER_INT:
+        Double doubleValue = p.readValueAs(Double.class);
+
+        return Struct.Value.ofNumberValue(doubleValue);
+
+      case VALUE_NULL:
+        return Struct.Value.ofNullValue();
+
+      case VALUE_FALSE:
+        return Struct.Value.ofBoolValue(false);
+
+      case VALUE_TRUE:
+        return Struct.Value.ofBoolValue(true);
+
+      case FIELD_NAME:
+      case NOT_AVAILABLE:
+      case VALUE_EMBEDDED_OBJECT:
+      case END_ARRAY:
+      case END_OBJECT:
+        throw new IllegalStateException("Unexpected token: " + p.currentToken());
+    }
+
+    throw new AssertionError("Unexpected token: " + p.currentToken());
   }
 
   private static void verifyToken(JsonParser p, JsonToken token) {

@@ -21,8 +21,11 @@ import com.google.auto.value.AutoOneOf;
 /** A simple value. */
 @AutoOneOf(Scalar.Kind.class)
 public abstract class Scalar {
+
   public enum Kind {
-    PRIMITIVE
+    PRIMITIVE,
+    GENERIC
+
     // TODO: Add the rest of the types
   }
 
@@ -30,9 +33,15 @@ public abstract class Scalar {
 
   public abstract Primitive primitive();
 
+  public abstract Struct generic();
+
   // TODO add the rest of the cases
 
   public static Scalar ofPrimitive(Primitive primitive) {
     return AutoOneOf_Scalar.primitive(primitive);
+  }
+
+  public static Scalar ofGeneric(Struct generic) {
+    return AutoOneOf_Scalar.generic(generic);
   }
 }

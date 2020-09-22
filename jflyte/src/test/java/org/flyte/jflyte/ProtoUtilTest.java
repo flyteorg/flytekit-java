@@ -26,10 +26,13 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Value;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
@@ -65,6 +68,7 @@ import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
@@ -88,26 +92,34 @@ class ProtoUtilTest {
   private static final String VERSION = "1";
 
   @ParameterizedTest
-  @MethodSource("createDeserializePrimitivesArguments")
+  @MethodSource("createPrimitivesArguments")
   void shouldDeserializePrimitives(Literals.Primitive input, Primitive expected) {
     assertThat(ProtoUtil.deserialize(input), equalTo(expected));
   }
 
-  static Stream<Arguments> createDeserializePrimitivesArguments() {
+  @ParameterizedTest
+  @MethodSource("createPrimitivesArguments")
+  void shouldSerializePrimitives(Literals.Primitive expected, Primitive input) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createPrimitivesArguments() {
     Instant now = Instant.now();
     long seconds = now.getEpochSecond();
     int nanos = now.getNano();
 
     return Stream.of(
         Arguments.of(
-            Literals.Primitive.newBuilder().setInteger(123).build(), Primitive.ofInteger(123)),
+            Literals.Primitive.newBuilder().setInteger(123).build(), Primitive.ofIntegerValue(123)),
         Arguments.of(
-            Literals.Primitive.newBuilder().setFloatValue(123.0).build(), Primitive.ofFloat(123.0)),
+            Literals.Primitive.newBuilder().setFloatValue(123.0).build(),
+            Primitive.ofFloatValue(123.0)),
         Arguments.of(
             Literals.Primitive.newBuilder().setStringValue("123").build(),
-            Primitive.ofString("123")),
+            Primitive.ofStringValue("123")),
         Arguments.of(
-            Literals.Primitive.newBuilder().setBoolean(true).build(), Primitive.ofBoolean(true)),
+            Literals.Primitive.newBuilder().setBoolean(true).build(),
+            Primitive.ofBooleanValue(true)),
         Arguments.of(
             Literals.Primitive.newBuilder()
                 .setDatetime(
@@ -129,13 +141,19 @@ class ProtoUtilTest {
   }
 
   @ParameterizedTest
-  @MethodSource("createDeserializeLiteralsArguments")
+  @MethodSource("createLiteralsArguments")
   void shouldDeserializeLiterals(Literals.Literal input, Literal expected) {
     assertThat(ProtoUtil.deserialize(input), equalTo(expected));
   }
 
-  static Stream<Arguments> createDeserializeLiteralsArguments() {
-    Literal apiLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(123)));
+  @ParameterizedTest
+  @MethodSource("createLiteralsArguments")
+  void shouldSerializeLiterals(Literals.Literal expected, Literal input) {
+    assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createLiteralsArguments() {
+    Literal apiLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(123)));
     Literals.Literal protoLiteral =
         Literals.Literal.newBuilder()
             .setScalar(
@@ -143,6 +161,54 @@ class ProtoUtilTest {
                     .setPrimitive(Literals.Primitive.newBuilder().setInteger(123).build())
                     .build())
             .build();
+
+    com.google.protobuf.Struct protoStruct =
+        com.google.protobuf.Struct.newBuilder()
+            .putFields("stringValue", Value.newBuilder().setStringValue("string").build())
+            .putFields("boolValue", Value.newBuilder().setBoolValue(true).build())
+            .putFields("numberValue", Value.newBuilder().setNumberValue(42.0).build())
+            .putFields(
+                "listValue",
+                Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(Value.newBuilder().setNumberValue(1.0).build())
+                            .addValues(Value.newBuilder().setNumberValue(2.0).build())
+                            .addValues(Value.newBuilder().setNumberValue(3.0).build())
+                            .build())
+                    .build())
+            .putFields("nullValue", Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build())
+            .putFields(
+                "structValue",
+                Value.newBuilder()
+                    .setStructValue(
+                        com.google.protobuf.Struct.newBuilder()
+                            .putFields(
+                                "stringValue", Value.newBuilder().setStringValue("string").build())
+                            .build())
+                    .build())
+            .build();
+
+    Struct struct =
+        Struct.create(
+            ImmutableMap.<String, Struct.Value>builder()
+                .put("stringValue", Struct.Value.ofStringValue("string"))
+                .put("boolValue", Struct.Value.ofBoolValue(true))
+                .put("numberValue", Struct.Value.ofNumberValue(42.0))
+                .put(
+                    "listValue",
+                    Struct.Value.ofListValue(
+                        ImmutableList.of(
+                            Struct.Value.ofNumberValue(1.0),
+                            Struct.Value.ofNumberValue(2.0),
+                            Struct.Value.ofNumberValue(3.0))))
+                .put("nullValue", Struct.Value.ofNullValue())
+                .put(
+                    "structValue",
+                    Struct.Value.ofStructValue(
+                        Struct.create(
+                            ImmutableMap.of("stringValue", Struct.Value.ofStringValue("string")))))
+                .build());
 
     return Stream.of(
         Arguments.of(protoLiteral, apiLiteral),
@@ -156,13 +222,18 @@ class ProtoUtilTest {
             Literals.Literal.newBuilder()
                 .setMap(Literals.LiteralMap.newBuilder().putLiterals("name", protoLiteral).build())
                 .build(),
-            Literal.ofMap(Collections.singletonMap("name", apiLiteral))));
+            Literal.ofMap(Collections.singletonMap("name", apiLiteral))),
+        Arguments.of(
+            Literals.Literal.newBuilder()
+                .setScalar(Literals.Scalar.newBuilder().setGeneric(protoStruct).build())
+                .build(),
+            Literal.ofScalar(Scalar.ofGeneric(struct))));
   }
 
   @Test
   void shouldSerializeLiteralMap() {
     Map<String, Literal> input =
-        ImmutableMap.of("a", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L))));
+        ImmutableMap.of("a", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
     Literals.Primitive expectedPrimitive =
         Literals.Primitive.newBuilder().setInteger(1337L).build();
     Literals.Scalar expectedScalar =
@@ -197,7 +268,8 @@ class ProtoUtilTest {
   }
 
   static Stream<Arguments> provideArgsForShouldSerializeBindingData() {
-    BindingData apiScalar = BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L)));
+    BindingData apiScalar =
+        BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L)));
     Literals.BindingData protoScalar =
         Literals.BindingData.newBuilder()
             .setScalar(
@@ -485,78 +557,6 @@ class ProtoUtilTest {
   }
 
   @ParameterizedTest
-  @MethodSource("createSerializePrimitivesArguments")
-  void shouldSerializePrimitives(Primitive input, Literals.Primitive expected) {
-    assertThat(ProtoUtil.serialize(input), equalTo(expected));
-  }
-
-  static Stream<Arguments> createSerializePrimitivesArguments() {
-    Instant now = Instant.now();
-    long seconds = now.getEpochSecond();
-    int nanos = now.getNano();
-
-    return Stream.of(
-        Arguments.of(
-            Primitive.ofInteger(123), Literals.Primitive.newBuilder().setInteger(123).build()),
-        Arguments.of(
-            Primitive.ofFloat(123.0), Literals.Primitive.newBuilder().setFloatValue(123.0).build()),
-        Arguments.of(
-            Primitive.ofString("123"),
-            Literals.Primitive.newBuilder().setStringValue("123").build()),
-        Arguments.of(
-            Primitive.ofBoolean(true), Literals.Primitive.newBuilder().setBoolean(true).build()),
-        Arguments.of(
-            Primitive.ofDatetime(Instant.ofEpochSecond(seconds, nanos)),
-            Literals.Primitive.newBuilder()
-                .setDatetime(
-                    com.google.protobuf.Timestamp.newBuilder()
-                        .setSeconds(seconds)
-                        .setNanos(nanos)
-                        .build())
-                .build()),
-        Arguments.of(
-            Primitive.ofDuration(Duration.ofSeconds(seconds, nanos)),
-            Literals.Primitive.newBuilder()
-                .setDuration(
-                    com.google.protobuf.Duration.newBuilder()
-                        .setSeconds(seconds)
-                        .setNanos(nanos)
-                        .build())
-                .build()));
-  }
-
-  @ParameterizedTest
-  @MethodSource("createSerializeLiteralsArguments")
-  void shouldSerializeLiterals(Literal input, Literals.Literal expected) {
-    assertThat(ProtoUtil.serialize(input), equalTo(expected));
-  }
-
-  static Stream<Arguments> createSerializeLiteralsArguments() {
-    Literal apiLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(123)));
-    Literals.Literal protoLiteral =
-        Literals.Literal.newBuilder()
-            .setScalar(
-                Literals.Scalar.newBuilder()
-                    .setPrimitive(Literals.Primitive.newBuilder().setInteger(123).build())
-                    .build())
-            .build();
-
-    return Stream.of(
-        Arguments.of(apiLiteral, protoLiteral),
-        Arguments.of(
-            Literal.ofCollection(singletonList(apiLiteral)),
-            Literals.Literal.newBuilder()
-                .setCollection(
-                    Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())
-                .build()),
-        Arguments.of(
-            Literal.ofMap(Collections.singletonMap("name", apiLiteral)),
-            Literals.Literal.newBuilder()
-                .setMap(Literals.LiteralMap.newBuilder().putLiterals("name", protoLiteral).build())
-                .build()));
-  }
-
-  @ParameterizedTest
   @MethodSource("createSimpleSerializeLiteralArguments")
   void shouldSerializeSimpleLiteralTypes(LiteralType input, Types.LiteralType expected) {
     assertThat(ProtoUtil.serialize(input), equalTo(expected));
@@ -571,6 +571,7 @@ class ProtoUtilTest {
             .put(SimpleType.BOOLEAN, Types.SimpleType.BOOLEAN)
             .put(SimpleType.DATETIME, Types.SimpleType.DATETIME)
             .put(SimpleType.DURATION, Types.SimpleType.DURATION)
+            .put(SimpleType.STRUCT, Types.SimpleType.STRUCT)
             .build();
 
     return types.entrySet().stream()
@@ -790,7 +791,8 @@ class ProtoUtilTest {
         singletonList(
             Binding.builder()
                 .var_(input_name)
-                .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofString(input_scalar))))
+                .binding(
+                    BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(input_scalar))))
                 .build());
 
     return Node.builder()

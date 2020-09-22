@@ -28,6 +28,7 @@ import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Struct;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -37,14 +38,14 @@ public class StringUtilTest {
   void shouldSerializeLiteralMap() {
     Map<String, Literal> input = new HashMap<>();
 
-    Literal integer = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1337L)));
+    Literal integer = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L)));
     Literal map = Literal.ofMap(singletonMap("b", integer));
     Literal list = Literal.ofCollection(singletonList(integer));
 
-    input.put("string", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("string"))));
+    input.put("string", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("string"))));
     input.put("integer", integer);
-    input.put("float", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(2.0))));
-    input.put("boolean", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(true))));
+    input.put("float", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(2.0))));
+    input.put("boolean", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(true))));
     input.put(
         "datetime",
         Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(Instant.ofEpochSecond(60L)))));
@@ -55,6 +56,22 @@ public class StringUtilTest {
     input.put("map", map);
     input.put("listOfList", Literal.ofCollection(ImmutableList.of(list, integer)));
     input.put("mapOfMap", Literal.ofMap(ImmutableMap.of("a", map, "c", integer)));
+    input.put(
+        "struct",
+        Literal.ofScalar(
+            Scalar.ofGeneric(
+                Struct.create(
+                    ImmutableMap.<String, Struct.Value>builder()
+                        .put("bool", Struct.Value.ofBoolValue(true))
+                        .put("string", Struct.Value.ofStringValue("string"))
+                        .put(
+                            "list",
+                            Struct.Value.ofListValue(
+                                ImmutableList.of(Struct.Value.ofNumberValue(1))))
+                        .put("number", Struct.Value.ofNumberValue(2))
+                        .put("null", Struct.Value.ofNullValue())
+                        .put("struct", Struct.Value.ofStructValue(Struct.create(ImmutableMap.of())))
+                        .build()))));
 
     Map<String, String> expected = new HashMap<>();
     expected.put("string", "string");
@@ -67,6 +84,8 @@ public class StringUtilTest {
     expected.put("listOfList", "[[1337], 1337]");
     expected.put("map", "{b=1337}");
     expected.put("mapOfMap", "{a={b=1337}, c=1337}");
+    expected.put(
+        "struct", "{bool=true, string=string, list=[1.0], number=2.0, null=null, struct={}}");
 
     Map<String, String> output = StringUtil.serializeLiteralMap(input);
 

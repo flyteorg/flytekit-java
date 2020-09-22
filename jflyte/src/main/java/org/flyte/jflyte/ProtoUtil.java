@@ -23,6 +23,9 @@ import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
+import com.google.protobuf.Value;
 import flyteidl.admin.Common;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Errors;
@@ -41,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BlobType;
@@ -63,6 +67,7 @@ import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
 import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
@@ -108,23 +113,29 @@ class ProtoUtil {
   }
 
   static Scalar deserialize(Literals.Scalar scalar) {
-    if (scalar.getPrimitive() != null) {
-      return Scalar.ofPrimitive(deserialize(scalar.getPrimitive()));
-    }
+    switch (scalar.getValueCase()) {
+      case PRIMITIVE:
+        return Scalar.ofPrimitive(deserialize(scalar.getPrimitive()));
 
-    throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
+      case GENERIC:
+        return Scalar.ofGeneric(deserialize(scalar.getGeneric()));
+
+        // TODO remove `default` once we support all cases
+      default:
+        throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
+    }
   }
 
   static Primitive deserialize(Literals.Primitive primitive) {
     switch (primitive.getValueCase()) {
       case INTEGER:
-        return Primitive.ofInteger(primitive.getInteger());
+        return Primitive.ofIntegerValue(primitive.getInteger());
       case FLOAT_VALUE:
-        return Primitive.ofFloat(primitive.getFloatValue());
+        return Primitive.ofFloatValue(primitive.getFloatValue());
       case STRING_VALUE:
-        return Primitive.ofString(primitive.getStringValue());
+        return Primitive.ofStringValue(primitive.getStringValue());
       case BOOLEAN:
-        return Primitive.ofBoolean(primitive.getBoolean());
+        return Primitive.ofBooleanValue(primitive.getBoolean());
       case DATETIME:
         com.google.protobuf.Timestamp datetime = primitive.getDatetime();
         return Primitive.ofDatetime(
@@ -133,7 +144,8 @@ class ProtoUtil {
         com.google.protobuf.Duration duration = primitive.getDuration();
         return Primitive.ofDuration(Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
       case VALUE_NOT_SET:
-        // fallthrough
+        throw new UnsupportedOperationException(
+            String.format("Unsupported Primitive [%s]", primitive));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
@@ -143,6 +155,51 @@ class ProtoUtil {
     return literalCollection.getLiteralsList().stream()
         .map(ProtoUtil::deserialize)
         .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+  }
+
+  private static Struct deserialize(com.google.protobuf.Struct struct) {
+    Map<String, Struct.Value> fields =
+        struct.getFieldsMap().entrySet().stream()
+            .collect(
+                collectingAndThen(
+                    toMap(Map.Entry::getKey, x -> deserialize(x.getValue())),
+                    Collections::unmodifiableMap));
+
+    return Struct.create(fields);
+  }
+
+  private static Struct.Value deserialize(com.google.protobuf.Value value) {
+    switch (value.getKindCase()) {
+      case BOOL_VALUE:
+        return Struct.Value.ofBoolValue(value.getBoolValue());
+
+      case STRING_VALUE:
+        return Struct.Value.ofStringValue(value.getStringValue());
+
+      case NUMBER_VALUE:
+        return Struct.Value.ofNumberValue(value.getNumberValue());
+
+      case NULL_VALUE:
+        return Struct.Value.ofNullValue();
+
+      case LIST_VALUE:
+        List<Struct.Value> valuesList =
+            value.getListValue().getValuesList().stream()
+                .map(ProtoUtil::deserialize)
+                .collect(collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+
+        return Struct.Value.ofListValue(valuesList);
+
+      case STRUCT_VALUE:
+        Struct struct = deserialize(value.getStructValue());
+
+        return Struct.Value.ofStructValue(struct);
+
+      case KIND_NOT_SET:
+        throw new UnsupportedOperationException(String.format("Unsupported Value [%s]", value));
+    }
+
+    throw new UnsupportedOperationException(String.format("Unsupported Value [%s]", value));
   }
 
   static IdentifierOuterClass.Identifier serialize(PartialIdentifier id) {
@@ -263,6 +320,8 @@ class ProtoUtil {
         return Types.SimpleType.DATETIME;
       case DURATION:
         return Types.SimpleType.DURATION;
+      case STRUCT:
+        return Types.SimpleType.STRUCT;
     }
 
     return Types.SimpleType.UNRECOGNIZED;
@@ -419,10 +478,51 @@ class ProtoUtil {
     switch (scalar.kind()) {
       case PRIMITIVE:
         Primitive primitive = scalar.primitive();
+
         return Literals.Scalar.newBuilder().setPrimitive(serialize(primitive)).build();
+
+      case GENERIC:
+        Struct generic = scalar.generic();
+
+        return Literals.Scalar.newBuilder().setGeneric(serializeStruct(generic)).build();
     }
 
     throw new AssertionError("Unexpected Scalar.Kind: " + scalar.kind());
+  }
+
+  private static com.google.protobuf.Struct serializeStruct(Struct struct) {
+    com.google.protobuf.Struct.Builder builder = com.google.protobuf.Struct.newBuilder();
+
+    struct.fields().forEach((key, value) -> builder.putFields(key, serializeValue(value)));
+
+    return builder.build();
+  }
+
+  private static com.google.protobuf.Value serializeValue(Struct.Value value) {
+    switch (value.kind()) {
+      case STRING_VALUE:
+        return Value.newBuilder().setStringValue(value.stringValue()).build();
+
+      case BOOL_VALUE:
+        return Value.newBuilder().setBoolValue(value.boolValue()).build();
+
+      case LIST_VALUE:
+        ListValue.Builder listValueBuilder = ListValue.newBuilder();
+        value.listValue().forEach(elem -> listValueBuilder.addValues(serializeValue(elem)));
+
+        return Value.newBuilder().setListValue(listValueBuilder.build()).build();
+
+      case NULL_VALUE:
+        return Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+
+      case NUMBER_VALUE:
+        return Value.newBuilder().setNumberValue(value.numberValue()).build();
+
+      case STRUCT_VALUE:
+        return Value.newBuilder().setStructValue(serializeStruct(value.structValue())).build();
+    }
+
+    throw new AssertionError("Unexpected Value.Kind: " + value.kind());
   }
 
   private static Literals.BindingDataCollection serializeBindingCollection(
@@ -454,18 +554,18 @@ class ProtoUtil {
   static Literals.Primitive serialize(Primitive primitive) {
     Literals.Primitive.Builder builder = Literals.Primitive.newBuilder();
 
-    switch (primitive.type()) {
-      case INTEGER:
-        builder.setInteger(primitive.integer());
+    switch (primitive.kind()) {
+      case INTEGER_VALUE:
+        builder.setInteger(primitive.integerValue());
         break;
-      case FLOAT:
-        builder.setFloatValue(primitive.float_());
+      case FLOAT_VALUE:
+        builder.setFloatValue(primitive.floatValue());
         break;
-      case STRING:
-        builder.setStringValue(primitive.string());
+      case STRING_VALUE:
+        builder.setStringValue(primitive.stringValue());
         break;
-      case BOOLEAN:
-        builder.setBoolean(primitive.boolean_());
+      case BOOLEAN_VALUE:
+        builder.setBoolean(primitive.booleanValue());
         break;
       case DATETIME:
         Instant datetime = primitive.datetime();

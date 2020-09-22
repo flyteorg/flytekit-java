@@ -21,36 +21,163 @@ import java.time.Duration;
 import java.time.Instant;
 
 /** A simple value. Primitive can be: string, ... . */
-@AutoOneOf(SimpleType.class)
+@AutoOneOf(Primitive.Kind.class)
 public abstract class Primitive {
-  public abstract SimpleType type();
+  public enum Kind {
+    INTEGER_VALUE,
+    FLOAT_VALUE,
+    STRING_VALUE,
+    BOOLEAN_VALUE,
+    DATETIME,
+    DURATION
+  }
 
-  public abstract long integer();
+  public abstract Kind kind();
 
-  public abstract double float_();
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @deprecated Use {@link Primitive#kind()}.
+   * @return simple type
+   */
+  @Deprecated
+  public SimpleType type() {
+    switch (kind()) {
+      case INTEGER_VALUE:
+        return SimpleType.INTEGER;
+      case FLOAT_VALUE:
+        return SimpleType.FLOAT;
+      case STRING_VALUE:
+        return SimpleType.STRING;
+      case BOOLEAN_VALUE:
+        return SimpleType.BOOLEAN;
+      case DATETIME:
+        return SimpleType.DATETIME;
+      case DURATION:
+        return SimpleType.DURATION;
+    }
 
-  public abstract String string();
+    throw new AssertionError("Unexpected Primitive.Kind: " + kind());
+  }
 
-  public abstract boolean boolean_();
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @deprecated Use {@link Primitive#integerValue()}.
+   * @return integer value
+   */
+  @Deprecated
+  public long integer() {
+    return integerValue();
+  }
+
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @deprecated Use {@link Primitive#floatValue()}.
+   * @return float value
+   */
+  @Deprecated
+  public double float_() {
+    return floatValue();
+  }
+
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @deprecated Use {@link Primitive#stringValue()}.
+   * @return string value
+   */
+  @Deprecated
+  public String string() {
+    return stringValue();
+  }
+
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @deprecated Use {@link Primitive#booleanValue()}.
+   * @return boolean value
+   */
+  @Deprecated
+  public boolean boolean_() {
+    return booleanValue();
+  }
+
+  public abstract boolean booleanValue();
+
+  public abstract long integerValue();
+
+  public abstract double floatValue();
+
+  public abstract String stringValue();
 
   public abstract Instant datetime();
 
   public abstract Duration duration();
 
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @param integer integer value
+   * @deprecated Use {@link Primitive#ofIntegerValue(long)}.
+   * @return primitive
+   */
+  @Deprecated
   public static Primitive ofInteger(long integer) {
-    return AutoOneOf_Primitive.integer(integer);
+    return AutoOneOf_Primitive.integerValue(integer);
   }
 
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @param float_ float value
+   * @deprecated Use {@link Primitive#ofFloatValue(double)}.
+   * @return primitive
+   */
+  @Deprecated
   public static Primitive ofFloat(double float_) {
-    return AutoOneOf_Primitive.float_(float_);
+    return AutoOneOf_Primitive.floatValue(float_);
   }
 
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @param string string value
+   * @deprecated Use {@link Primitive#ofStringValue(String)}.
+   * @return primitive
+   */
+  @Deprecated
   public static Primitive ofString(String string) {
-    return AutoOneOf_Primitive.string(string);
+    return AutoOneOf_Primitive.stringValue(string);
   }
 
-  public static Primitive ofBoolean(boolean boolean_) {
-    return AutoOneOf_Primitive.boolean_(boolean_);
+  /**
+   * Only for binary compatibility. To be removed in 0.3.x.
+   *
+   * @param booleanValue boolean value
+   * @deprecated Use {@link Primitive#ofBooleanValue(boolean)}.
+   * @return primitive
+   */
+  @Deprecated
+  public static Primitive ofBoolean(boolean booleanValue) {
+    return ofBooleanValue(booleanValue);
+  }
+
+  public static Primitive ofFloatValue(double floatValue) {
+    return AutoOneOf_Primitive.floatValue(floatValue);
+  }
+
+  public static Primitive ofIntegerValue(long integerValue) {
+    return AutoOneOf_Primitive.integerValue(integerValue);
+  }
+
+  public static Primitive ofStringValue(String strinValue) {
+    return AutoOneOf_Primitive.stringValue(strinValue);
+  }
+
+  public static Primitive ofBooleanValue(boolean booleanValue) {
+    return AutoOneOf_Primitive.booleanValue(booleanValue);
   }
 
   public static Primitive ofDatetime(Instant datetime) {

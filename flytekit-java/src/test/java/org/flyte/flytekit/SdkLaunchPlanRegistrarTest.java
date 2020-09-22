@@ -46,6 +46,7 @@ import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +67,7 @@ class SdkLaunchPlanRegistrarTest {
   @Test
   void shouldLoadLaunchPlansFromDiscoveredRegistries() {
     Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = registrar.load(ENV);
-    Primitive defaultPrimitive = Primitive.ofString("default-bar");
+    Primitive defaultPrimitive = Primitive.ofStringValue("default-bar");
     LaunchPlanIdentifier expectedTestPlan =
         LaunchPlanIdentifier.builder()
             .project("project")
@@ -83,14 +84,14 @@ class SdkLaunchPlanRegistrarTest {
                     .build())
             .fixedInputs(
                 singletonMap(
-                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("bar")))))
             .defaultInputs(
                 singletonMap(
                     "default-foo",
                     Parameter.create(
                         Variable.builder()
                             .description("")
-                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .literalType(LiteralType.ofSimpleType(SimpleType.STRING))
                             .build(),
                         Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();
@@ -110,14 +111,14 @@ class SdkLaunchPlanRegistrarTest {
                     .build())
             .fixedInputs(
                 singletonMap(
-                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("baz")))))
+                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("baz")))))
             .defaultInputs(
                 singletonMap(
                     "default-foo",
                     Parameter.create(
                         Variable.builder()
                             .description("")
-                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .literalType(LiteralType.ofSimpleType(SimpleType.STRING))
                             .build(),
                         Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();

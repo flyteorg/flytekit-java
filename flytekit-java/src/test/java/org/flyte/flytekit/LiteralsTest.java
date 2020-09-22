@@ -37,15 +37,15 @@ class LiteralsTest {
         () ->
             assertThat(
                 Literals.ofInteger(123L),
-                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(123L))))),
+                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(123L))))),
         () ->
             assertThat(
                 Literals.ofFloat(12.3),
-                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(12.3))))),
+                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(12.3))))),
         () ->
             assertThat(
                 Literals.ofString("123"),
-                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("123"))))),
+                is(Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("123"))))),
         () ->
             assertThat(
                 Literals.ofDatetime(now),

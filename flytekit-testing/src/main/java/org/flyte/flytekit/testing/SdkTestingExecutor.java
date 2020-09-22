@@ -90,11 +90,11 @@ public abstract class SdkTestingExecutor {
     }
 
     public boolean getBooleanOutput(String name) {
-      return getOutput(name, LiteralTypes.BOOLEAN).scalar().primitive().boolean_();
+      return getOutput(name, LiteralTypes.BOOLEAN).scalar().primitive().booleanValue();
     }
 
     public double getFloatOutput(String name) {
-      return getOutput(name, LiteralTypes.FLOAT).scalar().primitive().float_();
+      return getOutput(name, LiteralTypes.FLOAT).scalar().primitive().floatValue();
     }
 
     public Duration getDurationOutput(String name) {
@@ -106,11 +106,11 @@ public abstract class SdkTestingExecutor {
     }
 
     public long getIntegerOutput(String name) {
-      return getOutput(name, LiteralTypes.INTEGER).scalar().primitive().integer();
+      return getOutput(name, LiteralTypes.INTEGER).scalar().primitive().integerValue();
     }
 
     public String getStringOutput(String name) {
-      return getOutput(name, LiteralTypes.STRING).scalar().primitive().string();
+      return getOutput(name, LiteralTypes.STRING).scalar().primitive().stringValue();
     }
 
     public <T> T getOutputAs(SdkType<T> sdkType) {

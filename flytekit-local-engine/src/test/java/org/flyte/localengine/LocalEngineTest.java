@@ -52,12 +52,12 @@ class LocalEngineTest {
   void testFibonacci() {
     String workflowName = new FibonacciWorkflow().getName();
 
-    Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(0L)));
-    Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
-    Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
-    Literal fib3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(2L)));
-    Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3L)));
-    Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(5L)));
+    Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(0L)));
+    Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
+    Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
+    Literal fib3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L)));
+    Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
+    Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(5L)));
 
     Map<String, WorkflowTemplate> workflows = loadWorkflows();
     Map<String, RunnableTask> tasks = loadTasks();
@@ -110,8 +110,8 @@ class LocalEngineTest {
         LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
-    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
-    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7)));
 
     assertEquals(ImmutableMap.of("list", Literal.ofCollection(ImmutableList.of(i3, i7))), outputs);
   }
@@ -128,8 +128,8 @@ class LocalEngineTest {
         LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
-    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
-    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7)));
 
     assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
   }

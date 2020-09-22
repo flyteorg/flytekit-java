@@ -23,5 +23,6 @@ public enum SimpleType {
   STRING,
   BOOLEAN,
   DATETIME,
-  DURATION
+  DURATION,
+  STRUCT
 }

@@ -80,13 +80,13 @@ class SdkRemoteTaskTest {
                                     .var_("a")
                                     .binding(
                                         BindingData.ofScalar(
-                                            Scalar.ofPrimitive(Primitive.ofInteger(1))))
+                                            Scalar.ofPrimitive(Primitive.ofIntegerValue(1))))
                                     .build(),
                                 Binding.builder()
                                     .var_("b")
                                     .binding(
                                         BindingData.ofScalar(
-                                            Scalar.ofPrimitive(Primitive.ofString("2"))))
+                                            Scalar.ofPrimitive(Primitive.ofStringValue("2"))))
                                     .build()))
                         .build())),
         () ->

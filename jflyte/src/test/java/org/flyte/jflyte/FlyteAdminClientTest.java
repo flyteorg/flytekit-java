@@ -195,7 +195,8 @@ public class FlyteAdminClientTest {
                     Binding.builder()
                         .var_(VAR_NAME)
                         .binding(
-                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofString(SCALAR))))
+                            BindingData.ofScalar(
+                                Scalar.ofPrimitive(Primitive.ofStringValue(SCALAR))))
                         .build()))
             .upstreamNodeIds(emptyList())
             .build();
@@ -231,21 +232,21 @@ public class FlyteAdminClientTest {
             .name(WF_NAME)
             .version(WF_VERSION)
             .build();
-    Primitive defaultPrimitive = Primitive.ofString("default-bar");
+    Primitive defaultPrimitive = Primitive.ofStringValue("default-bar");
     LaunchPlan launchPlan =
         LaunchPlan.builder()
             .workflowId(wfIdentifier)
             .name(LP_NAME)
             .fixedInputs(
                 Collections.singletonMap(
-                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("bar")))))
             .defaultInputs(
                 Collections.singletonMap(
                     "default-foo",
                     Parameter.create(
                         Variable.builder()
                             .description("")
-                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .literalType(LiteralType.ofSimpleType(SimpleType.STRING))
                             .build(),
                         Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .cronSchedule(

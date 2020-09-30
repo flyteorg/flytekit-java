@@ -1,11 +1,12 @@
-FLYTEIDL_VERSION="0.17.7"
+FLYTEIDL_VERSION="0.18.7"
 
 out=src/main/proto
 
 mkdir -p src/main/proto
 
 curl -L "https://github.com/lyft/flyteidl/archive/v${FLYTEIDL_VERSION}.tar.gz" | \
-  tar xvf - \
+  tar xvzf - \
+    --wildcards \
     --strip-components=2 \
     -C "$out/" \
     "flyteidl-${FLYTEIDL_VERSION}/protos/flyteidl/admin/*.proto" \

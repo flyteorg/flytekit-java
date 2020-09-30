@@ -193,6 +193,15 @@ service AdminService {
     };
   }
 
+  // flyteidl.admin.Project should be passed but the domains property should be empty;
+  // it will be ignored in the handler as domains cannot be updated via this API.
+  rpc UpdateProject (flyteidl.admin.Project) returns (flyteidl.admin.ProjectUpdateResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/projects/{id}"
+      body: "*"
+    };
+  }
+
   rpc ListProjects (flyteidl.admin.ProjectListRequest) returns (flyteidl.admin.Projects) {
     option (google.api.http) = {
       get:  "/api/v1/projects"

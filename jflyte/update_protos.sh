@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
 FLYTEIDL_VERSION="0.18.7"
 
 out=src/main/proto
@@ -6,7 +10,6 @@ mkdir -p src/main/proto
 
 curl -L "https://github.com/lyft/flyteidl/archive/v${FLYTEIDL_VERSION}.tar.gz" | \
   tar xvzf - \
-    --wildcards \
     --strip-components=2 \
     -C "$out/" \
     "flyteidl-${FLYTEIDL_VERSION}/protos/flyteidl/admin/*.proto" \
@@ -15,10 +18,12 @@ curl -L "https://github.com/lyft/flyteidl/archive/v${FLYTEIDL_VERSION}.tar.gz" |
     "flyteidl-${FLYTEIDL_VERSION}/protos/flyteidl/service/admin.proto"
 
 # remove trailing whitespace for better OCR
-find "$out" -type f -exec sed -i 's/ *$//' '{}' ';'
-
-# FIXME manually stripped grpc-gateway annotations from service/admin.proto
-#
-# it was easier to strip because annotations.proto file is licensed under BSD-3
-# and requires copyright notice so we don't add it for now
-
+# remove google.api.http options
+# remove grpc gateway options
+# remove unused import
+find "$out" -type f \
+    -exec sed -i 's/ *$//' '{}' ';' \
+    -exec sed -i '/option (google.api.http)/,/};/d' '{}' ';' \
+    -exec sed -i '/option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation)/,/};/d' '{}' ';' \
+    -exec sed -i '/protoc-gen-swagger\/options\/annotations.proto/d' '{}' ';' \
+    -exec sed -i '/google\/api\/annotations.proto/d' '{}' ';'

@@ -32,4 +32,10 @@
     <Bug pattern="SE_NO_SERIALVERSIONID"/>
   </Match>
 
+  <!-- Often test assert exceptions by calling a method and ignoring the result  -->
+  <Match>
+    <Class name="~.*Test$"/>
+    <Bug pattern="RV_RETURN_VALUE_IGNORED_INFERRED"/>
+  </Match>
+
 </FindBugsFilter>

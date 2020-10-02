@@ -14,45 +14,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
+package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import java.util.Map;
 
 @AutoValue
-public abstract class SdkConfig {
-
-  // VisibleForTesting
-  static final String DOMAIN_ENV_VAR = "JFLYTE_DOMAIN";
-  static final String PROJECT_ENV_VAR = "JFLYTE_PROJECT";
-  static final String VERSION_ENV_VAR = "JFLYTE_VERSION";
-
-  public abstract String project();
-
-  public abstract String domain();
-
-  public abstract String version();
+public abstract class PartialWorkflowIdentifier implements PartialIdentifier {
 
   public static Builder builder() {
-    return new AutoValue_SdkConfig.Builder();
-  }
-
-  public static SdkConfig load(Map<String, String> env) {
-    return SdkConfig.builder()
-        .domain(env.get(DOMAIN_ENV_VAR))
-        .project(env.get(PROJECT_ENV_VAR))
-        .version(env.get(VERSION_ENV_VAR))
-        .build();
+    return new AutoValue_PartialWorkflowIdentifier.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
+    public abstract Builder domain(String domain);
+
     public abstract Builder project(String project);
 
-    public abstract Builder domain(String domain);
+    public abstract Builder name(String name);
 
     public abstract Builder version(String version);
 
-    public abstract SdkConfig build();
+    public abstract PartialWorkflowIdentifier build();
   }
 }

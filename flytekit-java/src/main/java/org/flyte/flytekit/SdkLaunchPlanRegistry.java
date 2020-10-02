@@ -14,27 +14,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
-import com.google.auto.value.AutoValue;
+import java.util.List;
 
-@AutoValue
-public abstract class PartialTaskIdentifier implements PartialIdentifier {
+public interface SdkLaunchPlanRegistry {
 
-  public static Builder builder() {
-    return new AutoValue_PartialTaskIdentifier.Builder();
-  }
-
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder domain(String domain);
-
-    public abstract Builder project(String project);
-
-    public abstract Builder name(String name);
-
-    public abstract Builder version(String version);
-
-    public abstract PartialTaskIdentifier build();
-  }
+  List<SdkLaunchPlan> getLaunchPlans();
 }

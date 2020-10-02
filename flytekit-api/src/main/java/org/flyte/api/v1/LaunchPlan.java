@@ -17,24 +17,29 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
+import java.util.Map;
 
 @AutoValue
-public abstract class PartialTaskIdentifier implements PartialIdentifier {
+public abstract class LaunchPlan {
+  public abstract String name();
+
+  public abstract PartialWorkflowIdentifier workflowId();
+
+  public abstract Map<String, Literal> fixedInputs();
 
   public static Builder builder() {
-    return new AutoValue_PartialTaskIdentifier.Builder();
+    return new AutoValue_LaunchPlan.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder domain(String domain);
-
-    public abstract Builder project(String project);
 
     public abstract Builder name(String name);
 
-    public abstract Builder version(String version);
+    public abstract Builder workflowId(PartialWorkflowIdentifier workflowId);
 
-    public abstract PartialTaskIdentifier build();
+    public abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
+
+    public abstract LaunchPlan build();
   }
 }

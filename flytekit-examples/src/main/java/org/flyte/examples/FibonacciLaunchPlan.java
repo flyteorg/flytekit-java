@@ -30,12 +30,13 @@ public class FibonacciLaunchPlan implements SdkLaunchPlanRegistry {
   @Override
   public List<SdkLaunchPlan> getLaunchPlans() {
     return Arrays.asList(
-        // Using SdkType
+        // Using default naming and SdkType for inputs
         SdkLaunchPlan.of(new FibonacciWorkflow())
             .withFixedInputs(SdkTypes.autoValue(Input.class), Input.create(0, 1)),
 
         // With alternative name and specifying inputs directly
-        SdkLaunchPlan.of("FibonacciWorkflow.alternative-name", new FibonacciWorkflow())
+        SdkLaunchPlan.of(new FibonacciWorkflow())
+            .withName("FibonacciWorkflow.alternative-name")
             .withFixedInput("fib0", 0L)
             .withFixedInput("fib1", 1L));
   }

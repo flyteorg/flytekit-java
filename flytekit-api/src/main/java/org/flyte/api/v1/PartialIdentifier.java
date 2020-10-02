@@ -16,25 +16,18 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
+import javax.annotation.Nullable;
 
-@AutoValue
-public abstract class PartialTaskIdentifier implements PartialIdentifier {
+public interface PartialIdentifier {
 
-  public static Builder builder() {
-    return new AutoValue_PartialTaskIdentifier.Builder();
-  }
+  @Nullable
+  String domain();
 
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder domain(String domain);
+  @Nullable
+  String project();
 
-    public abstract Builder project(String project);
+  String name();
 
-    public abstract Builder name(String name);
-
-    public abstract Builder version(String version);
-
-    public abstract PartialTaskIdentifier build();
-  }
+  @Nullable
+  String version();
 }

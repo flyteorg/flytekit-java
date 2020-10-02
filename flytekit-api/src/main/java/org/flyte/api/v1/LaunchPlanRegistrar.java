@@ -16,25 +16,5 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
-
-@AutoValue
-public abstract class PartialTaskIdentifier implements PartialIdentifier {
-
-  public static Builder builder() {
-    return new AutoValue_PartialTaskIdentifier.Builder();
-  }
-
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder domain(String domain);
-
-    public abstract Builder project(String project);
-
-    public abstract Builder name(String name);
-
-    public abstract Builder version(String version);
-
-    public abstract PartialTaskIdentifier build();
-  }
-}
+/** A registrar that creates {@link LaunchPlan} instances. */
+public abstract class LaunchPlanRegistrar implements Registrar<LaunchPlanIdentifier, LaunchPlan> {}

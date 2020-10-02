@@ -52,18 +52,33 @@ public class SdkLaunchPlan {
     this.fixedInputs = requireNonNull(fixedInputs, "fixedInputs");
   }
 
+  /**
+   * Creates a launch plan for specified {@link SdkLaunchPlan} with default naming and no inputs.
+   * The default launch plan name is {@link SdkWorkflow#getName()}. New name and inputs could be
+   * added by calling {@link #withName(String)} and {@link #withFixedInput(String, long)} and
+   * friends respectively.
+   *
+   * @param workflow Workflow to be reference by new {@link SdkLaunchPlan}.
+   * @return the created {@link SdkLaunchPlan}.
+   */
   public static SdkLaunchPlan of(SdkWorkflow workflow) {
-    return of(workflow.getName(), workflow);
-  }
-
-  public static SdkLaunchPlan of(String name, SdkWorkflow workflow) {
     return new SdkLaunchPlan(
-        /* name= */ name,
+        /* name= */ workflow.getName(),
         /* workflowProject= */ null,
         /* workflowDomain= */ null,
         /* workflowName= */ workflow.getName(),
         /* workflowVersion= */ null,
         Collections.emptyMap());
+  }
+
+  public SdkLaunchPlan withName(String newName) {
+    return new SdkLaunchPlan(
+        /* name= */ requireNonNull(newName, "Launch plan name should not be null"),
+        /* workflowProject= */ workflowProject,
+        /* workflowDomain= */ workflowDomain,
+        /* workflowName= */ workflowName,
+        /* workflowVersion= */ workflowVersion,
+        fixedInputs);
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, long value) {

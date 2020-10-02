@@ -45,13 +45,6 @@ class SdkLaunchPlanTest {
   }
 
   @Test
-  void shouldCreateLaunchPlansWithName() {
-    SdkLaunchPlan plan = SdkLaunchPlan.of("workflow", new TestWorkflow());
-
-    assertThat(plan.getName(), equalTo("workflow"));
-  }
-
-  @Test
   void shouldCreateLaunchPlansWithOnlyWorkflowName() {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
@@ -70,6 +63,13 @@ class SdkLaunchPlanTest {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
     assertThat(plan.getFixedInputs(), anEmptyMap());
+  }
+
+  @Test
+  void shouldOverrideLaunchPlanName() {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow()).withName("new-workflow-name");
+
+    assertThat(plan.getName(), equalTo("new-workflow-name"));
   }
 
   @Test
@@ -102,7 +102,7 @@ class SdkLaunchPlanTest {
 
   @Test
   void shouldRejectFixedInputDuplicates() {
-    SdkLaunchPlan plan = SdkLaunchPlan.of("test", new TestWorkflow());
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
     IllegalArgumentException exception =
         assertThrows(

@@ -17,13 +17,14 @@
 package org.flyte.api.v1;
 
 /** Encapsulation of fields that uniquely identifies a Flyte resource. */
-public interface Identifier {
+public interface Identifier extends PartialIdentifier {
 
+  @Override
   String domain();
 
+  @Override
   String project();
 
-  String name();
-
+  @Override
   String version();
 }

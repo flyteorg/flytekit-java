@@ -137,7 +137,7 @@ class ProtoUtilTest {
             .putLiterals("a", Literals.Literal.newBuilder().setScalar(expectedScalar).build())
             .build();
 
-    Literals.LiteralMap output = ProtoUtil.serializeLiteralMap(input);
+    Literals.LiteralMap output = ProtoUtil.serialize(input);
 
     assertEquals(expected, output);
   }

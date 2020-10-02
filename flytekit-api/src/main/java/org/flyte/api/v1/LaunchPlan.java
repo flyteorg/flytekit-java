@@ -17,6 +17,7 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
+import java.util.Collections;
 import java.util.Map;
 
 @AutoValue
@@ -28,7 +29,7 @@ public abstract class LaunchPlan {
   public abstract Map<String, Literal> fixedInputs();
 
   public static Builder builder() {
-    return new AutoValue_LaunchPlan.Builder();
+    return new AutoValue_LaunchPlan.Builder().fixedInputs(Collections.emptyMap());
   }
 
   @AutoValue.Builder

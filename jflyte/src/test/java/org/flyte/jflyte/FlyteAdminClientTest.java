@@ -42,13 +42,17 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.util.Collections;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.KeyValuePair;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
@@ -206,15 +210,23 @@ public class FlyteAdminClientTest {
 
   @Test
   public void shouldPropagateLaunchPlanToStub() {
-    WorkflowIdentifier wfIdentifier =
-        WorkflowIdentifier.builder()
-            .domain(DOMAIN)
+    PartialWorkflowIdentifier wfIdentifier =
+        PartialWorkflowIdentifier.builder()
             .project(PROJECT)
+            .domain(DOMAIN)
             .name(WF_NAME)
             .version(WF_VERSION)
             .build();
+    LaunchPlan launchPlan =
+        LaunchPlan.builder()
+            .workflowId(wfIdentifier)
+            .name(LP_NAME)
+            .fixedInputs(
+                Collections.singletonMap(
+                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+            .build();
 
-    client.createLaunchPlan(LP_IDENTIFIER, wfIdentifier);
+    client.createLaunchPlan(LP_IDENTIFIER, launchPlan);
 
     assertThat(
         stubService.createLaunchPlanRequest,
@@ -224,6 +236,20 @@ public class FlyteAdminClientTest {
                 .setSpec(
                     LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
                         .setWorkflowId(newIdentifier(ResourceType.WORKFLOW, WF_NAME, WF_VERSION))
+                        .setFixedInputs(
+                            Literals.LiteralMap.newBuilder()
+                                .putLiterals(
+                                    "foo",
+                                    Literals.Literal.newBuilder()
+                                        .setScalar(
+                                            Literals.Scalar.newBuilder()
+                                                .setPrimitive(
+                                                    Literals.Primitive.newBuilder()
+                                                        .setStringValue("bar")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
                         .build())
                 .build()));
   }

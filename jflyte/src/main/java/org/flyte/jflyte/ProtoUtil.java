@@ -41,7 +41,6 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
-import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
@@ -49,6 +48,9 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
+import org.flyte.api.v1.PartialIdentifier;
+import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
@@ -100,7 +102,6 @@ class ProtoUtil {
     throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
   }
 
-  @SuppressWarnings("fallthrough")
   static Primitive deserialize(Literals.Primitive primitive) {
     switch (primitive.getValueCase()) {
       case INTEGER:
@@ -125,7 +126,7 @@ class ProtoUtil {
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
   }
 
-  static IdentifierOuterClass.Identifier serialize(Identifier id) {
+  static IdentifierOuterClass.Identifier serialize(PartialIdentifier id) {
     IdentifierOuterClass.ResourceType type = getResourceType(id);
 
     return IdentifierOuterClass.Identifier.newBuilder()
@@ -137,12 +138,12 @@ class ProtoUtil {
         .build();
   }
 
-  static IdentifierOuterClass.ResourceType getResourceType(Identifier id) {
+  static IdentifierOuterClass.ResourceType getResourceType(PartialIdentifier id) {
     if (id instanceof LaunchPlanIdentifier) { // if only Java 14 :(
       return IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
-    } else if (id instanceof TaskIdentifier) {
+    } else if (id instanceof TaskIdentifier || id instanceof PartialTaskIdentifier) {
       return IdentifierOuterClass.ResourceType.TASK;
-    } else if (id instanceof WorkflowIdentifier) {
+    } else if (id instanceof WorkflowIdentifier || id instanceof PartialWorkflowIdentifier) {
       return IdentifierOuterClass.ResourceType.WORKFLOW;
     }
 
@@ -424,7 +425,7 @@ class ProtoUtil {
     return builder.build();
   }
 
-  private static Literals.LiteralMap serialize(Map<String, Literal> literals) {
+  static Literals.LiteralMap serialize(Map<String, Literal> literals) {
     Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
     literals.forEach((name, literal) -> builder.putLiterals(name, serialize(literal)));
     return builder.build();
@@ -468,14 +469,6 @@ class ProtoUtil {
     return builder.build();
   }
 
-  static Literals.LiteralMap serializeLiteralMap(Map<String, Literal> outputs) {
-    Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
-
-    outputs.forEach((key, value) -> builder.putLiterals(key, serialize(value)));
-
-    return builder.build();
-  }
-
   static Literals.Literal serialize(Literal value) {
     Literals.Literal.Builder builder = Literals.Literal.newBuilder();
 
@@ -508,10 +501,7 @@ class ProtoUtil {
         "isn't ResourceType.TASK, got [%s]",
         id.getResourceType());
 
-    /* domain= */
-    /* project= */
-    /* name= */
-    /* version= */ return TaskIdentifier.builder()
+    return TaskIdentifier.builder()
         .domain(id.getDomain())
         .project(id.getProject())
         .name(id.getName())

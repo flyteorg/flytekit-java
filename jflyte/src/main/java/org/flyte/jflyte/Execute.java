@@ -127,7 +127,7 @@ public class Execute implements Callable<Integer> {
         fs,
         outputUri,
         outputStream -> {
-          Literals.LiteralMap proto = ProtoUtil.serializeLiteralMap(outputs);
+          Literals.LiteralMap proto = ProtoUtil.serialize(outputs);
           proto.writeTo(outputStream);
         });
   }

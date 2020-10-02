@@ -29,6 +29,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.TaskIdentifier;
@@ -101,7 +102,7 @@ class FlyteAdminClient implements AutoCloseable {
     verifyNotNull(response, "Unexpected null response when creating workflow: %s", id);
   }
 
-  void createLaunchPlan(LaunchPlanIdentifier id, WorkflowIdentifier workflowId) {
+  void createLaunchPlan(LaunchPlanIdentifier id, LaunchPlan launchPlan) {
     LOG.debug("createLaunchPlan {}", id);
 
     LaunchPlanOuterClass.LaunchPlanCreateResponse response =
@@ -110,7 +111,8 @@ class FlyteAdminClient implements AutoCloseable {
                 .setId(ProtoUtil.serialize(id))
                 .setSpec(
                     LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
-                        .setWorkflowId(ProtoUtil.serialize(workflowId))
+                        .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
+                        .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
                         .build())
                 .build());
 

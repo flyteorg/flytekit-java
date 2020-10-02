@@ -32,12 +32,17 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
+import org.flyte.api.v1.LaunchPlanRegistrar;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -169,6 +174,12 @@ public class RegisterWorkflows implements Callable<Integer> {
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
 
+    Map<LaunchPlanIdentifier, LaunchPlan> launchPlans =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(LaunchPlanRegistrar.class, env));
+    Set<String> launchPlanNames =
+        launchPlans.keySet().stream().map(Identifier::name).collect(Collectors.toSet());
+
     IdentifierRewrite identifierRewrite =
         IdentifierRewrite.builder()
             .adminClient(adminClient)
@@ -206,8 +217,29 @@ public class RegisterWorkflows implements Callable<Integer> {
               .version(workflowId.version())
               .build();
 
-      adminClient.createLaunchPlan(launchPlanId, workflowId);
+      if (!launchPlanNames.contains(workflowId.name())) {
+        adminClient.createLaunchPlan(launchPlanId, createDefaultLaunchPlan(workflowId));
+      }
     }
+
+    for (Map.Entry<LaunchPlanIdentifier, LaunchPlan> entry : launchPlans.entrySet()) {
+      LaunchPlanIdentifier launchPlanId = entry.getKey();
+      LaunchPlan launchPlan = entry.getValue();
+
+      adminClient.createLaunchPlan(launchPlanId, launchPlan);
+    }
+  }
+
+  private LaunchPlan createDefaultLaunchPlan(WorkflowIdentifier workflowId) {
+    return LaunchPlan.builder()
+        .workflowId(
+            PartialWorkflowIdentifier.builder()
+                .project(workflowId.project())
+                .domain(workflowId.domain())
+                .name(workflowId.name())
+                .version(workflowId.version())
+                .build())
+        .build();
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {

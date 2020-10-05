@@ -35,6 +35,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,8 +70,11 @@ class SdkLaunchPlanRegistrarTest {
   @BeforeEach
   void setUp() {
     this.classLoader =
-        new DynamicURLClassLoader(
-            (URLClassLoader) SdkLaunchPlanRegistrarTest.class.getClassLoader());
+        AccessController.doPrivileged(
+            (PrivilegedAction<DynamicURLClassLoader>)
+                () ->
+                    new DynamicURLClassLoader(
+                        (URLClassLoader) SdkLaunchPlanRegistrarTest.class.getClassLoader()));
   }
 
   @Test

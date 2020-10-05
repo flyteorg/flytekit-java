@@ -81,6 +81,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ProtoUtilTest {
   private static final String DOMAIN = "development";
   private static final String PROJECT = "flyte-test";
+  private static final String TASK_NAME = "HadesPublish";
+  private static final String WORKFLOW_NAME = "TopTracks";
   private static final String VERSION = "1";
 
   @ParameterizedTest
@@ -653,6 +655,52 @@ class ProtoUtilTest {
                 .setMessage("Not ready")
                 .setKind(Errors.ContainerError.Kind.RECOVERABLE)
                 .setCode("SYSTEM:NOT_READY")
+                .build()));
+  }
+
+  @Test
+  void shouldDeserializeTaskId() {
+    TaskIdentifier taskId =
+        ProtoUtil.deserializeTaskId(
+            IdentifierOuterClass.Identifier.newBuilder()
+                .setResourceType(TASK)
+                .setProject(PROJECT)
+                .setDomain(DOMAIN)
+                .setName(TASK_NAME)
+                .setVersion(VERSION)
+                .build());
+
+    assertThat(
+        taskId,
+        equalTo(
+            TaskIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(TASK_NAME)
+                .version(VERSION)
+                .build()));
+  }
+
+  @Test
+  void shouldDeserializeWorkflowId() {
+    WorkflowIdentifier workflowId =
+        ProtoUtil.deserializeWorkflowId(
+            IdentifierOuterClass.Identifier.newBuilder()
+                .setResourceType(WORKFLOW)
+                .setProject(PROJECT)
+                .setDomain(DOMAIN)
+                .setName(WORKFLOW_NAME)
+                .setVersion(VERSION)
+                .build());
+
+    assertThat(
+        workflowId,
+        equalTo(
+            WorkflowIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(WORKFLOW_NAME)
+                .version(VERSION)
                 .build()));
   }
 

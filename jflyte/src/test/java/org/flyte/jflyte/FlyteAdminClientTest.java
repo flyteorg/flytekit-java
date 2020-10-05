@@ -22,9 +22,11 @@ import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import flyteidl.admin.Common;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
@@ -42,6 +44,7 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
@@ -50,6 +53,7 @@ import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
@@ -79,8 +83,10 @@ public class FlyteAdminClientTest {
   private static final String PROJECT = "flyte-test";
   private static final String TASK_NAME = "task-foo";
   private static final String TASK_VERSION = "version-task-foo";
+  private static final String TASK_OLD_VERSION = "version-task-bar";
   private static final String WF_NAME = "workflow-foo";
   private static final String WF_VERSION = "version-wf-foo";
+  private static final String WF_OLD_VERSION = "version-wf-bar";
   private static final String IMAGE_NAME = "alpine:latest";
   private static final String COMMAND = "date";
 
@@ -97,7 +103,7 @@ public class FlyteAdminClientTest {
           .build();
 
   @Before
-  public void setup() throws IOException {
+  public void setUp() throws IOException {
     stubService = new TestAdminService();
     String serverName = InProcessServerBuilder.generateName();
     Server build = GrpcUtils.buildServer(serverName, stubService);
@@ -266,6 +272,136 @@ public class FlyteAdminClientTest {
                 .setProject(PROJECT)
                 .setSpec(newExecutionSpec())
                 .build()));
+  }
+
+  @Test
+  public void fetchLatestTaskIdShouldPropagateCallToListTasks() {
+    client.fetchLatestTaskId(
+        NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name(TASK_NAME).build());
+
+    assertThat(
+        stubService.listTasksRequest,
+        equalTo(
+            Common.ResourceListRequest.newBuilder()
+                .setLimit(1)
+                .setId(
+                    Common.NamedEntityIdentifier.newBuilder()
+                        .setProject(PROJECT)
+                        .setDomain(DOMAIN)
+                        .setName(TASK_NAME)
+                        .build())
+                .setSortBy(
+                    Common.Sort.newBuilder()
+                        .setKey("created_at")
+                        .setDirection(Common.Sort.Direction.DESCENDING)
+                        .build())
+                .build()));
+  }
+
+  @Test
+  public void fetchLatestTaskIdShouldReturnFirstTaskFromList() {
+    stubService.taskLists =
+        Arrays.asList(
+            TaskOuterClass.Task.newBuilder()
+                .setId(newIdentifier(ResourceType.TASK, TASK_NAME, TASK_VERSION))
+                .build(),
+            TaskOuterClass.Task.newBuilder()
+                .setId(newIdentifier(ResourceType.TASK, TASK_NAME, TASK_OLD_VERSION))
+                .build());
+
+    TaskIdentifier taskId =
+        client.fetchLatestTaskId(
+            NamedEntityIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(TASK_NAME)
+                .build());
+
+    assertThat(
+        taskId,
+        equalTo(
+            TaskIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(TASK_NAME)
+                .version(TASK_VERSION)
+                .build()));
+  }
+
+  @Test
+  public void fetchLatestTaskIdShouldReturnNullWhenEmptyList() {
+    stubService.taskLists = Collections.emptyList();
+
+    TaskIdentifier taskId =
+        client.fetchLatestTaskId(
+            NamedEntityIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(TASK_NAME)
+                .build());
+
+    assertThat(taskId, nullValue());
+  }
+
+  @Test
+  public void fetchLatestWorkflowIdShouldPropagateCallToListWorkflows() {
+    client.fetchLatestWorkflowId(
+        NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name(WF_NAME).build());
+
+    assertThat(
+        stubService.listWorkflowsRequest,
+        equalTo(
+            Common.ResourceListRequest.newBuilder()
+                .setLimit(1)
+                .setId(
+                    Common.NamedEntityIdentifier.newBuilder()
+                        .setProject(PROJECT)
+                        .setDomain(DOMAIN)
+                        .setName(WF_NAME)
+                        .build())
+                .setSortBy(
+                    Common.Sort.newBuilder()
+                        .setKey("created_at")
+                        .setDirection(Common.Sort.Direction.DESCENDING)
+                        .build())
+                .build()));
+  }
+
+  @Test
+  public void fetchLatestWorkflowIdShouldReturnFirstWorkflowFromList() {
+    stubService.workflowLists =
+        Arrays.asList(
+            WorkflowOuterClass.Workflow.newBuilder()
+                .setId(newIdentifier(ResourceType.WORKFLOW, WF_NAME, WF_VERSION))
+                .build(),
+            WorkflowOuterClass.Workflow.newBuilder()
+                .setId(newIdentifier(ResourceType.WORKFLOW, WF_NAME, WF_OLD_VERSION))
+                .build());
+
+    WorkflowIdentifier workflowId =
+        client.fetchLatestWorkflowId(
+            NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name(WF_NAME).build());
+
+    assertThat(
+        workflowId,
+        equalTo(
+            WorkflowIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(WF_NAME)
+                .version(WF_VERSION)
+                .build()));
+  }
+
+  @Test
+  public void fetchLatestWorkflowIdShouldReturnNullWhenEmptyList() {
+    stubService.workflowLists = Collections.emptyList();
+
+    WorkflowIdentifier workflowId =
+        client.fetchLatestWorkflowId(
+            NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name(WF_NAME).build());
+
+    assertThat(workflowId, nullValue());
   }
 
   private IdentifierOuterClass.Identifier newIdentifier(

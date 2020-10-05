@@ -509,6 +509,20 @@ class ProtoUtil {
         .build();
   }
 
+  static WorkflowIdentifier deserializeWorkflowId(IdentifierOuterClass.Identifier id) {
+    Preconditions.checkArgument(
+        id.getResourceType() == IdentifierOuterClass.ResourceType.WORKFLOW,
+        "isn't ResourceType.WORKFLOW, got [%s]",
+        id.getResourceType());
+
+    return WorkflowIdentifier.builder()
+        .project(id.getProject())
+        .domain(id.getDomain())
+        .name(id.getName())
+        .version(id.getVersion())
+        .build();
+  }
+
   static Errors.ContainerError serializeThrowable(Throwable e) {
     StringWriter sw = new StringWriter();
     e.printStackTrace(new PrintWriter(sw));

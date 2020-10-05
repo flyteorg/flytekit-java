@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-FLYTEIDL_VERSION="0.18.7"
+FLYTEIDL_VERSION="0.18.8"
 
 out=src/main/proto
 
@@ -21,9 +21,9 @@ curl -L "https://github.com/lyft/flyteidl/archive/v${FLYTEIDL_VERSION}.tar.gz" |
 # remove google.api.http options
 # remove grpc gateway options
 # remove unused import
-find "$out" -type f \
-    -exec sed -i 's/ *$//' '{}' ';' \
-    -exec sed -i '/option (google.api.http)/,/};/d' '{}' ';' \
-    -exec sed -i '/option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation)/,/};/d' '{}' ';' \
-    -exec sed -i '/protoc-gen-swagger\/options\/annotations.proto/d' '{}' ';' \
-    -exec sed -i '/google\/api\/annotations.proto/d' '{}' ';'
+find $out -type f \
+    -exec sed -i '' -e "s/ *$//" {} \; \
+    -exec sed -i '' -e "/option (google.api.http)/,/};/d" {} \; \
+    -exec sed -i '' -e "/option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation)/,/};/d" {} \; \
+    -exec sed -i '' -e "/protoc-gen-swagger\/options\/annotations.proto/d" {} \; \
+    -exec sed -i '' -e "/google\/api\/annotations.proto/d" {} \;

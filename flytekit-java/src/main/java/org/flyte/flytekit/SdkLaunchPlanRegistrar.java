@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
@@ -72,12 +73,17 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
                 .build();
         LOG.fine(String.format("Discovered [%s]", name));
 
-        LaunchPlan launchPlan =
+        LaunchPlan.Builder builder =
             LaunchPlan.builder()
                 .name(sdkLaunchPlan.getName())
                 .workflowId(getWorkflowIdentifier(sdkLaunchPlan))
-                .fixedInputs(sdkLaunchPlan.getFixedInputs())
-                .build();
+                .fixedInputs(sdkLaunchPlan.getFixedInputs());
+
+        if (sdkLaunchPlan.getCronSchedule() != null) {
+          builder.cronSchedule(getCronSchedule(sdkLaunchPlan.getCronSchedule()));
+        }
+
+        LaunchPlan launchPlan = builder.build();
         LaunchPlan previous = launchPlans.put(launchPlanId, launchPlan);
 
         if (previous != null) {
@@ -88,6 +94,17 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
     }
 
     return launchPlans;
+  }
+
+  private CronSchedule getCronSchedule(SdkCronSchedule sdkCronSchedule) {
+    CronSchedule.Builder scheduleBuilder =
+        CronSchedule.builder().schedule(sdkCronSchedule.schedule());
+
+    if (sdkCronSchedule.offset() != null) {
+      scheduleBuilder.offset(sdkCronSchedule.offset().toString());
+    }
+
+    return scheduleBuilder.build();
   }
 
   private PartialWorkflowIdentifier getWorkflowIdentifier(SdkLaunchPlan sdkLaunchPlan) {

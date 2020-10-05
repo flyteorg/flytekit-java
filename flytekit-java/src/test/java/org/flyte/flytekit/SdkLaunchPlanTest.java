@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,6 +71,17 @@ class SdkLaunchPlanTest {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow()).withName("new-workflow-name");
 
     assertThat(plan.getName(), equalTo("new-workflow-name"));
+  }
+
+  @Test
+  void shouldCreateLaunchPlanWithCronSchedule() {
+    SdkLaunchPlan plan =
+        SdkLaunchPlan.of(new TestWorkflow())
+            .withCronSchedule(SdkCronSchedule.of("*/5 * * * *", Duration.ofHours(1)));
+
+    assertThat(plan.getCronSchedule(), notNullValue());
+    assertThat(plan.getCronSchedule().schedule(), equalTo("*/5 * * * *"));
+    assertThat(plan.getCronSchedule().offset(), equalTo(Duration.ofHours(1)));
   }
 
   @Test

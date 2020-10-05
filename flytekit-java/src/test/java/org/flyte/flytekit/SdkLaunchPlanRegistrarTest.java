@@ -24,16 +24,20 @@ import static org.flyte.flytekit.SdkConfig.PROJECT_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.VERSION_ENV_VAR;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.service.AutoService;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
@@ -103,6 +107,54 @@ class SdkLaunchPlanRegistrarTest {
   }
 
   @Test
+  void shouldTestLaunchPlansWithCronSchedule() {
+    Map<LaunchPlanIdentifier, LaunchPlan> launchPlans =
+        registrar.load(ENV, singletonList(new TestRegistryWithSchedules()));
+
+    LaunchPlanIdentifier expectedIdentifierWithoutOffset =
+        LaunchPlanIdentifier.builder()
+            .project("project")
+            .domain("domain")
+            .name("TestPlanScheduleWithoutOffset")
+            .version("version")
+            .build();
+    LaunchPlan planWithoutOffset =
+        LaunchPlan.builder()
+            .name("TestPlanScheduleWithoutOffset")
+            .workflowId(
+                PartialWorkflowIdentifier.builder()
+                    .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
+                    .build())
+            .fixedInputs(Collections.emptyMap())
+            .cronSchedule(CronSchedule.builder().schedule("daily").build())
+            .build();
+
+    LaunchPlanIdentifier expectedIdentifierWithOffset =
+        LaunchPlanIdentifier.builder()
+            .project("project")
+            .domain("domain")
+            .name("TestPlanScheduleWithOffset")
+            .version("version")
+            .build();
+    LaunchPlan planWithOffset =
+        LaunchPlan.builder()
+            .name("TestPlanScheduleWithOffset")
+            .workflowId(
+                PartialWorkflowIdentifier.builder()
+                    .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
+                    .build())
+            .fixedInputs(Collections.emptyMap())
+            .cronSchedule(CronSchedule.builder().schedule("daily").offset("PT1H").build())
+            .build();
+
+    assertThat(
+        launchPlans,
+        allOf(
+            hasEntry(expectedIdentifierWithoutOffset, planWithoutOffset),
+            hasEntry(expectedIdentifierWithOffset, planWithOffset)));
+  }
+
+  @Test
   void shouldRejectLoadingLaunchPlanDuplicatesInSameRegistry() {
     IllegalArgumentException exception =
         assertThrows(
@@ -161,6 +213,20 @@ class SdkLaunchPlanRegistrarTest {
     public List<SdkLaunchPlan> getLaunchPlans() {
       return singletonList(
           SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan").withFixedInput("foo", "bar"));
+    }
+  }
+
+  public static class TestRegistryWithSchedules implements SdkLaunchPlanRegistry {
+
+    @Override
+    public List<SdkLaunchPlan> getLaunchPlans() {
+      return Arrays.asList(
+          SdkLaunchPlan.of(new TestWorkflow())
+              .withName("TestPlanScheduleWithoutOffset")
+              .withCronSchedule(SdkCronSchedule.of("daily")),
+          SdkLaunchPlan.of(new TestWorkflow())
+              .withName("TestPlanScheduleWithOffset")
+              .withCronSchedule(SdkCronSchedule.of("daily", Duration.ofHours(1))));
     }
   }
 

@@ -21,12 +21,20 @@ import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkConfig.DOMAIN_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.PROJECT_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.VERSION_ENV_VAR;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.auto.service.AutoService;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,11 +46,14 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class SdkLaunchPlanRegistrarTest {
 
   private static final Map<String, String> ENV;
+  private DynamicURLClassLoader classLoader;
 
   static {
     HashMap<String, String> env = new HashMap<>();
@@ -54,18 +65,26 @@ class SdkLaunchPlanRegistrarTest {
 
   private final SdkLaunchPlanRegistrar registrar = new SdkLaunchPlanRegistrar();
 
-  @Test
-  void shouldLoadLaunchPlansFromDiscoveredRegistry() {
-    Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = registrar.load(ENV);
+  @BeforeEach
+  void setUp() {
+    this.classLoader =
+        new DynamicURLClassLoader(
+            (URLClassLoader) SdkLaunchPlanRegistrarTest.class.getClassLoader());
+  }
 
-    LaunchPlanIdentifier expectedIdentifier =
+  @Test
+  void shouldLoadLaunchPlansFromDiscoveredRegistries(@TempDir Path tempDir) throws Exception {
+    writeRegistryToMetaInfServices(tempDir, TestRegistry.class, OtherTestRegistry.class);
+    Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = registrar.load(ENV, classLoader);
+
+    LaunchPlanIdentifier expectedTestPlan =
         LaunchPlanIdentifier.builder()
             .project("project")
             .domain("domain")
             .name("TestPlan")
             .version("version")
             .build();
-    LaunchPlan plan =
+    LaunchPlan expectedPlan =
         LaunchPlan.builder()
             .name("TestPlan")
             .workflowId(
@@ -79,32 +98,16 @@ class SdkLaunchPlanRegistrarTest {
                 singletonMap(
                     "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
             .build();
-    assertThat(launchPlans, hasEntry(expectedIdentifier, plan));
-  }
-
-  @Test
-  void shouldRejectLoadingLaunchPlanDuplicatesInSameRegistry() {
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> registrar.load(new HashMap<>(), ENV, new TestRegistryWithDuplicates()));
-
-    assertThat(
-        exception.getMessage(), equalTo("Discovered a duplicate launch plan [DuplicatedPlan]"));
-  }
-
-  @Test
-  void shouldRejectLoadingLaunchPlanDuplicatesAcrossRegistries() {
-    LaunchPlanIdentifier identifier =
+    LaunchPlanIdentifier expectedOtherTestPlan =
         LaunchPlanIdentifier.builder()
             .project("project")
             .domain("domain")
-            .name("TestPlan")
+            .name("OtherTestPlan")
             .version("version")
             .build();
-    LaunchPlan plan =
+    LaunchPlan expectedOtherPlan =
         LaunchPlan.builder()
-            .name("TestPlan")
+            .name("OtherTestPlan")
             .workflowId(
                 PartialWorkflowIdentifier.builder()
                     .project("project")
@@ -112,26 +115,72 @@ class SdkLaunchPlanRegistrarTest {
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
                     .version("version")
                     .build())
-            .fixedInputs(Collections.emptyMap())
+            .fixedInputs(
+                singletonMap(
+                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("baz")))))
             .build();
-    HashMap<LaunchPlanIdentifier, LaunchPlan> currentPlans = new HashMap<>();
-    currentPlans.put(identifier, plan);
+
+    assertAll(
+        () -> assertThat(launchPlans, hasEntry(is(expectedTestPlan), is(expectedPlan))),
+        () -> assertThat(launchPlans, hasEntry(is(expectedOtherTestPlan), is(expectedOtherPlan))));
+  }
+
+  @Test
+  void shouldRejectLoadingLaunchPlanDuplicatesInSameRegistry(@TempDir Path tempDir)
+      throws Exception {
+    writeRegistryToMetaInfServices(tempDir, TestRegistryWithDuplicates.class);
 
     IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> registrar.load(currentPlans, ENV, new TestRegistry()));
+        assertThrows(IllegalArgumentException.class, () -> registrar.load(ENV, classLoader));
+
+    assertThat(
+        exception.getMessage(), equalTo("Discovered a duplicate launch plan [DuplicatedPlan]"));
+  }
+
+  @Test
+  void shouldRejectLoadingLaunchPlanDuplicatesAcrossRegistries(@TempDir Path tempDir)
+      throws Exception {
+    writeRegistryToMetaInfServices(tempDir, TestRegistry.class, DuplicationOfTestRegistry.class);
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> registrar.load(ENV, classLoader));
 
     assertThat(exception.getMessage(), equalTo("Discovered a duplicate launch plan [TestPlan]"));
   }
 
-  @AutoService(SdkLaunchPlanRegistry.class)
+  @SafeVarargs
+  private final void writeRegistryToMetaInfServices(
+      Path tempDir, Class<? extends SdkLaunchPlanRegistry>... registryClasses) throws IOException {
+    Path servicesDir = tempDir.resolve("META-INF/services");
+    Files.createDirectories(servicesDir);
+    Path serviceLoaderPath = servicesDir.resolve(SdkLaunchPlanRegistry.class.getName());
+    try (BufferedWriter writer = Files.newBufferedWriter(serviceLoaderPath);
+        PrintWriter printWriter = new PrintWriter(writer)) {
+      for (Class<?> c : registryClasses) {
+        printWriter.println(c.getName());
+      }
+    }
+
+    classLoader.addURL(tempDir.toUri().toURL());
+  }
+
   public static class TestRegistry implements SdkLaunchPlanRegistry {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
       return singletonList(
           SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan").withFixedInput("foo", "bar"));
+    }
+  }
+
+  public static class OtherTestRegistry implements SdkLaunchPlanRegistry {
+
+    @Override
+    public List<SdkLaunchPlan> getLaunchPlans() {
+      return singletonList(
+          SdkLaunchPlan.of(new TestWorkflow())
+              .withName("OtherTestPlan")
+              .withFixedInput("foo", "baz"));
     }
   }
 
@@ -145,11 +194,32 @@ class SdkLaunchPlanRegistrarTest {
     }
   }
 
+  public static class DuplicationOfTestRegistry implements SdkLaunchPlanRegistry {
+
+    @Override
+    public List<SdkLaunchPlan> getLaunchPlans() {
+      return singletonList(
+          SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan").withFixedInput("foo", "bar"));
+    }
+  }
+
   public static class TestWorkflow extends SdkWorkflow {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       // Do nothing
+    }
+  }
+
+  public static class DynamicURLClassLoader extends URLClassLoader {
+
+    public DynamicURLClassLoader(URLClassLoader classLoader) {
+      super(classLoader.getURLs());
+    }
+
+    @Override
+    public void addURL(URL url) {
+      super.addURL(url);
     }
   }
 }

@@ -20,14 +20,17 @@ import static com.google.common.base.Verify.verifyNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import flyteidl.admin.Common;
+import flyteidl.admin.Common.ResourceListRequest;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
+import flyteidl.core.IdentifierOuterClass;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.util.List;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -153,10 +156,32 @@ class FlyteAdminClient implements AutoCloseable {
 
   @Nullable
   TaskIdentifier fetchLatestTaskId(NamedEntityIdentifier taskId) {
-    Common.ResourceListRequest request =
-        Common.ResourceListRequest.newBuilder()
+    return fetchLatestResource(
+        taskId,
+        request -> stub.listTasks(request).getTasksList(),
+        TaskOuterClass.Task::getId,
+        ProtoUtil::deserializeTaskId);
+  }
+
+  @Nullable
+  WorkflowIdentifier fetchLatestWorkflowId(NamedEntityIdentifier workflowId) {
+    return fetchLatestResource(
+        workflowId,
+        request -> stub.listWorkflows(request).getWorkflowsList(),
+        WorkflowOuterClass.Workflow::getId,
+        ProtoUtil::deserializeWorkflowId);
+  }
+
+  @Nullable
+  private <T, RespT> T fetchLatestResource(
+      NamedEntityIdentifier nameId,
+      Function<ResourceListRequest, List<RespT>> performRequestFn,
+      Function<RespT, IdentifierOuterClass.Identifier> extractIdFn,
+      Function<IdentifierOuterClass.Identifier, T> deserializeFn) {
+    ResourceListRequest request =
+        ResourceListRequest.newBuilder()
             .setLimit(1)
-            .setId(ProtoUtil.serialize(taskId))
+            .setId(ProtoUtil.serialize(nameId))
             .setSortBy(
                 Common.Sort.newBuilder()
                     .setKey("created_at")
@@ -164,13 +189,14 @@ class FlyteAdminClient implements AutoCloseable {
                     .build())
             .build();
 
-    List<TaskOuterClass.Task> list = stub.listTasks(request).getTasksList();
+    List<RespT> list = performRequestFn.apply(request);
 
     if (list.isEmpty()) {
       return null;
     }
 
-    return ProtoUtil.deserializeTaskId(list.get(0).getId());
+    IdentifierOuterClass.Identifier id = extractIdFn.apply(list.get(0));
+    return deserializeFn.apply(id);
   }
 
   @Override

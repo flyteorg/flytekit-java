@@ -91,10 +91,10 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
     boolean isProjectSet = sdkLaunchPlan.getWorkflowProject() != null;
 
     return PartialWorkflowIdentifier.builder()
-        .project((isProjectSet) ? sdkLaunchPlan.getWorkflowProject() : sdkConfig.project())
-        .domain((isProjectSet) ? sdkLaunchPlan.getWorkflowDomain() : sdkConfig.domain())
+        .project(isProjectSet ? sdkLaunchPlan.getWorkflowProject() : sdkConfig.project())
+        .domain(isProjectSet ? sdkLaunchPlan.getWorkflowDomain() : sdkConfig.domain())
         .name(sdkLaunchPlan.getWorkflowName())
-        .version((isProjectSet) ? sdkLaunchPlan.getWorkflowVersion() : sdkConfig.version())
+        .version(isProjectSet ? sdkLaunchPlan.getWorkflowVersion() : sdkConfig.version())
         .build();
   }
 }

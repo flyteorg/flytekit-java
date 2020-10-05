@@ -16,12 +16,15 @@
  */
 package org.flyte.jflyte;
 
+import flyteidl.admin.Common;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import java.util.Collections;
+import java.util.List;
 
 /** Test implementation of Admin Service. This is needed as stubs are not mockable */
 public class TestAdminService extends AdminServiceGrpc.AdminServiceImplBase {
@@ -30,6 +33,11 @@ public class TestAdminService extends AdminServiceGrpc.AdminServiceImplBase {
   WorkflowOuterClass.WorkflowCreateRequest createWorkflowRequest;
   LaunchPlanOuterClass.LaunchPlanCreateRequest createLaunchPlanRequest;
   ExecutionOuterClass.ExecutionCreateRequest createExecutionRequest;
+  Common.ResourceListRequest listTasksRequest;
+  Common.ResourceListRequest listWorkflowsRequest;
+
+  List<TaskOuterClass.Task> taskLists = Collections.emptyList();
+  List<WorkflowOuterClass.Workflow> workflowLists = Collections.emptyList();
 
   @Override
   public void createTask(
@@ -64,6 +72,25 @@ public class TestAdminService extends AdminServiceGrpc.AdminServiceImplBase {
       StreamObserver<ExecutionOuterClass.ExecutionCreateResponse> responseObserver) {
     this.createExecutionRequest = request;
     responseObserver.onNext(ExecutionOuterClass.ExecutionCreateResponse.newBuilder().build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listTasks(
+      Common.ResourceListRequest request,
+      StreamObserver<TaskOuterClass.TaskList> responseObserver) {
+    this.listTasksRequest = request;
+    responseObserver.onNext(TaskOuterClass.TaskList.newBuilder().addAllTasks(taskLists).build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listWorkflows(
+      Common.ResourceListRequest request,
+      StreamObserver<WorkflowOuterClass.WorkflowList> responseObserver) {
+    this.listWorkflowsRequest = request;
+    responseObserver.onNext(
+        WorkflowOuterClass.WorkflowList.newBuilder().addAllWorkflows(workflowLists).build());
     responseObserver.onCompleted();
   }
 }

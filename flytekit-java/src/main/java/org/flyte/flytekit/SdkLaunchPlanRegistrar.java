@@ -54,8 +54,7 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
     return launchPlans;
   }
 
-  // @VisibleForTesting
-  void load(
+  private void load(
       Map<LaunchPlanIdentifier, LaunchPlan> currentPlans,
       Map<String, String> env,
       SdkLaunchPlanRegistry sdkLaunchPlanRegistry) {

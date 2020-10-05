@@ -36,6 +36,7 @@ public class SdkLaunchPlan {
   private final String workflowName;
   private final String workflowVersion;
   private final Map<String, Literal> fixedInputs;
+  private final SdkCronSchedule cronSchedule;
 
   private SdkLaunchPlan(
       String name,
@@ -43,13 +44,15 @@ public class SdkLaunchPlan {
       String workflowDomain,
       String workflowName,
       String workflowVersion,
-      Map<String, Literal> fixedInputs) {
+      Map<String, Literal> fixedInputs,
+      SdkCronSchedule cronSchedule) {
     this.name = requireNonNull(name, "name");
     this.workflowProject = workflowProject;
     this.workflowDomain = workflowDomain;
     this.workflowName = requireNonNull(workflowName, "workflowName");
     this.workflowVersion = workflowVersion;
     this.fixedInputs = requireNonNull(fixedInputs, "fixedInputs");
+    this.cronSchedule = cronSchedule;
   }
 
   /**
@@ -68,7 +71,8 @@ public class SdkLaunchPlan {
         /* workflowDomain= */ null,
         /* workflowName= */ workflow.getName(),
         /* workflowVersion= */ null,
-        Collections.emptyMap());
+        Collections.emptyMap(),
+        null);
   }
 
   public SdkLaunchPlan withName(String newName) {
@@ -78,7 +82,8 @@ public class SdkLaunchPlan {
         /* workflowDomain= */ workflowDomain,
         /* workflowName= */ workflowName,
         /* workflowVersion= */ workflowVersion,
-        fixedInputs);
+        fixedInputs,
+        cronSchedule);
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, long value) {
@@ -109,6 +114,17 @@ public class SdkLaunchPlan {
     return withFixedInputs0(type.toLiteralMap(value));
   }
 
+  public SdkLaunchPlan withCronSchedule(SdkCronSchedule cronSchedule) {
+    return new SdkLaunchPlan(
+        /* name= */ name,
+        /* workflowProject= */ workflowProject,
+        /* workflowDomain= */ workflowDomain,
+        /* workflowName= */ workflowName,
+        /* workflowVersion= */ workflowVersion,
+        fixedInputs,
+        cronSchedule);
+  }
+
   private SdkLaunchPlan withFixedInputs0(Map<String, Literal> newInputs) {
     // TODO: validate that the workflow's interface contains an input with the given name and that
     // the types matches
@@ -130,7 +146,8 @@ public class SdkLaunchPlan {
         /* workflowDomain= */ workflowDomain,
         /* workflowName= */ workflowName,
         /* workflowVersion= */ workflowVersion,
-        newCompleteInputs);
+        newCompleteInputs,
+        cronSchedule);
   }
 
   public String getName() {
@@ -159,5 +176,10 @@ public class SdkLaunchPlan {
   Map<String, Literal> getFixedInputs() {
     Map<String, Literal> copy = new LinkedHashMap<>(fixedInputs);
     return Collections.unmodifiableMap(copy);
+  }
+
+  @Nullable
+  public SdkCronSchedule getCronSchedule() {
+    return this.cronSchedule;
   }
 }

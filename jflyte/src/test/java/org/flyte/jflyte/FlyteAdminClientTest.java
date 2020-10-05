@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import flyteidl.admin.Common;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
+import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.core.IdentifierOuterClass;
@@ -44,11 +45,13 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -230,6 +233,11 @@ public class FlyteAdminClientTest {
             .fixedInputs(
                 Collections.singletonMap(
                     "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+            .cronSchedule(
+                CronSchedule.builder()
+                    .schedule("daily")
+                    .offset(Duration.ofHours(1).toString())
+                    .build())
             .build();
 
     client.createLaunchPlan(LP_IDENTIFIER, launchPlan);
@@ -253,6 +261,17 @@ public class FlyteAdminClientTest {
                                                     Literals.Primitive.newBuilder()
                                                         .setStringValue("bar")
                                                         .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .setEntityMetadata(
+                            LaunchPlanOuterClass.LaunchPlanMetadata.newBuilder()
+                                .setSchedule(
+                                    ScheduleOuterClass.Schedule.newBuilder()
+                                        .setCronSchedule(
+                                            ScheduleOuterClass.CronSchedule.newBuilder()
+                                                .setSchedule("daily")
+                                                .setOffset("PT1H")
                                                 .build())
                                         .build())
                                 .build())

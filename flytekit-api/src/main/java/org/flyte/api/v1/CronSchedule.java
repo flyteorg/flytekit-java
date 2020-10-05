@@ -17,36 +17,26 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import java.util.Collections;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 @AutoValue
-public abstract class LaunchPlan {
-  public abstract String name();
-
-  public abstract PartialWorkflowIdentifier workflowId();
-
-  public abstract Map<String, Literal> fixedInputs();
+public abstract class CronSchedule {
+  public abstract String schedule();
 
   @Nullable
-  public abstract CronSchedule cronSchedule();
+  public abstract String offset();
 
-  public static Builder builder() {
-    return new AutoValue_LaunchPlan.Builder().fixedInputs(Collections.emptyMap());
+  public static CronSchedule.Builder builder() {
+    return new AutoValue_CronSchedule.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
 
-    public abstract Builder name(String name);
+    public abstract CronSchedule.Builder schedule(String schedule);
 
-    public abstract Builder workflowId(PartialWorkflowIdentifier workflowId);
+    public abstract CronSchedule.Builder offset(String offset);
 
-    public abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
-
-    public abstract Builder cronSchedule(CronSchedule cronSchedule);
-
-    public abstract LaunchPlan build();
+    public abstract CronSchedule build();
   }
 }

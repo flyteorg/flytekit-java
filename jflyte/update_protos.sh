@@ -21,7 +21,7 @@ curl -L "https://github.com/lyft/flyteidl/archive/v${FLYTEIDL_VERSION}.tar.gz" |
 # remove google.api.http options
 # remove grpc gateway options
 # remove unused import
-find $out -type f \
+find "$out" -type f \
     -exec sed -i '' -e "s/ *$//" {} \; \
     -exec sed -i '' -e "/option (google.api.http)/,/};/d" {} \; \
     -exec sed -i '' -e "/option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation)/,/};/d" {} \; \

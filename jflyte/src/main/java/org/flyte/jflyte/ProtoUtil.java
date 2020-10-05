@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import flyteidl.admin.Common;
+import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -41,6 +42,7 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
+import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
@@ -551,5 +553,18 @@ class ProtoUtil {
         .setKind(serialize(error.getKind()))
         .setMessage(error.getMessage())
         .build();
+  }
+
+  static ScheduleOuterClass.Schedule serialize(CronSchedule cronSchedule) {
+    String schedule = cronSchedule.schedule();
+    String offset = cronSchedule.offset();
+    ScheduleOuterClass.CronSchedule.Builder builder =
+        ScheduleOuterClass.CronSchedule.newBuilder().setSchedule(schedule);
+
+    if (offset != null) {
+      builder.setOffset(offset);
+    }
+
+    return ScheduleOuterClass.Schedule.newBuilder().setCronSchedule(builder.build()).build();
   }
 }

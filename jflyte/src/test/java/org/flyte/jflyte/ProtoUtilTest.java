@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -50,6 +51,7 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
+import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -616,6 +618,39 @@ class ProtoUtilTest {
                                 .setSimple(Types.SimpleType.INTEGER)
                                 .build())
                         .build())
+                .build()));
+  }
+
+  @Test
+  public void shouldSerializeCronSchedule() {
+    CronSchedule cronSchedule =
+        CronSchedule.builder()
+            .schedule("* * */5 * *")
+            .offset(Duration.ofHours(1).toString())
+            .build();
+
+    assertThat(
+        ProtoUtil.serialize(cronSchedule),
+        equalTo(
+            ScheduleOuterClass.Schedule.newBuilder()
+                .setCronSchedule(
+                    ScheduleOuterClass.CronSchedule.newBuilder()
+                        .setSchedule("* * */5 * *")
+                        .setOffset("PT1H")
+                        .build())
+                .build()));
+  }
+
+  @Test
+  public void shouldSerializeCronScheduleNoOffset() {
+    CronSchedule cronSchedule = CronSchedule.builder().schedule("* * */5 * *").build();
+
+    assertThat(
+        ProtoUtil.serialize(cronSchedule),
+        equalTo(
+            ScheduleOuterClass.Schedule.newBuilder()
+                .setCronSchedule(
+                    ScheduleOuterClass.CronSchedule.newBuilder().setSchedule("* * */5 * *").build())
                 .build()));
   }
 

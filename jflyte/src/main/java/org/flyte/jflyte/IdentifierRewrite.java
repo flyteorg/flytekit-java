@@ -20,12 +20,16 @@ import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Verify;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
+import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Overrides project, domain and version for nodes in {@link WorkflowTemplate}. */
@@ -104,6 +108,61 @@ abstract class IdentifierRewrite {
         .name(taskId.name())
         .domain(domain)
         .project(project)
+        .version(version())
+        .build();
+  }
+
+  LaunchPlan apply(LaunchPlan launchPlan) {
+    return LaunchPlan.builder()
+        .name(launchPlan.name())
+        .fixedInputs(launchPlan.fixedInputs())
+        .workflowId(apply(launchPlan.workflowId()))
+        .build();
+  }
+
+  private PartialWorkflowIdentifier apply(PartialWorkflowIdentifier workflowId) {
+    String name = Preconditions.checkNotNull(workflowId.name(), "name is null");
+
+    if (workflowId.project() != null) {
+      // External workflow reference
+      String project = workflowId.project();
+      String domain =
+          Objects.requireNonNull(workflowId.domain(), "domain is null, but project is not");
+
+      if (workflowId.version() != null) {
+        return workflowId;
+      }
+
+      // we need to reference to latest version of workflow
+      WorkflowIdentifier latestWorkflowId =
+          adminClient()
+              .fetchLatestWorkflowId(
+                  NamedEntityIdentifier.builder()
+                      .project(workflowId.project())
+                      .domain(workflowId.domain())
+                      .name(name)
+                      .build());
+
+      Verify.verifyNotNull(
+          latestWorkflowId,
+          "workflow not found domain=[%s], project=[%s], name=[%s]",
+          domain,
+          project,
+          name);
+
+      return PartialWorkflowIdentifier.builder()
+          .project(workflowId.project())
+          .domain(workflowId.domain())
+          .name(name)
+          .version(latestWorkflowId.version())
+          .build();
+    }
+
+    // no project set, launch plan referencing workflow from the same project
+    return PartialWorkflowIdentifier.builder()
+        .project(project())
+        .domain(domain())
+        .name(name)
         .version(version())
         .build();
   }

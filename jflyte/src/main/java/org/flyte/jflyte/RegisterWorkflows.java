@@ -208,23 +208,23 @@ public class RegisterWorkflows implements Callable<Integer> {
 
       adminClient.createWorkflow(workflowId, workflowTemplate);
 
-      // for each workflow, create default launch plan
-      LaunchPlanIdentifier launchPlanId =
-          LaunchPlanIdentifier.builder()
-              .domain(workflowId.domain())
-              .project(workflowId.project())
-              .name(workflowId.name())
-              .version(workflowId.version())
-              .build();
-
+      // Create default launch plan for those workflows without one
       if (!launchPlanNames.contains(workflowId.name())) {
+        LaunchPlanIdentifier launchPlanId =
+            LaunchPlanIdentifier.builder()
+                .domain(workflowId.domain())
+                .project(workflowId.project())
+                .name(workflowId.name())
+                .version(workflowId.version())
+                .build();
+
         adminClient.createLaunchPlan(launchPlanId, createDefaultLaunchPlan(workflowId));
       }
     }
 
     for (Map.Entry<LaunchPlanIdentifier, LaunchPlan> entry : launchPlans.entrySet()) {
       LaunchPlanIdentifier launchPlanId = entry.getKey();
-      LaunchPlan launchPlan = entry.getValue();
+      LaunchPlan launchPlan = identifierRewrite.apply(entry.getValue());
 
       adminClient.createLaunchPlan(launchPlanId, launchPlan);
     }

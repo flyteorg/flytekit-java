@@ -17,7 +17,9 @@
 package org.flyte.flytekit;
 
 import com.google.auto.service.AutoService;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -45,45 +47,47 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
 
     LOG.fine("Discovering SdkLaunchPlans");
 
+    List<SdkLaunchPlanRegistry> discoveredRegistries = new ArrayList<>();
+    loader.iterator().forEachRemaining(discoveredRegistries::add);
+
+    return load(env, discoveredRegistries);
+  }
+
+  // VisibleForTesting
+  Map<LaunchPlanIdentifier, LaunchPlan> load(
+      Map<String, String> env, List<SdkLaunchPlanRegistry> registries) {
     Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = new HashMap<>();
 
-    for (SdkLaunchPlanRegistry sdkLaunchPlanRegistry : loader) {
-      load(launchPlans, env, sdkLaunchPlanRegistry);
+    for (SdkLaunchPlanRegistry sdkLaunchPlanRegistry : registries) {
+      SdkConfig sdkConfig = SdkConfig.load(env);
+
+      for (SdkLaunchPlan sdkLaunchPlan : sdkLaunchPlanRegistry.getLaunchPlans()) {
+        String name = sdkLaunchPlan.getName();
+        LaunchPlanIdentifier launchPlanId =
+            LaunchPlanIdentifier.builder()
+                .domain(sdkConfig.domain())
+                .project(sdkConfig.project())
+                .name(name)
+                .version(sdkConfig.version())
+                .build();
+        LOG.fine(String.format("Discovered [%s]", name));
+
+        LaunchPlan launchPlan =
+            LaunchPlan.builder()
+                .name(sdkLaunchPlan.getName())
+                .workflowId(getWorkflowIdentifier(sdkConfig, sdkLaunchPlan))
+                .fixedInputs(sdkLaunchPlan.getFixedInputs())
+                .build();
+        LaunchPlan previous = launchPlans.put(launchPlanId, launchPlan);
+
+        if (previous != null) {
+          throw new IllegalArgumentException(
+              String.format("Discovered a duplicate launch plan [%s]", name));
+        }
+      }
     }
 
     return launchPlans;
-  }
-
-  private void load(
-      Map<LaunchPlanIdentifier, LaunchPlan> currentPlans,
-      Map<String, String> env,
-      SdkLaunchPlanRegistry sdkLaunchPlanRegistry) {
-    SdkConfig sdkConfig = SdkConfig.load(env);
-
-    for (SdkLaunchPlan sdkLaunchPlan : sdkLaunchPlanRegistry.getLaunchPlans()) {
-      String name = sdkLaunchPlan.getName();
-      LaunchPlanIdentifier launchPlanId =
-          LaunchPlanIdentifier.builder()
-              .domain(sdkConfig.domain())
-              .project(sdkConfig.project())
-              .name(name)
-              .version(sdkConfig.version())
-              .build();
-      LOG.fine(String.format("Discovered [%s]", name));
-
-      LaunchPlan launchPlan =
-          LaunchPlan.builder()
-              .name(sdkLaunchPlan.getName())
-              .workflowId(getWorkflowIdentifier(sdkConfig, sdkLaunchPlan))
-              .fixedInputs(sdkLaunchPlan.getFixedInputs())
-              .build();
-      LaunchPlan previous = currentPlans.put(launchPlanId, launchPlan);
-
-      if (previous != null) {
-        throw new IllegalArgumentException(
-            String.format("Discovered a duplicate launch plan [%s]", name));
-      }
-    }
   }
 
   private PartialWorkflowIdentifier getWorkflowIdentifier(

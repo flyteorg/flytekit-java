@@ -52,17 +52,17 @@ class IdentifierRewriteTest {
   }
 
   @Test
-  void shouldRewriteWorkflowIdentifierWithLatestId() {
+  void shouldRewriteWorkflowIdentifierWithLatestIdAndDomainForRewriter() {
     when(client.fetchLatestWorkflowId(
             NamedEntityIdentifier.builder()
                 .project("external-project")
-                .domain("external-domain")
+                .domain("rewritten-domain")
                 .name("external-workflow")
                 .build()))
         .thenReturn(
             WorkflowIdentifier.builder()
                 .project("external-project")
-                .domain("external-domain")
+                .domain("rewritten-domain")
                 .name("external-workflow")
                 .version("latest-version")
                 .build());
@@ -72,7 +72,6 @@ class IdentifierRewriteTest {
             launchPlan(
                 PartialWorkflowIdentifier.builder()
                     .project("external-project")
-                    .domain("external-domain")
                     .name("external-workflow")
                     .build()));
 
@@ -82,7 +81,7 @@ class IdentifierRewriteTest {
             launchPlan(
                 PartialWorkflowIdentifier.builder()
                     .project("external-project")
-                    .domain("external-domain")
+                    .domain("rewritten-domain")
                     .name("external-workflow")
                     .version("latest-version")
                     .build())));
@@ -127,6 +126,29 @@ class IdentifierRewriteTest {
                     .domain("external-domain")
                     .name("external-workflow")
                     .version("external-version")
+                    .build())));
+    verifyNoInteractions(client);
+  }
+
+  @Test
+  void shouldRewriteWorkflowsAllowingPingingVersionForWorkflowsSameProject() {
+    LaunchPlan rewrittenLaunchPlan =
+        rewriter.apply(
+            launchPlan(
+                PartialWorkflowIdentifier.builder()
+                    .name("internal-workflow")
+                    .version("pinned-version")
+                    .build()));
+
+    assertThat(
+        rewrittenLaunchPlan,
+        equalTo(
+            launchPlan(
+                PartialWorkflowIdentifier.builder()
+                    .project("rewritten-project")
+                    .domain("rewritten-domain")
+                    .name("internal-workflow")
+                    .version("pinned-version")
                     .build())));
     verifyNoInteractions(client);
   }

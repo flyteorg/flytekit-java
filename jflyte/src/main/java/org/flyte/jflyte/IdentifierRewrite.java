@@ -20,7 +20,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Verify;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.NamedEntityIdentifier;
@@ -62,8 +62,8 @@ abstract class IdentifierRewrite {
     String name = Preconditions.checkNotNull(taskId.name(), "name is null");
 
     // inherit domain and project if not set
-    String domain = taskId.domain() == null ? domain() : taskId.domain();
-    String project = taskId.project() == null ? project() : taskId.project();
+    String domain = coalesce(taskId.domain(), domain());
+    String project = coalesce(taskId.project(), project());
 
     if (taskId.version() == null) {
       // workflows referencing tasks from the same project
@@ -123,48 +123,47 @@ abstract class IdentifierRewrite {
   private PartialWorkflowIdentifier apply(PartialWorkflowIdentifier workflowId) {
     String name = Preconditions.checkNotNull(workflowId.name(), "name is null");
 
-    if (workflowId.project() != null) {
-      // External workflow reference
-      String project = workflowId.project();
-      String domain =
-          Objects.requireNonNull(workflowId.domain(), "domain is null, but project is not");
+    String project = coalesce(workflowId.project(), project());
+    String domain = coalesce(workflowId.domain(), domain());
+    String version =
+        coalesce(
+            workflowId.version(),
+            () ->
+                workflowId.project() == null
+                    ? version()
+                    : getLatestWorkflowVersion(
+                        /* project= */ project, /* domain= */ domain, /* name= */ name));
 
-      if (workflowId.version() != null) {
-        return workflowId;
-      }
-
-      // we need to reference to latest version of workflow
-      WorkflowIdentifier latestWorkflowId =
-          adminClient()
-              .fetchLatestWorkflowId(
-                  NamedEntityIdentifier.builder()
-                      .project(workflowId.project())
-                      .domain(workflowId.domain())
-                      .name(name)
-                      .build());
-
-      Verify.verifyNotNull(
-          latestWorkflowId,
-          "workflow not found domain=[%s], project=[%s], name=[%s]",
-          domain,
-          project,
-          name);
-
-      return PartialWorkflowIdentifier.builder()
-          .project(workflowId.project())
-          .domain(workflowId.domain())
-          .name(name)
-          .version(latestWorkflowId.version())
-          .build();
-    }
-
-    // no project set, launch plan referencing workflow from the same project
     return PartialWorkflowIdentifier.builder()
-        .project(project())
-        .domain(domain())
+        .project(project)
+        .domain(domain)
         .name(name)
-        .version(version())
+        .version(version)
         .build();
+  }
+
+  private String getLatestWorkflowVersion(String project, String domain, String name) {
+    WorkflowIdentifier latestWorkflowId =
+        adminClient()
+            .fetchLatestWorkflowId(
+                NamedEntityIdentifier.builder().project(project).domain(domain).name(name).build());
+
+    Verify.verifyNotNull(
+        latestWorkflowId,
+        "workflow not found domain=[%s], project=[%s], name=[%s]",
+        domain,
+        project,
+        name);
+
+    return latestWorkflowId.version();
+  }
+
+  private static <T> T coalesce(T value1, T value2) {
+    return value1 != null ? value1 : value2;
+  }
+
+  private static <T> T coalesce(T value1, Supplier<T> value2) {
+    return value1 != null ? value1 : value2.get();
   }
 
   static Builder builder() {

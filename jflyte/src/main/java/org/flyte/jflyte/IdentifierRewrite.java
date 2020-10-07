@@ -58,58 +58,39 @@ abstract class IdentifierRewrite {
     return TaskNode.builder().referenceId(apply(taskNode.referenceId())).build();
   }
 
-  private PartialTaskIdentifier apply(PartialTaskIdentifier taskId) {
+  // Visible for testing
+  PartialTaskIdentifier apply(PartialTaskIdentifier taskId) {
     String name = Preconditions.checkNotNull(taskId.name(), "name is null");
 
-    // inherit domain and project if not set
-    String domain = coalesce(taskId.domain(), domain());
     String project = coalesce(taskId.project(), project());
-
-    if (taskId.version() == null) {
-      // workflows referencing tasks from the same project
-      if (taskId.project() == null) {
-        return PartialTaskIdentifier.builder()
-            .name(name)
-            .domain(domain)
-            .project(project)
-            .version(version())
-            .build();
-      }
-
-      // otherwise we reference the latest task
-
-      TaskIdentifier latestTaskId =
-          adminClient()
-              .fetchLatestTaskId(
-                  NamedEntityIdentifier.builder()
-                      .domain(domain)
-                      .project(project)
-                      .name(taskId.name())
-                      .build());
-
-      Verify.verifyNotNull(
-          latestTaskId,
-          "task not found domain=[%s], project=[%s], name=[%s]",
-          domain,
-          project,
-          taskId.name());
-
-      return PartialTaskIdentifier.builder()
-          .name(latestTaskId.name())
-          .domain(latestTaskId.domain())
-          .project(latestTaskId.project())
-          .version(latestTaskId.version())
-          .build();
-    }
-
-    // nothing else is null if we got to this point
+    String domain = coalesce(taskId.domain(), domain());
+    String version =
+        coalesce(
+            taskId.version(),
+            () ->
+                taskId.project() == null
+                    ? version()
+                    : getLatestTaskVersion(
+                        /* project= */ project, /* domain= */ domain, /* name= */ name));
 
     return PartialTaskIdentifier.builder()
-        .name(taskId.name())
+        .name(name)
         .domain(domain)
         .project(project)
-        .version(version())
+        .version(version)
         .build();
+  }
+
+  private String getLatestTaskVersion(String project, String domain, String name) {
+    TaskIdentifier latestTaskId =
+        adminClient()
+            .fetchLatestTaskId(
+                NamedEntityIdentifier.builder().domain(domain).project(project).name(name).build());
+
+    Verify.verifyNotNull(
+        latestTaskId, "task not found domain=[%s], project=[%s], name=[%s]", domain, project, name);
+
+    return latestTaskId.version();
   }
 
   LaunchPlan apply(LaunchPlan launchPlan) {

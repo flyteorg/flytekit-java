@@ -25,9 +25,11 @@ import java.util.Collections;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.NamedEntityIdentifier;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,100 @@ class IdentifierRewriteTest {
             .domain("rewritten-domain")
             .version("rewritten-version")
             .build();
+  }
+
+  @Test
+  void shouldRewriteTaskIdentifierWithLatestIdAndDomainForRewriter() {
+    when(client.fetchLatestTaskId(
+            NamedEntityIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-task")
+                .build()))
+        .thenReturn(
+            TaskIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-task")
+                .version("latest-version")
+                .build());
+
+    PartialTaskIdentifier rewrittenTaskId =
+        rewriter.apply(
+            PartialTaskIdentifier.builder()
+                .project("external-project")
+                .name("external-task")
+                .build());
+
+    assertThat(
+        rewrittenTaskId,
+        equalTo(
+            PartialTaskIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-task")
+                .version("latest-version")
+                .build()));
+  }
+
+  @Test
+  void shouldRewriteTaskIdentifierWithValuesFromRewriterWhenOnlyNameIsSet() {
+    PartialTaskIdentifier rewrittenTaskId =
+        rewriter.apply(PartialTaskIdentifier.builder().name("internal-task").build());
+
+    assertThat(
+        rewrittenTaskId,
+        equalTo(
+            PartialTaskIdentifier.builder()
+                .project("rewritten-project")
+                .domain("rewritten-domain")
+                .name("internal-task")
+                .version("rewritten-version")
+                .build()));
+  }
+
+  @Test
+  void shouldNotRewriteTaskIdentifierWhenVersionIsSet() {
+    PartialTaskIdentifier rewrittenTaskId =
+        rewriter.apply(
+            PartialTaskIdentifier.builder()
+                .project("external-project")
+                .domain("external-domain")
+                .name("external-task")
+                .version("external-version")
+                .build());
+
+    assertThat(
+        rewrittenTaskId,
+        equalTo(
+            PartialTaskIdentifier.builder()
+                .project("external-project")
+                .domain("external-domain")
+                .name("external-task")
+                .version("external-version")
+                .build()));
+    verifyNoInteractions(client);
+  }
+
+  @Test
+  void shouldRewriteTaskAllowingPingingVersionForTasksSameProject() {
+    PartialTaskIdentifier rewrittenTaskId =
+        rewriter.apply(
+            PartialTaskIdentifier.builder()
+                .name("internal-task")
+                .version("pinned-version")
+                .build());
+
+    assertThat(
+        rewrittenTaskId,
+        equalTo(
+            PartialTaskIdentifier.builder()
+                .project("rewritten-project")
+                .domain("rewritten-domain")
+                .name("internal-task")
+                .version("pinned-version")
+                .build()));
+    verifyNoInteractions(client);
   }
 
   @Test

@@ -17,8 +17,8 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.singletonMap;
-import static java.util.Objects.requireNonNull;
 
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -28,62 +28,42 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 
 @SuppressWarnings("PreferJavaTimeOverload")
-public class SdkLaunchPlan {
+@AutoValue
+public abstract class SdkLaunchPlan {
 
-  private final String name;
-  private final String workflowProject;
-  private final String workflowDomain;
-  private final String workflowName;
-  private final String workflowVersion;
-  private final Map<String, Literal> fixedInputs;
-  private final SdkCronSchedule cronSchedule;
+  public abstract String name();
 
-  private SdkLaunchPlan(
-      String name,
-      String workflowProject,
-      String workflowDomain,
-      String workflowName,
-      String workflowVersion,
-      Map<String, Literal> fixedInputs,
-      SdkCronSchedule cronSchedule) {
-    this.name = requireNonNull(name, "name");
-    this.workflowProject = workflowProject;
-    this.workflowDomain = workflowDomain;
-    this.workflowName = requireNonNull(workflowName, "workflowName");
-    this.workflowVersion = workflowVersion;
-    this.fixedInputs = requireNonNull(fixedInputs, "fixedInputs");
-    this.cronSchedule = cronSchedule;
-  }
+  @Nullable
+  public abstract String workflowProject();
+
+  @Nullable
+  public abstract String workflowDomain();
+
+  public abstract String workflowName();
+
+  @Nullable
+  public abstract String workflowVersion();
+
+  abstract Map<String, Literal> fixedInputs();
+
+  @Nullable
+  public abstract SdkCronSchedule cronSchedule();
 
   /**
-   * Creates a launch plan for specified {@link SdkLaunchPlan} with default naming and no inputs.
-   * The default launch plan name is {@link SdkWorkflow#getName()}. New name and inputs could be
-   * added by calling {@link #withName(String)} and {@link #withFixedInput(String, long)} and
-   * friends respectively.
+   * Creates a launch plan for specified {@link SdkLaunchPlan} with default naming, no inputs and no
+   * schedule. The default launch plan name is {@link SdkWorkflow#getName()}. New name, inputs and
+   * schedule could be added by calling {@link #withName(String)}, {@link #withFixedInput(String,
+   * long)} (and friends respectively) and {@link #withCronSchedule(SdkCronSchedule)}.
    *
    * @param workflow Workflow to be reference by new {@link SdkLaunchPlan}.
    * @return the created {@link SdkLaunchPlan}.
    */
   public static SdkLaunchPlan of(SdkWorkflow workflow) {
-    return new SdkLaunchPlan(
-        /* name= */ workflow.getName(),
-        /* workflowProject= */ null,
-        /* workflowDomain= */ null,
-        /* workflowName= */ workflow.getName(),
-        /* workflowVersion= */ null,
-        Collections.emptyMap(),
-        null);
+    return builder().name(workflow.getName()).workflowName(workflow.getName()).build();
   }
 
   public SdkLaunchPlan withName(String newName) {
-    return new SdkLaunchPlan(
-        /* name= */ requireNonNull(newName, "Launch plan name should not be null"),
-        /* workflowProject= */ workflowProject,
-        /* workflowDomain= */ workflowDomain,
-        /* workflowName= */ workflowName,
-        /* workflowVersion= */ workflowVersion,
-        fixedInputs,
-        cronSchedule);
+    return toBuilder().name(newName).build();
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, long value) {
@@ -115,20 +95,13 @@ public class SdkLaunchPlan {
   }
 
   public SdkLaunchPlan withCronSchedule(SdkCronSchedule cronSchedule) {
-    return new SdkLaunchPlan(
-        /* name= */ name,
-        /* workflowProject= */ workflowProject,
-        /* workflowDomain= */ workflowDomain,
-        /* workflowName= */ workflowName,
-        /* workflowVersion= */ workflowVersion,
-        fixedInputs,
-        cronSchedule);
+    return toBuilder().cronSchedule(cronSchedule).build();
   }
 
   private SdkLaunchPlan withFixedInputs0(Map<String, Literal> newInputs) {
     // TODO: validate that the workflow's interface contains an input with the given name and that
     // the types matches
-    Map<String, Literal> newCompleteInputs = new LinkedHashMap<>(this.fixedInputs);
+    Map<String, Literal> newCompleteInputs = new LinkedHashMap<>(fixedInputs());
     newInputs.forEach(
         (inputName, value) -> {
           Literal previous = newCompleteInputs.put(inputName, value);
@@ -136,50 +109,36 @@ public class SdkLaunchPlan {
             throw new IllegalArgumentException(
                 String.format(
                     "Duplicate input [%s] on launch plan [%s], values: [%s] [%s]",
-                    inputName, name, value, previous));
+                    inputName, name(), value, previous));
           }
         });
 
-    return new SdkLaunchPlan(
-        /* name= */ name,
-        /* workflowProject= */ workflowProject,
-        /* workflowDomain= */ workflowDomain,
-        /* workflowName= */ workflowName,
-        /* workflowVersion= */ workflowVersion,
-        newCompleteInputs,
-        cronSchedule);
+    return toBuilder().fixedInputs(newCompleteInputs).build();
   }
 
-  public String getName() {
-    return this.name;
+  static Builder builder() {
+    return new AutoValue_SdkLaunchPlan.Builder().fixedInputs(Collections.emptyMap());
   }
 
-  @Nullable
-  public String getWorkflowProject() {
-    return this.workflowProject;
-  }
+  abstract Builder toBuilder();
 
-  @Nullable
-  public String getWorkflowDomain() {
-    return this.workflowDomain;
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
 
-  public String getWorkflowName() {
-    return this.workflowName;
-  }
+    public abstract Builder name(String name);
 
-  @Nullable
-  public String getWorkflowVersion() {
-    return this.workflowVersion;
-  }
+    public abstract Builder workflowProject(String workflowProject);
 
-  Map<String, Literal> getFixedInputs() {
-    Map<String, Literal> copy = new LinkedHashMap<>(fixedInputs);
-    return Collections.unmodifiableMap(copy);
-  }
+    public abstract Builder workflowDomain(String workflowDomain);
 
-  @Nullable
-  public SdkCronSchedule getCronSchedule() {
-    return this.cronSchedule;
+    public abstract Builder workflowName(String workflowName);
+
+    public abstract Builder workflowVersion(String workflowVersion);
+
+    abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
+
+    abstract Builder cronSchedule(SdkCronSchedule cronSchedule);
+
+    public abstract SdkLaunchPlan build();
   }
 }

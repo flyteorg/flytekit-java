@@ -72,10 +72,7 @@ class SdkLaunchPlanRegistrarTest {
             .name("TestPlan")
             .workflowId(
                 PartialWorkflowIdentifier.builder()
-                    .project("project")
-                    .domain("domain")
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
-                    .version("version")
                     .build())
             .fixedInputs(
                 singletonMap(
@@ -93,10 +90,7 @@ class SdkLaunchPlanRegistrarTest {
             .name("OtherTestPlan")
             .workflowId(
                 PartialWorkflowIdentifier.builder()
-                    .project("project")
-                    .domain("domain")
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
-                    .version("version")
                     .build())
             .fixedInputs(
                 singletonMap(

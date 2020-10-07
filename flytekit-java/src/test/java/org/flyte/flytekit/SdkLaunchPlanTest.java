@@ -42,7 +42,7 @@ class SdkLaunchPlanTest {
   void shouldCreateLaunchPlansWithDefaultName() {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
-    assertThat(plan.getName(), equalTo("org.flyte.flytekit.SdkLaunchPlanTest$TestWorkflow"));
+    assertThat(plan.name(), equalTo("org.flyte.flytekit.SdkLaunchPlanTest$TestWorkflow"));
   }
 
   @Test
@@ -50,27 +50,26 @@ class SdkLaunchPlanTest {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
     assertAll(
-        () -> assertThat(plan.getWorkflowProject(), nullValue()),
-        () -> assertThat(plan.getWorkflowDomain(), nullValue()),
+        () -> assertThat(plan.workflowProject(), nullValue()),
+        () -> assertThat(plan.workflowDomain(), nullValue()),
         () ->
             assertThat(
-                plan.getWorkflowName(),
-                equalTo("org.flyte.flytekit.SdkLaunchPlanTest$TestWorkflow")),
-        () -> assertThat(plan.getWorkflowVersion(), nullValue()));
+                plan.workflowName(), equalTo("org.flyte.flytekit.SdkLaunchPlanTest$TestWorkflow")),
+        () -> assertThat(plan.workflowVersion(), nullValue()));
   }
 
   @Test
   void shouldCreateLaunchPlansWithNoInputsByDefault() {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
-    assertThat(plan.getFixedInputs(), anEmptyMap());
+    assertThat(plan.fixedInputs(), anEmptyMap());
   }
 
   @Test
   void shouldOverrideLaunchPlanName() {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow()).withName("new-workflow-name");
 
-    assertThat(plan.getName(), equalTo("new-workflow-name"));
+    assertThat(plan.name(), equalTo("new-workflow-name"));
   }
 
   @Test
@@ -79,9 +78,9 @@ class SdkLaunchPlanTest {
         SdkLaunchPlan.of(new TestWorkflow())
             .withCronSchedule(SdkCronSchedule.of("*/5 * * * *", Duration.ofHours(1)));
 
-    assertThat(plan.getCronSchedule(), notNullValue());
-    assertThat(plan.getCronSchedule().schedule(), equalTo("*/5 * * * *"));
-    assertThat(plan.getCronSchedule().offset(), equalTo(Duration.ofHours(1)));
+    assertThat(plan.cronSchedule(), notNullValue());
+    assertThat(plan.cronSchedule().schedule(), equalTo("*/5 * * * *"));
+    assertThat(plan.cronSchedule().offset(), equalTo(Duration.ofHours(1)));
   }
 
   @Test
@@ -100,7 +99,7 @@ class SdkLaunchPlanTest {
             .withFixedInputs(SdkTypes.autoValue(Inputs.class), Inputs.create(456, 4.56));
 
     assertThat(
-        plan.getFixedInputs(),
+        plan.fixedInputs(),
         allOf(
             hasEntry("long", asLiteral(Primitive.ofInteger(123))),
             hasEntry("float", asLiteral(Primitive.ofFloat(1.23))),

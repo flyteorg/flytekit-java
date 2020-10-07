@@ -63,7 +63,7 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
       SdkConfig sdkConfig = SdkConfig.load(env);
 
       for (SdkLaunchPlan sdkLaunchPlan : sdkLaunchPlanRegistry.getLaunchPlans()) {
-        String name = sdkLaunchPlan.getName();
+        String name = sdkLaunchPlan.name();
         LaunchPlanIdentifier launchPlanId =
             LaunchPlanIdentifier.builder()
                 .domain(sdkConfig.domain())
@@ -75,12 +75,12 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
 
         LaunchPlan.Builder builder =
             LaunchPlan.builder()
-                .name(sdkLaunchPlan.getName())
+                .name(sdkLaunchPlan.name())
                 .workflowId(getWorkflowIdentifier(sdkLaunchPlan))
-                .fixedInputs(sdkLaunchPlan.getFixedInputs());
+                .fixedInputs(sdkLaunchPlan.fixedInputs());
 
-        if (sdkLaunchPlan.getCronSchedule() != null) {
-          builder.cronSchedule(getCronSchedule(sdkLaunchPlan.getCronSchedule()));
+        if (sdkLaunchPlan.cronSchedule() != null) {
+          builder.cronSchedule(getCronSchedule(sdkLaunchPlan.cronSchedule()));
         }
 
         LaunchPlan launchPlan = builder.build();
@@ -109,10 +109,10 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
 
   private PartialWorkflowIdentifier getWorkflowIdentifier(SdkLaunchPlan sdkLaunchPlan) {
     return PartialWorkflowIdentifier.builder()
-        .project(sdkLaunchPlan.getWorkflowProject())
-        .domain(sdkLaunchPlan.getWorkflowDomain())
-        .name(sdkLaunchPlan.getWorkflowName())
-        .version(sdkLaunchPlan.getWorkflowVersion())
+        .project(sdkLaunchPlan.workflowProject())
+        .domain(sdkLaunchPlan.workflowDomain())
+        .name(sdkLaunchPlan.workflowName())
+        .version(sdkLaunchPlan.workflowVersion())
         .build();
   }
 }

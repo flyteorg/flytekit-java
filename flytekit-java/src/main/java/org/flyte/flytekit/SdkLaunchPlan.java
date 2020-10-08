@@ -17,6 +17,9 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.singletonMap;
+import static java.util.function.UnaryOperator.identity;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
@@ -24,8 +27,10 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 @AutoValue
@@ -44,6 +49,8 @@ public abstract class SdkLaunchPlan {
   @Nullable
   public abstract String workflowVersion();
 
+  abstract Map<String, LiteralType> workflowInputTypeMap();
+
   abstract Map<String, Literal> fixedInputs();
 
   @Nullable
@@ -59,7 +66,22 @@ public abstract class SdkLaunchPlan {
    * @return the created {@link SdkLaunchPlan}.
    */
   public static SdkLaunchPlan of(SdkWorkflow workflow) {
-    return builder().name(workflow.getName()).workflowName(workflow.getName()).build();
+    SdkWorkflowBuilder wfBuilder = new SdkWorkflowBuilder();
+    workflow.expand(wfBuilder);
+    return builder()
+        .name(workflow.getName())
+        .workflowName(workflow.getName())
+        .workflowInputTypeMap(toWorkflowInputTypeMap(wfBuilder.getInputs(), SdkBindingData::type))
+        .build();
+  }
+
+  private static <T> Map<String, LiteralType> toWorkflowInputTypeMap(
+      Map<String, T> inputMap, Function<T, LiteralType> toLiteralTypeFn) {
+    return inputMap.keySet().stream()
+        .collect(
+            collectingAndThen(
+                toMap(identity(), name -> toLiteralTypeFn.apply(inputMap.get(name))),
+                Collections::unmodifiableMap));
   }
 
   public SdkLaunchPlan withName(String newName) {
@@ -117,28 +139,32 @@ public abstract class SdkLaunchPlan {
   }
 
   static Builder builder() {
-    return new AutoValue_SdkLaunchPlan.Builder().fixedInputs(Collections.emptyMap());
+    return new AutoValue_SdkLaunchPlan.Builder()
+        .fixedInputs(Collections.emptyMap())
+        .workflowInputTypeMap(Collections.emptyMap());
   }
 
   abstract Builder toBuilder();
 
   @AutoValue.Builder
-  public abstract static class Builder {
+  abstract static class Builder {
 
-    public abstract Builder name(String name);
+    abstract Builder name(String name);
 
-    public abstract Builder workflowProject(String workflowProject);
+    abstract Builder workflowProject(String workflowProject);
 
-    public abstract Builder workflowDomain(String workflowDomain);
+    abstract Builder workflowDomain(String workflowDomain);
 
-    public abstract Builder workflowName(String workflowName);
+    abstract Builder workflowName(String workflowName);
 
-    public abstract Builder workflowVersion(String workflowVersion);
+    abstract Builder workflowVersion(String workflowVersion);
 
     abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
 
     abstract Builder cronSchedule(SdkCronSchedule cronSchedule);
 
-    public abstract SdkLaunchPlan build();
+    abstract Builder workflowInputTypeMap(Map<String, LiteralType> workflowInputTypeMap);
+
+    abstract SdkLaunchPlan build();
   }
 }

@@ -232,6 +232,7 @@ public class RegisterWorkflows implements Callable<Integer> {
 
   private LaunchPlan createDefaultLaunchPlan(WorkflowIdentifier workflowId) {
     return LaunchPlan.builder()
+        .name(workflowId.name())
         .workflowId(
             PartialWorkflowIdentifier.builder()
                 .project(workflowId.project())

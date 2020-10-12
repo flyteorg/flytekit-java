@@ -32,17 +32,14 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
-import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
-import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
@@ -177,8 +174,6 @@ public class RegisterWorkflows implements Callable<Integer> {
     Map<LaunchPlanIdentifier, LaunchPlan> launchPlans =
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(LaunchPlanRegistrar.class, env));
-    Set<String> launchPlanNames =
-        launchPlans.keySet().stream().map(Identifier::name).collect(Collectors.toSet());
 
     IdentifierRewrite identifierRewrite =
         IdentifierRewrite.builder()
@@ -207,19 +202,6 @@ public class RegisterWorkflows implements Callable<Integer> {
       WorkflowTemplate workflowTemplate = identifierRewrite.apply(entry.getValue());
 
       adminClient.createWorkflow(workflowId, workflowTemplate);
-
-      // Create default launch plan for those workflows without one
-      if (!launchPlanNames.contains(workflowId.name())) {
-        LaunchPlanIdentifier launchPlanId =
-            LaunchPlanIdentifier.builder()
-                .domain(workflowId.domain())
-                .project(workflowId.project())
-                .name(workflowId.name())
-                .version(workflowId.version())
-                .build();
-
-        adminClient.createLaunchPlan(launchPlanId, createDefaultLaunchPlan(workflowId));
-      }
     }
 
     for (Map.Entry<LaunchPlanIdentifier, LaunchPlan> entry : launchPlans.entrySet()) {
@@ -228,19 +210,6 @@ public class RegisterWorkflows implements Callable<Integer> {
 
       adminClient.createLaunchPlan(launchPlanId, launchPlan);
     }
-  }
-
-  private LaunchPlan createDefaultLaunchPlan(WorkflowIdentifier workflowId) {
-    return LaunchPlan.builder()
-        .name(workflowId.name())
-        .workflowId(
-            PartialWorkflowIdentifier.builder()
-                .project(workflowId.project())
-                .domain(workflowId.domain())
-                .name(workflowId.name())
-                .version(workflowId.version())
-                .build())
-        .build();
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {

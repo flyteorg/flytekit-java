@@ -33,7 +33,7 @@
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.11</scala.version>
 
-    <magnolia.version>0.16.0</magnolia.version>
+    <magnolia.version>0.17.0</magnolia.version>
 
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>

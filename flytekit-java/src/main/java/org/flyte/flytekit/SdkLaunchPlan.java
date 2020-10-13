@@ -31,6 +31,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Variable;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 @AutoValue
@@ -89,40 +90,57 @@ public abstract class SdkLaunchPlan {
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, long value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofInteger(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofInteger(value)),
+        singletonMap(inputName, LiteralTypes.INTEGER));
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, double value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofFloat(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofFloat(value)),
+        singletonMap(inputName, LiteralTypes.FLOAT));
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, String value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofString(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofString(value)),
+        singletonMap(inputName, LiteralTypes.STRING));
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, boolean value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofBoolean(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofBoolean(value)),
+        singletonMap(inputName, LiteralTypes.BOOLEAN));
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, Instant value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofDatetime(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofDatetime(value)),
+        singletonMap(inputName, LiteralTypes.DATETIME));
   }
 
   public SdkLaunchPlan withFixedInput(String inputName, Duration value) {
-    return withFixedInputs0(singletonMap(inputName, Literals.ofDuration(value)));
+    return withFixedInputs0(
+        singletonMap(inputName, Literals.ofDuration(value)),
+        singletonMap(inputName, LiteralTypes.DURATION));
   }
 
   public <T> SdkLaunchPlan withFixedInputs(SdkType<T> type, T value) {
-    return withFixedInputs0(type.toLiteralMap(value));
+    return withFixedInputs0(
+        type.toLiteralMap(value),
+        toWorkflowInputTypeMap(type.getVariableMap(), Variable::literalType));
   }
 
   public SdkLaunchPlan withCronSchedule(SdkCronSchedule cronSchedule) {
     return toBuilder().cronSchedule(cronSchedule).build();
   }
 
-  private SdkLaunchPlan withFixedInputs0(Map<String, Literal> newInputs) {
-    // TODO: validate that the workflow's interface contains an input with the given name and that
-    // the types matches
+  private SdkLaunchPlan withFixedInputs0(
+      Map<String, Literal> newInputs, Map<String, LiteralType> newInputTypes) {
+
+    verifyNonEmptyWorkflowInput(newInputTypes);
+    verifyMatchedInput(newInputTypes);
+
     Map<String, Literal> newCompleteInputs = new LinkedHashMap<>(fixedInputs());
     newInputs.forEach(
         (inputName, value) -> {
@@ -136,6 +154,36 @@ public abstract class SdkLaunchPlan {
         });
 
     return toBuilder().fixedInputs(newCompleteInputs).build();
+  }
+
+  private void verifyNonEmptyWorkflowInput(Map<String, LiteralType> newInputTypes) {
+    if (workflowInputTypeMap().isEmpty() && !newInputTypes.isEmpty()) {
+      String message =
+          String.format(
+              "invalid launch plan fixed inputs, expected none but found %s", newInputTypes.size());
+      throw new IllegalArgumentException(message);
+    }
+  }
+
+  private void verifyMatchedInput(Map<String, LiteralType> newInputTypes) {
+    for (Map.Entry<String, LiteralType> lpInputType : newInputTypes.entrySet()) {
+      String inputName = lpInputType.getKey();
+      LiteralType lpType = lpInputType.getValue();
+
+      LiteralType wfType = workflowInputTypeMap().get(inputName);
+
+      if (wfType == null) {
+        String message = String.format("unexpected fixed input %s", inputName);
+        throw new IllegalArgumentException(message);
+      }
+      if (!lpType.equals(wfType)) {
+        String message =
+            String.format(
+                "invalid fixed input wrong type %s, expected %s, got %s instead",
+                inputName, wfType, lpType);
+        throw new IllegalArgumentException(message);
+      }
+    }
   }
 
   static Builder builder() {

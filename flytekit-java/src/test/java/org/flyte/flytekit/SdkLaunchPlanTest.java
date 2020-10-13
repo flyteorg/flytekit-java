@@ -28,13 +28,16 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
-import com.google.errorprone.annotations.Var;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class SdkLaunchPlanTest {
 
@@ -85,12 +88,12 @@ class SdkLaunchPlanTest {
 
   @Test
   void shouldAddFixedInputs() {
-    @Var SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
     Instant now = Instant.now();
     Duration duration = Duration.ofSeconds(123);
 
-    plan =
-        plan.withFixedInput("long", 123L)
+    SdkLaunchPlan plan =
+        SdkLaunchPlan.of(new TestWorkflow())
+            .withFixedInput("integer", 123L)
             .withFixedInput("float", 1.23)
             .withFixedInput("string", "123")
             .withFixedInput("boolean", true)
@@ -101,14 +104,14 @@ class SdkLaunchPlanTest {
     assertThat(
         plan.fixedInputs(),
         allOf(
-            hasEntry("long", asLiteral(Primitive.ofInteger(123))),
+            hasEntry("integer", asLiteral(Primitive.ofInteger(123))),
             hasEntry("float", asLiteral(Primitive.ofFloat(1.23))),
             hasEntry("string", asLiteral(Primitive.ofString("123"))),
             hasEntry("boolean", asLiteral(Primitive.ofBoolean(true))),
             hasEntry("datetime", asLiteral(Primitive.ofDatetime(now))),
             hasEntry("duration", asLiteral(Primitive.ofDuration(duration))),
-            hasEntry("foo", asLiteral(Primitive.ofInteger(456))),
-            hasEntry("bar", asLiteral(Primitive.ofFloat(4.56)))));
+            hasEntry("inputsFoo", asLiteral(Primitive.ofInteger(456))),
+            hasEntry("inputsBar", asLiteral(Primitive.ofFloat(4.56)))));
   }
 
   @Test
@@ -118,9 +121,57 @@ class SdkLaunchPlanTest {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> plan.withFixedInput("input", "foo").withFixedInput("input", "bar"));
+            () -> plan.withFixedInput("string", "foo").withFixedInput("string", "bar"));
 
-    assertThat(exception.getMessage(), containsString("Duplicate input [input]"));
+    assertThat(exception.getMessage(), containsString("Duplicate input [string]"));
+  }
+
+  @Test
+  void shouldTypeCheckFixedInputNamesAgainstWorkflowInterfaceNames() {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> plan.withFixedInput("notWorkflowInput", 0L));
+
+    assertThat(exception.getMessage(), equalTo("unexpected fixed input notWorkflowInput"));
+  }
+
+  @Test
+  void shouldTypeCheckFixedInputNamesAgainstEmptyWorkflowInterface() {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new NoInputsTestWorkflow());
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> plan.withFixedInput("notWorkflowInput", 0L));
+
+    assertThat(
+        exception.getMessage(),
+        equalTo("invalid launch plan fixed inputs, expected none but found 1"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("paramsForShouldTypeCheckFixedInputAgainstWorkflowInterface")
+  void shouldTypeCheckFixedInputTypesAgainstWorkflowInterfaceTypes(Consumer<SdkLaunchPlan> fn) {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> fn.accept(plan));
+
+    assertThat(exception.getMessage(), containsString("invalid fixed input wrong type"));
+  }
+
+  static Stream<Consumer<SdkLaunchPlan>>
+      paramsForShouldTypeCheckFixedInputAgainstWorkflowInterface() {
+    return Stream.of(
+        plan -> plan.withFixedInput("float", 0L),
+        plan -> plan.withFixedInput("string", 0.0),
+        plan -> plan.withFixedInput("boolean", "not a boolean"),
+        plan -> plan.withFixedInput("datetime", false),
+        plan -> plan.withFixedInput("duration", Instant.now()),
+        plan -> plan.withFixedInput("integer", Duration.ZERO),
+        plan -> plan.withFixedInput("inputsFoo", "not a integer"),
+        plan -> plan.withFixedInput("inputsBar", "not a float"));
   }
 
   private Literal asLiteral(Primitive primitive) {
@@ -131,18 +182,33 @@ class SdkLaunchPlanTest {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      // nothing
+      builder.inputOfInteger("integer");
+      builder.inputOfFloat("float");
+      builder.inputOfString("string");
+      builder.inputOfBoolean("boolean");
+      builder.inputOfDatetime("datetime");
+      builder.inputOfDuration("duration");
+      builder.inputOfInteger("inputsFoo");
+      builder.inputOfFloat("inputsBar");
     }
   }
 
   @AutoValue
   abstract static class Inputs {
-    abstract long foo();
+    abstract long inputsFoo();
 
-    abstract double bar();
+    abstract double inputsBar();
 
-    public static Inputs create(long foo, double bar) {
-      return new AutoValue_SdkLaunchPlanTest_Inputs(foo, bar);
+    public static Inputs create(long inputsFoo, double inputsBar) {
+      return new AutoValue_SdkLaunchPlanTest_Inputs(inputsFoo, inputsBar);
+    }
+  }
+
+  private static class NoInputsTestWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      // no inputs
     }
   }
 }

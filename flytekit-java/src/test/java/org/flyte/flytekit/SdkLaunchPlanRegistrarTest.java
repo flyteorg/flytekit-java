@@ -234,7 +234,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      // Do nothing
+      builder.inputOfString("foo");
     }
   }
 }

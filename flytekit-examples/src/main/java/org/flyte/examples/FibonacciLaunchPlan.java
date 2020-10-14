@@ -27,15 +27,16 @@ import org.flyte.flytekit.SimpleSdkLaunchPlanRegistry;
 public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
 
   public FibonacciLaunchPlan() {
-    // Register a default launch plan for all workflow
+    // Register default launch plans for all workflows
     registerDefaultLaunchPlans();
-    // Add a launch plan with SdkType for inputs
+
+    // Register launch plan with fixed inputs using SdkType
     registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
             .withName("FibonacciWorkflowLaunchPlan")
             .withFixedInputs(SdkTypes.autoValue(Input.class), Input.create(0, 1)));
 
-    // Launch plan specifying inputs directly
+    // Register launch plan with fixed inputs specified directly
     registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
             .withName("FibonacciWorkflowLaunchPlan2")

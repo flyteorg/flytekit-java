@@ -22,7 +22,10 @@ import org.flyte.flytekitscala.SdkScalaType
 case class FibonacciLaunchPlanInput(fib0: Long, fib1: Long)
 
 class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
+  // Register default launch plans for all workflows
   registerDefaultLaunchPlans()
+
+  // Register launch plan with fixed inputs using SdkType
   registerLaunchPlan(
     SdkLaunchPlan
       .of(new FibonacciWorkflow)
@@ -31,7 +34,9 @@ class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
         SdkScalaType[FibonacciLaunchPlanInput],
         FibonacciLaunchPlanInput(0, 1)
       )
-  );
+  )
+
+  // Register launch plan with fixed inputs specified directly
   registerLaunchPlan(
     SdkLaunchPlan
       .of(new FibonacciWorkflow)

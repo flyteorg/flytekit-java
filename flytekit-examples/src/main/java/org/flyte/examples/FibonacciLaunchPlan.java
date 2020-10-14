@@ -18,25 +18,27 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import java.util.Arrays;
-import java.util.List;
 import org.flyte.flytekit.SdkLaunchPlan;
 import org.flyte.flytekit.SdkLaunchPlanRegistry;
 import org.flyte.flytekit.SdkTypes;
+import org.flyte.flytekit.SimpleSdkLaunchPlanRegistry;
 
 @AutoService(SdkLaunchPlanRegistry.class)
-public class FibonacciLaunchPlan implements SdkLaunchPlanRegistry {
+public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
 
-  @Override
-  public List<SdkLaunchPlan> getLaunchPlans() {
-    return Arrays.asList(
-        // Using default naming and SdkType for inputs
+  public FibonacciLaunchPlan() {
+    // Register a default launch plan for all workflow
+    registerDefaultLaunchPlans();
+    // Add a launch plan with SdkType for inputs
+    registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
-            .withFixedInputs(SdkTypes.autoValue(Input.class), Input.create(0, 1)),
+            .withName("FibonacciWorkflowLaunchPlan")
+            .withFixedInputs(SdkTypes.autoValue(Input.class), Input.create(0, 1)));
 
-        // With alternative name and specifying inputs directly
+    // Launch plan specifying inputs directly
+    registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
-            .withName("FibonacciWorkflow.alternative-name")
+            .withName("FibonacciWorkflowLaunchPlan2")
             .withFixedInput("fib0", 0L)
             .withFixedInput("fib1", 1L));
   }

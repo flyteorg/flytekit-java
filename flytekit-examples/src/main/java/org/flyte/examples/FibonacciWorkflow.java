@@ -27,10 +27,9 @@ public class FibonacciWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
-    SdkBindingData fib1 = builder.inputOfString("fib1", "Value for Fib1");
+    SdkBindingData fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
 
-    SdkBindingData fib2 =
-        builder.apply("fib-2", SumTask.of(fib0, fib1).withInput("d", fib0)).getOutput("c");
+    SdkBindingData fib2 = builder.apply("fib-2", SumTask.of(fib0, fib1)).getOutput("c");
     SdkBindingData fib3 = builder.apply("fib-3", SumTask.of(fib1, fib2)).getOutput("c");
     SdkBindingData fib4 = builder.apply("fib-4", SumTask.of(fib2, fib3)).getOutput("c");
     SdkBindingData fib5 = builder.apply("fib-5", SumTask.of(fib3, fib4)).getOutput("c");

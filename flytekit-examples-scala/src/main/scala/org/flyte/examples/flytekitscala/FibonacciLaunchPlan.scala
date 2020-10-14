@@ -16,28 +16,27 @@
  */
 package org.flyte.examples.flytekitscala
 
-import java.util
-
-import org.flyte.flytekit.{SdkLaunchPlan, SdkLaunchPlanRegistry}
+import org.flyte.flytekit.{SdkLaunchPlan, SimpleSdkLaunchPlanRegistry}
 import org.flyte.flytekitscala.SdkScalaType
-
-import scala.collection.JavaConverters.seqAsJavaListConverter
 
 case class FibonacciLaunchPlanInput(fib0: Long, fib1: Long)
 
-class FibonacciLaunchPlan extends SdkLaunchPlanRegistry {
-  override def getLaunchPlans: util.List[SdkLaunchPlan] =
-    List(
-      SdkLaunchPlan
-        .of(new FibonacciWorkflow)
-        .withFixedInputs(
-          SdkScalaType[FibonacciLaunchPlanInput],
-          FibonacciLaunchPlanInput(0, 1)
-        ),
-      SdkLaunchPlan
-        .of(new FibonacciWorkflow)
-        .withName("FibonacciWorkflow.alternative-name")
-        .withFixedInput("fib0", 0L)
-        .withFixedInput("fib1", 1L)
-    ).asJava
+class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
+  registerDefaultLaunchPlans()
+  registerLaunchPlan(
+    SdkLaunchPlan
+      .of(new FibonacciWorkflow)
+      .withName("FibonacciWorkflowLaunchPlan")
+      .withFixedInputs(
+        SdkScalaType[FibonacciLaunchPlanInput],
+        FibonacciLaunchPlanInput(0, 1)
+      )
+  );
+  registerLaunchPlan(
+    SdkLaunchPlan
+      .of(new FibonacciWorkflow)
+      .withName("FibonacciWorkflowLaunchPlan2")
+      .withFixedInput("fib0", 0L)
+      .withFixedInput("fib1", 1L)
+  )
 }

@@ -35,6 +35,10 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
+      <artifactId>flytekit-local-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
       <artifactId>jflyte-api</artifactId>
     </dependency>
     <dependency>

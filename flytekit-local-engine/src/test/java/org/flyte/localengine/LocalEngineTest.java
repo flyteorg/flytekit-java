@@ -1,0 +1,255 @@
+/*
+ * Copyright 2020 Spotify AB.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.flyte.localengine;
+
+import static java.util.stream.Collectors.toMap;
+import static org.flyte.localengine.TestingListener.ofCompleted;
+import static org.flyte.localengine.TestingListener.ofError;
+import static org.flyte.localengine.TestingListener.ofPending;
+import static org.flyte.localengine.TestingListener.ofRetrying;
+import static org.flyte.localengine.TestingListener.ofStarting;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Registrar;
+import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.RunnableTaskRegistrar;
+import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.WorkflowIdentifier;
+import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.api.v1.WorkflowTemplateRegistrar;
+import org.flyte.localengine.examples.FibonacciWorkflow;
+import org.flyte.localengine.examples.ListWorkflow;
+import org.flyte.localengine.examples.MapWorkflow;
+import org.flyte.localengine.examples.RetryableTask;
+import org.flyte.localengine.examples.RetryableWorkflow;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class LocalEngineTest {
+
+  @Test
+  void testFibonacci() {
+    String workflowName = new FibonacciWorkflow().getName();
+
+    Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(0L)));
+    Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
+    Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(1L)));
+    Literal fib3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(2L)));
+    Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3L)));
+    Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(5L)));
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    Map<String, Literal> outputs =
+        LocalEngine.compileAndExecute(
+            workflows.get(workflowName),
+            tasks,
+            ImmutableMap.of("fib0", fib0, "fib1", fib1),
+            listener);
+
+    assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
+    assertEquals(
+        ImmutableList.<List<Object>>builder()
+            .add(ofPending("fib-2"))
+            .add(ofPending("fib-3"))
+            .add(ofPending("fib-4"))
+            .add(ofPending("fib-5"))
+            .add(ofStarting("fib-2", ImmutableMap.of("a", fib0, "b", fib1)))
+            .add(
+                ofCompleted(
+                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("c", fib2)))
+            .add(ofStarting("fib-3", ImmutableMap.of("a", fib1, "b", fib2)))
+            .add(
+                ofCompleted(
+                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("c", fib3)))
+            .add(ofStarting("fib-4", ImmutableMap.of("a", fib2, "b", fib3)))
+            .add(
+                ofCompleted(
+                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("c", fib4)))
+            .add(ofStarting("fib-5", ImmutableMap.of("a", fib3, "b", fib4)))
+            .add(
+                ofCompleted(
+                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
+            .build(),
+        listener.actions);
+  }
+
+  @Test
+  public void testBindingCollection() {
+    String workflowName = new ListWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    Map<String, Literal> outputs =
+        LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
+
+    // 3 = 1 + 2, 7 = 3 + 4
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+
+    assertEquals(ImmutableMap.of("list", Literal.ofCollection(ImmutableList.of(i3, i7))), outputs);
+  }
+
+  @Test
+  public void testBindingMap() {
+    String workflowName = new MapWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    Map<String, Literal> outputs =
+        LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
+
+    // 3 = 1 + 2, 7 = 3 + 4
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+
+    assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
+  }
+
+  @Test
+  public void testRetryableTask_completed() {
+    String workflowName = new RetryableWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    TestingListener listener = new TestingListener();
+
+    // make sure we don't run two tests in parallel
+    synchronized (RetryableTask.class) {
+      RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
+
+      LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener);
+
+      assertEquals(
+          ImmutableList.<List<Object>>builder()
+              .add(ofPending("node-1"))
+              .add(ofStarting("node-1", ImmutableMap.of()))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 1))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 2))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
+              .add(ofCompleted("node-1", ImmutableMap.of(), ImmutableMap.of()))
+              .build(),
+          listener.actions);
+    }
+  }
+
+  @Test
+  public void testRetryableTask_failed() {
+    String workflowName = new RetryableWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    TestingListener listener = new TestingListener();
+
+    // make sure we don't run two tests in parallel
+    synchronized (RetryableTask.class) {
+      // will never succeed within retry limit
+      RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(10);
+
+      RuntimeException e =
+          Assertions.assertThrows(
+              RuntimeException.class,
+              () -> LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener));
+
+      assertEquals("oops", e.getMessage());
+
+      assertEquals(
+          ImmutableList.<List<Object>>builder()
+              .add(ofPending("node-1"))
+              .add(ofStarting("node-1", ImmutableMap.of()))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 1))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 2))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
+              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 6))
+              .add(ofError("node-1", ImmutableMap.of(), "oops"))
+              .build(),
+          listener.actions);
+    }
+  }
+
+  private static Map<String, WorkflowTemplate> loadWorkflows() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    Map<WorkflowIdentifier, WorkflowTemplate> registrarWorkflows =
+        loadAll(WorkflowTemplateRegistrar.class, env);
+
+    return registrarWorkflows.entrySet().stream()
+        .collect(toMap(x -> x.getKey().name(), Map.Entry::getValue));
+  }
+
+  private static Map<String, RunnableTask> loadTasks() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    Map<TaskIdentifier, RunnableTask> registrarRunnableTasks =
+        loadAll(RunnableTaskRegistrar.class, env);
+
+    return registrarRunnableTasks.entrySet().stream()
+        .collect(toMap(x -> x.getKey().name(), Map.Entry::getValue));
+  }
+
+  static <K, V, T extends Registrar<K, V>> Map<K, V> loadAll(
+      Class<T> registrarClass, Map<String, String> env) {
+    ServiceLoader<T> loader = ServiceLoader.load(registrarClass);
+
+    Map<K, V> items = new HashMap<>();
+
+    for (T registrar : loader) {
+      for (Map.Entry<K, V> entry : registrar.load(env).entrySet()) {
+        V previous = items.put(entry.getKey(), entry.getValue());
+
+        if (previous != null) {
+          throw new IllegalArgumentException(
+              String.format(
+                  "Discovered a duplicate item [%s] [%s] [%s]",
+                  entry.getKey(), entry.getValue(), previous));
+        }
+      }
+    }
+
+    return items;
+  }
+}

@@ -38,7 +38,7 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
 
-  SdkWorkflowBuilder() {
+  protected SdkWorkflowBuilder() {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -49,14 +49,14 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
-    return applyInternal(nodeId, transform, emptyList(), Collections.emptyMap());
+    return apply(nodeId, transform, Collections.emptyMap());
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
-  SdkNode applyInternal(
+  protected SdkNode applyInternal(
       String nodeId,
       SdkTransform transform,
       List<String> upstreamNodeIds,

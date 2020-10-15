@@ -44,4 +44,10 @@
     <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
   </Match>
 
+  <!-- Non-static anon classes are fine in tests -->
+  <Match>
+    <Class name="~.*Test$"/>
+    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+  </Match>
+
 </FindBugsFilter>

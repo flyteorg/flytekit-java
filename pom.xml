@@ -54,8 +54,10 @@
     <module>flytekit-java</module>
     <module>flytekit-scala</module>
     <module>flytekit-scala-tests</module>
+    <module>flytekit-testing</module>
     <module>flytekit-examples</module>
     <module>flytekit-examples-scala</module>
+    <module>flytekit-local-engine</module>
     <module>jflyte</module>
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
@@ -87,6 +89,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>flytekit-java</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-local-engine</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

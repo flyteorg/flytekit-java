@@ -36,7 +36,7 @@ public abstract class BindingData {
     PROMISE,
 
     /** A map of bindings. The key is always a string. */
-    MAP;
+    MAP
   }
 
   public abstract Kind kind();

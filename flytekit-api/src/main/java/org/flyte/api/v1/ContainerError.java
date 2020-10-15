@@ -18,6 +18,8 @@ package org.flyte.api.v1;
 
 /** Exception to propagate detailed errors from container to the execution. */
 public class ContainerError extends RuntimeException {
+
+  private static final long serialVersionUID = 5162780469952221158L;
   private final String code;
   private final Kind kind;
 

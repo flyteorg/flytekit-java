@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -41,12 +42,12 @@ class SdkCronScheduleTest {
     SdkCronSchedule cronScheduleExpression = SdkCronSchedule.of("* * * * *", Duration.ofHours(1));
     assertThat(cronScheduleExpression, notNullValue());
     assertThat(cronScheduleExpression.schedule(), equalTo("* * * * *"));
-    assertThat(cronScheduleExpression.offset().toString(), equalTo("PT1H"));
+    assertThat(cronScheduleExpression.offset(), hasToString("PT1H"));
 
     SdkCronSchedule cronScheduleAlias = SdkCronSchedule.of("hourly", Duration.ofHours(6));
     assertThat(cronScheduleAlias, notNullValue());
     assertThat(cronScheduleAlias.schedule(), equalTo("hourly"));
-    assertThat(cronScheduleAlias.offset().toString(), equalTo("PT6H"));
+    assertThat(cronScheduleAlias.offset(), hasToString("PT6H"));
   }
 
   @Test

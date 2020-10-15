@@ -26,6 +26,9 @@ import java.util.concurrent.Callable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.localengine.ExecutionListener;
+import org.flyte.localengine.LocalEngine;
+import org.flyte.localengine.NoopExecutionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -76,10 +79,10 @@ public class ExecuteLocal implements Callable<Integer> {
 
     try {
       // TODO, use logging listener here
-      ExecutionListener listener = new NoopExecutionListener();
+      ExecutionListener listener = NoopExecutionListener.create();
 
       Map<String, Literal> outputs =
-          LocalRunner.compileAndExecute(workflow, tasks, inputs, listener);
+          LocalEngine.compileAndExecute(workflow, tasks, inputs, listener);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;

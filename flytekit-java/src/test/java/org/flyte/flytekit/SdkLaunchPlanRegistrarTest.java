@@ -203,7 +203,7 @@ class SdkLaunchPlanRegistrarTest {
     public List<SdkLaunchPlan> getLaunchPlans() {
       return asList(
           SdkLaunchPlan.of(new TestWorkflow()).withName("DuplicatedPlan"),
-          SdkLaunchPlan.of(new TestWorkflow()).withName("DuplicatedPlan"));
+          SdkLaunchPlan.of(new OtherTestWorkflow()).withName("DuplicatedPlan"));
     }
   }
 
@@ -211,8 +211,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
-      return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan").withFixedInput("foo", "bar"));
+      return singletonList(SdkLaunchPlan.of(new OtherTestWorkflow()).withName("TestPlan"));
     }
   }
 
@@ -235,6 +234,14 @@ class SdkLaunchPlanRegistrarTest {
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       builder.inputOfString("foo");
+    }
+  }
+
+  public static class OtherTestWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      // Do nothing
     }
   }
 }

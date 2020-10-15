@@ -45,7 +45,7 @@ class ChildFirstClassLoader extends URLClassLoader {
   @SuppressWarnings("JdkObsolete")
   private static class CustomEnumeration implements Enumeration<URL> {
 
-    private Iterator<URL> iter;
+    private final Iterator<URL> iter;
 
     CustomEnumeration(Iterator<URL> iter) {
       this.iter = iter;

@@ -40,7 +40,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class S3FileSystemIT {
 
-  @Container public LocalStackContainer localStack = new LocalStackContainer().withServices(S3);
+  @Container
+  public final LocalStackContainer localStack = new LocalStackContainer().withServices(S3);
 
   private AmazonS3 s3;
 

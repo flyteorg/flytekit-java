@@ -25,7 +25,7 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     implements Serializable {
 
-  static final long serialVersionUID = 42L;
+  private static final long serialVersionUID = 42L;
 
   private final transient SdkType<InputT> inputType;
   private final transient SdkType<OutputT> outputType;

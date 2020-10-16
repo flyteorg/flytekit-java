@@ -16,8 +16,8 @@
  */
 package org.flyte.flytekit.jackson;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -87,15 +87,18 @@ public class JacksonSdkType<T> extends SdkType<T> {
           getVariableMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
-      JavaType type =
-          OBJECT_MAPPER
-              .getTypeFactory()
-              .constructType(JacksonLiteralMap.class)
-              .withValueHandler(literalTypeMap);
+      // The previous trick with JavaType and withValueHandler did't work because
+      // Jackson caches serializers, without considering valueHandler as significant part
+      // of the caching key.
 
-      JacksonLiteralMap wrapper = OBJECT_MAPPER.readValue(OBJECT_MAPPER.treeAsTokens(tree), type);
+      JsonParser tokens = OBJECT_MAPPER.treeAsTokens(tree);
+      tokens.nextToken();
 
-      return wrapper.getLiteralMap();
+      LiteralMapDeserializer deserializer = new LiteralMapDeserializer(literalTypeMap);
+      JacksonLiteralMap jacksonLiteralMap =
+          deserializer.deserialize(tokens, OBJECT_MAPPER.getDeserializationContext());
+
+      return jacksonLiteralMap.getLiteralMap();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

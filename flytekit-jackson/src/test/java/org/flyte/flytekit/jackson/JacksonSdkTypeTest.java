@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -118,6 +119,38 @@ public class JacksonSdkTypeTest {
   }
 
   @Test
+  public void testPojoToLiteralMap() {
+    PojoInput input = new PojoInput();
+    input.a = 42;
+
+    Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
+
+    assertThat(literalMap, equalTo(singletonMap("a", literalOf(Primitive.ofInteger(42)))));
+  }
+
+  @Test
+  public void testPojoFromLiteralMap() {
+    PojoInput expected = new PojoInput();
+    expected.a = 42;
+
+    PojoInput pojoInput =
+        JacksonSdkType.of(PojoInput.class)
+            .fromLiteralMap(singletonMap("a", literalOf(Primitive.ofInteger(42))));
+
+    assertThat(pojoInput, equalTo(expected));
+  }
+
+  @Test
+  public void testPojoVariableMap() {
+    Variable expected =
+        Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
+
+    Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
+
+    assertThat(variableMap, equalTo(singletonMap("a", expected)));
+  }
+
+  @Test
   void testUnknownSerializer() {
     // Serialization doesn't work because Jackson doesn't recognize empty classes as
     // Java beans good thing that exception is thrown when constructing JacksonSdkType
@@ -172,6 +205,23 @@ public class JacksonSdkTypeTest {
         List<String> l,
         Map<String, String> m) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
+    }
+  }
+
+  public static final class PojoInput {
+    public long a;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      PojoInput pojoInput = (PojoInput) o;
+      return a == pojoInput.a;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(a);
     }
   }
 

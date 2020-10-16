@@ -16,12 +16,14 @@
  */
 package org.flyte.examples;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkLaunchPlan;
 import org.flyte.flytekit.SdkLaunchPlanRegistry;
-import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SimpleSdkLaunchPlanRegistry;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkLaunchPlanRegistry.class)
 public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
@@ -34,7 +36,7 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
     registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
             .withName("FibonacciWorkflowLaunchPlan")
-            .withFixedInputs(SdkTypes.autoValue(Input.class), Input.create(0, 1)));
+            .withFixedInputs(JacksonSdkType.of(Input.class), Input.create(0, 1)));
 
     // Register launch plan with fixed inputs specified directly
     registerLaunchPlan(
@@ -45,11 +47,13 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
   }
 
   @AutoValue
+  @JsonDeserialize(as = AutoValue_FibonacciLaunchPlan_Input.class)
   abstract static class Input {
-    abstract long fib0();
+    abstract long getFib0();
 
-    abstract long fib1();
+    abstract long getFib1();
 
+    @JsonCreator
     public static Input create(long fib0, long fib1) {
       return new AutoValue_FibonacciLaunchPlan_Input(fib0, fib1);
     }

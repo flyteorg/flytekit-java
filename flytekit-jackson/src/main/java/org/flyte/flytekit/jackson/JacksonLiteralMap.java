@@ -14,15 +14,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
+package org.flyte.flytekit.jackson;
 
-/**
- * Pretends to be the generated AutoValue class of {@link
- * AutoValueReflectionTest.ThrowsOnConstructorInput}
- */
-class AutoValue_AutoValueReflectionTest_ThrowsOnConstructorInput
-    extends AutoValueReflectionTest.ThrowsOnConstructorInput {
-  AutoValue_AutoValueReflectionTest_ThrowsOnConstructorInput() {
-    throw new RuntimeException("Throws on purpose");
+import java.util.Map;
+import org.flyte.api.v1.Literal;
+
+/** Class used to register custom serializer for maps. */
+class JacksonLiteralMap {
+  private final Map<String, Literal> value;
+
+  JacksonLiteralMap(Map<String, Literal> value) {
+    this.value = value;
+  }
+
+  public Map<String, Literal> getLiteralMap() {
+    return value;
   }
 }

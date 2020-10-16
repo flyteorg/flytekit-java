@@ -23,12 +23,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 
-import com.google.auto.value.AutoValue;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -43,13 +43,13 @@ class SdkRemoteTaskTest {
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
     inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteTask<Input, Output> remoteTask =
-        SdkRemoteTask.<Input, Output>builder()
+    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> remoteTask =
+        SdkRemoteTask.<Map<String, Literal>, Map<String, Literal>>builder()
             .domain("dev")
             .project("project-a")
             .name("LookupTask")
-            .inputs(SdkTypes.autoValue(Input.class))
-            .outputs(SdkTypes.autoValue(Output.class))
+            .inputs(TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING))
+            .outputs(TestSdkType.of("c", LiteralTypes.BOOLEAN))
             .build();
 
     SdkNode node =
@@ -97,25 +97,5 @@ class SdkRemoteTaskTest {
                         "c",
                         SdkBindingData.ofOutputReference(
                             "lookup-endsong", "c", LiteralTypes.BOOLEAN)))));
-  }
-
-  @AutoValue
-  abstract static class Input {
-    abstract long a();
-
-    abstract String b();
-
-    public static Input create(long a, String b) {
-      return new AutoValue_SdkRemoteTaskTest_Input(a, b);
-    }
-  }
-
-  @AutoValue
-  abstract static class Output {
-    abstract boolean c();
-
-    public static Output create(boolean c) {
-      return new AutoValue_SdkRemoteTaskTest_Output(c);
-    }
   }
 }

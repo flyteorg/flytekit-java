@@ -16,19 +16,22 @@
  */
 package org.flyte.examples;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkTypes;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Receives message as an input, and prints its. */
 @AutoService(SdkRunnableTask.class)
 public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Void> {
 
   public PrintMessageTask() {
-    super(SdkTypes.autoValue(Input.class), SdkTypes.nulls());
+    super(JacksonSdkType.of(Input.class), SdkTypes.nulls());
   }
 
   public static SdkTransform of(SdkBindingData message) {
@@ -37,13 +40,19 @@ public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Vo
 
   /** Input for {@link PrintMessageTask}. */
   @AutoValue
+  @JsonDeserialize(as = AutoValue_PrintMessageTask_Input.class)
   public abstract static class Input {
-    public abstract String message();
+    public abstract String getMessage();
+
+    @JsonCreator
+    public static Input create(String message) {
+      return new AutoValue_PrintMessageTask_Input(message);
+    }
   }
 
   @Override
   public Void run(Input input) {
-    System.out.println(input.message());
+    System.out.println(input.getMessage());
 
     return null;
   }

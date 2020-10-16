@@ -28,33 +28,6 @@ public class SdkTypes {
     return new VoidSdkType();
   }
 
-  public static <T> SdkType<T> autoValue(Class<T> cls) {
-    return new AutoValueSdkType<>(cls);
-  }
-
-  private static class AutoValueSdkType<T> extends SdkType<T> {
-    private final Class<T> cls;
-
-    public AutoValueSdkType(Class<T> cls) {
-      this.cls = cls;
-    }
-
-    @Override
-    public Map<String, Literal> toLiteralMap(T value) {
-      return AutoValueReflection.toLiteralMap(value, cls);
-    }
-
-    @Override
-    public T fromLiteralMap(Map<String, Literal> value) {
-      return AutoValueReflection.readValue(value, cls);
-    }
-
-    @Override
-    public Map<String, Variable> getVariableMap() {
-      return AutoValueReflection.interfaceOf(cls);
-    }
-  }
-
   private static class VoidSdkType extends SdkType<Void> {
 
     @Override

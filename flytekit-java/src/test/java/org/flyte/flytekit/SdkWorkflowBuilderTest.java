@@ -23,11 +23,12 @@ import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.auto.value.AutoValue;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -322,32 +323,18 @@ class SdkWorkflowBuilderTest {
   }
 
   static class MultiplicationTask
-      extends SdkRunnableTask<MultiplicationTask.Input, MultiplicationTask.Output> {
+      extends SdkRunnableTask<Map<String, Literal>, Map<String, Literal>> {
     private static final long serialVersionUID = -1971936360636181781L;
 
     MultiplicationTask() {
-      super(SdkTypes.autoValue(Input.class), SdkTypes.autoValue(Output.class));
-    }
-
-    @AutoValue
-    abstract static class Input {
-      abstract long a();
-
-      abstract long b();
-    }
-
-    @AutoValue
-    abstract static class Output {
-      abstract long c();
-
-      public static Output create(long c) {
-        return new AutoValue_SdkWorkflowBuilderTest_MultiplicationTask_Output(c);
-      }
+      super(
+          TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.INTEGER),
+          TestSdkType.of("c", LiteralTypes.INTEGER));
     }
 
     @Override
-    public Output run(Input input) {
-      return Output.create(input.a() * input.b());
+    public Map<String, Literal> run(Map<String, Literal> input) {
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -360,9 +347,7 @@ class SdkWorkflowBuilderTest {
 
     @Override
     public Void run(Void input) {
-      System.out.println("Hello World");
-
-      return null;
+      throw new UnsupportedOperationException();
     }
   }
 }

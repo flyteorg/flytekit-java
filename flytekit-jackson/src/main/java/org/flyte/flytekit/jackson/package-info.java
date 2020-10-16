@@ -14,13 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
 
-/**
- * Pretends to be the generated AutoValue class of {@link
- * AutoValueReflectionTest.PrivateConstructorInput}
- */
-class AutoValue_AutoValueReflectionTest_PrivateConstructorInput
-    extends AutoValueReflectionTest.PrivateConstructorInput {
-  private AutoValue_AutoValueReflectionTest_PrivateConstructorInput() {}
-}
+/** Implementation of {@link org.flyte.flytekit.SdkType} using Jackson. */
+package org.flyte.flytekit.jackson;

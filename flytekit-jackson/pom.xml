@@ -25,21 +25,41 @@
     <version>0.2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>flytekit-examples</artifactId>
+  <artifactId>flytekit-jackson</artifactId>
 
-  <properties>
-    <maven.deploy.skip>true</maven.deploy.skip>
-  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>2.11.0</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- compile -->
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-jackson</artifactId>
+      <artifactId>flytekit-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>flytekit-java</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-parameter-names</artifactId>
     </dependency>
 
     <!-- provided -->
@@ -53,43 +73,17 @@
       <artifactId>auto-value-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- test -->
     <dependency>
-      <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service-annotations</artifactId>
-      <scope>provided</scope>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <outputDirectory>${project.build.directory}/lib</outputDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-compile</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <useBaseVersion>false</useBaseVersion>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 </project>

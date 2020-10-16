@@ -16,26 +16,40 @@
  */
 package org.flyte.jflyte.examples;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTypes;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
   public SumTask() {
-    super(SdkTypes.autoValue(SumInput.class), SdkTypes.autoValue(SumOutput.class));
+    super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
   }
 
   @AutoValue
+  @JsonDeserialize(as = AutoValue_SumTask_SumInput.class)
   public abstract static class SumInput {
+    @JsonProperty
     public abstract long a();
 
+    @JsonProperty
     public abstract long b();
+
+    @JsonCreator
+    public static SumInput create(long a, long b) {
+      return new AutoValue_SumTask_SumInput(a, b);
+    }
   }
 
   @AutoValue
+  @JsonSerialize
   public abstract static class SumOutput {
+    @JsonProperty
     public abstract long c();
 
     public static SumOutput create(long c) {

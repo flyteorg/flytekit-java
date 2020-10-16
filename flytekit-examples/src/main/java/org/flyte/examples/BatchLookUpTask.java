@@ -16,13 +16,16 @@
  */
 package org.flyte.examples;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTypes;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /**
  * Demo task to show case using {@code List<String>} and {@code Map<String,String>} as input and
@@ -34,30 +37,37 @@ public class BatchLookUpTask
   private static final long serialVersionUID = -5702649537830812613L;
 
   public BatchLookUpTask() {
-    super(SdkTypes.autoValue(Input.class), SdkTypes.autoValue(Output.class));
+    super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }
 
   @Override
   public Output run(Input input) {
     List<String> foundValues =
-        input.searchKeys().stream()
-            .filter(key -> input.keyValues().containsKey(key))
-            .map(key -> input.keyValues().get(key))
+        input.getSearchKeys().stream()
+            .filter(key -> input.getKeyValues().containsKey(key))
+            .map(key -> input.getKeyValues().get(key))
             .collect(Collectors.toList());
 
     return Output.create(foundValues);
   }
 
   @AutoValue
-  abstract static class Input {
-    abstract Map<String, String> keyValues();
+  @JsonDeserialize(as = AutoValue_BatchLookUpTask_Input.class)
+  public abstract static class Input {
+    public abstract Map<String, String> getKeyValues();
 
-    abstract List<String> searchKeys();
+    public abstract List<String> getSearchKeys();
+
+    @JsonCreator
+    public static Input create(Map<String, String> keyValues, List<String> searchKeys) {
+      return new AutoValue_BatchLookUpTask_Input(keyValues, searchKeys);
+    }
   }
 
   @AutoValue
-  abstract static class Output {
-    abstract List<String> values();
+  @JsonSerialize
+  public abstract static class Output {
+    public abstract List<String> getValues();
 
     public static Output create(List<String> values) {
       return new AutoValue_BatchLookUpTask_Output(values);

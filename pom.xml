@@ -50,6 +50,7 @@
 
   <modules>
     <module>flytekit-api</module>
+    <module>flytekit-jackson</module>
     <module>flytekit-java</module>
     <module>flytekit-scala</module>
     <module>flytekit-scala-tests</module>
@@ -76,6 +77,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>flytekit-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-jackson</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

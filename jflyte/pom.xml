@@ -98,6 +98,11 @@
     <!-- test -->
     <dependency>
       <groupId>org.flyte</groupId>
+      <artifactId>flytekit-jackson</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
       <scope>test</scope>
     </dependency>

@@ -27,9 +27,10 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
@@ -91,6 +92,10 @@ class SdkLaunchPlanTest {
     Instant now = Instant.now();
     Duration duration = Duration.ofSeconds(123);
 
+    Map<String, Literal> fixedInputs = new HashMap<>();
+    fixedInputs.put("inputsFoo", Literals.ofInteger(456));
+    fixedInputs.put("inputsBar", Literals.ofFloat(4.56));
+
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
             .withFixedInput("integer", 123L)
@@ -99,7 +104,9 @@ class SdkLaunchPlanTest {
             .withFixedInput("boolean", true)
             .withFixedInput("datetime", now)
             .withFixedInput("duration", duration)
-            .withFixedInputs(SdkTypes.autoValue(Inputs.class), Inputs.create(456, 4.56));
+            .withFixedInputs(
+                TestSdkType.of("inputsFoo", LiteralTypes.INTEGER, "inputsBar", LiteralTypes.FLOAT),
+                fixedInputs);
 
     assertThat(
         plan.fixedInputs(),
@@ -190,17 +197,6 @@ class SdkLaunchPlanTest {
       builder.inputOfDuration("duration");
       builder.inputOfInteger("inputsFoo");
       builder.inputOfFloat("inputsBar");
-    }
-  }
-
-  @AutoValue
-  abstract static class Inputs {
-    abstract long inputsFoo();
-
-    abstract double inputsBar();
-
-    public static Inputs create(long inputsFoo, double inputsBar) {
-      return new AutoValue_SdkLaunchPlanTest_Inputs(inputsFoo, inputsBar);
     }
   }
 

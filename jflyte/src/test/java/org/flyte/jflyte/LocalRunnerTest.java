@@ -33,6 +33,8 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.jflyte.examples.FibonacciWorkflow;
+import org.flyte.jflyte.examples.ListWorkflow;
+import org.flyte.jflyte.examples.MapWorkflow;
 import org.flyte.jflyte.examples.RetryableTask;
 import org.flyte.jflyte.examples.RetryableWorkflow;
 import org.junit.jupiter.api.Assertions;
@@ -92,6 +94,52 @@ class LocalRunnerTest {
                     "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
             .build(),
         listener.actions);
+  }
+
+  @Test
+  public void testBindingCollection() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    String workflowName = new ListWorkflow().getName();
+    Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
+    Map<String, RunnableTask> tasks = Modules.loadTasks(env);
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    Map<String, Literal> outputs =
+        LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of());
+
+    // 3 = 1 + 2, 7 = 3 + 4
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+
+    assertEquals(ImmutableMap.of("list", Literal.ofCollection(ImmutableList.of(i3, i7))), outputs);
+  }
+
+  @Test
+  public void testBindingMap() {
+    Map<String, String> env =
+        ImmutableMap.of(
+            "JFLYTE_DOMAIN", "development",
+            "JFLYTE_VERSION", "test",
+            "JFLYTE_PROJECT", "flytetester");
+
+    String workflowName = new MapWorkflow().getName();
+    Map<String, WorkflowTemplate> workflows = Modules.loadWorkflows(env);
+    Map<String, RunnableTask> tasks = Modules.loadTasks(env);
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    Map<String, Literal> outputs =
+        LocalRunner.compileAndExecute(workflow, tasks, ImmutableMap.of());
+
+    // 3 = 1 + 2, 7 = 3 + 4
+    Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(3)));
+    Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(7)));
+
+    assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
   }
 
   @Test

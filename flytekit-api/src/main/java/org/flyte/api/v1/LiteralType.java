@@ -59,8 +59,8 @@ public abstract class LiteralType {
     return AutoOneOf_LiteralType.schemaType(schemaType);
   }
 
-  public static LiteralType ofCollectionType(LiteralType collectionType) {
-    return AutoOneOf_LiteralType.collectionType(collectionType);
+  public static LiteralType ofCollectionType(LiteralType elementType) {
+    return AutoOneOf_LiteralType.collectionType(elementType);
   }
 
   public static LiteralType ofMapValueType(LiteralType mapValueType) {

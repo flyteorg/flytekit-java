@@ -20,6 +20,9 @@ import static java.util.Collections.unmodifiableMap;
 
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,6 +36,10 @@ import org.flyte.api.v1.Variable;
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
+
+  VariableMapVisitor(SerializerProvider provider) {
+    super(provider);
+  }
 
   static {
     Map<Class<?>, Class<?>> map = new HashMap<>();
@@ -52,10 +59,30 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   @Override
   public void property(BeanProperty prop) {
-    LiteralType literalType = toLiteralType(prop.getType());
+    JavaType handledType = getHandledType(prop);
+    LiteralType literalType = toLiteralType(handledType);
     Variable variable = Variable.builder().description("").literalType(literalType).build();
 
     builder.put(prop.getName(), variable);
+  }
+
+  private JavaType getHandledType(BeanProperty prop) {
+    try {
+      JsonSerializer<Object> serializer = getProvider().findValueSerializer(prop.getType(), prop);
+
+      if (serializer.getDelegatee() != null) {
+        // if there is a delegatee, used handled type, that is going to be
+        // different from prop.getType()
+        return getProvider().constructType(serializer.handledType());
+      } else {
+        // otherwise, always use prop.getType() because it isn't erased, e.g. has generic
+        // information
+        return prop.getType();
+      }
+    } catch (JsonMappingException e) {
+      throw new IllegalArgumentException(
+          String.format("Failed to find serializer for [%s]", prop), e);
+    }
   }
 
   @Override
@@ -76,7 +103,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
       return LiteralTypes.FLOAT;
-    } else if (String.class == type) {
+    } else if (String.class == type || javaType.isEnumType()) {
       return LiteralTypes.STRING;
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
       return LiteralTypes.BOOLEAN;

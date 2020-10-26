@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
@@ -151,6 +152,46 @@ public class JacksonSdkTypeTest {
   }
 
   @Test
+  public void testConverterToLiteralMap() {
+    InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
+    Map<String, Literal> expected = new HashMap<>();
+    expected.put("customType", literalOf(Primitive.ofString("ONE")));
+    expected.put("customEnum", literalOf(Primitive.ofString("TWO")));
+
+    Map<String, Literal> literalMap =
+        JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
+
+    assertThat(literalMap, equalTo(expected));
+  }
+
+  @Test
+  public void testConverterFromLiteralMap() {
+    InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
+    Map<String, Literal> literalMap = new HashMap<>();
+    literalMap.put("customType", literalOf(Primitive.ofString("TWO")));
+    literalMap.put("customEnum", literalOf(Primitive.ofString("ONE")));
+
+    InputWithCustomType output =
+        JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
+
+    assertThat(output, equalTo(expected));
+  }
+
+  @Test
+  public void testConverterVariableMap() {
+    Map<String, Variable> expected = new HashMap<>();
+    expected.put(
+        "customType", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+    expected.put(
+        "customEnum", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+
+    Map<String, Variable> variableMap =
+        JacksonSdkType.of(InputWithCustomType.class).getVariableMap();
+
+    assertThat(variableMap, equalTo(expected));
+  }
+
+  @Test
   void testUnknownSerializer() {
     // Serialization doesn't work because Jackson doesn't recognize empty classes as
     // Java beans good thing that exception is thrown when constructing JacksonSdkType
@@ -223,6 +264,70 @@ public class JacksonSdkTypeTest {
     public int hashCode() {
       return Objects.hash(a);
     }
+  }
+
+  @AutoValue
+  @JsonSerialize(as = InputWithCustomType.class)
+  @JsonDeserialize
+  public abstract static class InputWithCustomType {
+    public abstract CustomType getCustomType();
+
+    public abstract CustomEnum getCustomEnum();
+
+    @JsonCreator
+    public static InputWithCustomType create(CustomType customType, CustomEnum customEnum) {
+      return new AutoValue_JacksonSdkTypeTest_InputWithCustomType(customType, customEnum);
+    }
+  }
+
+  @JsonSerialize(converter = CustomType.ToString.class)
+  @JsonDeserialize(converter = CustomType.FromString.class)
+  public static final class CustomType {
+    private final int ordinal;
+
+    private CustomType(int ordinal) {
+      this.ordinal = ordinal;
+    }
+
+    public static final CustomType ONE = new CustomType(1);
+    public static final CustomType TWO = new CustomType(2);
+    public static final CustomType UNKNOWN = new CustomType(-1);
+
+    public static class ToString extends StdConverter<CustomType, String> {
+      @Override
+      public String convert(CustomType value) {
+        if (value == ONE) {
+          return "ONE";
+        } else if (value == TWO) {
+          return "TWO";
+        } else {
+          return "UNKNOWN";
+        }
+      }
+    }
+
+    public static class FromString extends StdConverter<String, CustomType> {
+      @Override
+      public CustomType convert(String value) {
+        if (value.equals("ONE")) {
+          return ONE;
+        } else if (value.equals("TWO")) {
+          return TWO;
+        } else {
+          return UNKNOWN;
+        }
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "CustomType{ordinal=" + ordinal + "}";
+    }
+  }
+
+  public enum CustomEnum {
+    ONE,
+    TWO
   }
 
   private static Variable createVar(SimpleType simpleType) {

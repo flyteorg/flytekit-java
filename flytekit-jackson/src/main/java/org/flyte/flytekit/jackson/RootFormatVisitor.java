@@ -17,6 +17,7 @@
 package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.util.Map;
@@ -26,9 +27,13 @@ class RootFormatVisitor extends JsonFormatVisitorWrapper.Base {
 
   private VariableMapVisitor builder = null;
 
+  RootFormatVisitor(SerializerProvider provider) {
+    super(provider);
+  }
+
   @Override
   public JsonObjectFormatVisitor expectObjectFormat(JavaType type) {
-    builder = new VariableMapVisitor();
+    builder = new VariableMapVisitor(getProvider());
     return builder;
   }
 

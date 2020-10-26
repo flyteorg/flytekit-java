@@ -67,7 +67,8 @@ public class JacksonSdkType<T> extends SdkType<T> {
                 clazz.getName()));
       }
 
-      RootFormatVisitor visitor = new RootFormatVisitor();
+      RootFormatVisitor visitor =
+          new RootFormatVisitor(OBJECT_MAPPER.getSerializerProviderInstance());
       serializer.acceptJsonFormatVisitor(
           visitor, OBJECT_MAPPER.getTypeFactory().constructType(clazz));
 

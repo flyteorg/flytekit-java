@@ -18,8 +18,8 @@ package org.flyte.flytekit;
 
 import com.google.auto.service.AutoService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -38,14 +38,20 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
   @Override
   public Map<WorkflowIdentifier, WorkflowTemplate> load(
       Map<String, String> env, ClassLoader classLoader) {
-    ServiceLoader<SdkWorkflow> loader = ServiceLoader.load(SdkWorkflow.class, classLoader);
+    // FIXME need to refactor registrars in API: classLoader is redundant because
+    // jflyte sets context class loader, and SDK code should safely assume that
+    // this is going to be a breaking change
 
-    LOG.fine("Discovering SdkRunnableTask");
+    return load(SdkConfig.load(env), SdkWorkflowRegistry.loadAll());
+  }
+
+  Map<WorkflowIdentifier, WorkflowTemplate> load(
+      SdkConfig sdkConfig, List<SdkWorkflow> sdkWorkflows) {
+    LOG.fine("Discovering SdkWorkflow");
 
     Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();
-    SdkConfig sdkConfig = SdkConfig.load(env);
 
-    for (SdkWorkflow sdkWorkflow : loader) {
+    for (SdkWorkflow sdkWorkflow : sdkWorkflows) {
       String name = sdkWorkflow.getName();
       WorkflowIdentifier workflowId =
           WorkflowIdentifier.builder()

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
 
@@ -38,8 +37,7 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
   }
 
   public void registerDefaultLaunchPlans() {
-    List<SdkWorkflow> workflows = new ArrayList<>();
-    ServiceLoader.load(SdkWorkflow.class).forEach(workflows::add);
+    List<SdkWorkflow> workflows = SdkWorkflowRegistry.loadAll();
 
     registerDefaultLaunchPlans(workflows);
   }

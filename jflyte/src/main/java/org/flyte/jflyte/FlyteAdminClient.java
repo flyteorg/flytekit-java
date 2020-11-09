@@ -55,11 +55,14 @@ class FlyteAdminClient implements AutoCloseable {
 
   private final AdminServiceGrpc.AdminServiceBlockingStub stub;
   private final ManagedChannel channel;
+  private final GrpcRetries retries;
 
   @VisibleForTesting
-  FlyteAdminClient(AdminServiceGrpc.AdminServiceBlockingStub stub, ManagedChannel channel) {
+  FlyteAdminClient(
+      AdminServiceGrpc.AdminServiceBlockingStub stub, ManagedChannel channel, GrpcRetries retries) {
     this.stub = stub;
     this.channel = channel;
+    this.retries = retries;
   }
 
   static FlyteAdminClient create(String target, boolean insecure) {
@@ -70,22 +73,26 @@ class FlyteAdminClient implements AutoCloseable {
     }
 
     ManagedChannel channel = builder.build();
+    GrpcRetries retries = GrpcRetries.create();
 
-    return new FlyteAdminClient(AdminServiceGrpc.newBlockingStub(builder.build()), channel);
+    return new FlyteAdminClient(
+        AdminServiceGrpc.newBlockingStub(builder.build()), channel, retries);
   }
 
   void createTask(TaskIdentifier id, TaskTemplate template) {
     LOG.debug("createTask {}", id);
 
-    TaskOuterClass.TaskCreateResponse response =
-        stub.createTask(
-            TaskOuterClass.TaskCreateRequest.newBuilder()
-                .setId(ProtoUtil.serialize(id))
-                .setSpec(
-                    TaskOuterClass.TaskSpec.newBuilder()
-                        .setTemplate(ProtoUtil.serialize(template))
-                        .build())
-                .build());
+    TaskOuterClass.TaskCreateRequest request =
+        TaskOuterClass.TaskCreateRequest.newBuilder()
+            .setId(ProtoUtil.serialize(id))
+            .setSpec(
+                TaskOuterClass.TaskSpec.newBuilder()
+                    .setTemplate(ProtoUtil.serialize(template))
+                    .build())
+            .build();
+
+    // create operation is idempotent, so it's fine to retry
+    TaskOuterClass.TaskCreateResponse response = retries.retry(() -> stub.createTask(request));
 
     verifyNotNull(response, "Unexpected null response when creating task: %s", id);
   }
@@ -93,15 +100,18 @@ class FlyteAdminClient implements AutoCloseable {
   void createWorkflow(WorkflowIdentifier id, WorkflowTemplate template) {
     LOG.debug("createWorkflow {}", id);
 
+    WorkflowOuterClass.WorkflowCreateRequest request =
+        WorkflowOuterClass.WorkflowCreateRequest.newBuilder()
+            .setId(ProtoUtil.serialize(id))
+            .setSpec(
+                WorkflowOuterClass.WorkflowSpec.newBuilder()
+                    .setTemplate(ProtoUtil.serialize(template))
+                    .build())
+            .build();
+
+    // create operation is idempotent, so it's fine to retry
     WorkflowOuterClass.WorkflowCreateResponse response =
-        stub.createWorkflow(
-            WorkflowOuterClass.WorkflowCreateRequest.newBuilder()
-                .setId(ProtoUtil.serialize(id))
-                .setSpec(
-                    WorkflowOuterClass.WorkflowSpec.newBuilder()
-                        .setTemplate(ProtoUtil.serialize(template))
-                        .build())
-                .build());
+        retries.retry(() -> stub.createWorkflow(request));
 
     verifyNotNull(response, "Unexpected null response when creating workflow: %s", id);
   }
@@ -120,12 +130,15 @@ class FlyteAdminClient implements AutoCloseable {
           LaunchPlanOuterClass.LaunchPlanMetadata.newBuilder().setSchedule(schedule).build());
     }
 
+    LaunchPlanOuterClass.LaunchPlanCreateRequest request =
+        LaunchPlanOuterClass.LaunchPlanCreateRequest.newBuilder()
+            .setId(ProtoUtil.serialize(id))
+            .setSpec(specBuilder)
+            .build();
+
+    // create operation is idempotent, so it's fine to retry
     LaunchPlanOuterClass.LaunchPlanCreateResponse response =
-        stub.createLaunchPlan(
-            LaunchPlanOuterClass.LaunchPlanCreateRequest.newBuilder()
-                .setId(ProtoUtil.serialize(id))
-                .setSpec(specBuilder)
-                .build());
+        retries.retry(() -> stub.createLaunchPlan(request));
 
     verifyNotNull(response, "Unexpected null response when creating launch plan: %s", id);
   }
@@ -146,13 +159,16 @@ class FlyteAdminClient implements AutoCloseable {
             .setMetadata(metadata)
             .build();
 
+    ExecutionOuterClass.ExecutionCreateRequest request =
+        ExecutionOuterClass.ExecutionCreateRequest.newBuilder()
+            .setDomain(domain)
+            .setProject(project)
+            .setSpec(spec)
+            .build();
+
+    // create operation is idempotent, so it's fine to retry
     ExecutionOuterClass.ExecutionCreateResponse response =
-        stub.createExecution(
-            ExecutionOuterClass.ExecutionCreateRequest.newBuilder()
-                .setDomain(domain)
-                .setProject(project)
-                .setSpec(spec)
-                .build());
+        retries.retry(() -> stub.createExecution(request));
 
     verifyNotNull(
         response,
@@ -197,7 +213,7 @@ class FlyteAdminClient implements AutoCloseable {
                     .build())
             .build();
 
-    List<RespT> list = performRequestFn.apply(request);
+    List<RespT> list = retries.retry(() -> performRequestFn.apply(request));
 
     if (list.isEmpty()) {
       return null;

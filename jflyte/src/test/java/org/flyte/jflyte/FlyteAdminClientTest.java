@@ -111,7 +111,9 @@ public class FlyteAdminClientTest {
     String serverName = InProcessServerBuilder.generateName();
     Server build = GrpcUtils.buildServer(serverName, stubService);
     ManagedChannel channel = GrpcUtils.buildChannel(serverName);
-    client = new FlyteAdminClient(AdminServiceGrpc.newBlockingStub(channel), channel);
+    client =
+        new FlyteAdminClient(
+            AdminServiceGrpc.newBlockingStub(channel), channel, GrpcRetries.create());
     grpcCleanup.register(build.start());
     grpcCleanup.register(channel);
   }

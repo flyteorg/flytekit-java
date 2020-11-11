@@ -29,6 +29,9 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -44,7 +47,12 @@ public class GcsFileSystem implements FileSystem {
   private final Storage storage;
 
   public GcsFileSystem() {
-    storage = StorageOptions.getDefaultInstance().getService();
+    this(StorageOptions.getDefaultInstance().getService());
+  }
+
+  @VisibleForTesting
+  GcsFileSystem(Storage storage) {
+    this.storage = Objects.requireNonNull(storage);
   }
 
   @Override
@@ -55,7 +63,7 @@ public class GcsFileSystem implements FileSystem {
   @Override
   @MustBeClosed
   public ReadableByteChannel reader(String uri) {
-    Blob blob = storage.get(parseUri(uri));
+    Blob blob = guard(() -> storage.get(parseUri(uri)), () -> "Couldn't read resource: " + uri);
 
     if (blob == null) {
       throw new IllegalArgumentException("Resource doesn't exist: " + uri);
@@ -66,13 +74,16 @@ public class GcsFileSystem implements FileSystem {
 
   @Override
   public WritableByteChannel writer(String uri) {
-    return storage.writer(BlobInfo.newBuilder(parseUri(uri)).build());
+    return guard(
+        () -> storage.writer(BlobInfo.newBuilder(parseUri(uri)).build()),
+        () -> "Couldn't write resource: " + uri);
   }
 
   @Nullable
   @Override
   public Manifest getManifest(String uri) {
-    Blob blob = storage.get(parseUri(uri));
+    Blob blob =
+        guard(() -> storage.get(parseUri(uri)), () -> "Couldn't get manifest for resource: " + uri);
 
     if (blob == null) {
       return null;
@@ -81,7 +92,17 @@ public class GcsFileSystem implements FileSystem {
     return Manifest.create();
   }
 
-  @VisibleForTesting // TODO write tests
+  private <T> T guard(Callable<T> callable, Supplier<String> errMessageSupplier) {
+    try {
+      return callable.call();
+    } catch (IllegalArgumentException e) {
+      throw e; // propagate IllegalArgumentException freely
+    } catch (Exception e) {
+      throw new RuntimeException(errMessageSupplier.get(), e);
+    }
+  }
+
+  @VisibleForTesting
   static BlobId parseUri(String str) {
     URI uri = URI.create(str);
 

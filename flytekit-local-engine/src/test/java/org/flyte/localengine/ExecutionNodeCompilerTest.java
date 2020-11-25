@@ -24,8 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Binding;
+import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
@@ -141,6 +144,54 @@ class ExecutionNodeCompilerTest {
             () -> ExecutionNodeCompiler.compile(node, Collections.emptyMap()));
 
     assertEquals("Couldn't find task [unknownTask]", exception.getMessage());
+  }
+
+  @Test
+  void testCompile_inputCollection() {
+    Node node =
+        Node.builder()
+            .id("node")
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder().name("empty_runnable_task").build())
+                    .build())
+            .inputs(
+                ImmutableList.of(
+                    Binding.builder()
+                        .binding(
+                            BindingData.ofCollection(
+                                ImmutableList.of(
+                                    BindingData.ofOutputReference(
+                                        OutputReference.builder()
+                                            .nodeId("node-1")
+                                            .var("any")
+                                            .build()),
+                                    BindingData.ofCollection(
+                                        ImmutableList.of(
+                                            BindingData.ofOutputReference(
+                                                OutputReference.builder()
+                                                    .nodeId("node-2")
+                                                    .var("any")
+                                                    .build()))),
+                                    BindingData.ofMap(
+                                        ImmutableMap.of(
+                                            "node-3",
+                                            BindingData.ofOutputReference(
+                                                OutputReference.builder()
+                                                    .nodeId("node-3")
+                                                    .var("any")
+                                                    .build()))))))
+                        .var_("any")
+                        .build()))
+            .upstreamNodeIds(ImmutableList.of())
+            .build();
+
+    ExecutionNode execNode =
+        ExecutionNodeCompiler.compile(
+            node, ImmutableMap.of("empty_runnable_task", new EmptyRunnableTask()));
+
+    assertEquals(ImmutableList.of("node-1", "node-2", "node-3"), execNode.upstreamNodeIds());
   }
 
   private static List<String> getNodeIds(List<ExecutionNode> nodes) {

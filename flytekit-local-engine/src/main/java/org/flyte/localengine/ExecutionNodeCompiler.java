@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
+import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
@@ -69,8 +71,10 @@ class ExecutionNodeCompiler {
     List<String> upstreamNodeIds = new ArrayList<>();
 
     node.inputs().stream()
-        .filter(x -> x.binding().kind() == BindingData.Kind.PROMISE)
-        .map(x -> x.binding().promise().nodeId())
+        .map(Binding::binding)
+        .flatMap(ExecutionNodeCompiler::unpackBindingData)
+        .filter(x -> x.kind() == BindingData.Kind.PROMISE)
+        .map(x -> x.promise().nodeId())
         .forEach(upstreamNodeIds::add);
 
     upstreamNodeIds.addAll(node.upstreamNodeIds());
@@ -183,5 +187,15 @@ class ExecutionNodeCompiler {
     }
 
     return topologicallySorted;
+  }
+
+  private static Stream<BindingData> unpackBindingData(BindingData bindingData) {
+    if (bindingData.kind() == BindingData.Kind.COLLECTION) {
+      return bindingData.collection().stream().flatMap(ExecutionNodeCompiler::unpackBindingData);
+    } else if (bindingData.kind() == BindingData.Kind.MAP) {
+      return bindingData.map().values().stream().flatMap(ExecutionNodeCompiler::unpackBindingData);
+    } else {
+      return Stream.of(bindingData);
+    }
   }
 }

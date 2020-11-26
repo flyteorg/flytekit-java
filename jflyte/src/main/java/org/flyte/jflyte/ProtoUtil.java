@@ -17,6 +17,8 @@
 package org.flyte.jflyte;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -34,6 +36,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +92,11 @@ class ProtoUtil {
   }
 
   static Literal deserialize(Literals.Literal literal) {
-    if (literal.getScalar() != null) {
+    if (literal.hasScalar()) {
       return Literal.ofScalar(deserialize(literal.getScalar()));
+    }
+    if (literal.hasCollection()) {
+      return Literal.ofCollection(deserialize(literal.getCollection()));
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
@@ -126,6 +132,12 @@ class ProtoUtil {
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
+  }
+
+  static List<Literal> deserialize(Literals.LiteralCollection literalCollection) {
+    return literalCollection.getLiteralsList().stream()
+        .map(ProtoUtil::deserialize)
+        .collect(collectingAndThen(toList(), Collections::unmodifiableList));
   }
 
   static IdentifierOuterClass.Identifier serialize(PartialIdentifier id) {

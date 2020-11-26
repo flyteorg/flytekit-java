@@ -151,7 +151,12 @@ class ProtoUtilTest {
                 .setCollection(
                     Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())
                 .build(),
-            Literal.ofCollection(singletonList(apiLiteral))));
+            Literal.ofCollection(singletonList(apiLiteral))),
+        Arguments.of(
+            Literals.Literal.newBuilder()
+                .setMap(Literals.LiteralMap.newBuilder().putLiterals("name", protoLiteral).build())
+                .build(),
+            Literal.ofMap(Collections.singletonMap("name", apiLiteral))));
   }
 
   @Test

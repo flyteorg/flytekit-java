@@ -98,6 +98,9 @@ class ProtoUtil {
     if (literal.hasCollection()) {
       return Literal.ofCollection(deserialize(literal.getCollection()));
     }
+    if (literal.hasMap()) {
+      return Literal.ofMap(deserialize(literal.getMap()));
+    }
 
     throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
   }

@@ -128,6 +128,32 @@ class ProtoUtilTest {
             Primitive.ofDuration(Duration.ofSeconds(seconds, nanos))));
   }
 
+  @ParameterizedTest
+  @MethodSource("createDeserializeLiteralsArguments")
+  void shouldDeserializeLiterals(Literals.Literal input, Literal expected) {
+    assertThat(ProtoUtil.deserialize(input), equalTo(expected));
+  }
+
+  static Stream<Arguments> createDeserializeLiteralsArguments() {
+    Literal apiLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(123)));
+    Literals.Literal protoLiteral =
+        Literals.Literal.newBuilder()
+            .setScalar(
+                Literals.Scalar.newBuilder()
+                    .setPrimitive(Literals.Primitive.newBuilder().setInteger(123).build())
+                    .build())
+            .build();
+
+    return Stream.of(
+        Arguments.of(protoLiteral, apiLiteral),
+        Arguments.of(
+            Literals.Literal.newBuilder()
+                .setCollection(
+                    Literals.LiteralCollection.newBuilder().addLiterals(protoLiteral).build())
+                .build(),
+            Literal.ofCollection(singletonList(apiLiteral))));
+  }
+
   @Test
   void shouldSerializeLiteralMap() {
     Map<String, Literal> input =

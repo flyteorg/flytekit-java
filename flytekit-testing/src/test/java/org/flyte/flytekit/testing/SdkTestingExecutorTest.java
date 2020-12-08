@@ -19,6 +19,7 @@ package org.flyte.flytekit.testing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -190,5 +191,24 @@ public class SdkTestingExecutorTest {
         equalTo(
             "Can't find input RemoteSumInput{a=1, b=2} for remote task [remote_sum_task] across known "
                 + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask"));
+  }
+
+  @Test
+  public void testWithTask_nullOutput() {
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            builder.apply("void", RemoteVoidOutputTask.create().withInput("ignore", ""));
+          }
+        };
+
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                RemoteVoidOutputTask.create(), RemoteVoidOutputTask.Input.create(""), null)
+            .execute();
+
+    assertTrue(result.literalMap().isEmpty());
   }
 }

@@ -85,10 +85,9 @@ class TestingRunnableTask<InputT, OutputT> implements RunnableTask {
   @Override
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
-    OutputT output = fixedOutputs.get(input);
 
-    if (output != null) {
-      return outputType.toLiteralMap(output);
+    if (fixedOutputs.containsKey(input)) {
+      return outputType.toLiteralMap(fixedOutputs.get(input));
     }
 
     if (runFn == null) {

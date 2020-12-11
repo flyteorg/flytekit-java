@@ -97,7 +97,7 @@ public class LocalEngine {
 
         return executionNode.runnableTask().run(inputs);
       } catch (Throwable e) {
-        if (!isRecoverable(e) || attempt > attempts) {
+        if (!isRecoverable(e) || attempt >= attempts) {
           listener.error(executionNode, inputs, e);
           throw e;
         } else {

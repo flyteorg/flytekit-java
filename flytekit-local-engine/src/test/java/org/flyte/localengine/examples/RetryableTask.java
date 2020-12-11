@@ -26,6 +26,7 @@ import org.flyte.flytekit.SdkTypes;
 public class RetryableTask extends SdkRunnableTask<Void, Void> {
 
   public static final AtomicLong ATTEMPTS_BEFORE_SUCCESS = new AtomicLong();
+  public static final AtomicLong ATTEMPTS = new AtomicLong();
 
   public RetryableTask() {
     super(SdkTypes.nulls(), SdkTypes.nulls());
@@ -38,7 +39,8 @@ public class RetryableTask extends SdkRunnableTask<Void, Void> {
 
   @Override
   public Void run(Void input) {
-    long attemptsLeft = ATTEMPTS_BEFORE_SUCCESS.getAndDecrement();
+    long attemptsLeft = ATTEMPTS_BEFORE_SUCCESS.decrementAndGet();
+    ATTEMPTS.incrementAndGet();
 
     if (attemptsLeft <= 0) {
       return null;

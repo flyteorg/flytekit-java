@@ -147,6 +147,7 @@ class LocalEngineTest {
     // make sure we don't run two tests in parallel
     synchronized (RetryableTask.class) {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
+      RetryableTask.ATTEMPTS.set(0L);
 
       LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener);
 
@@ -158,10 +159,12 @@ class LocalEngineTest {
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 2))
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
-              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
               .add(ofCompleted("node-1", ImmutableMap.of(), ImmutableMap.of()))
               .build(),
           listener.actions);
+
+      // will finish on attempt number 5 according to ATTEMPTS_BEFORE_SUCCESS
+      assertEquals(5L, RetryableTask.ATTEMPTS.get());
     }
   }
 
@@ -179,6 +182,7 @@ class LocalEngineTest {
     synchronized (RetryableTask.class) {
       // will never succeed within retry limit
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(10);
+      RetryableTask.ATTEMPTS.set(0L);
 
       RuntimeException e =
           Assertions.assertThrows(
@@ -196,10 +200,12 @@ class LocalEngineTest {
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 3))
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 4))
               .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 5))
-              .add(ofRetrying("node-1", ImmutableMap.of(), "oops", /* attempt= */ 6))
               .add(ofError("node-1", ImmutableMap.of(), "oops"))
               .build(),
           listener.actions);
+
+      // getRetries() returns 5, so we have 6 attempts/executions total
+      assertEquals(6L, RetryableTask.ATTEMPTS.get());
     }
   }
 

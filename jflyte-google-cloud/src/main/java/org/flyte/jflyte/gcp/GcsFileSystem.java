@@ -23,7 +23,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.net.URI;
@@ -46,11 +45,6 @@ public class GcsFileSystem implements FileSystem {
 
   private final Storage storage;
 
-  public GcsFileSystem() {
-    this(StorageOptions.getDefaultInstance().getService());
-  }
-
-  @VisibleForTesting
   GcsFileSystem(Storage storage) {
     this.storage = Objects.requireNonNull(storage);
   }

@@ -43,8 +43,8 @@ public class GcsFileSystemRegistrar extends FileSystemRegistrar {
   }
 
   /** Experimental: enables service account impersonalization. */
-  private static final String GCP_IMPERSONATE_SERVICE_ACCOUNT_KEY =
-      "GCP_IMPERSONATE_SERVICE_ACCOUNT";
+  private static final String FLYTE_GCP_IMPERSONATE_SERVICE_ACCOUNT_KEY =
+      "FLYTE_GCP_IMPERSONATE_SERVICE_ACCOUNT";
 
   @Override
   public Iterable<FileSystem> load(Map<String, String> env) {
@@ -56,7 +56,7 @@ public class GcsFileSystemRegistrar extends FileSystemRegistrar {
   }
 
   private static Credentials getCredentials(Map<String, String> env) {
-    String impersonateServiceAccount = env.get(GCP_IMPERSONATE_SERVICE_ACCOUNT_KEY);
+    String impersonateServiceAccount = env.get(FLYTE_GCP_IMPERSONATE_SERVICE_ACCOUNT_KEY);
 
     try {
       GoogleCredentials sourceCredentials = GoogleCredentials.getApplicationDefault();

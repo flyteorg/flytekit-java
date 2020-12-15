@@ -18,13 +18,12 @@ package org.flyte.flytekitscala
 
 import java.time.{Duration, Instant}
 import java.{util => ju}
-
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
 import org.flyte.flytekit.SdkType
 
 import scala.annotation.implicitNotFound
-import scala.collection.JavaConverters
+import scala.collection.JavaConverters._
 
 /** Type class to map between Flyte `Variable` and `Literal` and Scala case classes. */
 sealed trait SdkScalaType[T]
@@ -71,8 +70,8 @@ object SdkScalaType {
       param.typeclass match {
         case _: SdkScalaProductType[_] =>
           sys.error("nested structs aren't supported")
-        case other: SdkScalaLiteralType[_] =>
-          (param.asInstanceOf[Param[SdkScalaLiteralType, T]])
+        case _: SdkScalaLiteralType[_] =>
+          param.asInstanceOf[Param[SdkScalaLiteralType, T]]
       }
     }
 
@@ -89,7 +88,7 @@ object SdkScalaType {
           param.label -> variable
         }.toMap
 
-        new ju.HashMap(JavaConverters.mapAsJavaMap(scalaMap))
+        new ju.HashMap(mapAsJavaMap(scalaMap))
       }
 
       def toLiteralMap(value: T): ju.Map[String, Literal] = {
@@ -97,7 +96,7 @@ object SdkScalaType {
           param.label -> param.typeclass.toLiteral(param.dereference(value))
         }.toMap
 
-        new ju.HashMap(JavaConverters.mapAsJavaMap(scalaMap))
+        new ju.HashMap(mapAsJavaMap(scalaMap))
       }
 
       def fromLiteralMap(literal: ju.Map[String, Literal]): T = {
@@ -158,6 +157,54 @@ object SdkScalaType {
         Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
       _.scalar().primitive().duration()
     )
+
+  implicit def collectionLiteralType[T](
+      implicit sdkLiteral: SdkScalaLiteralType[T]
+  ): SdkScalaLiteralType[List[T]] = {
+    new SdkScalaLiteralType[List[T]] {
+
+      override def getLiteralType: LiteralType =
+        LiteralType.ofCollectionType(sdkLiteral.getLiteralType)
+
+      override def toLiteral(values: List[T]): Literal = {
+        Literal.ofCollection(
+          values
+            .map(value => sdkLiteral.toLiteral(value))
+            .asJava
+        )
+      }
+
+      override def fromLiteral(literal: Literal): List[T] =
+        literal
+          .collection()
+          .asScala
+          .map(elem => sdkLiteral.fromLiteral(elem))
+          .toList
+    }
+  }
+
+  implicit def mapLiteralType[T](
+      implicit sdkLiteral: SdkScalaLiteralType[T]
+  ): SdkScalaLiteralType[Map[String, T]] = {
+    new SdkScalaLiteralType[Map[String, T]] {
+
+      override def getLiteralType: LiteralType =
+        LiteralType.ofMapValueType(sdkLiteral.getLiteralType)
+
+      override def toLiteral(values: Map[String, T]): Literal = {
+        Literal.ofMap(
+          values.map { case (key, value) => key -> sdkLiteral.toLiteral(value) }.asJava
+        )
+      }
+
+      override def fromLiteral(literal: Literal): Map[String, T] =
+        literal
+          .map()
+          .asScala
+          .map { case (key, value) => key -> sdkLiteral.fromLiteral(value) }
+          .toMap
+    }
+  }
 
   @implicitNotFound("Cannot derive SdkScalaType for sealed trait")
   sealed trait Dispatchable[T]

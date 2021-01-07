@@ -56,8 +56,10 @@ import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -68,6 +70,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
+import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -228,6 +231,7 @@ public class FlyteAdminClientTest {
             .name(WF_NAME)
             .version(WF_VERSION)
             .build();
+    Primitive defaultPrimitive = Primitive.ofString("default-bar");
     LaunchPlan launchPlan =
         LaunchPlan.builder()
             .workflowId(wfIdentifier)
@@ -235,6 +239,15 @@ public class FlyteAdminClientTest {
             .fixedInputs(
                 Collections.singletonMap(
                     "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+            .defaultInputs(
+                Collections.singletonMap(
+                    "default-foo",
+                    Parameter.create(
+                        Variable.builder()
+                            .description("")
+                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .build(),
+                        Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .cronSchedule(
                 CronSchedule.builder()
                     .schedule("daily")
@@ -262,6 +275,30 @@ public class FlyteAdminClientTest {
                                                 .setPrimitive(
                                                     Literals.Primitive.newBuilder()
                                                         .setStringValue("bar")
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .setDefaultInputs(
+                            Interface.ParameterMap.newBuilder()
+                                .putParameters(
+                                    "default-foo",
+                                    Interface.Parameter.newBuilder()
+                                        .setVar(
+                                            Interface.Variable.newBuilder()
+                                                .setDescription("")
+                                                .setType(
+                                                    Types.LiteralType.newBuilder()
+                                                        .setSimple(Types.SimpleType.STRING)
+                                                        .build()))
+                                        .setDefault(
+                                            Literals.Literal.newBuilder()
+                                                .setScalar(
+                                                    Literals.Scalar.newBuilder()
+                                                        .setPrimitive(
+                                                            Literals.Primitive.newBuilder()
+                                                                .setStringValue("default-bar")
+                                                                .build())
                                                         .build())
                                                 .build())
                                         .build())

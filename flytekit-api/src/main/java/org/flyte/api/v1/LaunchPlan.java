@@ -29,11 +29,15 @@ public abstract class LaunchPlan {
 
   public abstract Map<String, Literal> fixedInputs();
 
+  public abstract Map<String, Parameter> defaultInputs();
+
   @Nullable
   public abstract CronSchedule cronSchedule();
 
   public static Builder builder() {
-    return new AutoValue_LaunchPlan.Builder().fixedInputs(Collections.emptyMap());
+    return new AutoValue_LaunchPlan.Builder()
+        .fixedInputs(Collections.emptyMap())
+        .defaultInputs(Collections.emptyMap());
   }
 
   @AutoValue.Builder
@@ -44,6 +48,8 @@ public abstract class LaunchPlan {
     public abstract Builder workflowId(PartialWorkflowIdentifier workflowId);
 
     public abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
+
+    public abstract Builder defaultInputs(Map<String, Parameter> defaultInputs);
 
     public abstract Builder cronSchedule(CronSchedule cronSchedule);
 

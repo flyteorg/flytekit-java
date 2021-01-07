@@ -41,9 +41,12 @@ import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 
 class SdkLaunchPlanRegistrarTest {
@@ -63,7 +66,7 @@ class SdkLaunchPlanRegistrarTest {
   @Test
   void shouldLoadLaunchPlansFromDiscoveredRegistries() {
     Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = registrar.load(ENV);
-
+    Primitive defaultPrimitive = Primitive.ofString("default-bar");
     LaunchPlanIdentifier expectedTestPlan =
         LaunchPlanIdentifier.builder()
             .project("project")
@@ -81,6 +84,15 @@ class SdkLaunchPlanRegistrarTest {
             .fixedInputs(
                 singletonMap(
                     "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+            .defaultInputs(
+                singletonMap(
+                    "default-foo",
+                    Parameter.create(
+                        Variable.builder()
+                            .description("")
+                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .build(),
+                        Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();
     LaunchPlanIdentifier expectedOtherTestPlan =
         LaunchPlanIdentifier.builder()
@@ -99,6 +111,15 @@ class SdkLaunchPlanRegistrarTest {
             .fixedInputs(
                 singletonMap(
                     "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("baz")))))
+            .defaultInputs(
+                singletonMap(
+                    "default-foo",
+                    Parameter.create(
+                        Variable.builder()
+                            .description("")
+                            .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                            .build(),
+                        Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();
 
     assertAll(
@@ -126,6 +147,7 @@ class SdkLaunchPlanRegistrarTest {
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
                     .build())
             .fixedInputs(Collections.emptyMap())
+            .defaultInputs(Collections.emptyMap())
             .cronSchedule(CronSchedule.builder().schedule("daily").build())
             .build();
 
@@ -144,6 +166,7 @@ class SdkLaunchPlanRegistrarTest {
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
                     .build())
             .fixedInputs(Collections.emptyMap())
+            .defaultInputs(Collections.emptyMap())
             .cronSchedule(CronSchedule.builder().schedule("daily").offset("PT1H").build())
             .build();
 
@@ -181,7 +204,10 @@ class SdkLaunchPlanRegistrarTest {
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
       return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan").withFixedInput("foo", "bar"));
+          SdkLaunchPlan.of(new TestWorkflow())
+              .withName("TestPlan")
+              .withFixedInput("foo", "bar")
+              .withDefaultInput("default-foo", "default-bar"));
     }
   }
 
@@ -193,7 +219,8 @@ class SdkLaunchPlanRegistrarTest {
       return singletonList(
           SdkLaunchPlan.of(new TestWorkflow())
               .withName("OtherTestPlan")
-              .withFixedInput("foo", "baz"));
+              .withFixedInput("foo", "baz")
+              .withDefaultInput("default-foo", "default-bar"));
     }
   }
 
@@ -234,6 +261,7 @@ class SdkLaunchPlanRegistrarTest {
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       builder.inputOfString("foo");
+      builder.inputOfString("default-foo");
     }
   }
 

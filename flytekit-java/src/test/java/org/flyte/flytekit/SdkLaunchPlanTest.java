@@ -34,8 +34,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -122,6 +125,51 @@ class SdkLaunchPlanTest {
   }
 
   @Test
+  void shouldAddDefaultInputs() {
+    Instant now = Instant.now();
+    Duration duration = Duration.ofSeconds(123);
+
+    Map<String, Literal> defaultInputs = new HashMap<>();
+    defaultInputs.put("inputsFoo", Literals.ofInteger(456));
+    defaultInputs.put("inputsBar", Literals.ofFloat(4.56));
+
+    SdkLaunchPlan plan =
+        SdkLaunchPlan.of(new TestWorkflow())
+            .withDefaultInput("integer", 123L)
+            .withDefaultInput("float", 1.23)
+            .withDefaultInput("string", "123")
+            .withDefaultInput("boolean", true)
+            .withDefaultInput("datetime", now)
+            .withDefaultInput("duration", duration)
+            .withDefaultInput(
+                TestSdkType.of("inputsFoo", LiteralTypes.INTEGER, "inputsBar", LiteralTypes.FLOAT),
+                defaultInputs);
+
+    assertThat(
+        plan.defaultInputs(),
+        allOf(
+            hasEntry("integer", asParameter(Primitive.ofInteger(123))),
+            hasEntry("float", asParameter(Primitive.ofFloat(1.23))),
+            hasEntry("string", asParameter(Primitive.ofString("123"))),
+            hasEntry("boolean", asParameter(Primitive.ofBoolean(true))),
+            hasEntry("datetime", asParameter(Primitive.ofDatetime(now))),
+            hasEntry("duration", asParameter(Primitive.ofDuration(duration)))));
+  }
+
+  @Test
+  void shouldRejectDefaultInputType() {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> plan.withDefaultInput("integer", 1D));
+
+    assertThat(
+        exception.getMessage(),
+        containsString(
+            "invalid default input wrong type integer, expected LiteralType{simpleType=INTEGER}, got LiteralType{simpleType=FLOAT}"));
+  }
+
+  @Test
   void shouldRejectFixedInputDuplicates() {
     SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow());
 
@@ -130,7 +178,7 @@ class SdkLaunchPlanTest {
             IllegalArgumentException.class,
             () -> plan.withFixedInput("string", "foo").withFixedInput("string", "bar"));
 
-    assertThat(exception.getMessage(), containsString("Duplicate input [string]"));
+    assertThat(exception.getMessage(), containsString("Duplicate fixed input [string]"));
   }
 
   @Test
@@ -183,6 +231,15 @@ class SdkLaunchPlanTest {
 
   private Literal asLiteral(Primitive primitive) {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
+  }
+
+  private Parameter asParameter(Primitive primitive) {
+    return Parameter.create(
+        Variable.builder()
+            .description("")
+            .literalType(LiteralType.ofSimpleType(primitive.type()))
+            .build(),
+        Literal.ofScalar(Scalar.ofPrimitive(primitive)));
   }
 
   private static class TestWorkflow extends SdkWorkflow {

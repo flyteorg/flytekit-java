@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -53,6 +54,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
+import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
@@ -581,5 +583,29 @@ class ProtoUtil {
     }
 
     return ScheduleOuterClass.Schedule.newBuilder().setCronSchedule(builder.build()).build();
+  }
+
+  static Interface.ParameterMap serializeParameters(Map<String, Parameter> defaultInputs) {
+    return Interface.ParameterMap.newBuilder()
+        .putAllParameters(
+            defaultInputs.entrySet().stream()
+                .collect(
+                    toMap(
+                        Map.Entry::getKey,
+                        e -> {
+                          Interface.Variable variable = serialize(e.getValue().var());
+                          Interface.Parameter.Builder parameterBuilder =
+                              Interface.Parameter.newBuilder();
+
+                          if (e.getValue().defaultValue() != null) {
+                            parameterBuilder.setDefault(serialize(e.getValue().defaultValue()));
+                          } else {
+                            parameterBuilder.setRequired(false);
+                          }
+
+                          parameterBuilder.setVar(variable);
+                          return parameterBuilder.build();
+                        })))
+        .build();
   }
 }

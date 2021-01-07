@@ -24,12 +24,15 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
+import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -250,12 +253,22 @@ class IdentifierRewriteTest {
   }
 
   private LaunchPlan launchPlan(PartialWorkflowIdentifier workflowId) {
+    Primitive defaultPrimitive = Primitive.ofString("default-bar");
     return LaunchPlan.builder()
         .name("launch-plan-name")
         .workflowId(workflowId)
         .fixedInputs(
             Collections.singletonMap(
                 "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString("bar")))))
+        .defaultInputs(
+            Collections.singletonMap(
+                "default-foo",
+                Parameter.create(
+                    Variable.builder()
+                        .description("")
+                        .literalType(LiteralType.ofSimpleType(defaultPrimitive.type()))
+                        .build(),
+                    Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
         .build();
   }
 }

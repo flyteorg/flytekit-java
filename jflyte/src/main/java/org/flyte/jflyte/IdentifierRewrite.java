@@ -97,6 +97,7 @@ abstract class IdentifierRewrite {
     return LaunchPlan.builder()
         .name(launchPlan.name())
         .fixedInputs(launchPlan.fixedInputs())
+        .defaultInputs(launchPlan.defaultInputs())
         .workflowId(apply(launchPlan.workflowId()))
         .cronSchedule(launchPlan.cronSchedule())
         .build();

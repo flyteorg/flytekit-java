@@ -122,7 +122,8 @@ class FlyteAdminClient implements AutoCloseable {
     LaunchPlanOuterClass.LaunchPlanSpec.Builder specBuilder =
         LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
             .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
-            .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()));
+            .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
+            .setDefaultInputs(ProtoUtil.serializeParameters(launchPlan.defaultInputs()));
 
     if (launchPlan.cronSchedule() != null) {
       ScheduleOuterClass.Schedule schedule = ProtoUtil.serialize(launchPlan.cronSchedule());

@@ -24,9 +24,8 @@ public abstract class Scalar {
 
   public enum Kind {
     PRIMITIVE,
-    GENERIC
-
-    // TODO: Add the rest of the types
+    GENERIC,
+    BLOB
   }
 
   public abstract Kind kind();
@@ -34,6 +33,8 @@ public abstract class Scalar {
   public abstract Primitive primitive();
 
   public abstract Struct generic();
+
+  public abstract Blob blob();
 
   // TODO add the rest of the cases
 
@@ -43,5 +44,9 @@ public abstract class Scalar {
 
   public static Scalar ofGeneric(Struct generic) {
     return AutoOneOf_Scalar.generic(generic);
+  }
+
+  public static Scalar ofBlob(Blob blob) {
+    return AutoOneOf_Scalar.blob(blob);
   }
 }

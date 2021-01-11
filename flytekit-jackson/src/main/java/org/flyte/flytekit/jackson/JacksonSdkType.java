@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
@@ -96,8 +97,17 @@ public class JacksonSdkType<T> extends SdkType<T> {
       tokens.nextToken();
 
       LiteralMapDeserializer deserializer = new LiteralMapDeserializer(literalTypeMap);
-      JacksonLiteralMap jacksonLiteralMap =
-          deserializer.deserialize(tokens, OBJECT_MAPPER.getDeserializationContext());
+
+      // this is how OBJECT_MAPPER creates deserialization context, otherwise, nested deserializers
+      // don't work
+      DefaultDeserializationContext cctx =
+          ((DefaultDeserializationContext) OBJECT_MAPPER.getDeserializationContext())
+              .createInstance(
+                  OBJECT_MAPPER.getDeserializationConfig(),
+                  tokens,
+                  OBJECT_MAPPER.getInjectableValues());
+
+      JacksonLiteralMap jacksonLiteralMap = deserializer.deserialize(tokens, cctx);
 
       return jacksonLiteralMap.getLiteralMap();
     } catch (IOException e) {

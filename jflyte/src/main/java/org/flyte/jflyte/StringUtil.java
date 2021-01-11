@@ -16,11 +16,13 @@
  */
 package org.flyte.jflyte;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
@@ -63,9 +65,26 @@ class StringUtil {
 
       case GENERIC:
         return serialize(scalar.generic());
+
+      case BLOB:
+        return serialize(scalar.blob());
     }
 
     throw new AssertionError("Unexpected Scalar.Kind: " + scalar.kind());
+  }
+
+  private static String serialize(Blob blob) {
+    return ImmutableMap.of(
+            "uri", blob.uri(),
+            "metadata",
+                ImmutableMap.of(
+                    "type",
+                    ImmutableMap.of(
+                        "dimensionality",
+                        blob.metadata().type().dimensionality(),
+                        "format",
+                        blob.metadata().type().format())))
+        .toString();
   }
 
   private static String serialize(List<Literal> literals) {

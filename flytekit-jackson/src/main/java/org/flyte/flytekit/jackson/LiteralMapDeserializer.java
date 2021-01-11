@@ -22,6 +22,7 @@ import static java.util.Collections.unmodifiableMap;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -69,7 +71,7 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       }
 
       p.nextToken();
-      literalMap.put(fieldName, deserialize(p, literalType));
+      literalMap.put(fieldName, deserialize(p, ctxt, literalType));
 
       p.nextToken();
     }
@@ -77,7 +79,8 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
     return new JacksonLiteralMap(unmodifiableMap(literalMap));
   }
 
-  private static Literal deserialize(JsonParser p, LiteralType literalType) throws IOException {
+  private static Literal deserialize(
+      JsonParser p, DeserializationContext ctxt, LiteralType literalType) throws IOException {
     switch (literalType.getKind()) {
       case SIMPLE_TYPE:
         return deserialize(p, literalType.simpleType());
@@ -88,7 +91,7 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
         verifyToken(p, JsonToken.START_ARRAY);
 
         while (p.nextToken() != JsonToken.END_ARRAY) {
-          collection.add(deserialize(p, literalType.collectionType()));
+          collection.add(deserialize(p, ctxt, literalType.collectionType()));
         }
 
         return Literal.ofCollection(unmodifiableList(collection));
@@ -104,15 +107,20 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
           String fieldName = p.currentName();
 
           p.nextToken();
-          map.put(fieldName, deserialize(p, literalType.mapValueType()));
+          map.put(fieldName, deserialize(p, ctxt, literalType.mapValueType()));
 
           p.nextToken();
         }
 
         return Literal.ofMap(unmodifiableMap(map));
 
-      case SCHEMA_TYPE:
       case BLOB_TYPE:
+        JavaType type = ctxt.constructType(Blob.class);
+        Blob blob = (Blob) ctxt.findNonContextualValueDeserializer(type).deserialize(p, ctxt);
+
+        return Literal.ofScalar(Scalar.ofBlob(blob));
+
+      case SCHEMA_TYPE:
         throw new IllegalArgumentException(
             String.format("Unsupported LiteralType.Kind: [%s]", literalType.getKind()));
     }

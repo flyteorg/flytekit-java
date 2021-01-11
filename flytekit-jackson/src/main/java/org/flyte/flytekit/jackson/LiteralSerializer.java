@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
@@ -38,7 +39,7 @@ class LiteralSerializer extends StdSerializer<Literal> {
       throws IOException {
     switch (value.kind()) {
       case SCALAR:
-        serialize(value.scalar(), gen);
+        serialize(value.scalar(), gen, serializers);
         return;
 
       case MAP:
@@ -64,7 +65,8 @@ class LiteralSerializer extends StdSerializer<Literal> {
     throw new AssertionError("Unexpected Literal.Kind: [" + value.kind() + "]");
   }
 
-  public void serialize(Scalar value, JsonGenerator gen) throws IOException {
+  public void serialize(Scalar value, JsonGenerator gen, SerializerProvider serializers)
+      throws IOException {
     switch (value.kind()) {
       case PRIMITIVE:
         serialize(value.primitive(), gen);
@@ -72,6 +74,10 @@ class LiteralSerializer extends StdSerializer<Literal> {
 
       case GENERIC:
         serialize(value.generic(), gen);
+        return;
+
+      case BLOB:
+        serializers.findValueSerializer(Blob.class).serialize(value.blob(), gen, serializers);
         return;
     }
 

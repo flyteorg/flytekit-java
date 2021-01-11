@@ -34,7 +34,6 @@ public class RemoteVoidOutputTask {
 
   @AutoValue
   public abstract static class Input {
-
     public abstract String ignore();
 
     public static Input create(String ignore) {

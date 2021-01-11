@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
@@ -128,6 +130,12 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       }
 
       return LiteralType.ofMapValueType(toLiteralType(valueType));
+    } else if (Blob.class.isAssignableFrom(type)) {
+      // TODO add annotation to specify dimensionality and format
+      BlobType blobType =
+          BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
+
+      return LiteralType.ofBlobType(blobType);
     }
 
     BeanDescription bean = getProvider().getConfig().introspect(javaType);

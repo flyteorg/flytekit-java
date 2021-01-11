@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -47,6 +50,9 @@ import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
 
+  static final BlobType BLOB_TYPE =
+      BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
+
   @Test
   public void testVariableMap() {
     Map<String, Variable> expected = new HashMap<>();
@@ -56,6 +62,7 @@ public class JacksonSdkTypeTest {
     expected.put("b", createVar(SimpleType.BOOLEAN));
     expected.put("t", createVar(SimpleType.DATETIME));
     expected.put("d", createVar(SimpleType.DURATION));
+    expected.put("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE)));
     expected.put("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))));
     expected.put("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING))));
 
@@ -66,6 +73,11 @@ public class JacksonSdkTypeTest {
   void testFromLiteralMap() {
     Instant datetime = Instant.ofEpochSecond(12, 34);
     Duration duration = Duration.ofSeconds(56, 78);
+    Blob blob =
+        Blob.builder()
+            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+            .uri("file://test")
+            .build();
     Map<String, Literal> literalMap = new HashMap<>();
     literalMap.put("i", literalOf(Primitive.ofIntegerValue(123L)));
     literalMap.put("f", literalOf(Primitive.ofFloatValue(123.0)));
@@ -73,6 +85,7 @@ public class JacksonSdkTypeTest {
     literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
+    literalMap.put("blob", literalOf(blob));
     literalMap.put(
         "l", Literal.ofCollection(singletonList(literalOf(Primitive.ofStringValue("123")))));
     literalMap.put(
@@ -90,12 +103,18 @@ public class JacksonSdkTypeTest {
                 /* b= */ true,
                 /* t= */ datetime,
                 /* d= */ duration,
+                /* blob= */ blob,
                 /* l= */ singletonList("123"),
                 /* m= */ singletonMap("marco", "polo"))));
   }
 
   @Test
   void testToLiteralMap() {
+    Blob blob =
+        Blob.builder()
+            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+            .uri("file://test")
+            .build();
     Map<String, Literal> literalMap =
         JacksonSdkType.of(AutoValueInput.class)
             .toLiteralMap(
@@ -106,6 +125,7 @@ public class JacksonSdkTypeTest {
                     /* b= */ false,
                     /* t= */ Instant.ofEpochSecond(42, 1),
                     /* d= */ Duration.ofSeconds(1, 42),
+                    /* blob= */ blob,
                     /* l= */ singletonList("foo"),
                     /* m= */ singletonMap("marco", "polo")));
 
@@ -120,6 +140,7 @@ public class JacksonSdkTypeTest {
         "l", Literal.ofCollection(singletonList(literalOf(Primitive.ofStringValue("foo")))));
     expected.put(
         "m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofStringValue("polo")))));
+    expected.put("blob", literalOf(blob));
 
     assertThat(literalMap, equalTo(expected));
   }
@@ -255,6 +276,8 @@ public class JacksonSdkTypeTest {
 
     public abstract Duration d();
 
+    public abstract Blob blob();
+
     public abstract List<String> l();
 
     public abstract Map<String, String> m();
@@ -266,9 +289,10 @@ public class JacksonSdkTypeTest {
         boolean b,
         Instant t,
         Duration d,
+        Blob blob,
         List<String> l,
         Map<String, String> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
+      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, blob, l, m);
     }
   }
 
@@ -393,5 +417,9 @@ public class JacksonSdkTypeTest {
 
   private static Literal literalOf(Primitive primitive) {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
+  }
+
+  private static Literal literalOf(Blob blob) {
+    return Literal.ofScalar(Scalar.ofBlob(blob));
   }
 }

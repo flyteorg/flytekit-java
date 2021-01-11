@@ -44,6 +44,13 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
             .withName("FibonacciWorkflowLaunchPlan2")
             .withFixedInput("fib0", 0L)
             .withFixedInput("fib1", 1L));
+
+    // Register launch plan with default inputs specified directly
+    registerLaunchPlan(
+        SdkLaunchPlan.of(new FibonacciWorkflow())
+            .withName("FibonacciWorkflowLaunchPlan3")
+            .withDefaultInput("fib0", 0L)
+            .withDefaultInput("fib1", 1L));
   }
 
   @AutoValue

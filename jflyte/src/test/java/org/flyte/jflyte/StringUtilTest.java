@@ -18,6 +18,7 @@ package org.flyte.jflyte;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,11 +26,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 public class StringUtilTest {
@@ -41,6 +44,16 @@ public class StringUtilTest {
     Literal integer = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L)));
     Literal map = Literal.ofMap(singletonMap("b", integer));
     Literal list = Literal.ofCollection(singletonList(integer));
+
+    BlobType type =
+        BlobType.builder()
+            .dimensionality(BlobType.BlobDimensionality.MULTIPART)
+            .format("csv")
+            .build();
+
+    BlobMetadata metadata = BlobMetadata.builder().type(type).build();
+
+    Blob blob = Blob.builder().metadata(metadata).uri("file://test").build();
 
     input.put("string", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("string"))));
     input.put("integer", integer);
@@ -72,6 +85,7 @@ public class StringUtilTest {
                         .put("null", Struct.Value.ofNullValue())
                         .put("struct", Struct.Value.ofStructValue(Struct.of(ImmutableMap.of())))
                         .build()))));
+    input.put("blob", Literal.ofScalar(Scalar.ofBlob(blob)));
 
     Map<String, String> expected = new HashMap<>();
     expected.put("string", "string");
@@ -86,9 +100,11 @@ public class StringUtilTest {
     expected.put("mapOfMap", "{a={b=1337}, c=1337}");
     expected.put(
         "struct", "{bool=true, string=string, list=[1.0], number=2.0, null=null, struct={}}");
+    expected.put(
+        "blob", "{uri=file://test, metadata={type={dimensionality=MULTIPART, format=csv}}}");
 
     Map<String, String> output = StringUtil.serializeLiteralMap(input);
 
-    Assert.assertEquals(expected, output);
+    assertEquals(expected, output);
   }
 }

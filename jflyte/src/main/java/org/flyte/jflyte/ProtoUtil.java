@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
@@ -98,14 +100,15 @@ class ProtoUtil {
   }
 
   static Literal deserialize(Literals.Literal literal) {
-    if (literal.hasScalar()) {
-      return Literal.ofScalar(deserialize(literal.getScalar()));
-    }
-    if (literal.hasCollection()) {
-      return Literal.ofCollection(deserialize(literal.getCollection()));
-    }
-    if (literal.hasMap()) {
-      return Literal.ofMap(deserialize(literal.getMap()));
+    switch (literal.getValueCase()) {
+      case SCALAR:
+        return Literal.ofScalar(deserialize(literal.getScalar()));
+      case COLLECTION:
+        return Literal.ofCollection(deserialize(literal.getCollection()));
+      case MAP:
+        return Literal.ofMap(deserialize(literal.getMap()));
+      case VALUE_NOT_SET:
+        // fallthrough
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Literal [%s]", literal));
@@ -119,10 +122,20 @@ class ProtoUtil {
       case GENERIC:
         return Scalar.ofGeneric(deserialize(scalar.getGeneric()));
 
-        // TODO remove `default` once we support all cases
-      default:
-        throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
+      case BLOB:
+        return Scalar.ofBlob(deserialize(scalar.getBlob()));
+
+      case BINARY:
+      case ERROR:
+      case NONE_TYPE:
+      case SCHEMA:
+        // TODO unsupported
+
+      case VALUE_NOT_SET:
+        // fallthrough
     }
+
+    throw new UnsupportedOperationException(String.format("Unsupported Scalar [%s]", scalar));
   }
 
   static Primitive deserialize(Literals.Primitive primitive) {
@@ -148,6 +161,32 @@ class ProtoUtil {
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
+  }
+
+  static Blob deserialize(Literals.Blob blob) {
+    BlobType type =
+        BlobType.builder()
+            .format(blob.getMetadata().getType().getFormat())
+            .dimensionality(deserialize(blob.getMetadata().getType().getDimensionality()))
+            .build();
+
+    BlobMetadata metadata = BlobMetadata.builder().type(type).build();
+
+    return Blob.builder().uri(blob.getUri()).metadata(metadata).build();
+  }
+
+  static BlobType.BlobDimensionality deserialize(Types.BlobType.BlobDimensionality dimensionality) {
+    switch (dimensionality) {
+      case SINGLE:
+        return BlobType.BlobDimensionality.SINGLE;
+      case MULTIPART:
+        return BlobType.BlobDimensionality.MULTIPART;
+      case UNRECOGNIZED:
+        // fallthrough
+    }
+
+    throw new UnsupportedOperationException(
+        String.format("Unsupported BlobDimensionality [%s]", dimensionality));
   }
 
   static List<Literal> deserialize(Literals.LiteralCollection literalCollection) {
@@ -485,6 +524,11 @@ class ProtoUtil {
         Struct generic = scalar.generic();
 
         return Literals.Scalar.newBuilder().setGeneric(serializeStruct(generic)).build();
+
+      case BLOB:
+        Blob blob = scalar.blob();
+
+        return Literals.Scalar.newBuilder().setBlob(serialize(blob)).build();
     }
 
     throw new AssertionError("Unexpected Scalar.Kind: " + scalar.kind());
@@ -586,6 +630,13 @@ class ProtoUtil {
     }
 
     return builder.build();
+  }
+
+  static Literals.Blob serialize(Blob blob) {
+    Literals.BlobMetadata metadata =
+        Literals.BlobMetadata.newBuilder().setType(serialize(blob.metadata().type())).build();
+
+    return Literals.Blob.newBuilder().setUri(blob.uri()).setMetadata(metadata).build();
   }
 
   static Literals.Literal serialize(Literal value) {

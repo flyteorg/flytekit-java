@@ -51,6 +51,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
@@ -740,6 +742,35 @@ class ProtoUtilTest {
   }
 
   @Test
+  void shouldSerializeBlob() {
+    BlobType type =
+        BlobType.builder()
+            .dimensionality(BlobType.BlobDimensionality.MULTIPART)
+            .format("csv")
+            .build();
+
+    BlobMetadata metadata = BlobMetadata.builder().type(type).build();
+
+    Blob blob = Blob.builder().metadata(metadata).uri("file://uri").build();
+
+    Literals.Blob proto = ProtoUtil.serialize(blob);
+
+    assertThat(
+        proto,
+        equalTo(
+            Literals.Blob.newBuilder()
+                .setMetadata(
+                    Literals.BlobMetadata.newBuilder()
+                        .setType(
+                            Types.BlobType.newBuilder()
+                                .setDimensionality(Types.BlobType.BlobDimensionality.MULTIPART)
+                                .setFormat("csv")
+                                .build()))
+                .setUri("file://uri")
+                .build()));
+  }
+
+  @Test
   void shouldDeserializeTaskId() {
     TaskIdentifier taskId =
         ProtoUtil.deserializeTaskId(
@@ -782,6 +813,35 @@ class ProtoUtilTest {
                 .domain(DOMAIN)
                 .name(WORKFLOW_NAME)
                 .version(VERSION)
+                .build()));
+  }
+
+  @Test
+  void shouldDeserializeBlob() {
+    Types.BlobType type =
+        Types.BlobType.newBuilder()
+            .setFormat("csv")
+            .setDimensionality(Types.BlobType.BlobDimensionality.MULTIPART)
+            .build();
+
+    Literals.BlobMetadata metadata = Literals.BlobMetadata.newBuilder().setType(type).build();
+
+    Literals.Blob blob =
+        Literals.Blob.newBuilder().setMetadata(metadata).setUri("file://csv").build();
+
+    assertThat(
+        ProtoUtil.deserialize(blob),
+        equalTo(
+            Blob.builder()
+                .metadata(
+                    BlobMetadata.builder()
+                        .type(
+                            BlobType.builder()
+                                .format("csv")
+                                .dimensionality(BlobType.BlobDimensionality.MULTIPART)
+                                .build())
+                        .build())
+                .uri("file://csv")
                 .build()));
   }
 

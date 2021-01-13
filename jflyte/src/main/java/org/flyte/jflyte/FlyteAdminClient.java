@@ -30,6 +30,8 @@ import flyteidl.core.IdentifierOuterClass;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -44,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a thin synchronous wrapper around the auto-generated GRPC stubs for communicating with
+ * This is a thin synchronous wrapper around the auto-generated gRPC stubs for communicating with
  * the admin service.
  */
 class FlyteAdminClient implements AutoCloseable {
@@ -91,10 +93,7 @@ class FlyteAdminClient implements AutoCloseable {
                     .build())
             .build();
 
-    // create operation is idempotent, so it's fine to retry
-    TaskOuterClass.TaskCreateResponse response = retries.retry(() -> stub.createTask(request));
-
-    verifyNotNull(response, "Unexpected null response when creating task: %s", id);
+    idempotentCreate("createTask", id, () -> stub.createTask(request));
   }
 
   void createWorkflow(WorkflowIdentifier id, WorkflowTemplate template) {
@@ -109,11 +108,7 @@ class FlyteAdminClient implements AutoCloseable {
                     .build())
             .build();
 
-    // create operation is idempotent, so it's fine to retry
-    WorkflowOuterClass.WorkflowCreateResponse response =
-        retries.retry(() -> stub.createWorkflow(request));
-
-    verifyNotNull(response, "Unexpected null response when creating workflow: %s", id);
+    idempotentCreate("createWorkflow", id, () -> stub.createWorkflow(request));
   }
 
   void createLaunchPlan(LaunchPlanIdentifier id, LaunchPlan launchPlan) {
@@ -137,11 +132,7 @@ class FlyteAdminClient implements AutoCloseable {
             .setSpec(specBuilder)
             .build();
 
-    // create operation is idempotent, so it's fine to retry
-    LaunchPlanOuterClass.LaunchPlanCreateResponse response =
-        retries.retry(() -> stub.createLaunchPlan(request));
-
-    verifyNotNull(response, "Unexpected null response when creating launch plan: %s", id);
+    idempotentCreate("createLaunchPlan", id, () -> stub.createLaunchPlan(request));
   }
 
   void createExecution(String domain, String project, LaunchPlanIdentifier launchPlanId) {
@@ -166,6 +157,9 @@ class FlyteAdminClient implements AutoCloseable {
             .setProject(project)
             .setSpec(spec)
             .build();
+
+    // NB: createExecution doesn't compare payloads when throwing ALREADY_EXISTS, so only using
+    // retries
 
     // create operation is idempotent, so it's fine to retry
     ExecutionOuterClass.ExecutionCreateResponse response =
@@ -222,6 +216,22 @@ class FlyteAdminClient implements AutoCloseable {
 
     IdentifierOuterClass.Identifier id = extractIdFn.apply(list.get(0));
     return deserializeFn.apply(id);
+  }
+
+  private <T> void idempotentCreate(String label, Object id, GrpcRetries.Retryable<T> retryable) {
+    try {
+      // create operation is idempotent, so it's fine to retry
+      T response = retries.retry(retryable);
+
+      verifyNotNull(response, "{} {}: Unexpected null response", label, id);
+    } catch (StatusRuntimeException e) {
+      // flyteadmin uses ALREADY_EXISTS only if payload is identical, except for executions
+      if (e.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+        LOG.debug("{} {}: ALREADY_EXISTS with identical payload", label, id);
+      } else {
+        throw e;
+      }
+    }
   }
 
   @Override

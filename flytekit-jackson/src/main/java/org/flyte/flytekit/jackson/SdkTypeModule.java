@@ -43,5 +43,8 @@ class SdkTypeModule extends Module {
 
     context.addSerializers(serializers);
     context.addDeserializers(new LiteralMapDeserializers());
+
+    // append with lowest priority to use as fallback, if builtin annotations aren't present
+    context.appendAnnotationIntrospector(new AutoValueAnnotationIntrospector());
   }
 }

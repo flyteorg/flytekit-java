@@ -16,9 +16,6 @@
  */
 package org.flyte.examples;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
@@ -52,20 +49,13 @@ public class BatchLookUpTask
   }
 
   @AutoValue
-  @JsonDeserialize(as = AutoValue_BatchLookUpTask_Input.class)
   public abstract static class Input {
     public abstract Map<String, String> getKeyValues();
 
     public abstract List<String> getSearchKeys();
-
-    @JsonCreator
-    public static Input create(Map<String, String> keyValues, List<String> searchKeys) {
-      return new AutoValue_BatchLookUpTask_Input(keyValues, searchKeys);
-    }
   }
 
   @AutoValue
-  @JsonSerialize
   public abstract static class Output {
     public abstract List<String> getValues();
 

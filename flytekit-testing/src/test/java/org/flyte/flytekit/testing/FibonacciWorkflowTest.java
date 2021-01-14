@@ -19,8 +19,6 @@ package org.flyte.flytekit.testing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
@@ -155,13 +153,11 @@ public class FibonacciWorkflowTest {
   }
 
   @AutoValue
-  @JsonSerialize
   public abstract static class FibonacciWorkflowInputs {
     public abstract long getFib0();
 
     public abstract long getFib1();
 
-    @JsonCreator
     public static FibonacciWorkflowInputs create(long fib0, long fib1) {
       return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(fib0, fib1);
     }

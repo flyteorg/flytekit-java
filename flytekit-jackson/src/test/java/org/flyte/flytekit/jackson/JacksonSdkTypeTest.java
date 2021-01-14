@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -216,8 +215,6 @@ public class JacksonSdkTypeTest {
   public static class Unannotated {}
 
   @AutoValue
-  @JsonSerialize(as = AutoValueInput.class)
-  @JsonDeserialize
   public abstract static class AutoValueInput {
     public abstract long getI();
 
@@ -235,7 +232,6 @@ public class JacksonSdkTypeTest {
 
     public abstract Map<String, String> getM();
 
-    @JsonCreator
     public static AutoValueInput create(
         long i,
         double f,
@@ -267,14 +263,11 @@ public class JacksonSdkTypeTest {
   }
 
   @AutoValue
-  @JsonSerialize(as = InputWithCustomType.class)
-  @JsonDeserialize
   public abstract static class InputWithCustomType {
     public abstract CustomType getCustomType();
 
     public abstract CustomEnum getCustomEnum();
 
-    @JsonCreator
     public static InputWithCustomType create(CustomType customType, CustomEnum customEnum) {
       return new AutoValue_JacksonSdkTypeTest_InputWithCustomType(customType, customEnum);
     }

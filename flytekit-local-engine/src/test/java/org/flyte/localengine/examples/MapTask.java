@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine.examples;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
@@ -41,7 +40,6 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
     @JsonProperty
     public abstract Map<String, Long> map();
 
-    @JsonCreator
     public static Input create(Map<String, Long> map) {
       return new AutoValue_MapTask_Input(map);
     }
@@ -52,7 +50,6 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
     @JsonProperty
     public abstract Map<String, Long> map();
 
-    @JsonCreator
     public static Output create(Map<String, Long> map) {
       return new AutoValue_MapTask_Output(map);
     }

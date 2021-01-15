@@ -216,21 +216,21 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class AutoValueInput {
-    public abstract long getI();
+    public abstract long i();
 
-    public abstract double getF();
+    public abstract double f();
 
-    public abstract String getS();
+    public abstract String s();
 
-    public abstract boolean getB();
+    public abstract boolean b();
 
-    public abstract Instant getT();
+    public abstract Instant t();
 
-    public abstract Duration getD();
+    public abstract Duration d();
 
-    public abstract List<String> getL();
+    public abstract List<String> l();
 
-    public abstract Map<String, String> getM();
+    public abstract Map<String, String> m();
 
     public static AutoValueInput create(
         long i,
@@ -264,9 +264,9 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class InputWithCustomType {
-    public abstract CustomType getCustomType();
+    public abstract CustomType customType();
 
-    public abstract CustomEnum getCustomEnum();
+    public abstract CustomEnum customEnum();
 
     public static InputWithCustomType create(CustomType customType, CustomEnum customEnum) {
       return new AutoValue_JacksonSdkTypeTest_InputWithCustomType(customType, customEnum);

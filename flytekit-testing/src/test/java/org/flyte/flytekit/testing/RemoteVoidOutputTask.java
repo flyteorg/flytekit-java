@@ -16,8 +16,6 @@
  */
 package org.flyte.flytekit.testing;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkTypes;
@@ -37,10 +35,8 @@ public class RemoteVoidOutputTask {
   @AutoValue
   public abstract static class Input {
 
-    @JsonProperty
     public abstract String ignore();
 
-    @JsonCreator
     public static Input create(String ignore) {
       return new AutoValue_RemoteVoidOutputTask_Input(/*ignore=*/ ignore);
     }

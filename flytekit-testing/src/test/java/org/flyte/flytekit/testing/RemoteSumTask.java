@@ -16,8 +16,6 @@
  */
 package org.flyte.flytekit.testing;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -35,13 +33,10 @@ public class RemoteSumTask {
 
   @AutoValue
   public abstract static class RemoteSumInput {
-    @JsonProperty
     public abstract long a();
 
-    @JsonProperty
     public abstract long b();
 
-    @JsonCreator
     public static RemoteSumInput create(long a, long b) {
       return new AutoValue_RemoteSumTask_RemoteSumInput(a, b);
     }
@@ -49,10 +44,8 @@ public class RemoteSumTask {
 
   @AutoValue
   public abstract static class RemoteSumOutput {
-    @JsonProperty
     public abstract long c();
 
-    @JsonCreator
     public static RemoteSumOutput create(long c) {
       return new AutoValue_RemoteSumTask_RemoteSumOutput(c);
     }

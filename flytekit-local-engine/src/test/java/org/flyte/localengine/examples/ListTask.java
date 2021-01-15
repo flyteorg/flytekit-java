@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine.examples;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
@@ -37,7 +36,6 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
 
   @AutoValue
   public abstract static class Input {
-    @JsonProperty
     public abstract List<Long> list();
 
     public static Input create(List<Long> list) {
@@ -47,7 +45,6 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
 
   @AutoValue
   public abstract static class Output {
-    @JsonProperty
     public abstract List<Long> list();
 
     public static Output create(List<Long> list) {

@@ -16,8 +16,6 @@
  */
 package org.flyte.examples;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
@@ -40,19 +38,13 @@ public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Vo
 
   /** Input for {@link PrintMessageTask}. */
   @AutoValue
-  @JsonDeserialize(as = AutoValue_PrintMessageTask_Input.class)
   public abstract static class Input {
-    public abstract String getMessage();
-
-    @JsonCreator
-    public static Input create(String message) {
-      return new AutoValue_PrintMessageTask_Input(message);
-    }
+    public abstract String message();
   }
 
   @Override
   public Void run(Input input) {
-    System.out.println(input.getMessage());
+    System.out.println(input.message());
 
     return null;
   }

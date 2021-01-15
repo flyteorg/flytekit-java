@@ -20,9 +20,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 class AutoValueAnnotationIntrospector extends NopAnnotationIntrospector {
@@ -68,6 +71,38 @@ class AutoValueAnnotationIntrospector extends NopAnnotationIntrospector {
     return super.findCreatorAnnotation(config, a);
   }
 
+  @Override
+  public PropertyName findNameForSerialization(Annotated a) {
+    if (!(a instanceof AnnotatedMethod)) {
+      return super.findNameForSerialization(a);
+    }
+
+    AnnotatedMethod am = (AnnotatedMethod) a;
+    Class<?> cls = am.getDeclaringClass();
+    String name = am.getName();
+
+    if (cls.getSimpleName().startsWith("AutoValue_")) {
+      Class<?> baseClass = cls.getSuperclass();
+      Method baseClassMethod;
+
+      try {
+        baseClassMethod = baseClass.getDeclaredMethod(name);
+      } catch (NoSuchMethodException e) {
+        return super.findNameForSerialization(a);
+      }
+
+      if (!isAutoValueGetter(baseClassMethod)) {
+        return super.findNameForSerialization(a);
+      }
+    } else {
+      if (!isAutoValueGetter(am.getMember())) {
+        return super.findNameForSerialization(a);
+      }
+    }
+
+    return PropertyName.USE_DEFAULT;
+  }
+
   @SuppressWarnings("unchecked")
   private static <T> Class<T> getGeneratedClass(Class<T> clazz) {
     String generatedClassName = getAutoValueGeneratedName(clazz.getName());
@@ -86,6 +121,20 @@ class AutoValueAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     return (Class<T>) generatedClass;
+  }
+
+  private static boolean isAutoValueGetter(Method method) {
+    Class<?> cls = method.getDeclaringClass();
+
+    if (method.getParameterCount() != 0) {
+      return false;
+    }
+
+    if (!Modifier.isAbstract(method.getModifiers())) {
+      return false;
+    }
+
+    return getGeneratedClass(cls) != null;
   }
 
   private static String getAutoValueGeneratedName(String baseClass) {

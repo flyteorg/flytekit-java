@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine.examples;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkRunnableTask;
@@ -30,10 +29,8 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumInput {
-    @JsonProperty
     public abstract long a();
 
-    @JsonProperty
     public abstract long b();
 
     public static SumInput create(long a, long b) {
@@ -43,7 +40,6 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumOutput {
-    @JsonProperty
     public abstract long c();
 
     public static SumOutput create(long c) {

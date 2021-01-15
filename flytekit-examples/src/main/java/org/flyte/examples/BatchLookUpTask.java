@@ -40,9 +40,9 @@ public class BatchLookUpTask
   @Override
   public Output run(Input input) {
     List<String> foundValues =
-        input.getSearchKeys().stream()
-            .filter(key -> input.getKeyValues().containsKey(key))
-            .map(key -> input.getKeyValues().get(key))
+        input.searchKeys().stream()
+            .filter(key -> input.keyValues().containsKey(key))
+            .map(key -> input.keyValues().get(key))
             .collect(Collectors.toList());
 
     return Output.create(foundValues);
@@ -50,14 +50,14 @@ public class BatchLookUpTask
 
   @AutoValue
   public abstract static class Input {
-    public abstract Map<String, String> getKeyValues();
+    public abstract Map<String, String> keyValues();
 
-    public abstract List<String> getSearchKeys();
+    public abstract List<String> searchKeys();
   }
 
   @AutoValue
   public abstract static class Output {
-    public abstract List<String> getValues();
+    public abstract List<String> values();
 
     public static Output create(List<String> values) {
       return new AutoValue_BatchLookUpTask_Output(values);

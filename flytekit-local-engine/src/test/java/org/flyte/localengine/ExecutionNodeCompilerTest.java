@@ -24,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.Struct;
+
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
@@ -240,6 +243,16 @@ class ExecutionNodeCompilerTest {
     @Override
     public RetryStrategy getRetries() {
       return RetryStrategy.builder().retries(0).build();
+    }
+
+    @Override
+    public String getType() {
+      return "java-task";
+    }
+
+    @Override
+    public Struct getCustom() {
+      return Struct.getDefaultInstance();
     }
   }
 }

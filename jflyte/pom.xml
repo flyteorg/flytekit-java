@@ -69,7 +69,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative-boringssl-static</artifactId>
     </dependency>
-    
+
     <!-- runtime -->
     <dependency>
       <groupId>org.slf4j</groupId>

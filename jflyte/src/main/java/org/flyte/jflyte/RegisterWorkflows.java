@@ -140,6 +140,8 @@ public class RegisterWorkflows implements Callable<Integer> {
         .container(container)
         .interface_(task.getInterface())
         .retries(task.getRetries())
+        .type(task.getType())
+        .custom(task.getCustom())
         .build();
   }
 

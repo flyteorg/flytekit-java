@@ -73,7 +73,6 @@ import org.flyte.api.v1.WorkflowTemplate;
 /** Utility to serialize between flytekit-api and flyteidl proto. */
 @SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtil {
-  static final String TASK_TYPE = "java-task";
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
 
@@ -189,7 +188,8 @@ class ProtoUtil {
         .setContainer(serialize(container))
         .setMetadata(metadata)
         .setInterface(serialize(taskTemplate.interface_()))
-        .setType(TASK_TYPE)
+        .setType(taskTemplate.type())
+        .setCustom(taskTemplate.custom())
         .build();
   }
 

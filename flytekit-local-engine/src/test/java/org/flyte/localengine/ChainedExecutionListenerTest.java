@@ -25,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.Struct;
+
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
@@ -91,6 +94,16 @@ public class ChainedExecutionListenerTest {
     @Override
     public RetryStrategy getRetries() {
       return RetryStrategy.builder().retries(0).build();
+    }
+
+    @Override
+    public String getType() {
+      return "java-task";
+    }
+
+    @Override
+    public Struct getCustom() {
+      return Struct.getDefaultInstance();
     }
   }
 }

@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.Struct;
 import flyteidl.admin.Common;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
@@ -149,7 +150,13 @@ public class FlyteAdminClientTest {
 
     RetryStrategy retries = RetryStrategy.builder().retries(4).build();
     TaskTemplate template =
-        TaskTemplate.builder().container(container).interface_(interface_).retries(retries).build();
+        TaskTemplate.builder()
+            .container(container)
+            .interface_(interface_)
+            .retries(retries)
+            .type("java-task")
+            .custom(Struct.getDefaultInstance())
+            .build();
 
     client.createTask(identifier, template);
 
@@ -485,7 +492,8 @@ public class FlyteAdminClientTest {
                                         .build())
                                 .build())
                         .build())
-                .setType(ProtoUtil.TASK_TYPE)
+                .setType("java-task")
+                .setCustom(Struct.getDefaultInstance())
                 .build())
         .build();
   }

@@ -29,6 +29,10 @@
   <artifactId>flytekit-api</artifactId>
 
   <dependencies>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
     <!-- provided -->
     <dependency>
       <groupId>com.google.auto.value</groupId>

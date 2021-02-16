@@ -16,7 +16,6 @@
  */
 package org.flyte.jflyte;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -232,7 +232,7 @@ public class RegisterWorkflows implements Callable<Integer> {
             .map(Artifact::location)
             .collect(Collectors.joining("\n"));
 
-    ByteSource contentBytes = ByteSource.wrap(content.getBytes(Charsets.UTF_8));
+    ByteSource contentBytes = ByteSource.wrap(content.getBytes(StandardCharsets.UTF_8));
 
     Artifact indexArtifact = stager.getArtifact("classpath", contentBytes);
 

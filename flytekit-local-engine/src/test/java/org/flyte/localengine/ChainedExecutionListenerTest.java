@@ -23,11 +23,9 @@ import static org.flyte.localengine.TestingListener.ofRetrying;
 import static org.flyte.localengine.TestingListener.ofStarting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import com.google.protobuf.Struct;
-
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
@@ -102,8 +100,8 @@ public class ChainedExecutionListenerTest {
     }
 
     @Override
-    public Struct getCustom() {
-      return Struct.getDefaultInstance();
+    public Map<String, Literal> getCustom() {
+      return Collections.emptyMap();
     }
   }
 }

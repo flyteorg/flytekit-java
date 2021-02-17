@@ -17,8 +17,7 @@
 package org.flyte.flytekit;
 
 import com.google.auto.service.AutoService;
-import com.google.protobuf.Struct;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -43,6 +42,8 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
   private static class RunnableTaskImpl<InputT, OutputT> implements RunnableTask {
     private static final String TASK_TYPE = "java-task";
+    private static final Map<String, Literal> TASK_CUSTOM = Collections.emptyMap();
+
     private final SdkRunnableTask<InputT, OutputT> sdkTask;
 
     private RunnableTaskImpl(SdkRunnableTask<InputT, OutputT> sdkTask) {
@@ -81,8 +82,8 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
 
     @Override
-    public Struct getCustom() {
-      return Struct.getDefaultInstance();
+    public Map<String, Literal> getCustom() {
+      return TASK_CUSTOM;
     }
   }
 

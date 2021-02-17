@@ -22,6 +22,9 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import flyteidl.admin.Common;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Errors;
@@ -184,12 +187,13 @@ class ProtoUtil {
         requireNonNull(
             taskTemplate.container(), "Only container based task templates are supported");
 
+    Struct custom = ProtoUtil.fromLiteralMap(taskTemplate.custom());
     return Tasks.TaskTemplate.newBuilder()
         .setContainer(serialize(container))
         .setMetadata(metadata)
         .setInterface(serialize(taskTemplate.interface_()))
         .setType(taskTemplate.type())
-        .setCustom(taskTemplate.custom())
+        .setCustom(custom)
         .build();
   }
 
@@ -581,5 +585,49 @@ class ProtoUtil {
     }
 
     return ScheduleOuterClass.Schedule.newBuilder().setCronSchedule(builder.build()).build();
+  }
+
+  static Struct fromLiteralMap(Map<String, Literal> literalMap) {
+    Struct.Builder builder = Struct.newBuilder();
+    literalMap
+        .entrySet()
+        .forEach(entry -> builder.putFields(entry.getKey(), fromLiteral(entry.getValue())));
+    return builder.build();
+  }
+
+  private static Value fromLiteral(Literal literal) {
+    switch (literal.kind()) {
+      case SCALAR:
+        return fromPrimitive(literal.scalar().primitive());
+      case COLLECTION:
+        List<Value> collect =
+            literal.collection().stream().map(ProtoUtil::fromLiteral).collect(toList());
+        return Value.newBuilder()
+            .setListValue(ListValue.newBuilder().addAllValues(collect).build())
+            .build();
+      case MAP:
+        return Value.newBuilder().setStructValue(fromLiteralMap(literal.map())).build();
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
+  private static Value fromPrimitive(Primitive primitive) {
+    switch (primitive.type()) {
+      case INTEGER:
+        return Value.newBuilder().setNumberValue(primitive.integer()).build();
+      case FLOAT:
+        return Value.newBuilder().setNumberValue(primitive.float_()).build();
+      case STRING:
+        return Value.newBuilder().setStringValue(primitive.string()).build();
+      case BOOLEAN:
+        return Value.newBuilder().setBoolValue(primitive.boolean_()).build();
+      case DATETIME:
+        return Value.newBuilder().setStringValue(primitive.datetime().toString()).build();
+      case DURATION:
+        return Value.newBuilder().setStringValue(primitive.duration().toString()).build();
+      default:
+        throw new IllegalArgumentException();
+    }
   }
 }

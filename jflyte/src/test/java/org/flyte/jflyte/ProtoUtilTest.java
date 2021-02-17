@@ -44,6 +44,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -339,7 +340,7 @@ class ProtoUtilTest {
             .interface_(interface_)
             .retries(retries)
             .type("java-task")
-            .custom(Struct.getDefaultInstance())
+            .custom(Collections.emptyMap())
             .build();
 
     Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
@@ -776,6 +777,35 @@ class ProtoUtilTest {
                 .name(WORKFLOW_NAME)
                 .version(VERSION)
                 .build()));
+  }
+
+  @Test
+  void shouldConvertEmptyLiteralMapToStruct() {
+    Struct emptyStruct = ProtoUtil.fromLiteralMap(Collections.emptyMap());
+    assertEquals(0, emptyStruct.getFieldsCount());
+  }
+
+  @Test
+  void shouldConvertLiteralMapToStruct() {
+    Map<String, Literal> expected = new HashMap<>();
+    expected.put("i", literalOf(Primitive.ofInteger(42L)));
+    expected.put("f", literalOf(Primitive.ofFloat(42.0d)));
+    expected.put("s", literalOf(Primitive.ofString("42")));
+    expected.put("b", literalOf(Primitive.ofBoolean(false)));
+    expected.put("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1))));
+    expected.put("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42))));
+    expected.put("l", Literal.ofCollection(singletonList(literalOf(Primitive.ofString("foo")))));
+    expected.put("m", Literal.ofMap(singletonMap("marco", literalOf(Primitive.ofString("polo")))));
+
+    Struct struct = ProtoUtil.fromLiteralMap(expected);
+    assertEquals(expected.size(), struct.getFieldsCount());
+    assertEquals(
+        expected.get("l").collection().size(),
+        struct.getFieldsOrThrow("l").getListValue().getValuesCount());
+  }
+
+  private static Literal literalOf(Primitive primitive) {
+    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
   private Node createNode(String id) {

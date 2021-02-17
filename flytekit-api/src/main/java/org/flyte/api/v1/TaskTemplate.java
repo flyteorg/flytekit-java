@@ -17,8 +17,7 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import com.google.protobuf.Struct;
-
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -35,7 +34,7 @@ public abstract class TaskTemplate {
 
   public abstract RetryStrategy retries();
 
-  public abstract Struct custom();
+  public abstract Map<String, Literal> custom();
 
   public abstract String type();
 
@@ -52,7 +51,7 @@ public abstract class TaskTemplate {
 
     public abstract Builder retries(RetryStrategy retries);
 
-    public abstract Builder custom(Struct message);
+    public abstract Builder custom(Map<String, Literal> literals);
 
     public abstract Builder type(String type);
 

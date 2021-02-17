@@ -155,7 +155,7 @@ public class FlyteAdminClientTest {
             .interface_(interface_)
             .retries(retries)
             .type("java-task")
-            .custom(Struct.getDefaultInstance())
+            .custom(Collections.emptyMap())
             .build();
 
     client.createTask(identifier, template);

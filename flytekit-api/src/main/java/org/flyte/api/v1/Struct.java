@@ -26,7 +26,7 @@ public abstract class Struct {
 
   public abstract Map<String, Value> fields();
 
-  public static Struct create(Map<String, Value> fields) {
+  public static Struct of(Map<String, Value> fields) {
     return new AutoValue_Struct(fields);
   }
 

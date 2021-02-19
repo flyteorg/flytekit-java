@@ -44,6 +44,10 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     this.outputType = null;
   }
 
+  public String getType() {
+    return "java-task";
+  }
+
   public String getName() {
     return getClass().getName();
   }

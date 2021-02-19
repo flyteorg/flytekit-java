@@ -31,7 +31,11 @@ public abstract class TaskTemplate {
 
   public abstract TypedInterface interface_();
 
+  public abstract String type();
+
   public abstract RetryStrategy retries();
+
+  public abstract Struct custom();
 
   public static Builder builder() {
     return new AutoValue_TaskTemplate.Builder();
@@ -45,6 +49,10 @@ public abstract class TaskTemplate {
     public abstract Builder interface_(TypedInterface interface_);
 
     public abstract Builder retries(RetryStrategy retries);
+
+    public abstract Builder type(String type);
+
+    public abstract Builder custom(Struct custom);
 
     public abstract TaskTemplate build();
   }

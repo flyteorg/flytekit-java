@@ -60,7 +60,7 @@ public class StringUtilTest {
         "struct",
         Literal.ofScalar(
             Scalar.ofGeneric(
-                Struct.create(
+                Struct.of(
                     ImmutableMap.<String, Struct.Value>builder()
                         .put("bool", Struct.Value.ofBoolValue(true))
                         .put("string", Struct.Value.ofStringValue("string"))
@@ -70,7 +70,7 @@ public class StringUtilTest {
                                 ImmutableList.of(Struct.Value.ofNumberValue(1))))
                         .put("number", Struct.Value.ofNumberValue(2))
                         .put("null", Struct.Value.ofNullValue())
-                        .put("struct", Struct.Value.ofStructValue(Struct.create(ImmutableMap.of())))
+                        .put("struct", Struct.Value.ofStructValue(Struct.of(ImmutableMap.of())))
                         .build()))));
 
     Map<String, String> expected = new HashMap<>();

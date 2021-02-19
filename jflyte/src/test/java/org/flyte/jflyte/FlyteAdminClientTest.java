@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.flyte.jflyte.ApiUtils.createVar;
 import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
@@ -66,6 +67,7 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
@@ -152,7 +154,13 @@ public class FlyteAdminClientTest {
 
     RetryStrategy retries = RetryStrategy.builder().retries(4).build();
     TaskTemplate template =
-        TaskTemplate.builder().container(container).interface_(interface_).retries(retries).build();
+        TaskTemplate.builder()
+            .container(container)
+            .type("custom-task")
+            .interface_(interface_)
+            .custom(Struct.of(emptyMap()))
+            .retries(retries)
+            .build();
 
     client.createTask(identifier, template);
 
@@ -523,7 +531,8 @@ public class FlyteAdminClientTest {
                                         .build())
                                 .build())
                         .build())
-                .setType(ProtoUtil.TASK_TYPE)
+                .setType("custom-task")
+                .setCustom(com.google.protobuf.Struct.newBuilder().build())
                 .build())
         .build();
   }

@@ -16,6 +16,10 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,7 +33,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -42,6 +48,7 @@ import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -54,7 +61,6 @@ import picocli.CommandLine.Option;
 /** Registers all workflows on classpath. */
 @Command(name = "workflows")
 public class RegisterWorkflows implements Callable<Integer> {
-
   @SuppressWarnings("UnusedVariable")
   @Option(
       names = {"-p", "--project"},
@@ -115,8 +121,12 @@ public class RegisterWorkflows implements Callable<Integer> {
     }
   }
 
-  private TaskTemplate createTaskTemplate(
-      RunnableTask task, String indexFileLocation, String image, List<KeyValuePair> env) {
+  private static TaskTemplate createTaskTemplate(
+      RunnableTask task,
+      String indexFileLocation,
+      Struct defaultCustom,
+      String image,
+      List<KeyValuePair> env) {
     Container container =
         Container.builder()
             .command(ImmutableList.of())
@@ -136,10 +146,16 @@ public class RegisterWorkflows implements Callable<Integer> {
             .env(env)
             .build();
 
+    // task's custom takes precedence over defaultCustom, that is "jflyte" struct
+    // so anything in task's custom can override it
+    Struct custom = merge(task.getCustom(), defaultCustom);
+
     return TaskTemplate.builder()
         .container(container)
         .interface_(task.getInterface())
         .retries(task.getRetries())
+        .type(task.getType())
+        .custom(custom)
         .build();
   }
 
@@ -158,7 +174,7 @@ public class RegisterWorkflows implements Callable<Integer> {
     List<KeyValuePair> envList =
         env.entrySet().stream()
             .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
+            .collect(toList());
 
     // before we run anything, switch class loader, because we will be touching user classes;
     // setting it in thread context will give us access to the right class loader
@@ -187,10 +203,13 @@ public class RegisterWorkflows implements Callable<Integer> {
       TaskIdentifier taskId = entry.getKey();
       RunnableTask task = entry.getValue();
 
+      Struct defaultCustom = serializeToStruct(indexFile.location(), artifacts);
+
       TaskTemplate taskTemplate =
           createTaskTemplate(
               task,
               /* indexFileLocation= */ indexFile.location(),
+              /* defaultCustom= */ defaultCustom,
               /* image= */ image,
               /* env= */ envList);
 
@@ -214,8 +233,7 @@ public class RegisterWorkflows implements Callable<Integer> {
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {
     try (Stream<Path> fileStream = Files.list(Paths.get(packageDir))) {
-      List<String> files =
-          fileStream.map(x -> x.toFile().getAbsolutePath()).collect(Collectors.toList());
+      List<String> files = fileStream.map(x -> x.toFile().getAbsolutePath()).collect(toList());
 
       return stager.stageFiles(files);
     } catch (IOException e) {
@@ -239,5 +257,38 @@ public class RegisterWorkflows implements Callable<Integer> {
     stager.stageArtifact(indexArtifact, contentBytes);
 
     return indexArtifact;
+  }
+
+  @VisibleForTesting
+  static Struct serializeToStruct(String indexFileLocation, List<Artifact> artifacts) {
+    Struct jflyte =
+        Struct.of(
+            ImmutableMap.of(
+                "index_file_location",
+                Struct.Value.ofStringValue(indexFileLocation),
+                "artifacts",
+                Struct.Value.ofListValue(
+                    artifacts.stream()
+                        .map(RegisterWorkflows::serializeToStruct)
+                        .map(Struct.Value::ofStructValue)
+                        .collect(collectingAndThen(toList(), Collections::unmodifiableList)))));
+
+    return Struct.of(ImmutableMap.of("jflyte", Struct.Value.ofStructValue(jflyte)));
+  }
+
+  @VisibleForTesting
+  static Struct merge(Struct source, Struct target) {
+    Map<String, Struct.Value> fields = new HashMap<>(target.fields());
+    fields.putAll(source.fields());
+
+    return Struct.of(Collections.unmodifiableMap(fields));
+  }
+
+  private static Struct serializeToStruct(Artifact artifact) {
+    // we don't add size because we aren't sure if we want to expose it
+    return Struct.of(
+        ImmutableMap.of(
+            "name", Struct.Value.ofStringValue(artifact.name()),
+            "location", Struct.Value.ofStringValue(artifact.location())));
   }
 }

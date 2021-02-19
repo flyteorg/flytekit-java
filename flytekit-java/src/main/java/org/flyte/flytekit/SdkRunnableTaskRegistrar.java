@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Collections.emptyMap;
+
 import com.google.auto.service.AutoService;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
@@ -44,6 +47,22 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
     private RunnableTaskImpl(SdkRunnableTask<InputT, OutputT> sdkTask) {
       this.sdkTask = sdkTask;
+    }
+
+    @Override
+    public String getType() {
+      return sdkTask.getType();
+    }
+
+    @Override
+    public Struct getCustom() {
+      // TODO add a way to build struct into SdkRunnableTask
+      //
+      // the most obvious way of adding `Struct getCustom()` is not preferable
+      // because we don't want users to directly interact with flytekit-api interfaces
+      // in their code.
+
+      return Struct.of(emptyMap());
     }
 
     @Override

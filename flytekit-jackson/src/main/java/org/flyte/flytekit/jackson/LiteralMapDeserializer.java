@@ -178,7 +178,7 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       p.nextToken();
     }
 
-    return Struct.create(unmodifiableMap(fields));
+    return Struct.of(unmodifiableMap(fields));
   }
 
   private static Struct.Value readValueAsStructValue(JsonParser p) throws IOException {

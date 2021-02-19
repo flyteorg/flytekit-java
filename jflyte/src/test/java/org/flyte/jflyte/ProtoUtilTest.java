@@ -190,7 +190,7 @@ class ProtoUtilTest {
             .build();
 
     Struct struct =
-        Struct.create(
+        Struct.of(
             ImmutableMap.<String, Struct.Value>builder()
                 .put("stringValue", Struct.Value.ofStringValue("string"))
                 .put("boolValue", Struct.Value.ofBoolValue(true))
@@ -206,7 +206,7 @@ class ProtoUtilTest {
                 .put(
                     "structValue",
                     Struct.Value.ofStructValue(
-                        Struct.create(
+                        Struct.of(
                             ImmutableMap.of("stringValue", Struct.Value.ofStringValue("string")))))
                 .build());
 
@@ -405,7 +405,15 @@ class ProtoUtilTest {
     RetryStrategy retries = RetryStrategy.builder().retries(4).build();
 
     TaskTemplate template =
-        TaskTemplate.builder().container(container).interface_(interface_).retries(retries).build();
+        TaskTemplate.builder()
+            .container(container)
+            .type("custom-task")
+            .interface_(interface_)
+            .retries(retries)
+            .custom(
+                Struct.of(
+                    ImmutableMap.of("custom-prop", Struct.Value.ofStringValue("custom-value"))))
+            .build();
 
     Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
 
@@ -459,7 +467,13 @@ class ProtoUtilTest {
                                         .build())
                                 .build())
                         .build())
-                .setType(ProtoUtil.TASK_TYPE)
+                .setType("custom-task")
+                .setCustom(
+                    com.google.protobuf.Struct.newBuilder()
+                        .putFields(
+                            "custom-prop",
+                            Value.newBuilder().setStringValue("custom-value").build())
+                        .build())
                 .build()));
   }
 

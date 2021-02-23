@@ -111,6 +111,6 @@ public abstract class SdkStruct {
       return value == null ? Value.ofNullValue() : fn.apply(value);
     }
 
-    abstract SdkStruct build();
+    public abstract SdkStruct build();
   }
 }

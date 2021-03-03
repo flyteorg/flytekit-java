@@ -55,12 +55,17 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.jflyte.api.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /** Registers all workflows on classpath. */
 @Command(name = "workflows")
 public class RegisterWorkflows implements Callable<Integer> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RegisterWorkflows.class);
+
   @SuppressWarnings("UnusedVariable")
   @Option(
       names = {"-p", "--project"},
@@ -91,11 +96,10 @@ public class RegisterWorkflows implements Callable<Integer> {
   @Override
   public Integer call() {
     Config config = Config.load();
-    ArtifactStager stager = getArtifactStager(config);
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure())) {
-      registerAll(stager, config.image(), adminClient);
+      registerAll(config, adminClient);
     }
 
     return 0;
@@ -159,22 +163,14 @@ public class RegisterWorkflows implements Callable<Integer> {
         .build();
   }
 
-  private void registerAll(ArtifactStager stager, String image, FlyteAdminClient adminClient) {
+  private void registerAll(Config config, FlyteAdminClient adminClient) {
     ClassLoader packageClassLoader = ClassLoaders.forDirectory(new File(packageDir));
-
-    List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
-    Artifact indexFile = stageIndexFile(stager, artifacts);
 
     Map<String, String> env =
         ImmutableMap.of(
             "JFLYTE_DOMAIN", domain,
             "JFLYTE_PROJECT", project,
             "JFLYTE_VERSION", version);
-
-    List<KeyValuePair> envList =
-        env.entrySet().stream()
-            .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
-            .collect(toList());
 
     // before we run anything, switch class loader, because we will be touching user classes;
     // setting it in thread context will give us access to the right class loader
@@ -199,22 +195,7 @@ public class RegisterWorkflows implements Callable<Integer> {
             .version(version)
             .build();
 
-    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
-      TaskIdentifier taskId = entry.getKey();
-      RunnableTask task = entry.getValue();
-
-      Struct defaultCustom = serializeToStruct(indexFile.location(), artifacts);
-
-      TaskTemplate taskTemplate =
-          createTaskTemplate(
-              task,
-              /* indexFileLocation= */ indexFile.location(),
-              /* defaultCustom= */ defaultCustom,
-              /* image= */ image,
-              /* env= */ envList);
-
-      adminClient.createTask(taskId, taskTemplate);
-    }
+    registerTasks(config, adminClient, tasks, env);
 
     for (Map.Entry<WorkflowIdentifier, WorkflowTemplate> entry : workflows.entrySet()) {
       WorkflowIdentifier workflowId = entry.getKey();
@@ -228,6 +209,45 @@ public class RegisterWorkflows implements Callable<Integer> {
       LaunchPlan launchPlan = identifierRewrite.apply(entry.getValue());
 
       adminClient.createLaunchPlan(launchPlanId, launchPlan);
+    }
+  }
+
+  private void registerTasks(
+      Config config,
+      FlyteAdminClient adminClient,
+      Map<TaskIdentifier, RunnableTask> tasks,
+      Map<String, String> env) {
+
+    if (tasks.isEmpty()) {
+      LOG.info("Skipping artifact staging because there are no runnable tasks");
+      return;
+    }
+
+    List<KeyValuePair> envList =
+        env.entrySet().stream()
+            .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
+            .collect(toList());
+
+    ArtifactStager stager = getArtifactStager(config);
+
+    List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
+    Artifact indexFile = stageIndexFile(stager, artifacts);
+
+    for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
+      TaskIdentifier taskId = entry.getKey();
+      RunnableTask task = entry.getValue();
+
+      Struct defaultCustom = serializeToStruct(indexFile.location(), artifacts);
+
+      TaskTemplate taskTemplate =
+          createTaskTemplate(
+              task,
+              /* indexFileLocation= */ indexFile.location(),
+              /* defaultCustom= */ defaultCustom,
+              /* image= */ config.image(),
+              /* env= */ envList);
+
+      adminClient.createTask(taskId, taskTemplate);
     }
   }
 

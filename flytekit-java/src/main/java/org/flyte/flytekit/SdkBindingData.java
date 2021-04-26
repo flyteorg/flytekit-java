@@ -91,6 +91,13 @@ public abstract class SdkBindingData {
     return create(bindingData, literalType);
   }
 
+  public static SdkBindingData ofStruct(SdkStruct struct) {
+    BindingData bindingData = BindingData.ofScalar(Scalar.ofGeneric(struct.struct()));
+    LiteralType literalType = LiteralType.ofSimpleType(SimpleType.STRUCT);
+
+    return create(bindingData, literalType);
+  }
+
   private static SimpleType getSimpleType(Primitive.Kind kind) {
     switch (kind) {
       case INTEGER_VALUE:

@@ -18,6 +18,7 @@ package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * A Workflow graph Node. One unit of execution in the graph. Each node can be linked to a Task, a
@@ -30,7 +31,11 @@ public abstract class Node {
 
   public abstract String id();
 
+  @Nullable
   public abstract TaskNode taskNode();
+
+  @Nullable
+  public abstract BranchNode branchNode();
 
   public abstract List<Binding> inputs();
 
@@ -51,6 +56,8 @@ public abstract class Node {
     public abstract Builder inputs(List<Binding> inputs);
 
     public abstract Builder upstreamNodeIds(List<String> upstreamNodeIds);
+
+    public abstract Builder branchNode(BranchNode branchNode);
 
     public abstract Node build();
   }

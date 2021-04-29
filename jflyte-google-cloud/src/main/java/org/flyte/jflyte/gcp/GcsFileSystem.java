@@ -43,9 +43,9 @@ public class GcsFileSystem implements FileSystem {
   private static final Pattern GCS_URI =
       Pattern.compile("(?<SCHEME>[^:]+)://(?<BUCKET>[^/]+)(/(?<OBJECT>.*))?");
 
-  private final Storage storage;
+  private final Supplier<Storage> storage;
 
-  GcsFileSystem(Storage storage) {
+  GcsFileSystem(Supplier<Storage> storage) {
     this.storage = Objects.requireNonNull(storage);
   }
 
@@ -57,7 +57,8 @@ public class GcsFileSystem implements FileSystem {
   @Override
   @MustBeClosed
   public ReadableByteChannel reader(String uri) {
-    Blob blob = guard(() -> storage.get(parseUri(uri)), () -> "Couldn't read resource: " + uri);
+    Blob blob =
+        guard(() -> storage.get().get(parseUri(uri)), () -> "Couldn't read resource: " + uri);
 
     if (blob == null) {
       throw new IllegalArgumentException("Resource doesn't exist: " + uri);
@@ -69,7 +70,7 @@ public class GcsFileSystem implements FileSystem {
   @Override
   public WritableByteChannel writer(String uri) {
     return guard(
-        () -> storage.writer(BlobInfo.newBuilder(parseUri(uri)).build()),
+        () -> storage.get().writer(BlobInfo.newBuilder(parseUri(uri)).build()),
         () -> "Couldn't write resource: " + uri);
   }
 
@@ -77,7 +78,9 @@ public class GcsFileSystem implements FileSystem {
   @Override
   public Manifest getManifest(String uri) {
     Blob blob =
-        guard(() -> storage.get(parseUri(uri)), () -> "Couldn't get manifest for resource: " + uri);
+        guard(
+            () -> storage.get().get(parseUri(uri)),
+            () -> "Couldn't get manifest for resource: " + uri);
 
     if (blob == null) {
       return null;

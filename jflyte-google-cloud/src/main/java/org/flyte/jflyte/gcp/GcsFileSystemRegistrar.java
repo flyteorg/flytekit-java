@@ -21,12 +21,14 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ImpersonatedCredentials;
 import com.google.auto.service.AutoService;
+import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flyte.jflyte.api.FileSystem;
@@ -48,11 +50,22 @@ public class GcsFileSystemRegistrar extends FileSystemRegistrar {
 
   @Override
   public Iterable<FileSystem> load(Map<String, String> env) {
-    Credentials credentials = getCredentials(env);
-    StorageOptions options =
-        StorageOptions.getDefaultInstance().toBuilder().setCredentials(credentials).build();
+    // lazily instantiate service so we don't break if credentials are absent unless we use GCS file
+    // system
+    Supplier<Storage> storageSupplier =
+        () -> {
+          Credentials credentials = getCredentials(env);
+          StorageOptions options =
+              StorageOptions.getDefaultInstance().toBuilder().setCredentials(credentials).build();
 
-    return Collections.singletonList(new GcsFileSystem(options.getService()));
+          return options.getService();
+        };
+
+    return Collections.singletonList(new GcsFileSystem(memoize(storageSupplier)));
+  }
+
+  static <T> java.util.function.Supplier<T> memoize(Supplier<T> supplier) {
+    return com.google.common.base.Suppliers.memoize(supplier::get)::get;
   }
 
   private static Credentials getCredentials(Map<String, String> env) {

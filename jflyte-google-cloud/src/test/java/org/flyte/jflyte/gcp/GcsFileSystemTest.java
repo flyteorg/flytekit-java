@@ -52,7 +52,7 @@ class GcsFileSystemTest {
 
   @BeforeEach
   void setUp() {
-    gcsFs = new GcsFileSystem(storage);
+    gcsFs = new GcsFileSystem(() -> storage);
   }
 
   @Test

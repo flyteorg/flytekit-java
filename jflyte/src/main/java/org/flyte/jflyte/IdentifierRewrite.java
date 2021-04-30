@@ -16,12 +16,18 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Verify;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
@@ -45,17 +51,50 @@ abstract class IdentifierRewrite {
   abstract FlyteAdminClient adminClient();
 
   WorkflowTemplate apply(WorkflowTemplate template) {
-    List<Node> newNodes = template.nodes().stream().map(this::apply).collect(Collectors.toList());
+    List<Node> newNodes = template.nodes().stream().map(this::apply).collect(toList());
 
     return template.toBuilder().nodes(newNodes).build();
   }
 
-  private Node apply(Node node) {
-    return node.toBuilder().taskNode(apply(node.taskNode())).build();
+  private Node apply(@Nullable Node node) {
+    if (node == null) {
+      return null;
+    }
+
+    return node.toBuilder()
+        .branchNode(apply(node.branchNode()))
+        .taskNode(apply(node.taskNode()))
+        .build();
   }
 
-  private TaskNode apply(TaskNode taskNode) {
+  private TaskNode apply(@Nullable TaskNode taskNode) {
+    if (taskNode == null) {
+      return null;
+    }
+
     return TaskNode.builder().referenceId(apply(taskNode.referenceId())).build();
+  }
+
+  @VisibleForTesting
+  BranchNode apply(@Nullable BranchNode branchNode) {
+    if (branchNode == null) {
+      return null;
+    }
+
+    return branchNode.toBuilder().ifElse(apply(branchNode.ifElse())).build();
+  }
+
+  private IfElseBlock apply(IfElseBlock ifElse) {
+    return ifElse
+        .toBuilder()
+        .case_(apply(ifElse.case_()))
+        .other(ifElse.other().stream().map(this::apply).collect(toList()))
+        .elseNode(apply(ifElse.elseNode()))
+        .build();
+  }
+
+  private IfBlock apply(IfBlock ifBlock) {
+    return ifBlock.toBuilder().thenNode(apply(ifBlock.thenNode())).build();
   }
 
   // Visible for testing

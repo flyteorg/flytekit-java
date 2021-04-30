@@ -34,6 +34,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import flyteidl.admin.ScheduleOuterClass;
+import flyteidl.core.Condition;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -54,15 +55,23 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.Identifier;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -572,6 +581,114 @@ class ProtoUtilTest {
                 .build()));
   }
 
+  @Test
+  void shouldSerializeBranchNode() {
+    ComparisonExpression comparison =
+        ComparisonExpression.builder()
+            .operator(ComparisonExpression.Operator.EQ)
+            .leftValue(Operand.ofVar("a"))
+            .rightValue(Operand.ofVar("b"))
+            .build();
+
+    Condition.ComparisonExpression comparisonProto =
+        Condition.ComparisonExpression.newBuilder()
+            .setOperator(Condition.ComparisonExpression.Operator.EQ)
+            .setLeftValue(Condition.Operand.newBuilder().setVar("a").build())
+            .setRightValue(Condition.Operand.newBuilder().setVar("b").build())
+            .build();
+
+    IfBlock ifBlock =
+        IfBlock.builder()
+            .condition(BooleanExpression.ofComparison(comparison))
+            .thenNode(
+                Node.builder()
+                    .id("node-1")
+                    .upstreamNodeIds(ImmutableList.of())
+                    .inputs(ImmutableList.of())
+                    .build())
+            .build();
+
+    Workflow.IfBlock ifBlockProto =
+        Workflow.IfBlock.newBuilder()
+            .setThenNode(Workflow.Node.newBuilder().setId("node-1").build())
+            .setCondition(
+                Condition.BooleanExpression.newBuilder().setComparison(comparisonProto).build())
+            .build();
+
+    IfElseBlock ifElse =
+        IfElseBlock.builder()
+            .case_(ifBlock)
+            .other(ImmutableList.of(ifBlock))
+            .elseNode(ifBlock.thenNode())
+            .build();
+
+    Workflow.IfElseBlock ifElseProto =
+        Workflow.IfElseBlock.newBuilder()
+            .setCase(ifBlockProto)
+            .addOther(ifBlockProto)
+            .setElseNode(ifBlockProto.getThenNode())
+            .build();
+
+    BranchNode branchNode = BranchNode.builder().ifElse(ifElse).build();
+
+    Workflow.BranchNode branchNodeProto =
+        Workflow.BranchNode.newBuilder().setIfElse(ifElseProto).build();
+
+    assertThat(ProtoUtil.serialize(branchNode), equalTo(branchNodeProto));
+  }
+
+  @Test
+  void shouldSerializeBooleanExpressionForConjunction() {
+    BooleanExpression left =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .operator(ComparisonExpression.Operator.EQ)
+                .leftValue(Operand.ofVar("a"))
+                .rightValue(Operand.ofVar("b"))
+                .build());
+
+    BooleanExpression right =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .operator(ComparisonExpression.Operator.EQ)
+                .leftValue(Operand.ofVar("c"))
+                .rightValue(Operand.ofVar("d"))
+                .build());
+
+    Condition.BooleanExpression leftProto =
+        Condition.BooleanExpression.newBuilder()
+            .setComparison(
+                Condition.ComparisonExpression.newBuilder()
+                    .setOperator(Condition.ComparisonExpression.Operator.EQ)
+                    .setLeftValue(Condition.Operand.newBuilder().setVar("a").build())
+                    .setRightValue(Condition.Operand.newBuilder().setVar("b").build())
+                    .build())
+            .build();
+
+    Condition.BooleanExpression rightProto =
+        Condition.BooleanExpression.newBuilder()
+            .setComparison(
+                Condition.ComparisonExpression.newBuilder()
+                    .setOperator(Condition.ComparisonExpression.Operator.EQ)
+                    .setLeftValue(Condition.Operand.newBuilder().setVar("c").build())
+                    .setRightValue(Condition.Operand.newBuilder().setVar("d").build())
+                    .build())
+            .build();
+
+    ConjunctionExpression conjunction =
+        ConjunctionExpression.create(ConjunctionExpression.LogicalOperator.AND, left, right);
+    Condition.ConjunctionExpression conjunctionProto =
+        Condition.ConjunctionExpression.newBuilder()
+            .setLeftExpression(leftProto)
+            .setRightExpression(rightProto)
+            .setOperator(Condition.ConjunctionExpression.LogicalOperator.AND)
+            .build();
+
+    assertThat(
+        ProtoUtil.serialize(BooleanExpression.ofConjunction(conjunction)),
+        equalTo(Condition.BooleanExpression.newBuilder().setConjunction(conjunctionProto).build()));
+  }
+
   @ParameterizedTest
   @MethodSource("createSimpleSerializeLiteralArguments")
   void shouldSerializeSimpleLiteralTypes(LiteralType input, Types.LiteralType expected) {
@@ -767,6 +884,21 @@ class ProtoUtilTest {
                                 .setFormat("csv")
                                 .build()))
                 .setUri("file://uri")
+                .build()));
+  }
+
+  @Test
+  void shouldSerializeNodeError() {
+    NodeError error = NodeError.builder().failedNodeId("node-1").message("Internal error").build();
+
+    Types.Error proto = ProtoUtil.serialize(error);
+
+    assertThat(
+        proto,
+        equalTo(
+            Types.Error.newBuilder()
+                .setFailedNodeId("node-1")
+                .setMessage("Internal error")
                 .build()));
   }
 

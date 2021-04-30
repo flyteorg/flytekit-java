@@ -28,6 +28,7 @@ import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import flyteidl.admin.Common;
 import flyteidl.admin.ScheduleOuterClass;
+import flyteidl.core.Condition;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -50,15 +51,23 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.CronSchedule;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialIdentifier;
@@ -460,10 +469,15 @@ class ProtoUtil {
   private static Workflow.Node serialize(Node node) {
 
     Workflow.Node.Builder builder =
-        Workflow.Node.newBuilder()
-            .setId(node.id())
-            .addAllUpstreamNodeIds(node.upstreamNodeIds())
-            .setTaskNode(serialize(node.taskNode()));
+        Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
+
+    if (node.taskNode() != null) {
+      builder.setTaskNode(serialize(node.taskNode()));
+    }
+
+    if (node.branchNode() != null) {
+      builder.setBranchNode(serialize(node.branchNode()));
+    }
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 
@@ -480,6 +494,111 @@ class ProtoUtil {
             .build();
 
     return Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
+  }
+
+  @VisibleForTesting
+  static Workflow.BranchNode serialize(BranchNode branchNode) {
+    return Workflow.BranchNode.newBuilder().setIfElse(serialize(branchNode.ifElse())).build();
+  }
+
+  public static Workflow.IfElseBlock serialize(IfElseBlock ifElse) {
+    Workflow.IfElseBlock.Builder builder = Workflow.IfElseBlock.newBuilder();
+
+    builder.setCase(serialize(ifElse.case_()));
+
+    if (ifElse.elseNode() != null) {
+      builder.setElseNode(serialize(ifElse.elseNode()));
+    }
+
+    if (ifElse.error() != null) {
+      builder.setError(serialize(ifElse.error()));
+    }
+
+    ifElse.other().forEach(other -> builder.addOther(serialize(other)));
+
+    return builder.build();
+  }
+
+  private static Workflow.IfBlock serialize(IfBlock ifBlock) {
+    return Workflow.IfBlock.newBuilder()
+        .setCondition(serialize(ifBlock.condition()))
+        .setThenNode(serialize(ifBlock.thenNode()))
+        .build();
+  }
+
+  @VisibleForTesting
+  static Condition.BooleanExpression serialize(BooleanExpression condition) {
+    switch (condition.kind()) {
+      case COMPARISON:
+        return Condition.BooleanExpression.newBuilder()
+            .setComparison(serialize(condition.comparison()))
+            .build();
+      case CONJUNCTION:
+        return Condition.BooleanExpression.newBuilder()
+            .setConjunction(serialize(condition.conjunction()))
+            .build();
+    }
+
+    throw new AssertionError("Unexpected BooleanExpression.Kind: " + condition.kind());
+  }
+
+  private static Condition.ConjunctionExpression serialize(ConjunctionExpression conjunction) {
+    return Condition.ConjunctionExpression.newBuilder()
+        .setLeftExpression(serialize(conjunction.leftExpression()))
+        .setRightExpression(serialize(conjunction.rightExpression()))
+        .setOperator(serialize(conjunction.operator()))
+        .build();
+  }
+
+  private static Condition.ComparisonExpression serialize(ComparisonExpression comparison) {
+    return Condition.ComparisonExpression.newBuilder()
+        .setLeftValue(serialize(comparison.leftValue()))
+        .setRightValue(serialize(comparison.rightValue()))
+        .setOperator(serialize(comparison.operator()))
+        .build();
+  }
+
+  private static Condition.ComparisonExpression.Operator serialize(
+      ComparisonExpression.Operator operator) {
+    switch (operator) {
+      case EQ:
+        return Condition.ComparisonExpression.Operator.EQ;
+      case GT:
+        return Condition.ComparisonExpression.Operator.GT;
+      case LT:
+        return Condition.ComparisonExpression.Operator.LT;
+      case LTE:
+        return Condition.ComparisonExpression.Operator.LTE;
+      case GTE:
+        return Condition.ComparisonExpression.Operator.GTE;
+      case NEQ:
+        return Condition.ComparisonExpression.Operator.NEQ;
+    }
+
+    throw new AssertionError("Unexpected ComparisonExpression.Operator: " + operator);
+  }
+
+  private static Condition.Operand serialize(Operand operand) {
+    switch (operand.kind()) {
+      case VAR:
+        return Condition.Operand.newBuilder().setVar(operand.var()).build();
+      case PRIMITIVE:
+        return Condition.Operand.newBuilder().setPrimitive(serialize(operand.primitive())).build();
+    }
+
+    throw new AssertionError("Unexpected Operand.Kind: " + operand.kind());
+  }
+
+  private static Condition.ConjunctionExpression.LogicalOperator serialize(
+      ConjunctionExpression.LogicalOperator operator) {
+    switch (operator) {
+      case AND:
+        return Condition.ConjunctionExpression.LogicalOperator.AND;
+      case OR:
+        return Condition.ConjunctionExpression.LogicalOperator.OR;
+    }
+
+    throw new AssertionError("Unexpected ConjunctionExpression.LogicalOperator: " + operator);
   }
 
   private static Literals.Binding serialize(Binding binding) {
@@ -690,6 +809,13 @@ class ProtoUtil {
         .domain(id.getDomain())
         .name(id.getName())
         .version(id.getVersion())
+        .build();
+  }
+
+  static Types.Error serialize(NodeError e) {
+    return Types.Error.newBuilder()
+        .setMessage(e.message())
+        .setFailedNodeId(e.failedNodeId())
         .build();
   }
 

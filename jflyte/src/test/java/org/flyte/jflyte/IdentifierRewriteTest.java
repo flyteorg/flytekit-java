@@ -21,11 +21,19 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Collections;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
+import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
@@ -33,6 +41,7 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -251,6 +260,73 @@ class IdentifierRewriteTest {
                     .version("pinned-version")
                     .build())));
     verifyNoInteractions(client);
+  }
+
+  @Test
+  void shouldRewriteBranchNodes() {
+    ComparisonExpression comparison =
+        ComparisonExpression.builder()
+            .operator(ComparisonExpression.Operator.EQ)
+            .leftValue(Operand.ofVar("a"))
+            .rightValue(Operand.ofVar("b"))
+            .build();
+
+    BooleanExpression condition = BooleanExpression.ofComparison(comparison);
+    PartialTaskIdentifier partialReference =
+        PartialTaskIdentifier.builder().name("task-name").build();
+    PartialTaskIdentifier rewrittenReference =
+        PartialTaskIdentifier.builder()
+            .name("task-name")
+            .domain("rewritten-domain")
+            .version("rewritten-version")
+            .project("rewritten-project")
+            .build();
+
+    TaskNode partialTaskNode = TaskNode.builder().referenceId(partialReference).build();
+    TaskNode rewrittenTaskNode = TaskNode.builder().referenceId(rewrittenReference).build();
+
+    Node partialNode =
+        Node.builder()
+            .id("node-1")
+            .inputs(ImmutableList.of())
+            .upstreamNodeIds(ImmutableList.of())
+            .taskNode(partialTaskNode)
+            .build();
+
+    Node rewrittenNode =
+        Node.builder()
+            .id("node-1")
+            .inputs(ImmutableList.of())
+            .upstreamNodeIds(ImmutableList.of())
+            .taskNode(rewrittenTaskNode)
+            .build();
+
+    IfBlock partialIfBlock = IfBlock.builder().condition(condition).thenNode(partialNode).build();
+
+    IfBlock rewrittenIfBlock =
+        IfBlock.builder().condition(condition).thenNode(rewrittenNode).build();
+
+    BranchNode partialBranchNode =
+        BranchNode.builder()
+            .ifElse(
+                IfElseBlock.builder()
+                    .case_(partialIfBlock)
+                    .other(ImmutableList.of(partialIfBlock))
+                    .elseNode(partialNode)
+                    .build())
+            .build();
+
+    BranchNode rewrittenBranchNode =
+        BranchNode.builder()
+            .ifElse(
+                IfElseBlock.builder()
+                    .case_(rewrittenIfBlock)
+                    .other(ImmutableList.of(rewrittenIfBlock))
+                    .elseNode(rewrittenNode)
+                    .build())
+            .build();
+
+    assertThat(rewriter.apply(partialBranchNode), equalTo(rewrittenBranchNode));
   }
 
   private LaunchPlan launchPlan(PartialWorkflowIdentifier workflowId) {

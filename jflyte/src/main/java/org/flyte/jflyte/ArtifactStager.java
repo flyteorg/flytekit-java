@@ -134,7 +134,7 @@ class ArtifactStager {
       throw new UncheckedIOException(e);
     }
 
-    String hash = BaseEncoding.base64Url().encode(hasher.hash().asBytes());
+    String hash = BaseEncoding.base64Url().omitPadding().encode(hasher.hash().asBytes());
     String location =
         getLocation(/* stagingLocation= */ stagingLocation, /* fileName= */ name, /* hash= */ hash);
 

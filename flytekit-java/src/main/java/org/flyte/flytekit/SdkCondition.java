@@ -38,14 +38,9 @@ public class SdkCondition extends SdkTransform {
     return new SdkCondition(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkTransform otherwise(String name, SdkTransform otherwise) {
+  public SdkCondition otherwise(String name, SdkTransform otherwise) {
     if (this.otherwise != null) {
-      // it isn't possible to double-call `otherwise` without upcasting
-      // `SdkTransform` to `SdkCondition` because `otherwise` returns
-      // `SdkTransform` instead of `SdkCondition` as other methods do.
-
-      throw new IllegalStateException(
-          "invariant failed: can't set 'otherwise' because it's already set");
+      throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
 
     return new SdkCondition(this.cases, name, otherwise);

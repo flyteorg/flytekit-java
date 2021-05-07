@@ -16,14 +16,18 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -69,7 +73,7 @@ class SdkWorkflowBuilderTest {
                             .build())
                     .build())
             .inputs(
-                Arrays.asList(
+                asList(
                     Binding.builder()
                         .var_("a")
                         .binding(
@@ -115,7 +119,7 @@ class SdkWorkflowBuilderTest {
                             .build())
                     .build())
             .inputs(
-                Arrays.asList(
+                asList(
                     Binding.builder()
                         .var_("a")
                         .binding(
@@ -366,8 +370,48 @@ class SdkWorkflowBuilderTest {
         builder.inputOfInteger("input6"));
   }
 
+  @Test
+  void testBranchNodeGetSubNode() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBooleanExpression true_ =
+        SdkConditions.eq(SdkBindingData.ofBoolean(true), SdkBindingData.ofBoolean(true));
+    SdkBindingData a = SdkBindingData.ofInteger(1);
+    SdkBindingData b = SdkBindingData.ofInteger(2);
+
+    // FIXME: we have to cast because there is no better API
+    //
+    // We have two ways forward:
+    // 1. Add getSubNode into SdkNode
+    // 2. Extend SdkTransform with <T extends SdkNode>
+    //
+    // It isn't clear which one is better. We need to see how it's going to fit other composite
+    // nodes
+    // like sub-workflows and dynamic workflows. For that it's also good to collect more use-cases.
+    SdkBranchNode node =
+        (SdkBranchNode)
+            builder.apply(
+                "conditional",
+                SdkConditions.when("case-1", true_, new PrintHello())
+                    .otherwise(
+                        "case-2", new MultiplicationTask().withInput("a", a).withInput("b", b)));
+
+    SdkNode case1 = node.getSubNode("case-1");
+    SdkNode case2 = node.getSubNode("case-2");
+
+    assertThat(case1.getNodeId(), equalTo("conditional-case-1"));
+    assertThat(case1.getOutputs().keySet(), equalTo(emptySet()));
+
+    assertThat(case2.getNodeId(), equalTo("conditional-case-2"));
+    assertThat(case2.getOutputs().keySet(), equalTo(singleton("c")));
+
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> node.getSubNode("case-3"));
+    assertThat(e.getMessage(), equalTo("Sub-node [case-3] doesn't exist among [case-1, case-2]"));
+  }
+
   static List<SdkTransform> createTransform() {
-    return Arrays.asList(new MultiplicationTask(), new MultiplicationWorkflow());
+    return asList(new MultiplicationTask(), new MultiplicationWorkflow());
   }
 
   private TypedInterface expectedInterface() {

@@ -28,8 +28,15 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -44,18 +51,129 @@ import org.junit.jupiter.api.Test;
 class SdkWorkflowBuilderTest {
 
   @Test
-  void testToIdlTemplate() {
+  void testTimes2WorkflowIdl() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     new Times2Workflow().expand(builder);
+
+    Node expectedNode =
+        Node.builder()
+            .id("square")
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .name("org.flyte.flytekit.SdkWorkflowBuilderTest$MultiplicationTask")
+                            .build())
+                    .build())
+            .inputs(
+                Arrays.asList(
+                    Binding.builder()
+                        .var_("a")
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder()
+                                    .var("in")
+                                    .nodeId(Node.START_NODE_ID)
+                                    .build()))
+                        .build(),
+                    Binding.builder()
+                        .var_("b")
+                        .binding(
+                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
+                        .build()))
+            .upstreamNodeIds(emptyList())
+            .build();
 
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
             .outputs(expectedOutputs())
-            .nodes(expectedNodes())
+            .nodes(singletonList(expectedNode))
             .build();
+
+    assertEquals(expected, builder.toIdlTemplate());
+  }
+
+  @Test
+  void testConditionalWorkflowIdl() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    new ConditionalWorkflow().expand(builder);
+
+    Node caseNode =
+        Node.builder()
+            .id("neq")
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .name("org.flyte.flytekit.SdkWorkflowBuilderTest$MultiplicationTask")
+                            .build())
+                    .build())
+            .inputs(
+                Arrays.asList(
+                    Binding.builder()
+                        .var_("a")
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder()
+                                    .var("in")
+                                    .nodeId(Node.START_NODE_ID)
+                                    .build()))
+                        .build(),
+                    Binding.builder()
+                        .var_("b")
+                        .binding(
+                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
+                        .build()))
+            .upstreamNodeIds(emptyList())
+            .build();
+
+    IfElseBlock ifElse =
+        IfElseBlock.builder()
+            .case_(
+                IfBlock.builder()
+                    .condition(
+                        BooleanExpression.ofComparison(
+                            ComparisonExpression.builder()
+                                .leftValue(Operand.ofVar("$0"))
+                                .rightValue(Operand.ofPrimitive(Primitive.ofIntegerValue(2L)))
+                                .operator(ComparisonExpression.Operator.NEQ)
+                                .build()))
+                    .thenNode(caseNode)
+                    .build())
+            .error(NodeError.builder().message("No cases matched").failedNodeId("square").build())
+            .other(emptyList())
+            .build();
+
+    Node expectedNode =
+        Node.builder()
+            .id("square")
+            .branchNode(BranchNode.builder().ifElse(ifElse).build())
+            .inputs(
+                singletonList(
+                    Binding.builder()
+                        .var_("$0")
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder()
+                                    .var("in")
+                                    .nodeId(Node.START_NODE_ID)
+                                    .build()))
+                        .build()))
+            .upstreamNodeIds(emptyList())
+            .build();
+
+    WorkflowTemplate expected =
+        WorkflowTemplate.builder()
+            .metadata(WorkflowMetadata.builder().build())
+            .interface_(expectedInterface())
+            .outputs(expectedOutputs())
+            .nodes(singletonList(expectedNode))
+            .build();
+
     assertEquals(expected, builder.toIdlTemplate());
   }
 
@@ -277,37 +395,6 @@ class SdkWorkflowBuilderTest {
             .build());
   }
 
-  private List<Node> expectedNodes() {
-    return singletonList(
-        Node.builder()
-            .id("square")
-            .taskNode(
-                TaskNode.builder()
-                    .referenceId(
-                        PartialTaskIdentifier.builder()
-                            .name("org.flyte.flytekit.SdkWorkflowBuilderTest$MultiplicationTask")
-                            .build())
-                    .build())
-            .inputs(
-                Arrays.asList(
-                    Binding.builder()
-                        .var_("a")
-                        .binding(
-                            BindingData.ofOutputReference(
-                                OutputReference.builder()
-                                    .var("in")
-                                    .nodeId(Node.START_NODE_ID)
-                                    .build()))
-                        .build(),
-                    Binding.builder()
-                        .var_("b")
-                        .binding(
-                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
-                        .build()))
-            .upstreamNodeIds(emptyList())
-            .build());
-  }
-
   private static class Times2Workflow extends SdkWorkflow {
 
     @Override
@@ -320,6 +407,25 @@ class SdkWorkflowBuilderTest {
               .getOutput("c");
 
       builder.output("out", out);
+    }
+  }
+
+  private static class ConditionalWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
+      SdkBindingData two = literalOfInteger(2L);
+
+      SdkNode out =
+          builder.apply(
+              "square",
+              SdkConditions.when(
+                  "neq",
+                  SdkConditions.neq(in, two),
+                  new MultiplicationTask().withInput("a", in).withInput("b", two)));
+
+      builder.output("out", out.getOutput("c"));
     }
   }
 

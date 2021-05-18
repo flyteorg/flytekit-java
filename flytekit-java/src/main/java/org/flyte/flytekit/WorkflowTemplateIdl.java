@@ -16,12 +16,10 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -37,14 +35,12 @@ class WorkflowTemplateIdl {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
     List<Node> nodes =
-        builder.getNodes().values().stream()
-            .map(SdkNode::toIdl)
-            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+        builder.getNodes().values().stream().map(SdkNode::toIdl).collect(toUnmodifiableList());
 
     List<Binding> outputBindings =
         builder.getOutputs().entrySet().stream()
             .map(entry -> getBinding(entry.getKey(), entry.getValue()))
-            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+            .collect(toUnmodifiableList());
 
     return WorkflowTemplate.builder()
         .metadata(metadata)
@@ -70,10 +66,7 @@ class WorkflowTemplateIdl {
 
               return new SimpleImmutableEntry<>(entry.getKey(), variable);
             })
-        .collect(
-            collectingAndThen(
-                toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue),
-                Collections::unmodifiableMap));
+        .collect(toUnmodifiableMap());
   }
 
   private static Map<String, Variable> getOutputVariableMap(SdkWorkflowBuilder builder) {
@@ -88,10 +81,7 @@ class WorkflowTemplateIdl {
 
               return new SimpleImmutableEntry<>(entry.getKey(), variable);
             })
-        .collect(
-            collectingAndThen(
-                toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue),
-                Collections::unmodifiableMap));
+        .collect(toUnmodifiableMap());
   }
 
   private static Binding getBinding(String var_, SdkBindingData bindingData) {

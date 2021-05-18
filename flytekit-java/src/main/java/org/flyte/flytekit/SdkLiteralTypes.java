@@ -17,12 +17,10 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,9 +192,7 @@ public class SdkLiteralTypes {
     @Override
     public Literal toLiteral(List<T> value) {
       List<Literal> collection =
-          value.stream()
-              .map(elementType::toLiteral)
-              .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+          value.stream().map(elementType::toLiteral).collect(toUnmodifiableList());
 
       return Literal.ofCollection(collection);
     }
@@ -205,7 +201,7 @@ public class SdkLiteralTypes {
     public List<T> fromLiteral(Literal literal) {
       return literal.collection().stream()
           .map(elementType::fromLiteral)
-          .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+          .collect(toUnmodifiableList());
     }
   }
 

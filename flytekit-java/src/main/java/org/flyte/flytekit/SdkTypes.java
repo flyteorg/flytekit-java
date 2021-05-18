@@ -23,6 +23,7 @@ import org.flyte.api.v1.Variable;
 
 /** An utility class for creating {@link SdkType} objects for different types. */
 public class SdkTypes {
+  private SdkTypes() {}
 
   public static SdkType<Void> nulls() {
     return new VoidSdkType();

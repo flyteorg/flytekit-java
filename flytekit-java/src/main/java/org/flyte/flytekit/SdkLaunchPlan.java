@@ -18,8 +18,8 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.singletonMap;
 import static java.util.function.UnaryOperator.identity;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
@@ -89,10 +89,7 @@ public abstract class SdkLaunchPlan {
   private static <T> Map<String, LiteralType> toWorkflowInputTypeMap(
       Map<String, T> inputMap, Function<T, LiteralType> toLiteralTypeFn) {
     return inputMap.keySet().stream()
-        .collect(
-            collectingAndThen(
-                toMap(identity(), name -> toLiteralTypeFn.apply(inputMap.get(name))),
-                Collections::unmodifiableMap));
+        .collect(toUnmodifiableMap(identity(), name -> toLiteralTypeFn.apply(inputMap.get(name))));
   }
 
   public SdkLaunchPlan withName(String newName) {

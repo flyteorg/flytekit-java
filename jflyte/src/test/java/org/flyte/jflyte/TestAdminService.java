@@ -35,9 +35,11 @@ public class TestAdminService extends AdminServiceGrpc.AdminServiceImplBase {
   ExecutionOuterClass.ExecutionCreateRequest createExecutionRequest;
   Common.ResourceListRequest listTasksRequest;
   Common.ResourceListRequest listWorkflowsRequest;
+  Common.ResourceListRequest listLaunchPlansRequest;
 
   List<TaskOuterClass.Task> taskLists = Collections.emptyList();
   List<WorkflowOuterClass.Workflow> workflowLists = Collections.emptyList();
+  List<LaunchPlanOuterClass.LaunchPlan> launchPlanLists = Collections.emptyList();
 
   @Override
   public void createTask(
@@ -91,6 +93,18 @@ public class TestAdminService extends AdminServiceGrpc.AdminServiceImplBase {
     this.listWorkflowsRequest = request;
     responseObserver.onNext(
         WorkflowOuterClass.WorkflowList.newBuilder().addAllWorkflows(workflowLists).build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listLaunchPlans(
+      Common.ResourceListRequest request,
+      StreamObserver<LaunchPlanOuterClass.LaunchPlanList> responseObserver) {
+    this.listLaunchPlansRequest = request;
+    responseObserver.onNext(
+        LaunchPlanOuterClass.LaunchPlanList.newBuilder()
+            .addAllLaunchPlans(launchPlanLists)
+            .build());
     responseObserver.onCompleted();
   }
 }

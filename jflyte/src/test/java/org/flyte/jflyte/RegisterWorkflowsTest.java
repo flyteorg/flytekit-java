@@ -22,7 +22,15 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
+import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.TypedInterface;
+import org.flyte.api.v1.WorkflowIdentifier;
+import org.flyte.api.v1.WorkflowMetadata;
+import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Test;
 
 public class RegisterWorkflowsTest {
@@ -87,5 +95,76 @@ public class RegisterWorkflowsTest {
     assertThat(expected.fields().size(), equalTo(3));
 
     assertThat(RegisterWorkflows.merge(source, target), equalTo(expected));
+  }
+
+  @Test
+  public void testCollectSubWorkflows() {
+    TypedInterface emptyInterface =
+        TypedInterface.builder().inputs(ImmutableMap.of()).outputs(ImmutableMap.of()).build();
+
+    WorkflowMetadata emptyMetadata = WorkflowMetadata.builder().build();
+
+    WorkflowTemplate emptyWorkflowTemplate =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(ImmutableList.of())
+            .outputs(ImmutableList.of())
+            .build();
+
+    PartialWorkflowIdentifier rewrittenSubWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .project("project")
+            .name("name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier subWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier otherSubWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("other-name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenSubWorkflowRef))
+            .build();
+
+    WorkflowTemplate parent =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(
+                ImmutableList.of(
+                    Node.builder()
+                        .id("node-1")
+                        .inputs(ImmutableList.of())
+                        .upstreamNodeIds(ImmutableList.of())
+                        .workflowNode(workflowNode)
+                        .build()))
+            .outputs(ImmutableList.of())
+            .build();
+
+    Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows =
+        ImmutableMap.of(
+            subWorkflowRef, emptyWorkflowTemplate,
+            otherSubWorkflowRef, emptyWorkflowTemplate);
+
+    Map<WorkflowIdentifier, WorkflowTemplate> collectedSubWorkflows =
+        RegisterWorkflows.collectSubWorkflows(parent, allWorkflows);
+
+    assertThat(
+        collectedSubWorkflows, equalTo(ImmutableMap.of(subWorkflowRef, emptyWorkflowTemplate)));
   }
 }

@@ -73,7 +73,9 @@ import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
+import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
@@ -87,6 +89,7 @@ import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
+import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -578,6 +581,66 @@ class ProtoUtilTest {
                         .build())
                 .addNodes(expectedNode1)
                 .addNodes(expectedNode2)
+                .build()));
+  }
+
+  @Test
+  void shouldSerializeWorkflowNodeForSubWorkflowRef() {
+    PartialWorkflowIdentifier subWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .domain("domain")
+            .project("project")
+            .name("name")
+            .version("version")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(subWorkflowRef))
+            .build();
+
+    assertThat(
+        ProtoUtil.serialize(workflowNode),
+        equalTo(
+            Workflow.WorkflowNode.newBuilder()
+                .setSubWorkflowRef(
+                    IdentifierOuterClass.Identifier.newBuilder()
+                        .setResourceType(WORKFLOW)
+                        .setDomain("domain")
+                        .setProject("project")
+                        .setName("name")
+                        .setVersion("version")
+                        .build())
+                .build()));
+  }
+
+  @Test
+  void shouldSerializeWorkflowNodeForLaunchPlanRef() {
+    PartialLaunchPlanIdentifier launchPlanRef =
+        PartialLaunchPlanIdentifier.builder()
+            .domain("domain")
+            .project("project")
+            .name("name")
+            .version("version")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofLaunchPlanRef(launchPlanRef))
+            .build();
+
+    assertThat(
+        ProtoUtil.serialize(workflowNode),
+        equalTo(
+            Workflow.WorkflowNode.newBuilder()
+                .setLaunchplanRef(
+                    IdentifierOuterClass.Identifier.newBuilder()
+                        .setResourceType(LAUNCH_PLAN)
+                        .setDomain("domain")
+                        .setProject("project")
+                        .setName("name")
+                        .setVersion("version")
+                        .build())
                 .build()));
   }
 

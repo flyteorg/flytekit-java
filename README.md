@@ -51,7 +51,7 @@ Package and run:
 $ mvn package
 $ scripts/jflyte register workflows \
   -d=development \
-  -p=flytetester \
+  -p=flytesnacks \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
 ```

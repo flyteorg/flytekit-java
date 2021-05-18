@@ -29,12 +29,14 @@ import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
+import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.Parameter;
+import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -44,6 +46,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
+import org.flyte.api.v1.WorkflowNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -327,6 +330,91 @@ class IdentifierRewriteTest {
             .build();
 
     assertThat(rewriter.apply(partialBranchNode), equalTo(rewrittenBranchNode));
+  }
+
+  @Test
+  void shouldRewriteLaunchPlanIdentifierWithLatestIdAndDomainForRewriter() {
+    when(client.fetchLatestLaunchPlanId(
+            NamedEntityIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-lp")
+                .build()))
+        .thenReturn(
+            LaunchPlanIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-lp")
+                .version("latest-version")
+                .build());
+
+    PartialLaunchPlanIdentifier rewrittenLaunchPlanId =
+        rewriter.apply(
+            PartialLaunchPlanIdentifier.builder()
+                .project("external-project")
+                .name("external-lp")
+                .build());
+
+    assertThat(
+        rewrittenLaunchPlanId,
+        equalTo(
+            PartialLaunchPlanIdentifier.builder()
+                .project("external-project")
+                .domain("rewritten-domain")
+                .name("external-lp")
+                .version("latest-version")
+                .build()));
+  }
+
+  @Test
+  void shouldRewriteWorkflowNodeForSubWorkflowRef() {
+    PartialWorkflowIdentifier identifier = PartialWorkflowIdentifier.builder().name("name").build();
+
+    PartialWorkflowIdentifier rewrittenIdentifier =
+        PartialWorkflowIdentifier.builder()
+            .name("name")
+            .domain("rewritten-domain")
+            .version("rewritten-version")
+            .project("rewritten-project")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(identifier))
+            .build();
+
+    assertThat(
+        rewriter.apply(workflowNode),
+        equalTo(
+            WorkflowNode.builder()
+                .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenIdentifier))
+                .build()));
+  }
+
+  @Test
+  void shouldRewriteWorkflowNodeForLaunchPlanRef() {
+    PartialLaunchPlanIdentifier identifier =
+        PartialLaunchPlanIdentifier.builder().name("name").build();
+
+    PartialLaunchPlanIdentifier rewrittenIdentifier =
+        PartialLaunchPlanIdentifier.builder()
+            .name("name")
+            .domain("rewritten-domain")
+            .version("rewritten-version")
+            .project("rewritten-project")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofLaunchPlanRef(identifier))
+            .build();
+
+    assertThat(
+        rewriter.apply(workflowNode),
+        equalTo(
+            WorkflowNode.builder()
+                .reference(WorkflowNode.Reference.ofLaunchPlanRef(rewrittenIdentifier))
+                .build()));
   }
 
   private LaunchPlan launchPlan(PartialWorkflowIdentifier workflowId) {

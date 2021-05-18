@@ -47,6 +47,8 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class SdkWorkflowBuilderTest {
 
@@ -199,15 +201,15 @@ class SdkWorkflowBuilderTest {
         e.getMessage());
   }
 
-  @Test
-  void testVariableNameNotFound_output() {
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testVariableNameNotFound_output(SdkTransform transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfInteger("a");
     SdkBindingData b = builder.inputOfInteger("b");
 
-    SdkNode node1 =
-        builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
+    SdkNode node1 = builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
 
     CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
 
@@ -217,8 +219,9 @@ class SdkWorkflowBuilderTest {
         e.getMessage());
   }
 
-  @Test
-  void testVariableNameNotFound_input() {
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testVariableNameNotFound_input(SdkTransform transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfInteger("a");
@@ -230,11 +233,7 @@ class SdkWorkflowBuilderTest {
             CompilerException.class,
             () ->
                 builder.apply(
-                    "node-1",
-                    new MultiplicationTask()
-                        .withInput("a", a)
-                        .withInput("b", b)
-                        .withInput("foo", foo)));
+                    "node-1", transform.withInput("a", a).withInput("b", b).withInput("foo", foo)));
 
     assertEquals(
         "Failed to build workflow with errors:\n"
@@ -242,16 +241,16 @@ class SdkWorkflowBuilderTest {
         e.getMessage());
   }
 
-  @Test
-  void testParameterNotBound() {
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testParameterNotBound(SdkTransform transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfInteger("a");
 
     CompilerException e =
         assertThrows(
-            CompilerException.class,
-            () -> builder.apply("node-1", new MultiplicationTask().withInput("a", a)));
+            CompilerException.class, () -> builder.apply("node-1", transform.withInput("a", a)));
 
     assertEquals(
         "Failed to build workflow with errors:\n"
@@ -259,8 +258,9 @@ class SdkWorkflowBuilderTest {
         e.getMessage());
   }
 
-  @Test
-  void tesMismatchingTypes() {
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void tesMismatchingTypes(SdkTransform transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfString("a");
@@ -269,9 +269,7 @@ class SdkWorkflowBuilderTest {
     CompilerException e =
         assertThrows(
             CompilerException.class,
-            () ->
-                builder.apply(
-                    "node-1", new MultiplicationTask().withInput("a", a).withInput("b", b)));
+            () -> builder.apply("node-1", transform.withInput("a", a).withInput("b", b)));
 
     // TODO need to implement pretty-printer for types, not it isn't super readable
 
@@ -282,20 +280,19 @@ class SdkWorkflowBuilderTest {
         e.getMessage());
   }
 
-  @Test
-  void testUpstreamNode_withUpstreamNode() {
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testUpstreamNode_withUpstreamNode(SdkTransform transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 =
-        builder.apply("el2", new MultiplicationTask().withInput("a", el0).withInput("b", el1));
+    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
     SdkNode el3 =
         builder.apply(
-            "el3",
-            new MultiplicationTask().withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
+            "el3", transform.withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
 
     assertEquals(singletonList("el2"), el3.toIdl().upstreamNodeIds());
   }
@@ -367,6 +364,10 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
         builder.inputOfInteger("input6"));
+  }
+
+  static List<SdkTransform> createTransform() {
+    return Arrays.asList(new MultiplicationTask(), new MultiplicationWorkflow());
   }
 
   private TypedInterface expectedInterface() {
@@ -442,6 +443,20 @@ class SdkWorkflowBuilderTest {
     @Override
     public Map<String, Literal> run(Map<String, Literal> input) {
       throw new UnsupportedOperationException();
+    }
+  }
+
+  static class MultiplicationWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      SdkBindingData a = builder.inputOfInteger("a");
+      SdkBindingData b = builder.inputOfInteger("b");
+
+      SdkNode multiply =
+          builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
+
+      builder.output("c", multiply.getOutput("c"));
     }
   }
 

@@ -54,7 +54,7 @@ class WorkflowTemplateIdl {
         .build();
   }
 
-  private static Map<String, Variable> getInputVariableMap(SdkWorkflowBuilder builder) {
+  static Map<String, Variable> getInputVariableMap(SdkWorkflowBuilder builder) {
     return builder.getInputs().entrySet().stream()
         .map(
             entry -> {
@@ -69,7 +69,7 @@ class WorkflowTemplateIdl {
         .collect(toUnmodifiableMap());
   }
 
-  private static Map<String, Variable> getOutputVariableMap(SdkWorkflowBuilder builder) {
+  static Map<String, Variable> getOutputVariableMap(SdkWorkflowBuilder builder) {
     return builder.getOutputs().entrySet().stream()
         .map(
             entry -> {

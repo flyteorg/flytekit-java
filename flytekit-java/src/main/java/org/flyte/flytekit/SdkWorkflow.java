@@ -16,11 +16,46 @@
  */
 package org.flyte.flytekit;
 
-public abstract class SdkWorkflow {
+import java.util.List;
+import java.util.Map;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.WorkflowNode;
+
+public abstract class SdkWorkflow extends SdkTransform {
 
   public String getName() {
     return getClass().getName();
   }
 
   public abstract void expand(SdkWorkflowBuilder builder);
+
+  @Override
+  public SdkNode apply(
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      Map<String, SdkBindingData> inputs) {
+
+    PartialWorkflowIdentifier workflowId =
+        PartialWorkflowIdentifier.builder().name(getName()).build();
+
+    SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
+    expand(innerBuilder);
+
+    Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
+    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
+
+    if (!errors.isEmpty()) {
+      throw new CompilerException(errors);
+    }
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(workflowId))
+            .build();
+
+    return new SdkWorkflowNode(
+        builder, nodeId, upstreamNodeIds, workflowNode, inputs, innerBuilder.getOutputs());
+  }
 }

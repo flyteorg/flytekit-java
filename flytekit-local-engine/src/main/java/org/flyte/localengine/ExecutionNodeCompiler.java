@@ -83,6 +83,14 @@ class ExecutionNodeCompiler {
       upstreamNodeIds.add(START_NODE_ID);
     }
 
+    if (node.branchNode() != null) {
+      throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
+    }
+
+    if (node.workflowNode() != null) {
+      throw new IllegalArgumentException("WorkflowNode isn't yet supported for local execution");
+    }
+
     String taskName = node.taskNode().referenceId().name();
     RunnableTask runnableTask = runnableTasks.get(taskName);
 

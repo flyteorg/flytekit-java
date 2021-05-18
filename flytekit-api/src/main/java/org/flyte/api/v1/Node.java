@@ -37,6 +37,9 @@ public abstract class Node {
   @Nullable
   public abstract BranchNode branchNode();
 
+  @Nullable
+  public abstract WorkflowNode workflowNode();
+
   public abstract List<Binding> inputs();
 
   public abstract List<String> upstreamNodeIds();
@@ -58,6 +61,8 @@ public abstract class Node {
     public abstract Builder upstreamNodeIds(List<String> upstreamNodeIds);
 
     public abstract Builder branchNode(BranchNode branchNode);
+
+    public abstract Builder workflowNode(WorkflowNode workflowNode);
 
     public abstract Node build();
   }

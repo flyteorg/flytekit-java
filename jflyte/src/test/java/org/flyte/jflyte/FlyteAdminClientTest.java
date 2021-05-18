@@ -23,6 +23,7 @@ import static org.flyte.jflyte.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
@@ -220,7 +221,7 @@ public class FlyteAdminClientTest {
             .outputs(ImmutableList.of())
             .build();
 
-    client.createWorkflow(identifier, template);
+    client.createWorkflow(identifier, template, ImmutableMap.of());
 
     assertThat(
         stubService.createWorkflowRequest,
@@ -469,6 +470,33 @@ public class FlyteAdminClientTest {
             NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name(WF_NAME).build());
 
     assertThat(workflowId, nullValue());
+  }
+
+  @Test
+  public void fetchLatestLaunchPlanIdShouldReturnFirstLaunchPlanFromList() {
+    stubService.launchPlanLists =
+        Arrays.asList(
+            LaunchPlanOuterClass.LaunchPlan.newBuilder()
+                .setId(newIdentifier(ResourceType.LAUNCH_PLAN, "name", "2"))
+                .build(),
+            LaunchPlanOuterClass.LaunchPlan.newBuilder()
+                .setId(newIdentifier(ResourceType.LAUNCH_PLAN, "name", "1"))
+                .build());
+
+    LaunchPlanIdentifier launchPlanId =
+        client.fetchLatestLaunchPlanId(
+            NamedEntityIdentifier.builder().project(PROJECT).domain(DOMAIN).name("name").build());
+
+    assertThat(stubService.listLaunchPlansRequest, notNullValue());
+    assertThat(
+        launchPlanId,
+        equalTo(
+            LaunchPlanIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name("name")
+                .version("2")
+                .build()));
   }
 
   private IdentifierOuterClass.Identifier newIdentifier(

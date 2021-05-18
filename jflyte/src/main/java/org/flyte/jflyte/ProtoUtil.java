@@ -71,6 +71,7 @@ import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialIdentifier;
+import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -86,6 +87,7 @@ import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
+import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Utility to serialize between flytekit-api and flyteidl proto. */
@@ -262,7 +264,8 @@ class ProtoUtil {
   }
 
   static IdentifierOuterClass.ResourceType getResourceType(PartialIdentifier id) {
-    if (id instanceof LaunchPlanIdentifier) { // if only Java 14 :(
+    if (id instanceof LaunchPlanIdentifier
+        || id instanceof PartialLaunchPlanIdentifier) { // if only Java 14 :(
       return IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
     } else if (id instanceof TaskIdentifier || id instanceof PartialTaskIdentifier) {
       return IdentifierOuterClass.ResourceType.TASK;
@@ -449,6 +452,11 @@ class ProtoUtil {
     return builder.build();
   }
 
+  public static Workflow.WorkflowTemplate serialize(
+      WorkflowIdentifier id, WorkflowTemplate template) {
+    return serialize(template).toBuilder().setId(serialize(id)).build();
+  }
+
   public static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
     Workflow.WorkflowTemplate.Builder builder =
         Workflow.WorkflowTemplate.newBuilder()
@@ -479,6 +487,10 @@ class ProtoUtil {
       builder.setBranchNode(serialize(node.branchNode()));
     }
 
+    if (node.workflowNode() != null) {
+      builder.setWorkflowNode(serialize(node.workflowNode()));
+    }
+
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 
     return builder.build();
@@ -494,6 +506,25 @@ class ProtoUtil {
             .build();
 
     return Workflow.TaskNode.newBuilder().setReferenceId(serialize(taskIdentifier)).build();
+  }
+
+  @VisibleForTesting
+  static Workflow.WorkflowNode serialize(WorkflowNode workflowNode) {
+    Workflow.WorkflowNode.Builder builder = Workflow.WorkflowNode.newBuilder();
+
+    switch (workflowNode.reference().kind()) {
+      case LAUNCH_PLAN_REF:
+        return builder
+            .setLaunchplanRef(serialize(workflowNode.reference().launchPlanRef()))
+            .build();
+      case SUB_WORKFLOW_REF:
+        return builder
+            .setSubWorkflowRef(serialize(workflowNode.reference().subWorkflowRef()))
+            .build();
+    }
+
+    throw new AssertionError(
+        "Unexpected WorkflowNode.Reference.Kind: " + workflowNode.reference().kind());
   }
 
   @VisibleForTesting
@@ -805,6 +836,20 @@ class ProtoUtil {
         id.getResourceType());
 
     return WorkflowIdentifier.builder()
+        .project(id.getProject())
+        .domain(id.getDomain())
+        .name(id.getName())
+        .version(id.getVersion())
+        .build();
+  }
+
+  static LaunchPlanIdentifier deserializeLaunchPlanId(IdentifierOuterClass.Identifier id) {
+    Preconditions.checkArgument(
+        id.getResourceType() == IdentifierOuterClass.ResourceType.LAUNCH_PLAN,
+        "isn't ResourceType.LAUNCH_PLAN, got [%s]",
+        id.getResourceType());
+
+    return LaunchPlanIdentifier.builder()
         .project(id.getProject())
         .domain(id.getDomain())
         .name(id.getName())

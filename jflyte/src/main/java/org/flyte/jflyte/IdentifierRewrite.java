@@ -29,13 +29,16 @@ import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
+import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.WorkflowIdentifier;
+import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Overrides project, domain and version for nodes in {@link WorkflowTemplate}. */
@@ -64,6 +67,7 @@ abstract class IdentifierRewrite {
     return node.toBuilder()
         .branchNode(apply(node.branchNode()))
         .taskNode(apply(node.taskNode()))
+        .workflowNode(apply(node.workflowNode()))
         .build();
   }
 
@@ -73,6 +77,26 @@ abstract class IdentifierRewrite {
     }
 
     return TaskNode.builder().referenceId(apply(taskNode.referenceId())).build();
+  }
+
+  @VisibleForTesting
+  WorkflowNode apply(@Nullable WorkflowNode workflowNode) {
+    if (workflowNode == null) {
+      return null;
+    }
+
+    return workflowNode.toBuilder().reference(apply(workflowNode.reference())).build();
+  }
+
+  private WorkflowNode.Reference apply(WorkflowNode.Reference reference) {
+    switch (reference.kind()) {
+      case LAUNCH_PLAN_REF:
+        return WorkflowNode.Reference.ofLaunchPlanRef(apply(reference.launchPlanRef()));
+      case SUB_WORKFLOW_REF:
+        return WorkflowNode.Reference.ofSubWorkflowRef(apply(reference.subWorkflowRef()));
+    }
+
+    throw new AssertionError("Unexpected WorkflowNode.Reference.Kind: " + reference.kind());
   }
 
   @VisibleForTesting
@@ -164,6 +188,29 @@ abstract class IdentifierRewrite {
         .build();
   }
 
+  @VisibleForTesting
+  PartialLaunchPlanIdentifier apply(PartialLaunchPlanIdentifier launchPlanId) {
+    String name = Preconditions.checkNotNull(launchPlanId.name(), "name is null");
+
+    String project = coalesce(launchPlanId.project(), project());
+    String domain = coalesce(launchPlanId.domain(), domain());
+    String version =
+        coalesce(
+            launchPlanId.version(),
+            () ->
+                launchPlanId.project() == null
+                    ? version()
+                    : getLatestLaunchPlanVersion(
+                        /* project= */ project, /* domain= */ domain, /* name= */ name));
+
+    return PartialLaunchPlanIdentifier.builder()
+        .project(project)
+        .domain(domain)
+        .name(name)
+        .version(version)
+        .build();
+  }
+
   private String getLatestWorkflowVersion(String project, String domain, String name) {
     WorkflowIdentifier latestWorkflowId =
         adminClient()
@@ -178,6 +225,22 @@ abstract class IdentifierRewrite {
         name);
 
     return latestWorkflowId.version();
+  }
+
+  private String getLatestLaunchPlanVersion(String project, String domain, String name) {
+    LaunchPlanIdentifier latestLaunchPlanId =
+        adminClient()
+            .fetchLatestLaunchPlanId(
+                NamedEntityIdentifier.builder().project(project).domain(domain).name(name).build());
+
+    Verify.verifyNotNull(
+        latestLaunchPlanId,
+        "launch plan not found domain=[%s], project=[%s], name=[%s]",
+        domain,
+        project,
+        name);
+
+    return latestLaunchPlanId.version();
   }
 
   private static <T> T coalesce(T value1, T value2) {

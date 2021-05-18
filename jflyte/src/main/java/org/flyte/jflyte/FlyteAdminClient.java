@@ -33,6 +33,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.LaunchPlan;
@@ -96,16 +97,23 @@ class FlyteAdminClient implements AutoCloseable {
     idempotentCreate("createTask", id, () -> stub.createTask(request));
   }
 
-  void createWorkflow(WorkflowIdentifier id, WorkflowTemplate template) {
+  void createWorkflow(
+      WorkflowIdentifier id,
+      WorkflowTemplate template,
+      Map<WorkflowIdentifier, WorkflowTemplate> subWorkflows) {
     LOG.debug("createWorkflow {}", id);
+
+    WorkflowOuterClass.WorkflowSpec.Builder specBuilder =
+        WorkflowOuterClass.WorkflowSpec.newBuilder().setTemplate(ProtoUtil.serialize(template));
+
+    subWorkflows.forEach(
+        (subWorkflowId, subWorkflow) ->
+            specBuilder.addSubWorkflows(ProtoUtil.serialize(subWorkflowId, subWorkflow)));
 
     WorkflowOuterClass.WorkflowCreateRequest request =
         WorkflowOuterClass.WorkflowCreateRequest.newBuilder()
             .setId(ProtoUtil.serialize(id))
-            .setSpec(
-                WorkflowOuterClass.WorkflowSpec.newBuilder()
-                    .setTemplate(ProtoUtil.serialize(template))
-                    .build())
+            .setSpec(specBuilder.build())
             .build();
 
     idempotentCreate("createWorkflow", id, () -> stub.createWorkflow(request));
@@ -189,6 +197,15 @@ class FlyteAdminClient implements AutoCloseable {
         request -> stub.listWorkflows(request).getWorkflowsList(),
         WorkflowOuterClass.Workflow::getId,
         ProtoUtil::deserializeWorkflowId);
+  }
+
+  @Nullable
+  LaunchPlanIdentifier fetchLatestLaunchPlanId(NamedEntityIdentifier launchPlanId) {
+    return fetchLatestResource(
+        launchPlanId,
+        request -> stub.listLaunchPlans(request).getLaunchPlansList(),
+        LaunchPlanOuterClass.LaunchPlan::getId,
+        ProtoUtil::deserializeLaunchPlanId);
   }
 
   @Nullable

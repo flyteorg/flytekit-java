@@ -43,14 +43,7 @@ class SdkRemoteTaskTest {
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
     inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> remoteTask =
-        SdkRemoteTask.<Map<String, Literal>, Map<String, Literal>>builder()
-            .domain("dev")
-            .project("project-a")
-            .name("LookupTask")
-            .inputs(TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING))
-            .outputs(TestSdkType.of("c", LiteralTypes.BOOLEAN))
-            .build();
+    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> remoteTask = new TestSdkRemoteTask();
 
     SdkNode node =
         remoteTask.apply(
@@ -71,6 +64,7 @@ class SdkRemoteTaskTest {
                                         .domain("dev")
                                         .project("project-a")
                                         .name("LookupTask")
+                                        .version("version")
                                         .build())
                                 .build())
                         .upstreamNodeIds(singletonList("upstream-1"))
@@ -97,5 +91,39 @@ class SdkRemoteTaskTest {
                         "c",
                         SdkBindingData.ofOutputReference(
                             "lookup-endsong", "c", LiteralTypes.BOOLEAN)))));
+  }
+
+  @SuppressWarnings("ExtendsAutoValue")
+  static class TestSdkRemoteTask extends SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> {
+
+    @Override
+    public String domain() {
+      return "dev";
+    }
+
+    @Override
+    public String project() {
+      return "project-a";
+    }
+
+    @Override
+    public String name() {
+      return "LookupTask";
+    }
+
+    @Override
+    public String version() {
+      return "version";
+    }
+
+    @Override
+    public SdkType<Map<String, Literal>> inputs() {
+      return TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING);
+    }
+
+    @Override
+    public SdkType<Map<String, Literal>> outputs() {
+      return TestSdkType.of("c", LiteralTypes.BOOLEAN);
+    }
   }
 }

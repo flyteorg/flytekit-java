@@ -33,6 +33,14 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
 
   public abstract String name();
 
+  // FIXME should be auto-value property, but doing so breaks backwards-compatibility, to be fixed
+  // in 0.3.0
+
+  @Nullable
+  public String version() {
+    return null;
+  }
+
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
@@ -59,7 +67,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
       List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId =
-        PartialTaskIdentifier.builder().name(name()).project(project()).domain(domain()).build();
+        PartialTaskIdentifier.builder()
+            .name(name())
+            .project(project())
+            .domain(domain())
+            .version(version())
+            .build();
     List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
 
     if (!errors.isEmpty()) {

@@ -28,6 +28,9 @@ import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.service.AdminServiceGrpc;
+import io.grpc.Channel;
+import io.grpc.ClientInterceptor;
+import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -43,6 +46,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.jflyte.api.TokenSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,18 +72,26 @@ class FlyteAdminClient implements AutoCloseable {
     this.retries = retries;
   }
 
-  static FlyteAdminClient create(String target, boolean insecure) {
+  static FlyteAdminClient create(
+      String target, boolean insecure, @Nullable TokenSource tokenSource) {
     ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forTarget(target);
 
     if (insecure) {
       builder.usePlaintext();
     }
 
-    ManagedChannel channel = builder.build();
+    ManagedChannel originChannel = builder.build();
     GrpcRetries retries = GrpcRetries.create();
-
-    return new FlyteAdminClient(
-        AdminServiceGrpc.newBlockingStub(builder.build()), channel, retries);
+    if (tokenSource == null) {
+      // In case of no tokenSource, no need to intercept the grpc call.
+      return new FlyteAdminClient(
+          AdminServiceGrpc.newBlockingStub(originChannel), originChannel, retries);
+    } else {
+      ClientInterceptor interceptor = new AuthorizationHeaderInterceptor(tokenSource);
+      Channel channel = ClientInterceptors.intercept(originChannel, interceptor);
+      return new FlyteAdminClient(
+          AdminServiceGrpc.newBlockingStub(channel), originChannel, retries);
+    }
   }
 
   void createTask(TaskIdentifier id, TaskTemplate template) {

@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.jflyte.TokenSourceFactoryLoader.getTokenSource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -44,6 +45,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
@@ -60,6 +62,7 @@ import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.api.TokenSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -98,19 +101,29 @@ public class RegisterWorkflows implements Callable<Integer> {
       required = true)
   private String packageDir;
 
+  @Nullable
+  @Option(
+      names = {"-am", "--auth-mode"},
+      description = "Authentication method used to retrieve token",
+      required = false)
+  private String authMode;
+
   @Override
   public Integer call() {
     Config config = Config.load();
+    Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
+
+    TokenSource tokenSource = getTokenSource(modules, authMode);
 
     try (FlyteAdminClient adminClient =
-        FlyteAdminClient.create(config.platformUrl(), config.platformInsecure())) {
-      registerAll(config, adminClient);
+        FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
+      registerAll(config, adminClient, modules);
     }
 
     return 0;
   }
 
-  private ArtifactStager getArtifactStager(Config config) {
+  private ArtifactStager getArtifactStager(Config config, Collection<ClassLoader> modules) {
     try {
       String stagingLocation = config.stagingLocation();
 
@@ -120,7 +133,6 @@ public class RegisterWorkflows implements Callable<Integer> {
       }
 
       URI stagingUri = new URI(stagingLocation);
-      Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
       Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
       FileSystem stagingFileSystem = FileSystemLoader.getFileSystem(fileSystems, stagingUri);
 
@@ -168,7 +180,8 @@ public class RegisterWorkflows implements Callable<Integer> {
         .build();
   }
 
-  private void registerAll(Config config, FlyteAdminClient adminClient) {
+  private void registerAll(
+      Config config, FlyteAdminClient adminClient, Collection<ClassLoader> modules) {
     ClassLoader packageClassLoader = ClassLoaders.forDirectory(new File(packageDir));
 
     Map<String, String> env =
@@ -200,7 +213,7 @@ public class RegisterWorkflows implements Callable<Integer> {
             .version(version)
             .build();
 
-    registerTasks(config, adminClient, tasks, env);
+    registerTasks(config, adminClient, tasks, env, modules);
 
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenWorkflows =
         workflows.entrySet().stream()
@@ -266,7 +279,8 @@ public class RegisterWorkflows implements Callable<Integer> {
       Config config,
       FlyteAdminClient adminClient,
       Map<TaskIdentifier, RunnableTask> tasks,
-      Map<String, String> env) {
+      Map<String, String> env,
+      Collection<ClassLoader> modules) {
 
     if (tasks.isEmpty()) {
       LOG.info("Skipping artifact staging because there are no runnable tasks");
@@ -278,7 +292,7 @@ public class RegisterWorkflows implements Callable<Integer> {
             .map(entry -> KeyValuePair.of(entry.getKey(), entry.getValue()))
             .collect(toList());
 
-    ArtifactStager stager = getArtifactStager(config);
+    ArtifactStager stager = getArtifactStager(config, modules);
 
     List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
     Artifact indexFile = stageIndexFile(stager, artifacts);

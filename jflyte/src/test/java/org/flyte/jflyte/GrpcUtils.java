@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import io.grpc.BindableService;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
+import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 
@@ -33,5 +34,12 @@ public class GrpcUtils {
 
   static ManagedChannel buildChannel(String serverName) {
     return InProcessChannelBuilder.forName(serverName).directExecutor().build();
+  }
+
+  static Server buildServer(String serverName, ServerServiceDefinition stubService) {
+    return InProcessServerBuilder.forName(serverName)
+        .directExecutor()
+        .addService(stubService)
+        .build();
   }
 }

@@ -20,6 +20,13 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11.0
+        distribution: 'adopt'
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.FLYTE_BOT_USERNAME }}
+        password: ${{ secrets.FLYTE_BOT_PAT }}
     - uses: s4u/maven-settings-action@v2.2.0
       with:
         servers: |
@@ -28,14 +35,8 @@ jobs:
               "username": "${{ secrets.SONATYPE_USERNAME }}",
               "password": "${{ secrets.SONATYPE_PASSWORD }}"
             }]
-    - name: Build with Maven
+    - name: Release with maven
       env:
-        RELEASE_REPOSITORY_URL: ${{ secrets.RELEASE_REPOSITORY_URL }}
-        SNAPSHOTS_REPOSITORY_URL: ${{ secrets.SNAPSHOTS_REPOSITORY_URL }}
-      run: mvn deploy release:prepare -DpreparationGoals=clean -DskipTests=true -Dghcr.io/${{ github.repository_owner }}/jflyte
-
-
-
-
-
-       
+        RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/"
+        SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/"
+      run: mvn deploy release:prepare -DpreparationGoals=clean -DskipTests=true -Dghcr.io/flyteorg/jflyte  -Ddockerfile.push

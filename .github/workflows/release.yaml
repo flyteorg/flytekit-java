@@ -1,4 +1,4 @@
-name: Flytekit Java Release
+name: flytekit-java release
 
 on:
   release:
@@ -11,74 +11,31 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: "0"
-    - name: Set up JDK 1.8
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-prepare-release-${{ hashFiles('pom.xml') }}
+    - name: Set up JDK 11
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
-    - name: Autobump version
-      id: version
-      run: |
-        # from refs/tags/v1.2.3 get 1.2.3
-        VERSION=$(echo $GITHUB_REF | sed 's#.*/v##')
-        echo "::set-output name=version::$VERSION"
-    - name: Verify with Maven
-      run: mvn verify
+        java-version: 11.0
+    - uses: s4u/maven-settings-action@v2.2.0
+      with:
+        servers: |
+            [{
+              "id": "flytekit-java-release",
+              "username": "${{ secrets.SONATYPE_USERNAME }}",
+              "password": "${{ secrets.SONATYPE_PASSWORD }}"
+            }]
     - name: Build with Maven
-      run: mvn package
-    - name: Flytekit-api Jar Publish to sonatype
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.SONATYPE_SERVER_URL }}
-        username: ${{ secrets.SONATYPE_USERNAME }}
-        password: ${{ secrets.SONATYPE_PASSWORD }}
-        format: maven2
-        repository: flytekit-api
-        coordinates: groupId=org.flyte artifactId=flytekit-parent version=${{ steps.bump.outputs.version }}
-        assets: extension=jar
-        filename: ./flytekit-api/target/flytekit-api-${{ steps.bump.outputs.version }}.jar
-    - name: Flytekit-java Jar Publish to sonatype
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.SONATYPE_SERVER_URL }}
-        username: ${{ secrets.SONATYPE_USERNAME }}
-        password: ${{ secrets.SONATYPE_PASSWORD }}
-        format: maven2
-        repository: flytekit-java
-        coordinates: groupId=org.flyte artifactId=flytekit-parent version=${{ steps.bump.outputs.version }}
-        assets: extension=jar
-        filename: ./flytekit-java/target/flytekit-java-${{ steps.bump.outputs.version }}.jar
-    - name: Flytekit-jackson Jar Publish to sonatype
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.SONATYPE_SERVER_URL }}
-        username: ${{ secrets.SONATYPE_USERNAME }}
-        password: ${{ secrets.SONATYPE_PASSWORD }}
-        format: maven2
-        repository: flytekit-jackson
-        coordinates: groupId=org.flyte artifactId=flytekit-parent version=${{ steps.bump.outputs.version }}
-        assets: extension=jar
-        filename: ./flytekit-jackson/target/flytekit-jackson-${{ steps.bump.outputs.version }}.jar
-    - name: Flytekit-scala Jar Publish to sonatype
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.SONATYPE_SERVER_URL }}
-        username: ${{ secrets.SONATYPE_USERNAME }}
-        password: ${{ secrets.SONATYPE_PASSWORD }}
-        format: maven2
-        repository: flytekit-scala
-        coordinates: groupId=org.flyte artifactId=flytekit-parent version=${{ steps.bump.outputs.version }}
-        assets: extension=jar
-        filename: ./flytekit-scala/target/flytekit-scala-${{ steps.bump.outputs.version }}.jar
-    - name: Build & Push jflyte Docker Image to Github Registry
-      uses: whoan/docker-build-with-cache-action@v5
-      with:
-        username: "${{ secrets.FLYTE_BOT_USERNAME }}"
-        password: "${{ secrets.FLYTE_BOT_PAT }}"
-        image_name: ${{ github.repository_owner }}/jflyte
-        image_tag: latest,${{ github.sha }},v${{ steps.bump.outputs.version }}
-        push_git_tag: true
-        push_image_and_stages: true
-        registry: ghcr.io
-        build_extra_args: "--compress=true"
-        context: .
-        dockerfile: Dockerfile
+      env:
+        RELEASE_REPOSITORY_URL: ${{ secrets.RELEASE_REPOSITORY_URL }}
+        SNAPSHOTS_REPOSITORY_URL: ${{ secrets.SNAPSHOTS_REPOSITORY_URL }}
+      run: mvn deploy release:prepare -DpreparationGoals=clean -DskipTests=true -Dghcr.io/${{ github.repository_owner }}/jflyte
+
+
+
+
+
+       

@@ -24,25 +24,27 @@ jobs:
         with:
           java-version: 11.0
           distribution: 'adopt'
-#      - name: Log in to Docker Hub
-#        uses: docker/login-action@v1
-#        with:
-#          registry: ghcr.io
-#          username: ${{ secrets.FLYTE_BOT_USERNAME }}
-#          password: ${{ secrets.FLYTE_BOT_PAT }}
-#      - uses: s4u/maven-settings-action@v2.2.0
-#        with:
-#          servers: |
-#            [{
-#              "id": "flytekit-java-release",
-#              "username": "${{ secrets.SONATYPE_USERNAME }}",
-#              "password": "${{ secrets.SONATYPE_PASSWORD }}"
-#            }]
+      - name: Log in to Docker Hub
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.FLYTE_BOT_USERNAME }}
+          password: ${{ secrets.FLYTE_BOT_PAT }}
+      - uses: s4u/maven-settings-action@v2.2.0
+        if: ${{ github.ref == 'refs/heads/master' }}
+        with:
+          servers: |
+            [{
+              "id": "flytekit-java-release",
+              "username": "${{ secrets.SONATYPE_USERNAME }}",
+              "password": "${{ secrets.SONATYPE_PASSWORD }}"
+            }]
       - name: Verify with Maven
         run: mvn verify
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
-          RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/"
-          SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/"
-        run: mvn deploy -DpreparationGoals=clean -DskipTests=true -Dghcr.io/flyteorg/jflyte  -Ddockerfile.push
+          RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+          SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/content/repositories/snapshots"
+        run: mvn deploy -DpreparationGoals=clean -DskipTests=true -Ddocker.image=gcr.io/flyteorg/jflyte -Ddockerfile.push

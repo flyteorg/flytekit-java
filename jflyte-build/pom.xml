@@ -28,7 +28,7 @@
   <artifactId>jflyte-build</artifactId>
 
   <properties>
-    <docker.image>${env.FLYTE_INTERNAL_IMAGE}</docker.image>
+    <docker.image>ghcr.io/flyteorg/flytekit-java</docker.image>
     <docker.tag>${project.version}</docker.tag>
 
     <maven.deploy.skip>true</maven.deploy.skip>
@@ -68,17 +68,4 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>env.FLYTE_INTERNAL_IMAGE default value</id>
-      <activation>
-        <property>
-          <name>!env.FLYTE_INTERNAL_IMAGE</name>
-        </property>
-      </activation>
-      <properties>
-        <env.FLYTE_INTERNAL_IMAGE>docker.io/flyte/jflyte</env.FLYTE_INTERNAL_IMAGE>
-      </properties>
-    </profile>
-  </profiles>
 </project>

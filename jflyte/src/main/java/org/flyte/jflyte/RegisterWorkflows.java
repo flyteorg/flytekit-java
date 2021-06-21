@@ -113,7 +113,7 @@ public class RegisterWorkflows implements Callable<Integer> {
     Config config = Config.load();
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
 
-    TokenSource tokenSource = getTokenSource(modules, authMode);
+    TokenSource tokenSource = (authMode == null) ? null : getTokenSource(modules, authMode);
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {

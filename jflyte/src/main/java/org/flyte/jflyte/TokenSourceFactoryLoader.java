@@ -36,7 +36,7 @@ class TokenSourceFactoryLoader {
             module -> ClassLoaders.withClassLoader(module, () -> loadTokenFactorySources(name)))
         .map(TokenSourceFactory::getTokenSource)
         .findFirst()
-        .orElse(null);
+        .orElseThrow(() -> new IllegalArgumentException("auth-mode not supported: " + name));
   }
 
   private static Stream<TokenSourceFactory> loadTokenFactorySources(String name) {
@@ -51,7 +51,8 @@ class TokenSourceFactoryLoader {
       for (TokenSourceFactory tokenSourceFactory : registrar.load(env)) {
         LOG.debug(
             String.format(
-                "Discovered TokenSourceFactory [%s]", tokenSourceFactory.getClass().getName()));
+                "Discovered TokenSourceFactory for method=%s [%s]",
+                tokenSourceFactory.getMethod(), tokenSourceFactory.getClass().getName()));
 
         if (name.equals(tokenSourceFactory.getMethod())) {
           return Stream.of(tokenSourceFactory);

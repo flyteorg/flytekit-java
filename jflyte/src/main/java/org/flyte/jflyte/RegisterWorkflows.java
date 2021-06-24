@@ -262,7 +262,9 @@ public class RegisterWorkflows implements Callable<Integer> {
             })
         .collect(
             collectingAndThen(
-                toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
+                // We can have the same sub-workflow twice with different inputs. Pick one
+                toMap(Map.Entry::getKey, Map.Entry::getValue, (wf1, wf2) -> wf1),
+                Collections::unmodifiableMap));
   }
 
   private static List<PartialWorkflowIdentifier> collectSubWorkflowIds(WorkflowTemplate parent) {

@@ -152,6 +152,13 @@ public class RegisterWorkflowsTest {
                         .inputs(ImmutableList.of())
                         .upstreamNodeIds(ImmutableList.of())
                         .workflowNode(workflowNode)
+                        .build(),
+                    // Same sub-workflow
+                    Node.builder()
+                        .id("node-2")
+                        .inputs(ImmutableList.of())
+                        .upstreamNodeIds(ImmutableList.of())
+                        .workflowNode(workflowNode)
                         .build()))
             .outputs(ImmutableList.of())
             .build();

@@ -15,8 +15,8 @@ public class WelcomeWorkflow extends SdkWorkflow {
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData name = builder.inputOfString("name", "The name for the welcome message");
 
-    SdkBindingData greeting = builder.apply("greet-node", GreetTask.of(name)).getOutput("greeting");
-    SdkBindingData greetingWithQuestion = builder.apply("add-question-node", AddQuestionTask.of(greeting)).getOutput("greeting");
+    SdkBindingData greeting = builder.apply("greet", GreetTask.of(name)).getOutput("greeting");
+    SdkBindingData greetingWithQuestion = builder.apply("add-question", AddQuestionTask.of(greeting)).getOutput("greeting");
 
     builder.output("greeting", greetingWithQuestion, "Welcome message");
   }

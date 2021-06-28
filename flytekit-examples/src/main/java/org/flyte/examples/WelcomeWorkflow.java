@@ -6,10 +6,10 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 /** Example workflow that takes a name and outputs a welcome message
- * +---------------------------------+
- * |        start of workflow        |
- * |      input: name(string)        |
- * +---------------+-----------------+
+ *  +--------------------------------+
+ *  |        start of workflow       |
+ *  |      input: name(string)       |
+ *  +--------------+-----------------+
  *                 |
  *                 |
  *  +--------------v-----------------+
@@ -39,10 +39,10 @@ public class WelcomeWorkflow extends SdkWorkflow {
     // defines the input of the workflow
     SdkBindingData name = builder.inputOfString("name", "The name for the welcome message");
 
-    // uses the workflow input as the task input in the GreetTask
+    // uses the workflow input as the task input of the GreetTask
     SdkBindingData greeting = builder.apply("greet", GreetTask.of(name)).getOutput("greeting");
 
-    // uses the output of the GreetTask as the task input in the AddQuestionTask
+    // uses the output of the GreetTask as the task input of the AddQuestionTask
     SdkBindingData greetingWithQuestion =
         builder.apply("add-question", AddQuestionTask.of(greeting)).getOutput("greeting");
 

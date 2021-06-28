@@ -18,7 +18,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    * Binds input data to this task
    *
    * @param name the input name
-   * @return A transformed instance of this class with input data
+   * @return 1 transformed instance of this class with input data
    */
   public static SdkTransform of(SdkBindingData name) {
     return new GreetTask().withInput("name", name);

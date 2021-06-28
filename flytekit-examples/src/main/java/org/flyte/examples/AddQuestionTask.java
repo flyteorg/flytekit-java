@@ -22,7 +22,7 @@ public class AddQuestionTask
    * Binds input data to this task
    *
    * @param greeting the input greeting message
-   * @return A transformed instance of this class with input data
+   * @return a transformed instance of this class with input data
    */
   public static SdkTransform of(SdkBindingData greeting) {
     return new AddQuestionTask().withInput("greeting", greeting);

@@ -21,31 +21,8 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-/** Example workflow that takes a name and outputs a welcome message
- *  +--------------------------------+
- *  |        start of workflow       |
- *  |      input: name(string)       |
- *  +--------------+-----------------+
- *                 |
- *                 |
- *  +--------------v-----------------+
- *  |          GreetTask             |
- *  |      input: name(string)       |
- *  |      output: greeting(string)  |
- *  +--------------+-----------------+
- *                 |
- *                 |
- *  +--------------v-----------------+
- *  |        AddQuestionTask         |
- *  |      input: greeting(string)   |
- *  |      output: greeting(string)  |
- *  +--------------+-----------------+
- *                 |
- *                 |
- *  +--------------v-----------------+
- *  |       end of workflow          |
- *  |     output: greeting(string)   |
- *  +--------------------------------+
+/**
+ * Example workflow that takes a name and outputs a welcome message
  */
 @AutoService(SdkWorkflow.class)
 public class WelcomeWorkflow extends SdkWorkflow {

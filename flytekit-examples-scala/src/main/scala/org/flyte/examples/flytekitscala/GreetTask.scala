@@ -22,7 +22,7 @@ import org.flyte.flytekitscala.SdkScalaType
 case class GreetTaskInput(name: String)
 case class GreetTaskOutput(greeting: String)
 
-/** Example Flyte task that takes a name as the input and outputs a simple greeting message */
+/** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 class GreetTask
     extends SdkRunnableTask(
       SdkScalaType[GreetTaskInput],

@@ -23,7 +23,7 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-/** Example Flyte task that takes a name as the input and outputs a simple greeting message */
+/** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 @AutoService(SdkRunnableTask.class)
 public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output> {
   public GreetTask() {

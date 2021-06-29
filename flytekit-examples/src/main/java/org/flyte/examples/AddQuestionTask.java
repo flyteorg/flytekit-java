@@ -25,7 +25,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /**
  * Example Flyte task that takes a greeting message as input, appends "How are you?", and outputs
- * the result
+ * the result.
  */
 @AutoService(SdkRunnableTask.class)
 public class AddQuestionTask

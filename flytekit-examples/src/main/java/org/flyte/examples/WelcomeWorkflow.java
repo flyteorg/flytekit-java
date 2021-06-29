@@ -21,7 +21,7 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-/** Example workflow that takes a name and outputs a welcome message */
+/** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
 public class WelcomeWorkflow extends SdkWorkflow {
 

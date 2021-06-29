@@ -24,7 +24,7 @@ case class AddQuestionTaskOutput(greeting: String)
 
 /**
   * Example Flyte task that takes a greeting message as input, appends "How are you?", and outputs
-  * the result
+  * the result.
   */
 class AddQuestionTask
     extends SdkRunnableTask(

@@ -35,7 +35,7 @@ public class AddQuestionTask
   }
 
   /**
-   * Binds input data to this task
+   * Binds input data to this task.
    *
    * @param greeting the input greeting message
    * @return a transformed instance of this class with input data

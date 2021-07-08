@@ -50,6 +50,7 @@
     <module>flytekit-jackson</module>
     <module>flytekit-java</module>
     <module>flytekit-scala</module>
+    <module>flytekit-scala_2.13</module>
     <module>flytekit-scala-tests</module>
     <module>flytekit-testing</module>
     <module>flytekit-examples</module>

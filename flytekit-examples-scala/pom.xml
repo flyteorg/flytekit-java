@@ -26,8 +26,8 @@
   <artifactId>flytekit-examples-scala</artifactId>
 
   <properties>
-    <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.11</scala.version>
+    <scala.baseVersion>2.13</scala.baseVersion>
+    <scala.version>2.13.5</scala.version>
 
     <maven.deploy.skip>true</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->

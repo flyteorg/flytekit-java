@@ -63,11 +63,15 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>../flytekit-scala_2.13/src/main/java</sourceDirectory>
+    <testSourceDirectory>../flytekit-scala_2.13/src/test/scala</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
         <configuration>
+          <sourceDir>../flytekit-scala_2.13/src/main/scala</sourceDir>
+          <scalaVersion>${scala.version}</scalaVersion>
           <args>
             <arg>-language:experimental.macros</arg>
           </args>

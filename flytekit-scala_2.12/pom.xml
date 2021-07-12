@@ -63,7 +63,7 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>../flytekit-scala_2.13/src/main/java</sourceDirectory>
+    <sourceDirectory>../flytekit-scala_2.13/src/main/scala</sourceDirectory>
     <testSourceDirectory>../flytekit-scala_2.13/src/test/scala</testSourceDirectory>
     <plugins>
       <plugin>

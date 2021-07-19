@@ -1,0 +1,48 @@
+name: flytekit-java release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-snapshot:
+    runs-on: ubuntu-latest
+    name: flytekit-java release
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-prepare-release-${{ hashFiles('pom.xml') }}
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.FLYTE_BOT_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.FLYTE_BOT_GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.FLYTE_BOT_USERNAME }}
+          password: ${{ secrets.FLYTE_BOT_PAT }}
+      - name: Setup JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11.0
+          distribution: 'adopt'
+          server-id: snapshots
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Prepare Release
+        run: |
+          mvn versions:set -DnewVersion=${GITHUB_REF#refs/*/}
+      - name: Release snapshot with Maven
+        run: mvn --batch-mode release:prepare release:perform  -DpreparationGoals=clean -Ddockerfile.push
+        env:
+          RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+          SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/content/repositories/snapshots"
+          MAVEN_USERNAME: flytekit
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

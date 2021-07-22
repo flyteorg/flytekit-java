@@ -65,50 +65,6 @@ public class SdkBranchNode extends SdkNode {
     return SdkBindingData.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
   }
 
-  /**
-   * Get the sub-node of a branch node by name. All nodes dependent on the sub-node are going to be
-   * skipped if the condition for the sub-node doesn't match.
-   *
-   * <p>Example: access output of FooTask if it's executed.
-   *
-   * <pre>{@code
-   * SdkBranchNode branchNode = builder.apply(
-   *   "branch-node",
-   *   SdkConditions
-   *      .when("foo", ..., new FooTask())
-   *      .when("bar", ..., new BarTask())
-   *      .otherwise("otherwise", ...));
-   *
-   * SdkNode foo = branchNode.getSubNode("foo");
-   * SdkBindingData output = case1.getOutput("output");
-   * }</pre>
-   *
-   * @param name sub-node name
-   * @return sub-node
-   */
-  public SdkNode getSubNode(String name) {
-    Map<String, SdkNode> subNodes = new HashMap<>();
-
-    subNodes.put(ifElse.case_().thenNode().getNodeId(), ifElse.case_().thenNode());
-
-    if (ifElse.elseNode() != null) {
-      subNodes.put(ifElse.elseNode().getNodeId(), ifElse.elseNode());
-    }
-
-    ifElse.other().forEach(case_ -> subNodes.put(case_.thenNode().getNodeId(), case_.thenNode()));
-
-    SdkNode subNode = subNodes.get(name);
-
-    if (subNode == null) {
-      String message =
-          String.format("Sub-node [%s] doesn't exist among %s", name, subNodes.keySet());
-
-      throw new IllegalArgumentException(message);
-    }
-
-    return new SdkSubNode(builder, nodeId, subNode);
-  }
-
   @Override
   public String getNodeId() {
     return nodeId;
@@ -204,34 +160,6 @@ public class SdkBranchNode extends SdkNode {
               .build();
 
       return new SdkBranchNode(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
-    }
-  }
-
-  static class SdkSubNode extends SdkNode {
-    private final String parentNodeId;
-    private final SdkNode underlying;
-
-    SdkSubNode(SdkWorkflowBuilder builder, String parentNodeId, SdkNode underlying) {
-      super(builder);
-
-      this.parentNodeId = parentNodeId;
-      this.underlying = underlying;
-    }
-
-    @Override
-    public Map<String, SdkBindingData> getOutputs() {
-      return underlying.getOutputs();
-    }
-
-    @Override
-    public String getNodeId() {
-      return parentNodeId + "-" + underlying.getNodeId();
-    }
-
-    @Override
-    public Node toIdl() {
-      throw new UnsupportedOperationException(
-          "Sub-nodes are part of SdkBranchNode and can't be converted to IDL independently");
     }
   }
 }

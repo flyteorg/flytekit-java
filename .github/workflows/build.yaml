@@ -37,7 +37,7 @@ jobs:
         if: ${{ github.ref != 'refs/heads/master' }}
         run: mvn --batch-mode verify
       - name: Release snapshot with Maven
-        if: ${{ github.ref == 'refs/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/master' }} && github.event.head_commit.name != 'flyte-bot'
         run: mvn --batch-mode deploy -DpreparationGoals=clean -Ddockerfile.push
         env:
           RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"

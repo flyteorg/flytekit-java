@@ -25,7 +25,7 @@
 
   <properties>
     <auto-service.version>1.0-rc5</auto-service.version>
-    <auto-value.version>1.7</auto-value.version>
+    <auto-value.version>1.8.2</auto-value.version>
     <grpc.version>1.27.2</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
@@ -290,6 +290,8 @@
             <showDeprecation>true</showDeprecation>
             <forceJavacCompilerUse>true</forceJavacCompilerUse>
             <failOnWarning>true</failOnWarning>
+            <!-- The semantics of this option are reversed, see MCOMPILER-209. -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
             <encoding>utf-8</encoding>
             <compilerArgs>
               <!-- for AutoValue reflection -->
@@ -301,6 +303,8 @@
               <!-- we don't care about classes being deserialized with different classpath -->
               <arg>-Xlint:-serial</arg>
               <arg>-implicit:class</arg>
+              <!-- see https://stackoverflow.com/a/57004351 -->
+              <arg>-Xpkginfo:always</arg>
             </compilerArgs>
             <annotationProcessorPaths>
               <path>

@@ -23,12 +23,16 @@ import static java.util.stream.Collectors.toMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import flyteidl.admin.Common;
+import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Condition;
+import flyteidl.core.DynamicJob;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -58,9 +62,11 @@ import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.CronSchedule;
+import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -276,6 +282,10 @@ class ProtoUtil {
     throw new IllegalArgumentException("Unknown Identifier type: " + id.getClass());
   }
 
+  static Tasks.TaskTemplate serialize(TaskIdentifier id, TaskTemplate taskTemplate) {
+    return serialize(taskTemplate).toBuilder().setId(serialize(id)).build();
+  }
+
   static Tasks.TaskTemplate serialize(TaskTemplate taskTemplate) {
     Tasks.RuntimeMetadata runtime =
         Tasks.RuntimeMetadata.newBuilder()
@@ -303,8 +313,22 @@ class ProtoUtil {
         .build();
   }
 
+  static TaskTemplate deserialize(Tasks.TaskTemplate proto) {
+    return TaskTemplate.builder()
+        .container(proto.hasContainer() ? deserialize(proto.getContainer()) : null)
+        .custom(deserialize(proto.getCustom()))
+        .interface_(deserialize(proto.getInterface()))
+        .retries(deserialize(proto.getMetadata().getRetries()))
+        .type(proto.getType())
+        .build();
+  }
+
   private static Literals.RetryStrategy serialize(RetryStrategy retryStrategy) {
     return Literals.RetryStrategy.newBuilder().setRetries(retryStrategy.retries()).build();
+  }
+
+  private static RetryStrategy deserialize(Literals.RetryStrategy proto) {
+    return RetryStrategy.builder().retries(proto.getRetries()).build();
   }
 
   private static Interface.TypedInterface serialize(TypedInterface interface_) {
@@ -314,10 +338,25 @@ class ProtoUtil {
         .build();
   }
 
+  private static TypedInterface deserialize(Interface.TypedInterface proto) {
+    return TypedInterface.builder()
+        .inputs(deserialize(proto.getInputs()))
+        .outputs(deserialize(proto.getOutputs()))
+        .build();
+  }
+
   private static Interface.VariableMap serializeVariableMap(Map<String, Variable> inputs) {
     Interface.VariableMap.Builder builder = Interface.VariableMap.newBuilder();
 
     inputs.forEach((key, value) -> builder.putVariables(key, serialize(value)));
+
+    return builder.build();
+  }
+
+  private static Map<String, Variable> deserialize(Interface.VariableMap proto) {
+    ImmutableMap.Builder<String, Variable> builder = ImmutableMap.builder();
+
+    proto.getVariablesMap().forEach((key, value) -> builder.put(key, deserialize(value)));
 
     return builder.build();
   }
@@ -332,6 +371,13 @@ class ProtoUtil {
     }
 
     return builder.build();
+  }
+
+  private static Variable deserialize(Interface.Variable proto) {
+    return Variable.builder()
+        .literalType(deserialize(proto.getType()))
+        .description(proto.getDescription())
+        .build();
   }
 
   @VisibleForTesting
@@ -357,6 +403,26 @@ class ProtoUtil {
     return builder.build();
   }
 
+  static LiteralType deserialize(Types.LiteralType proto) {
+    switch (proto.getTypeCase()) {
+      case SIMPLE:
+        return LiteralType.ofSimpleType(deserialize(proto.getSimple()));
+      case BLOB:
+        return LiteralType.ofBlobType(deserialize(proto.getBlob()));
+      case COLLECTION_TYPE:
+        return LiteralType.ofCollectionType(deserialize(proto.getCollectionType()));
+      case SCHEMA:
+        return LiteralType.ofSchemaType(deserialize(proto.getSchema()));
+      case MAP_VALUE_TYPE:
+        return LiteralType.ofMapValueType(deserialize(proto.getMapValueType()));
+
+      case TYPE_NOT_SET:
+        throw new IllegalArgumentException("Can't deserialize LiteralType because TYPE_NOT_SET");
+    }
+
+    throw new AssertionError("Unexpected LiteralType: " + proto);
+  }
+
   private static Types.SimpleType serialize(SimpleType simpleType) {
     switch (simpleType) {
       case INTEGER:
@@ -378,16 +444,59 @@ class ProtoUtil {
     return Types.SimpleType.UNRECOGNIZED;
   }
 
+  private static SimpleType deserialize(Types.SimpleType proto) {
+    switch (proto) {
+      case INTEGER:
+        return SimpleType.INTEGER;
+      case FLOAT:
+        return SimpleType.FLOAT;
+      case STRING:
+        return SimpleType.STRING;
+      case BOOLEAN:
+        return SimpleType.BOOLEAN;
+      case DATETIME:
+        return SimpleType.DATETIME;
+      case DURATION:
+        return SimpleType.DURATION;
+      case STRUCT:
+        return SimpleType.STRUCT;
+      case ERROR:
+      case BINARY:
+      case NONE:
+        throw new IllegalArgumentException("Unsupported SimpleType: " + proto);
+
+      case UNRECOGNIZED:
+        throw new IllegalArgumentException("Can't deserialize LiteralType because UNRECOGNIZED");
+    }
+
+    throw new IllegalArgumentException("Unexpected SimpleType: " + proto);
+  }
+
   private static Types.SchemaType serialize(SchemaType schemaType) {
     Types.SchemaType.Builder builder = Types.SchemaType.newBuilder();
     schemaType.columns().forEach(column -> builder.addColumns(serialize(column)));
     return builder.build();
   }
 
+  private static SchemaType deserialize(Types.SchemaType proto) {
+    ImmutableList.Builder<SchemaType.Column> columns = ImmutableList.builder();
+
+    proto.getColumnsList().forEach(column -> columns.add(deserialize(column)));
+
+    return SchemaType.builder().columns(columns.build()).build();
+  }
+
   private static Types.SchemaType.SchemaColumn serialize(SchemaType.Column schemaColumn) {
     return Types.SchemaType.SchemaColumn.newBuilder()
         .setName(schemaColumn.name())
         .setType(serialize(schemaColumn.type()))
+        .build();
+  }
+
+  private static SchemaType.Column deserialize(Types.SchemaType.SchemaColumn proto) {
+    return SchemaType.Column.builder()
+        .name(proto.getName())
+        .type(deserialize(proto.getType()))
         .build();
   }
 
@@ -410,10 +519,40 @@ class ProtoUtil {
     return SchemaColumnType.UNRECOGNIZED;
   }
 
+  private static SchemaType.ColumnType deserialize(
+      Types.SchemaType.SchemaColumn.SchemaColumnType proto) {
+    switch (proto) {
+      case INTEGER:
+        return SchemaType.ColumnType.INTEGER;
+      case FLOAT:
+        return SchemaType.ColumnType.FLOAT;
+      case STRING:
+        return SchemaType.ColumnType.STRING;
+      case BOOLEAN:
+        return SchemaType.ColumnType.BOOLEAN;
+      case DATETIME:
+        return SchemaType.ColumnType.DATETIME;
+      case DURATION:
+        return SchemaType.ColumnType.DURATION;
+      case UNRECOGNIZED:
+        throw new IllegalArgumentException(
+            "Can't deserialize SchemaColumnType because UNRECOGNIZED");
+    }
+
+    throw new IllegalArgumentException("Unexpected SchemaColumnType: " + proto);
+  }
+
   private static Types.BlobType serialize(BlobType blobType) {
     return Types.BlobType.newBuilder()
         .setFormat(blobType.format())
         .setDimensionality(serialize(blobType.dimensionality()))
+        .build();
+  }
+
+  private static BlobType deserialize(Types.BlobType blobType) {
+    return BlobType.builder()
+        .format(blobType.getFormat())
+        .dimensionality(deserialize(blobType.getDimensionality()))
         .build();
   }
 
@@ -440,6 +579,19 @@ class ProtoUtil {
     return builder.build();
   }
 
+  private static Container deserialize(Tasks.Container container) {
+    ImmutableList.Builder<KeyValuePair> env = ImmutableList.builder();
+
+    container.getEnvList().forEach(keyValuePair -> env.add(deserialize(keyValuePair)));
+
+    return Container.builder()
+        .args(ImmutableList.copyOf(container.getArgsList()))
+        .command(ImmutableList.copyOf(container.getCommandList()))
+        .env(env.build())
+        .image(container.getImage())
+        .build();
+  }
+
   private static Literals.KeyValuePair serialize(KeyValuePair pair) {
     Literals.KeyValuePair.Builder builder = Literals.KeyValuePair.newBuilder();
 
@@ -450,6 +602,26 @@ class ProtoUtil {
     }
 
     return builder.build();
+  }
+
+  private static KeyValuePair deserialize(Literals.KeyValuePair pair) {
+    return KeyValuePair.of(pair.getKey(), pair.getValue());
+  }
+
+  public static LaunchPlanOuterClass.LaunchPlanSpec serialize(LaunchPlan launchPlan) {
+    LaunchPlanOuterClass.LaunchPlanSpec.Builder specBuilder =
+        LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
+            .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
+            .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
+            .setDefaultInputs(ProtoUtil.serializeParameters(launchPlan.defaultInputs()));
+
+    if (launchPlan.cronSchedule() != null) {
+      ScheduleOuterClass.Schedule schedule = ProtoUtil.serialize(launchPlan.cronSchedule());
+      specBuilder.setEntityMetadata(
+          LaunchPlanOuterClass.LaunchPlanMetadata.newBuilder().setSchedule(schedule).build());
+    }
+
+    return specBuilder.build();
   }
 
   public static Workflow.WorkflowTemplate serialize(
@@ -929,5 +1101,21 @@ class ProtoUtil {
                           return parameterBuilder.build();
                         })))
         .build();
+  }
+
+  static DynamicJob.DynamicJobSpec serialize(DynamicJobSpec dynamicJobSpec) {
+    DynamicJob.DynamicJobSpec.Builder builder = DynamicJob.DynamicJobSpec.newBuilder();
+
+    dynamicJobSpec.nodes().forEach(node -> builder.addNodes(serialize(node)));
+    dynamicJobSpec.outputs().forEach(binding -> builder.addOutputs(serialize(binding)));
+    dynamicJobSpec
+        .subWorkflows()
+        .forEach(
+            (id, workflowTemplate) -> builder.addSubworkflows(serialize(id, workflowTemplate)));
+    dynamicJobSpec
+        .tasks()
+        .forEach((id, taskTemplate) -> builder.addTasks(serialize(id, taskTemplate)));
+
+    return builder.build();
   }
 }

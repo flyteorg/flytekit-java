@@ -61,6 +61,7 @@
     <module>jflyte-aws</module>
     <module>jflyte-build</module>
     <module>jflyte-google-cloud</module>
+    <module>integration-tests</module>
   </modules>
 
   <licenses>
@@ -111,6 +112,16 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
+        <artifactId>flytekit-examples</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-examples-scala</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
         <artifactId>jflyte-api</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -122,6 +133,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>jflyte-aws</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-build</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

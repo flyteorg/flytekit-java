@@ -22,11 +22,9 @@ import static java.util.stream.Collectors.toMap;
 import static org.flyte.jflyte.TokenSourceFactoryLoader.getTokenSource;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -37,13 +35,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Container;
@@ -143,11 +139,7 @@ public class RegisterWorkflows implements Callable<Integer> {
   }
 
   private static TaskTemplate createTaskTemplate(
-      RunnableTask task,
-      String indexFileLocation,
-      Struct defaultCustom,
-      String image,
-      List<KeyValuePair> env) {
+      RunnableTask task, Struct defaultCustom, String image, List<KeyValuePair> env) {
     Container container =
         Container.builder()
             .command(ImmutableList.of())
@@ -161,8 +153,8 @@ public class RegisterWorkflows implements Callable<Integer> {
                     "{{.input}}",
                     "--outputPrefix",
                     "{{.outputPrefix}}",
-                    "--indexFileLocation",
-                    indexFileLocation))
+                    "--taskTemplatePath",
+                    "{{.taskTemplatePath}}"))
             .image(image)
             .env(env)
             .build();
@@ -295,20 +287,18 @@ public class RegisterWorkflows implements Callable<Integer> {
             .collect(toList());
 
     ArtifactStager stager = getArtifactStager(config, modules);
-
     List<Artifact> artifacts = stagePackageFiles(stager, packageDir);
-    Artifact indexFile = stageIndexFile(stager, artifacts);
 
     for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {
       TaskIdentifier taskId = entry.getKey();
       RunnableTask task = entry.getValue();
 
-      Struct defaultCustom = serializeToStruct(indexFile.location(), artifacts);
+      Struct defaultCustom =
+          JFlyteCustom.builder().artifacts(artifacts).build().serializeToStruct();
 
       TaskTemplate taskTemplate =
           createTaskTemplate(
               task,
-              /* indexFileLocation= */ indexFile.location(),
               /* defaultCustom= */ defaultCustom,
               /* image= */ config.image(),
               /* env= */ envList);
@@ -327,54 +317,11 @@ public class RegisterWorkflows implements Callable<Integer> {
     }
   }
 
-  private Artifact stageIndexFile(ArtifactStager stager, List<Artifact> packageArtifacts) {
-    // TODO use json, or something. json is nice because it's human-readable
-    // TODO add crc32c checksums along with location
-    String content =
-        packageArtifacts.stream()
-            .sorted(Comparator.comparing(Artifact::location))
-            .map(Artifact::location)
-            .collect(Collectors.joining("\n"));
-
-    ByteSource contentBytes = ByteSource.wrap(content.getBytes(Charsets.UTF_8));
-
-    Artifact indexArtifact = stager.getArtifact("classpath", contentBytes);
-
-    stager.stageArtifact(indexArtifact, contentBytes);
-
-    return indexArtifact;
-  }
-
-  @VisibleForTesting
-  static Struct serializeToStruct(String indexFileLocation, List<Artifact> artifacts) {
-    Struct jflyte =
-        Struct.of(
-            ImmutableMap.of(
-                "index_file_location",
-                Struct.Value.ofStringValue(indexFileLocation),
-                "artifacts",
-                Struct.Value.ofListValue(
-                    artifacts.stream()
-                        .map(RegisterWorkflows::serializeToStruct)
-                        .map(Struct.Value::ofStructValue)
-                        .collect(collectingAndThen(toList(), Collections::unmodifiableList)))));
-
-    return Struct.of(ImmutableMap.of("jflyte", Struct.Value.ofStructValue(jflyte)));
-  }
-
   @VisibleForTesting
   static Struct merge(Struct source, Struct target) {
     Map<String, Struct.Value> fields = new HashMap<>(target.fields());
     fields.putAll(source.fields());
 
     return Struct.of(Collections.unmodifiableMap(fields));
-  }
-
-  private static Struct serializeToStruct(Artifact artifact) {
-    // we don't add size because we aren't sure if we want to expose it
-    return Struct.of(
-        ImmutableMap.of(
-            "name", Struct.Value.ofStringValue(artifact.name()),
-            "location", Struct.Value.ofStringValue(artifact.location())));
   }
 }

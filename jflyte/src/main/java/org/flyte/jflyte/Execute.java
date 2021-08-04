@@ -18,21 +18,8 @@ package org.flyte.jflyte;
 
 import static org.flyte.jflyte.ClassLoaders.withClassLoader;
 
-import flyteidl.core.Errors;
-import flyteidl.core.Literals;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.ContainerError;
@@ -40,6 +27,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +37,7 @@ import picocli.CommandLine.Option;
 /** Handler for "execute" command. */
 @Command(name = "execute")
 public class Execute implements Callable<Integer> {
-
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
-  private static final String OUTPUTS_PB = "outputs.pb";
-  private static final String ERROR_PB = "error.pb";
 
   @Option(
       names = {"--task"},
@@ -71,9 +56,9 @@ public class Execute implements Callable<Integer> {
   private String outputPrefix;
 
   @Option(
-      names = {"--indexFileLocation"},
+      names = {"--taskTemplatePath"},
       required = true)
-  private String indexFileLocation;
+  private String taskTemplatePath;
 
   @Override
   public Integer call() {
@@ -85,12 +70,13 @@ public class Execute implements Callable<Integer> {
     Config config = Config.load();
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
     Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
-    List<String> stagedFiles = readStagedFiles(fileSystems, indexFileLocation);
-
-    ClassLoader packageClassLoader = loadPackage(fileSystems, stagedFiles);
 
     FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
     FileSystem outputFs = FileSystemLoader.getFileSystem(fileSystems, outputPrefix);
+    ProtoReaderWriter protoReaderWriter = new ProtoReaderWriter(outputPrefix, inputFs, outputFs);
+
+    TaskTemplate taskTemplate = protoReaderWriter.getTaskTemplate(taskTemplatePath);
+    ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
 
     try {
       // before we run anything, switch class loader, otherwise,
@@ -101,78 +87,21 @@ public class Execute implements Callable<Integer> {
           withClassLoader(
               packageClassLoader,
               () -> {
-                Map<String, Literal> input = getInput(inputFs, inputs);
+                Map<String, Literal> input = protoReaderWriter.getInput(inputs);
                 RunnableTask runnableTask = getTask(task);
 
                 return runnableTask.run(input);
               });
 
-      writeOutputs(outputFs, outputPrefix, outputs);
+      protoReaderWriter.writeOutputs(outputs);
     } catch (ContainerError e) {
       LOG.error("failed to run task", e);
 
-      writeError(outputFs, outputPrefix, ProtoUtil.serializeContainerError(e));
+      protoReaderWriter.writeError(ProtoUtil.serializeContainerError(e));
     } catch (Throwable e) {
       LOG.error("failed to run task", e);
 
-      writeError(outputFs, outputPrefix, ProtoUtil.serializeThrowable(e));
-    }
-  }
-
-  private static void writeOutputs(
-      FileSystem fs, String outputPrefix, Map<String, Literal> outputs) {
-    String outputUri = normalizeUri(outputPrefix, OUTPUTS_PB);
-
-    writeTo(
-        fs,
-        outputUri,
-        outputStream -> {
-          Literals.LiteralMap proto = ProtoUtil.serialize(outputs);
-          proto.writeTo(outputStream);
-        });
-  }
-
-  private static void writeError(
-      FileSystem fs, String outputPrefix, Errors.ContainerError containerError) {
-    String outputUri = normalizeUri(outputPrefix, ERROR_PB);
-
-    writeTo(
-        fs,
-        outputUri,
-        outputStream -> {
-          Errors.ErrorDocument errorDocument =
-              Errors.ErrorDocument.newBuilder().setError(containerError).build();
-
-          errorDocument.writeTo(outputStream);
-        });
-  }
-
-  private static void writeTo(FileSystem fs, String uri, Writer writer) {
-    try (WritableByteChannel channel = fs.writer(uri);
-        OutputStream os = Channels.newOutputStream(channel)) {
-      writer.write(os);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  private static String normalizeUri(String prefix, String fileName) {
-    String uri;
-    if (prefix.endsWith("/")) {
-      uri = prefix + fileName;
-    } else {
-      uri = prefix + "/" + fileName;
-    }
-    return uri;
-  }
-
-  private static Map<String, Literal> getInput(FileSystem fs, String uri) {
-    try (ReadableByteChannel channel = fs.reader(uri)) {
-      Literals.LiteralMap proto = Literals.LiteralMap.parseFrom(Channels.newInputStream(channel));
-
-      return ProtoUtil.deserialize(proto);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+      protoReaderWriter.writeError(ProtoUtil.serializeThrowable(e));
     }
   }
 
@@ -192,67 +121,5 @@ public class Execute implements Callable<Integer> {
     }
 
     throw new IllegalArgumentException("Task not found: " + name);
-  }
-
-  private static List<String> readStagedFiles(
-      Map<String, FileSystem> fileSystems, String indexFileLocation) {
-    FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, indexFileLocation);
-    List<String> files = new ArrayList<>();
-
-    try (ReadableByteChannel reader = fileSystem.reader(indexFileLocation)) {
-      Scanner scanner = new Scanner(Channels.newInputStream(reader), "UTF-8");
-
-      while (scanner.hasNext()) {
-        String next = scanner.next();
-
-        LOG.info("Read staged file {}", next);
-
-        if (!next.isEmpty()) {
-          files.add(next);
-        }
-      }
-
-      return files;
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  private static ClassLoader loadPackage(
-      Map<String, FileSystem> fileSystems, List<String> stagedFiles) {
-    try {
-      Path tmp = Files.createTempDirectory("tasks");
-
-      // TODO do in parallel
-
-      for (String stagedFile : stagedFiles) {
-        FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, stagedFile);
-
-        try (ReadableByteChannel reader = fileSystem.reader(stagedFile)) {
-          // FIXME beam doesn't like = in jar names
-          // we should preserve original jar name, for now, just remove "="
-          String name = stagedFile.substring(stagedFile.lastIndexOf("/") + 1).replace("=", "");
-          Path path = tmp.resolve(name);
-
-          if (path.toFile().exists()) {
-            // file already exists, but we have checksums, so we should be ok
-            LOG.warn("Duplicate entry in --stagedFiles: [{}]", stagedFile);
-            continue;
-          }
-
-          LOG.info("Copied {} to {}", stagedFile, path);
-
-          Files.copy(Channels.newInputStream(reader), path);
-        }
-      }
-
-      return ClassLoaders.forDirectory(tmp.toFile());
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  private interface Writer {
-    void write(OutputStream os) throws IOException;
   }
 }

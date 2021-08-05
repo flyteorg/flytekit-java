@@ -154,7 +154,7 @@ public abstract class SdkTestingExecutor {
 
     Map<String, Literal> outputLiteralMap =
         LocalEngine.compileAndExecute(
-            workflowTemplate, unmodifiableMap(fixedTaskMap()), fixedInputMap());
+            workflowTemplate, unmodifiableMap(fixedTaskMap()), emptyMap(), fixedInputMap());
 
     Map<String, LiteralType> outputLiteralTypeMap =
         workflowTemplate.interface_().outputs().entrySet().stream()

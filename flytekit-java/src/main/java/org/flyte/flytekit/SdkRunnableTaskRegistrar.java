@@ -30,7 +30,7 @@ import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
-/** A registrar that creates {@link SdkRunnableTask} instances. */
+/** A registrar that creates {@link RunnableTask} instances. */
 @AutoService(RunnableTaskRegistrar.class)
 public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
   private static final Logger LOG = Logger.getLogger(SdkRunnableTaskRegistrar.class.getName());

@@ -16,6 +16,8 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.emptyMap;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
@@ -23,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -64,7 +67,9 @@ public class ExecuteLocal implements Callable<Integer> {
             "JFLYTE_VERSION", "test",
             "JFLYTE_PROJECT", "flytetester");
 
-    Map<String, RunnableTask> tasks = ExecuteLocalLoader.loadTasks(modules, env);
+    Map<String, RunnableTask> runnableTasks = ExecuteLocalLoader.loadTasks(modules, env);
+    Map<String, DynamicWorkflowTask> dynamicWorkflowTasks =
+        emptyMap(); // TODO support dynamic tasks
     Map<String, WorkflowTemplate> workflows = ExecuteLocalLoader.loadWorkflows(modules, env);
 
     WorkflowTemplate workflow =
@@ -82,7 +87,8 @@ public class ExecuteLocal implements Callable<Integer> {
       ExecutionListener listener = NoopExecutionListener.create();
 
       Map<String, Literal> outputs =
-          LocalEngine.compileAndExecute(workflow, tasks, inputs, listener);
+          LocalEngine.compileAndExecute(
+              workflow, runnableTasks, dynamicWorkflowTasks, inputs, listener);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;

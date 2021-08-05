@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
 
@@ -58,16 +59,25 @@ class ExecutionNodeCompiler {
    *
    * @param nodes nodes
    * @param runnableTasks runnable tasks
+   * @param dynamicWorkflowTasks dynamic workflow tasks
    * @return execution nodes
    */
-  static List<ExecutionNode> compile(List<Node> nodes, Map<String, RunnableTask> runnableTasks) {
+  static List<ExecutionNode> compile(
+      List<Node> nodes,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks) {
     List<ExecutionNode> executableNodes =
-        nodes.stream().map(node -> compile(node, runnableTasks)).collect(toList());
+        nodes.stream()
+            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks))
+            .collect(toList());
 
     return sort(executableNodes);
   }
 
-  static ExecutionNode compile(Node node, Map<String, RunnableTask> runnableTasks) {
+  static ExecutionNode compile(
+      Node node,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks) {
     List<String> upstreamNodeIds = new ArrayList<>();
 
     node.inputs().stream()
@@ -92,7 +102,13 @@ class ExecutionNodeCompiler {
     }
 
     String taskName = node.taskNode().referenceId().name();
+    DynamicWorkflowTask dynamicWorkflowTask = dynamicWorkflowTasks.get(taskName);
     RunnableTask runnableTask = runnableTasks.get(taskName);
+
+    if (dynamicWorkflowTask != null) {
+      throw new IllegalArgumentException(
+          "DynamicWorkflowTask isn't yet supported for local execution");
+    }
 
     Objects.requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
 

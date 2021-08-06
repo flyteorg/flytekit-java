@@ -34,7 +34,7 @@ public class Main implements Callable<Integer> {
   /** "jflyte" entry point. */
   @Command(
       name = "jflyte",
-      subcommands = {Main.Register.class, Execute.class, ExecuteLocal.class})
+      subcommands = {Execute.class, ExecuteLocal.class, Register.class, Serialize.class})
   static class JFlyte implements Callable<Integer> {
 
     @Override
@@ -49,6 +49,18 @@ public class Main implements Callable<Integer> {
       name = "register",
       subcommands = {RegisterWorkflows.class})
   static class Register implements Callable<Integer> {
+    @Override
+    public Integer call() {
+      new CommandLine(this).usage(System.err);
+      return 1;
+    }
+  }
+
+  /** "serialize" entry point. */
+  @Command(
+      name = "serialize",
+      subcommands = {SerializeWorkflows.class})
+  static class Serialize implements Callable<Integer> {
     @Override
     public Integer call() {
       new CommandLine(this).usage(System.err);

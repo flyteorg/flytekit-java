@@ -16,6 +16,8 @@
  */
 package org.flyte.jflyte;
 
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -27,7 +29,6 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ class ClassLoaders {
     return listDirectory(new File(dir)).stream()
         .filter(File::isDirectory)
         .map(subDir -> Maps.immutableEntry(subDir.getAbsolutePath(), forDirectory(subDir)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(toUnmodifiableMap());
   }
 
   static ClassLoader forDirectory(File dir) {

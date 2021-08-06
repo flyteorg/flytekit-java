@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.shaded.com.google.common.io.Files;
@@ -46,7 +45,7 @@ class JFlyteContainer extends GenericContainer<JFlyteContainer> {
 
     withEnv(getFlyteEnv());
     withWorkingDirectory(workingDir);
-    withFileSystemBind(workingDir, workingDir, BindMode.READ_ONLY);
+    withFileSystemBind(workingDir, workingDir);
     withCommand(cmd);
     waitingFor(new NotRunningWaitStrategy());
 

@@ -17,9 +17,9 @@
 package org.flyte.jflyte;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static org.flyte.jflyte.MoreCollectors.mapValues;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -31,6 +31,8 @@ import com.google.protobuf.Value;
 import flyteidl.admin.Common;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.ScheduleOuterClass;
+import flyteidl.admin.TaskOuterClass;
+import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.core.Condition;
 import flyteidl.core.DynamicJob;
 import flyteidl.core.Errors;
@@ -45,11 +47,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -209,16 +209,11 @@ class ProtoUtil {
   static List<Literal> deserialize(Literals.LiteralCollection literalCollection) {
     return literalCollection.getLiteralsList().stream()
         .map(ProtoUtil::deserialize)
-        .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+        .collect(toUnmodifiableList());
   }
 
   private static Struct deserialize(com.google.protobuf.Struct struct) {
-    Map<String, Struct.Value> fields =
-        struct.getFieldsMap().entrySet().stream()
-            .collect(
-                collectingAndThen(
-                    toMap(Map.Entry::getKey, x -> deserialize(x.getValue())),
-                    Collections::unmodifiableMap));
+    Map<String, Struct.Value> fields = mapValues(struct.getFieldsMap(), ProtoUtil::deserialize);
 
     return Struct.of(fields);
   }
@@ -241,7 +236,7 @@ class ProtoUtil {
         List<Struct.Value> valuesList =
             value.getListValue().getValuesList().stream()
                 .map(ProtoUtil::deserialize)
-                .collect(collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(toUnmodifiableList());
 
         return Struct.Value.ofListValue(valuesList);
 
@@ -284,6 +279,10 @@ class ProtoUtil {
 
   static Tasks.TaskTemplate serialize(TaskIdentifier id, TaskTemplate taskTemplate) {
     return serialize(taskTemplate).toBuilder().setId(serialize(id)).build();
+  }
+
+  static TaskOuterClass.TaskSpec serialize(TaskSpec spec) {
+    return TaskOuterClass.TaskSpec.newBuilder().setTemplate(serialize(spec.taskTemplate())).build();
   }
 
   static Tasks.TaskTemplate serialize(TaskTemplate taskTemplate) {
@@ -608,7 +607,7 @@ class ProtoUtil {
     return KeyValuePair.of(pair.getKey(), pair.getValue());
   }
 
-  public static LaunchPlanOuterClass.LaunchPlanSpec serialize(LaunchPlan launchPlan) {
+  static LaunchPlanOuterClass.LaunchPlanSpec serialize(LaunchPlan launchPlan) {
     LaunchPlanOuterClass.LaunchPlanSpec.Builder specBuilder =
         LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
             .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
@@ -624,12 +623,24 @@ class ProtoUtil {
     return specBuilder.build();
   }
 
-  public static Workflow.WorkflowTemplate serialize(
-      WorkflowIdentifier id, WorkflowTemplate template) {
+  static WorkflowOuterClass.WorkflowSpec serialize(WorkflowIdentifier id, WorkflowSpec spec) {
+    WorkflowOuterClass.WorkflowSpec.Builder builder =
+        WorkflowOuterClass.WorkflowSpec.newBuilder()
+            .setTemplate(serialize(id, spec.workflowTemplate()));
+
+    spec.subWorkflows()
+        .forEach(
+            (subWorkflowId, subWorkflow) ->
+                builder.addSubWorkflows(serialize(subWorkflowId, subWorkflow)));
+
+    return builder.build();
+  }
+
+  static Workflow.WorkflowTemplate serialize(WorkflowIdentifier id, WorkflowTemplate template) {
     return serialize(template).toBuilder().setId(serialize(id)).build();
   }
 
-  public static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
+  static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
     Workflow.WorkflowTemplate.Builder builder =
         Workflow.WorkflowTemplate.newBuilder()
             .setMetadata(serialize(template.metadata()))
@@ -704,7 +715,7 @@ class ProtoUtil {
     return Workflow.BranchNode.newBuilder().setIfElse(serialize(branchNode.ifElse())).build();
   }
 
-  public static Workflow.IfElseBlock serialize(IfElseBlock ifElse) {
+  static Workflow.IfElseBlock serialize(IfElseBlock ifElse) {
     Workflow.IfElseBlock.Builder builder = Workflow.IfElseBlock.newBuilder();
 
     builder.setCase(serialize(ifElse.case_()));
@@ -1084,7 +1095,7 @@ class ProtoUtil {
         .putAllParameters(
             defaultInputs.entrySet().stream()
                 .collect(
-                    toMap(
+                    toUnmodifiableMap(
                         Map.Entry::getKey,
                         e -> {
                           Interface.Variable variable = serialize(e.getValue().var());

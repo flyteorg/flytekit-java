@@ -16,7 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import static java.util.stream.Collectors.toList;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
@@ -54,7 +54,7 @@ abstract class IdentifierRewrite {
   abstract FlyteAdminClient adminClient();
 
   WorkflowTemplate apply(WorkflowTemplate template) {
-    List<Node> newNodes = template.nodes().stream().map(this::apply).collect(toList());
+    List<Node> newNodes = template.nodes().stream().map(this::apply).collect(toUnmodifiableList());
 
     return template.toBuilder().nodes(newNodes).build();
   }
@@ -112,7 +112,7 @@ abstract class IdentifierRewrite {
     return ifElse
         .toBuilder()
         .case_(apply(ifElse.case_()))
-        .other(ifElse.other().stream().map(this::apply).collect(toList()))
+        .other(ifElse.other().stream().map(this::apply).collect(toUnmodifiableList()))
         .elseNode(apply(ifElse.elseNode()))
         .build();
   }

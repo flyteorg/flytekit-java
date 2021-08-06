@@ -21,19 +21,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
+import java.io.File;
+import java.io.IOException;
+import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.rules.TemporaryFolder;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JavaExamplesIT {
 
   private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
+  private static final String CLASSPATH = "flytekit-examples/target/lib";
 
   @BeforeAll
   public static void beforeAll() {
-    CLIENT.registerWorkflows("flytekit-examples/target/lib");
+    CLIENT.registerWorkflows(CLASSPATH);
   }
 
   @Test
@@ -64,5 +69,25 @@ public class JavaExamplesIT {
                     "fib1", 1L)));
 
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("fib5", 5L))));
+  }
+
+  @Test
+  public void testSerializeWorkflows() throws IOException {
+    File parent = new File("target/integration-tests");
+    TemporaryFolder folder = new TemporaryFolder(parent);
+
+    try {
+      folder.create();
+
+      CLIENT.serializeWorkflows(CLASSPATH, folder.getRoot().getAbsolutePath());
+
+      boolean hasFibonacciWorkflow =
+          Stream.of(folder.getRoot().list())
+              .anyMatch(x -> x.endsWith("_org.flyte.examples.FibonacciWorkflow_2.pb"));
+
+      assertThat(hasFibonacciWorkflow, equalTo(true));
+    } finally {
+      folder.delete();
+    }
   }
 }

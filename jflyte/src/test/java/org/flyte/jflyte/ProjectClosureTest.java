@@ -16,12 +16,19 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.LaunchPlan;
+import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Struct;
@@ -32,7 +39,7 @@ import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Test;
 
-public class RegisterWorkflowsTest {
+public class ProjectClosureTest {
 
   @Test
   public void testMerge() {
@@ -57,7 +64,7 @@ public class RegisterWorkflowsTest {
 
     assertThat(expected.fields().size(), equalTo(3));
 
-    assertThat(RegisterWorkflows.merge(source, target), equalTo(expected));
+    assertThat(ProjectClosure.merge(source, target), equalTo(expected));
   }
 
   @Test
@@ -104,27 +111,21 @@ public class RegisterWorkflowsTest {
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenSubWorkflowRef))
             .build();
 
-    WorkflowTemplate parent =
-        WorkflowTemplate.builder()
-            .interface_(emptyInterface)
-            .metadata(emptyMetadata)
-            .nodes(
-                ImmutableList.of(
-                    Node.builder()
-                        .id("node-1")
-                        .inputs(ImmutableList.of())
-                        .upstreamNodeIds(ImmutableList.of())
-                        .workflowNode(workflowNode)
-                        .build(),
-                    // Same sub-workflow
-                    Node.builder()
-                        .id("node-2")
-                        .inputs(ImmutableList.of())
-                        .upstreamNodeIds(ImmutableList.of())
-                        .workflowNode(workflowNode)
-                        .build()))
-            .outputs(ImmutableList.of())
-            .build();
+    List<Node> nodes =
+        ImmutableList.of(
+            Node.builder()
+                .id("node-1")
+                .inputs(ImmutableList.of())
+                .upstreamNodeIds(ImmutableList.of())
+                .workflowNode(workflowNode)
+                .build(),
+            // Same sub-workflow
+            Node.builder()
+                .id("node-2")
+                .inputs(ImmutableList.of())
+                .upstreamNodeIds(ImmutableList.of())
+                .workflowNode(workflowNode)
+                .build());
 
     Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows =
         ImmutableMap.of(
@@ -132,9 +133,56 @@ public class RegisterWorkflowsTest {
             otherSubWorkflowRef, emptyWorkflowTemplate);
 
     Map<WorkflowIdentifier, WorkflowTemplate> collectedSubWorkflows =
-        RegisterWorkflows.collectSubWorkflows(parent, allWorkflows);
+        ProjectClosure.collectSubWorkflows(nodes, allWorkflows);
 
     assertThat(
         collectedSubWorkflows, equalTo(ImmutableMap.of(subWorkflowRef, emptyWorkflowTemplate)));
+  }
+
+  @Test
+  public void testSerialize() {
+    Map<String, ByteString> output = new HashMap<>();
+
+    LaunchPlanIdentifier id0 =
+        LaunchPlanIdentifier.builder()
+            .domain("placeholder")
+            .project("placeholder")
+            .name("name0")
+            .version("placeholder")
+            .build();
+
+    LaunchPlanIdentifier id1 =
+        LaunchPlanIdentifier.builder()
+            .domain("placeholder")
+            .project("placeholder")
+            .name("name1")
+            .version("placeholder")
+            .build();
+
+    LaunchPlan launchPlan =
+        LaunchPlan.builder()
+            .name("name")
+            .workflowId(
+                PartialWorkflowIdentifier.builder()
+                    .name("name")
+                    .project("placeholder")
+                    .domain("placeholder")
+                    .version("placeholder")
+                    .build())
+            .build();
+
+    ProjectClosure closure =
+        ProjectClosure.builder()
+            .workflowSpecs(emptyMap())
+            .taskSpecs(emptyMap())
+            .launchPlans(
+                ImmutableMap.of(
+                    id0, launchPlan,
+                    id1, launchPlan))
+            .build();
+
+    closure.serialize(output::put);
+
+    assertThat(output.keySet(), containsInAnyOrder("0_name0_3.pb", "1_name1_3.pb"));
   }
 }

@@ -29,10 +29,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.flyte.jflyte.api.FileSystem;
 import org.flyte.jflyte.api.Manifest;
 import org.slf4j.Logger;
@@ -58,6 +62,25 @@ class ArtifactStager {
   ArtifactStager(String stagingLocation, FileSystem fileSystem) {
     this.stagingLocation = stagingLocation;
     this.fileSystem = fileSystem;
+  }
+
+  static ArtifactStager create(Config config, Collection<ClassLoader> modules) {
+    try {
+      String stagingLocation = config.stagingLocation();
+
+      if (stagingLocation == null) {
+        throw new IllegalArgumentException(
+            "Environment variable 'FLYTE_STAGING_LOCATION' isn't set");
+      }
+
+      URI stagingUri = new URI(stagingLocation);
+      Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
+      FileSystem stagingFileSystem = FileSystemLoader.getFileSystem(fileSystems, stagingUri);
+
+      return new ArtifactStager(stagingLocation, stagingFileSystem);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Failed to parse stagingLocation", e);
+    }
   }
 
   List<Artifact> stageFiles(List<String> files) {

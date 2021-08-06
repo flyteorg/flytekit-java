@@ -16,13 +16,11 @@
  */
 package org.flyte.jflyte;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collections;
 import java.util.List;
 import org.flyte.api.v1.Struct;
 
@@ -40,7 +38,7 @@ abstract class JFlyteCustom {
                     artifacts().stream()
                         .map(JFlyteCustom::serializeArtifactToStruct)
                         .map(Struct.Value::ofStructValue)
-                        .collect(collectingAndThen(toList(), Collections::unmodifiableList)))));
+                        .collect(toUnmodifiableList()))));
 
     return Struct.of(ImmutableMap.of("jflyte", Struct.Value.ofStructValue(jflyte)));
   }
@@ -71,7 +69,7 @@ abstract class JFlyteCustom {
     List<Artifact> artifacts =
         artifactsValue.listValue().stream()
             .map(JFlyteCustom::deserializeArtifact)
-            .collect(toList());
+            .collect(toUnmodifiableList());
 
     return JFlyteCustom.builder().artifacts(artifacts).build();
   }

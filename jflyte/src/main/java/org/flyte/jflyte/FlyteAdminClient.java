@@ -23,7 +23,6 @@ import flyteidl.admin.Common;
 import flyteidl.admin.Common.ResourceListRequest;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
-import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.core.IdentifierOuterClass;
@@ -134,22 +133,10 @@ class FlyteAdminClient implements AutoCloseable {
   void createLaunchPlan(LaunchPlanIdentifier id, LaunchPlan launchPlan) {
     LOG.debug("createLaunchPlan {}", id);
 
-    LaunchPlanOuterClass.LaunchPlanSpec.Builder specBuilder =
-        LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
-            .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
-            .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
-            .setDefaultInputs(ProtoUtil.serializeParameters(launchPlan.defaultInputs()));
-
-    if (launchPlan.cronSchedule() != null) {
-      ScheduleOuterClass.Schedule schedule = ProtoUtil.serialize(launchPlan.cronSchedule());
-      specBuilder.setEntityMetadata(
-          LaunchPlanOuterClass.LaunchPlanMetadata.newBuilder().setSchedule(schedule).build());
-    }
-
     LaunchPlanOuterClass.LaunchPlanCreateRequest request =
         LaunchPlanOuterClass.LaunchPlanCreateRequest.newBuilder()
             .setId(ProtoUtil.serialize(id))
-            .setSpec(specBuilder)
+            .setSpec(ProtoUtil.serialize(launchPlan))
             .build();
 
     idempotentCreate("createLaunchPlan", id, () -> stub.createLaunchPlan(request));

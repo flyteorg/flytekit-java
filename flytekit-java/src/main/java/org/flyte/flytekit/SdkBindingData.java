@@ -18,7 +18,7 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.stream.Collectors.toList;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
@@ -156,7 +156,7 @@ public abstract class SdkBindingData {
 
   private static <T> SdkBindingData ofBindingCollection(
       List<T> elements, Function<T, SdkBindingData> f, LiteralType literalType) {
-    List<SdkBindingData> bindings = elements.stream().map(f).collect(toList());
+    List<SdkBindingData> bindings = elements.stream().map(f).collect(toUnmodifiableList());
 
     return ofBindingCollection(bindings, literalType);
   }

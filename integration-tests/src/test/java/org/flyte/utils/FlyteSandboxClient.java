@@ -153,6 +153,10 @@ public class FlyteSandboxClient {
         "-cp=" + classpath);
   }
 
+  public void serializeWorkflows(String classpath, String folder) {
+    jflyte("jflyte", "serialize", "workflows", "-cp=" + classpath, "-f=" + folder);
+  }
+
   private void jflyte(String... cmd) {
     JFlyteContainer jflyte = new JFlyteContainer(cmd);
     jflyte.start();

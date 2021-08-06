@@ -18,37 +18,27 @@ package org.flyte.jflyte;
 
 import static org.flyte.jflyte.TokenSourceFactoryLoader.getTokenSource;
 
+import com.google.errorprone.annotations.Var;
+import com.google.protobuf.ByteString;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import org.flyte.jflyte.api.TokenSource;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-/** Registers all workflows on classpath. */
+/** Serializes all workflows on classpath. */
 @Command(name = "workflows")
-public class RegisterWorkflows implements Callable<Integer> {
+public class SerializeWorkflows implements Callable<Integer> {
 
-  @SuppressWarnings("UnusedVariable")
-  @Option(
-      names = {"-p", "--project"},
-      description = "Flyte project to use. You can have more than one project per repo",
-      required = true)
-  private String project;
-
-  @SuppressWarnings("UnusedVariable")
-  @Option(
-      names = {"-d", "--domain"},
-      description = "This is usually development, staging, or production",
-      required = true)
-  private String domain;
-
-  @SuppressWarnings("UnusedVariable")
-  @Option(
-      names = {"-v", "--version"},
-      description = "This is version to apply globally for this context",
-      required = true)
-  private String version;
+  private static final String PROJECT_PLACEHOLDER = "{{ registration.project }}";
+  private static final String DOMAIN_PLACEHOLDER = "{{ registration.version }}";
+  private static final String VERSION_PLACEHOLDER = "{{ registration.domain }}";
 
   @Option(
       names = {"-cp", "--classpath"},
@@ -63,8 +53,14 @@ public class RegisterWorkflows implements Callable<Integer> {
       required = false)
   private String authMode;
 
+  @Option(
+      names = {"-f", "--folder"},
+      description = "Output directory",
+      required = true)
+  private String folder;
+
   @Override
-  public Integer call() {
+  public Integer call() throws Exception {
     Config config = Config.load();
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
 
@@ -73,29 +69,42 @@ public class RegisterWorkflows implements Callable<Integer> {
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
       ArtifactStager stager = ArtifactStager.create(config, modules);
-
       ExecutionConfig executionConfig =
           ExecutionConfig.builder()
-              .domain(domain)
-              .version(version)
-              .project(project)
+              .domain(DOMAIN_PLACEHOLDER)
+              .version(VERSION_PLACEHOLDER)
+              .project(PROJECT_PLACEHOLDER)
               .image(config.image())
               .build();
 
       ProjectClosure closure =
           ProjectClosure.loadAndStage(packageDir, executionConfig, stager, adminClient);
 
-      closure.taskSpecs().forEach((id, spec) -> adminClient.createTask(id, spec.taskTemplate()));
-
-      closure
-          .workflowSpecs()
-          .forEach(
-              (id, spec) ->
-                  adminClient.createWorkflow(id, spec.workflowTemplate(), spec.subWorkflows()));
-
-      closure.launchPlans().forEach(adminClient::createLaunchPlan);
+      closure.serialize(fileWriter(folder));
     }
 
     return 0;
+  }
+
+  private static BiConsumer<String, ByteString> fileWriter(String folder) {
+    return (filename, bytes) -> {
+      @Var FileOutputStream fos = null;
+
+      // ugly because spotbugs doesn't like try-with-resources
+      try {
+        fos = new FileOutputStream(new File(folder, filename));
+        fos.flush();
+      } catch (IOException e) {
+        throw new UncheckedIOException("failed to write to " + folder + "/" + filename, e);
+      } finally {
+        if (fos != null) {
+          try {
+            fos.close();
+          } catch (IOException e) {
+            // ignore, any significant error should happen during flush
+          }
+        }
+      }
+    };
   }
 }

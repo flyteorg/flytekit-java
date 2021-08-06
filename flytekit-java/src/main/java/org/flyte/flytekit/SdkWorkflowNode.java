@@ -16,10 +16,8 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -64,7 +62,7 @@ public class SdkWorkflowNode extends SdkNode {
     List<Binding> inputBindings =
         inputs.entrySet().stream()
             .map(x -> toBinding(x.getKey(), x.getValue()))
-            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+            .collect(toUnmodifiableList());
 
     return Node.builder()
         .id(nodeId)

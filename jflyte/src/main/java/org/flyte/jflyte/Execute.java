@@ -17,11 +17,11 @@
 package org.flyte.jflyte;
 
 import static org.flyte.jflyte.ClassLoaders.withClassLoader;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
@@ -110,7 +110,7 @@ public class Execute implements Callable<Integer> {
     Map<String, String> env =
         System.getenv().entrySet().stream()
             .filter(x -> x.getKey().startsWith("JFLYTE_"))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(toUnmodifiableMap());
 
     Map<TaskIdentifier, RunnableTask> tasks = Registrars.loadAll(RunnableTaskRegistrar.class, env);
 

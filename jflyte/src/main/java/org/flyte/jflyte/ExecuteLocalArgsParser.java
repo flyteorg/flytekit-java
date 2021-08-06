@@ -16,7 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import static java.util.stream.Collectors.toMap;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.collect.Maps;
 import java.util.List;
@@ -48,7 +48,7 @@ public class ExecuteLocalArgsParser {
 
               return Maps.immutableEntry(name, result.matchedOptionValue(name, defaultValue));
             })
-        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(toUnmodifiableMap());
   }
 
   /**

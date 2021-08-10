@@ -72,7 +72,12 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
+  <scm>
+    <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
+    <developerConnection>scm:git:git@github.com:flyteorg/flytekit-java.git</developerConnection>
+    <url>https://github.com/flyteorg/flytekit-java</url>
+    <tag>HEAD</tag>
+  </scm>
   <dependencyManagement>
     <dependencies>
       <!-- modules -->
@@ -246,6 +251,30 @@
       </plugin>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <!-- Downgrade to 2.4.1 if release fails -->
+        <version>2.5.3</version>
+        <configuration>
+          <useReleaseProfile>false</useReleaseProfile>
+          <arguments>-P restricted-release,sonatype-oss-release,full</arguments>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <allowTimestampedSnapshots>false</allowTimestampedSnapshots>
+          <tagNameFormat>flytekit-@{project.version}</tagNameFormat>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-api</artifactId>
+            <version>1.9.4</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>1.9.4</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
     <pluginManagement>

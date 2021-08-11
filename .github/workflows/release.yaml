@@ -1,8 +1,6 @@
 name: Create flytekit-java release
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 jobs:
   build-snapshot:
@@ -42,8 +40,7 @@ jobs:
 
       - name: Release snapshot with Maven
         run: |
-          mvn --batch-mode release:prepare  -DpreparationGoals=clean -Ddockerfile.push
-          mvn --batch-mode release:perform  -DpreparationGoals=clean -Ddockerfile.push
+          mvn --batch-mode release:clean release:prepare release:perform -DpreparationGoals=clean -Ddockerfile.push
         env:
           RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
           SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/content/repositories/snapshots"

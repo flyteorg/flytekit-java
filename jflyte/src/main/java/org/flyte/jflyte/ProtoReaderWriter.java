@@ -31,11 +31,14 @@ import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ProtoReaderWriter {
   private static final String OUTPUTS_PB = "outputs.pb";
   private static final String FUTURES_PB = "futures.pb";
   private static final String ERROR_PB = "error.pb";
+  private static final Logger LOG = LoggerFactory.getLogger(ProtoReaderWriter.class);
 
   private final String outputPrefix;
   private final FileSystem inputFs;
@@ -79,6 +82,9 @@ class ProtoReaderWriter {
         outputUri,
         outputStream -> {
           Literals.LiteralMap proto = ProtoUtil.serialize(outputs);
+
+          LOG.debug("writeOutputs {}", proto);
+
           proto.writeTo(outputStream);
         });
   }
@@ -91,6 +97,9 @@ class ProtoReaderWriter {
         outputUri,
         outputStream -> {
           DynamicJob.DynamicJobSpec proto = ProtoUtil.serialize(dynamicJobSpec);
+
+          LOG.debug("writeFutures {}", proto);
+
           proto.writeTo(outputStream);
         });
   }
@@ -102,10 +111,12 @@ class ProtoReaderWriter {
         outputFs,
         outputUri,
         outputStream -> {
-          Errors.ErrorDocument errorDocument =
+          Errors.ErrorDocument proto =
               Errors.ErrorDocument.newBuilder().setError(containerError).build();
 
-          errorDocument.writeTo(outputStream);
+          LOG.debug("writeError {}", proto);
+
+          proto.writeTo(outputStream);
         });
   }
 

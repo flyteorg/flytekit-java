@@ -34,7 +34,13 @@ public class Main implements Callable<Integer> {
   /** "jflyte" entry point. */
   @Command(
       name = "jflyte",
-      subcommands = {Execute.class, ExecuteLocal.class, Register.class, Serialize.class})
+      subcommands = {
+        Execute.class,
+        ExecuteDynamicWorkflow.class,
+        ExecuteLocal.class,
+        Register.class,
+        Serialize.class
+      })
   static class JFlyte implements Callable<Integer> {
 
     @Override

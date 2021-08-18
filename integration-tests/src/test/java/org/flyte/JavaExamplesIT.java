@@ -72,6 +72,15 @@ public class JavaExamplesIT {
   }
 
   @Test
+  public void testDynamicFibonacciWorkflow() {
+    Literals.LiteralMap output =
+        CLIENT.createExecution(
+            "org.flyte.examples.DynamicFibonacciWorkflow", ofIntegerMap(ImmutableMap.of("n", 6L)));
+
+    assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("output", 8L))));
+  }
+
+  @Test
   public void testSerializeWorkflows() throws IOException {
     File parent = new File("target/integration-tests");
     TemporaryFolder folder = new TemporaryFolder(parent);

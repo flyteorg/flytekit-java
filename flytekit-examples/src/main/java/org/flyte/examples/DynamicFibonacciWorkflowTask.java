@@ -46,20 +46,25 @@ public class DynamicFibonacciWorkflowTask
 
   @Override
   public void run(SdkWorkflowBuilder builder, Input input) {
-    SdkBindingData fib0 = SdkBindingData.ofInteger(1);
+    SdkBindingData fib0 = SdkBindingData.ofInteger(0);
     SdkBindingData fib1 = SdkBindingData.ofInteger(1);
-    SdkBindingData fib2 = SdkBindingData.ofInteger(2);
+    SdkBindingData fib2 = SdkBindingData.ofInteger(1);
 
     if (input.n() < 0) {
       throw new IllegalArgumentException("n < 0");
     }
 
-    if (input.n() <= 1) {
+    if (input.n() == 0) {
       builder.output("output", fib0);
       return;
     }
 
-    if (input.n() <= 2) {
+    if (input.n() == 1) {
+      builder.output("output", fib1);
+      return;
+    }
+
+    if (input.n() == 2) {
       builder.output("output", fib2);
       return;
     }

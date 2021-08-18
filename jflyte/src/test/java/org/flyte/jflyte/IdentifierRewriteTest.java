@@ -329,7 +329,7 @@ class IdentifierRewriteTest {
                     .build())
             .build();
 
-    assertThat(rewriter.apply(partialBranchNode), equalTo(rewrittenBranchNode));
+    assertThat(rewriter.visitor().visitBranchNode(partialBranchNode), equalTo(rewrittenBranchNode));
   }
 
   @Test
@@ -384,7 +384,7 @@ class IdentifierRewriteTest {
             .build();
 
     assertThat(
-        rewriter.apply(workflowNode),
+        rewriter.visitor().visitWorkflowNode(workflowNode),
         equalTo(
             WorkflowNode.builder()
                 .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenIdentifier))
@@ -410,7 +410,7 @@ class IdentifierRewriteTest {
             .build();
 
     assertThat(
-        rewriter.apply(workflowNode),
+        rewriter.visitor().visitWorkflowNode(workflowNode),
         equalTo(
             WorkflowNode.builder()
                 .reference(WorkflowNode.Reference.ofLaunchPlanRef(rewrittenIdentifier))

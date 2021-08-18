@@ -105,13 +105,16 @@ public class Execute implements Callable<Integer> {
     }
   }
 
+  private static Map<String, String> getEnv() {
+    return System.getenv().entrySet().stream()
+        // we keep JFLYTE_ only for backwards-compatibility
+        .filter(x -> x.getKey().startsWith("JFLYTE_") || x.getKey().startsWith("FLYTE_"))
+        .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
   private static RunnableTask getTask(String name) {
     // be careful not to pass extra
-    Map<String, String> env =
-        System.getenv().entrySet().stream()
-            .filter(x -> x.getKey().startsWith("JFLYTE_"))
-            .collect(toUnmodifiableMap());
-
+    Map<String, String> env = getEnv();
     Map<TaskIdentifier, RunnableTask> tasks = Registrars.loadAll(RunnableTaskRegistrar.class, env);
 
     for (Map.Entry<TaskIdentifier, RunnableTask> entry : tasks.entrySet()) {

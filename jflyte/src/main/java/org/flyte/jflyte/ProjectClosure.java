@@ -49,6 +49,7 @@ import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
@@ -172,10 +173,15 @@ abstract class ProjectClosure {
   static ProjectClosure load(
       ExecutionConfig config, IdentifierRewrite rewrite, ClassLoader packageClassLoader) {
     Map<String, String> env =
-        ImmutableMap.of(
-            "JFLYTE_DOMAIN", config.domain(),
-            "JFLYTE_PROJECT", config.project(),
-            "JFLYTE_VERSION", config.version());
+        ImmutableMap.<String, String>builder()
+            // we keep JFLYTE_ only for backwards-compatibility
+            .put("JFLYTE_DOMAIN", config.domain())
+            .put("JFLYTE_PROJECT", config.project())
+            .put("JFLYTE_VERSION", config.version())
+            .put("FLYTE_INTERNAL_DOMAIN", config.domain())
+            .put("FLYTE_INTERNAL_PROJECT", config.project())
+            .put("FLYTE_INTERNAL_VERSION", config.version())
+            .build();
 
     // 1. load classes, and create templates
     Map<TaskIdentifier, RunnableTask> runnableTasks =
@@ -262,6 +268,39 @@ abstract class ProjectClosure {
               return Maps.immutableEntry(workflowId, subWorkflow);
             })
         .collect(toUnmodifiableMap());
+  }
+
+  static Map<TaskIdentifier, TaskTemplate> collectTasks(
+      List<Node> rewrittenNodes, Map<TaskIdentifier, TaskTemplate> allTasks) {
+    return collectTaskIds(rewrittenNodes).stream()
+        // all identifiers should be rewritten at this point
+        .map(
+            taskId ->
+                TaskIdentifier.builder()
+                    .project(taskId.project())
+                    .name(taskId.name())
+                    .domain(taskId.domain())
+                    .version(taskId.version())
+                    .build())
+        .distinct()
+        .map(
+            taskId -> {
+              TaskTemplate taskTemplate = allTasks.get(taskId);
+
+              if (taskTemplate == null) {
+                throw new NoSuchElementException("Can't find referenced task " + taskId);
+              }
+
+              return Maps.immutableEntry(taskId, taskTemplate);
+            })
+        .collect(toUnmodifiableMap());
+  }
+
+  private static List<PartialTaskIdentifier> collectTaskIds(List<Node> rewrittenNodes) {
+    return rewrittenNodes.stream()
+        .filter(x -> x.taskNode() != null)
+        .map(x -> x.taskNode().referenceId())
+        .collect(toUnmodifiableList());
   }
 
   static Map<TaskIdentifier, TaskTemplate> createTaskTemplates(

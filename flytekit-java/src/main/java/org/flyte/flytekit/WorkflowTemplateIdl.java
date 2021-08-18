@@ -37,10 +37,7 @@ class WorkflowTemplateIdl {
     List<Node> nodes =
         builder.getNodes().values().stream().map(SdkNode::toIdl).collect(toUnmodifiableList());
 
-    List<Binding> outputBindings =
-        builder.getOutputs().entrySet().stream()
-            .map(entry -> getBinding(entry.getKey(), entry.getValue()))
-            .collect(toUnmodifiableList());
+    List<Binding> outputs = getOutputBindings(builder);
 
     return WorkflowTemplate.builder()
         .metadata(metadata)
@@ -49,9 +46,15 @@ class WorkflowTemplateIdl {
                 .inputs(getInputVariableMap(builder))
                 .outputs(getOutputVariableMap(builder))
                 .build())
-        .outputs(outputBindings)
+        .outputs(outputs)
         .nodes(nodes)
         .build();
+  }
+
+  static List<Binding> getOutputBindings(SdkWorkflowBuilder builder) {
+    return builder.getOutputs().entrySet().stream()
+        .map(entry -> getBinding(entry.getKey(), entry.getValue()))
+        .collect(toUnmodifiableList());
   }
 
   static Map<String, Variable> getInputVariableMap(SdkWorkflowBuilder builder) {

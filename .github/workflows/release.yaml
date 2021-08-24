@@ -40,7 +40,7 @@ jobs:
 
       - name: Release snapshot with Maven
         run: |
-          mvn --batch-mode release:clean release:prepare release:perform -DpreparationGoals=clean -Ddockerfile.push
+          mvn --batch-mode release:clean release:perform -DpreparationGoals=clean -DgenerateBackupPoms=false  -Ddockerfile.push
         env:
           RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
           SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/content/repositories/snapshots"

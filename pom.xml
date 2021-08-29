@@ -316,7 +316,6 @@
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
           <configuration>
-           <skip>true</skip>
             <java>
               <licenseHeader>
                 <!-- Specify either content or file, but not both -->

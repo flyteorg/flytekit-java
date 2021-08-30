@@ -16,7 +16,7 @@ trap 'rm -fr $OUT' EXIT
 FLYTEIDL_VERSION=$(curl --silent "https://api.github.com/repos/flyteorg/flyteidl/releases/latest" | jq -r .tag_name)
 git clone https://github.com/flyteorg/flyteidl.git "${OUT}" --branch "${FLYTEIDL_VERSION}"
 
-mv ${OUT}/proto/flyteidl/admin  jflyte/src/main/proto/flyteidl
-mv ${OUT}/proto/flyteidl/core  jflyte/src/main/proto/flyteidl
-mv ${OUT}/proto/flyteidl/events  jflyte/src/main/proto/flyteidl
-mv ${OUT}/proto/flyteidl/services  jflyte/src/main/proto/flyteidl
+mv ${OUT}/protos/flyteidl/admin/*  jflyte/src/main/proto/flyteidl/admin/
+mv ${OUT}/protos/flyteidl/core/*  jflyte/src/main/proto/flyteidl/core/
+mv ${OUT}/protos/flyteidl/event/*  jflyte/src/main/proto/flyteidl/event/
+mv ${OUT}/protos/flyteidl/service/*  jflyte/src/main/proto/flyteidl/service/

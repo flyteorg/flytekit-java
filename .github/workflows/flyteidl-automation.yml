@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-boilerplate:
+  update-flyteidl:
     name: Update flyteidl
     runs-on: ubuntu-latest
     steps:
@@ -34,3 +34,4 @@ jobs:
             owners
             maintainers
           draft: false 
+          

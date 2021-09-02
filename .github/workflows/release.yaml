@@ -29,7 +29,13 @@ jobs:
           gpg-private-key: ${{ secrets.FLYTE_BOT_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.FLYTE_BOT_GPG_PASSPHRASE }}
           git-user-signingkey: true
-          git-commit-gpgsign: true
+          git-commit-gpgsign: false
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
       - name: Setup git configuration
         run: |

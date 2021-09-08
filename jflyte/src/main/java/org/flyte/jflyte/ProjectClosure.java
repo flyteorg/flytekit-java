@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -256,7 +257,7 @@ abstract class ProjectClosure {
                     .version(workflowId.version())
                     .build())
         .distinct()
-        .map(
+        .flatMap(
             workflowId -> {
               WorkflowTemplate subWorkflow = allWorkflows.get(workflowId);
 
@@ -265,9 +266,35 @@ abstract class ProjectClosure {
                     "Can't find referenced sub-workflow " + workflowId);
               }
 
-              return Maps.immutableEntry(workflowId, subWorkflow);
+              List<Node> subWorkflowNodes = subWorkflow.nodes();
+              checkRecursion(workflowId, subWorkflowNodes);
+
+              Map<WorkflowIdentifier, WorkflowTemplate> nestedSubWorkflows =
+                  collectSubWorkflows(subWorkflowNodes, allWorkflows);
+
+              return Stream.concat(
+                  Stream.of(Maps.immutableEntry(workflowId, subWorkflow)),
+                  nestedSubWorkflows.entrySet().stream());
             })
         .collect(toUnmodifiableMap());
+  }
+
+  static void checkRecursion(WorkflowIdentifier workflowId, List<Node> subWorkflowNodes) {
+    PartialWorkflowIdentifier partialWorkflowId =
+        PartialWorkflowIdentifier.builder()
+            .project(workflowId.project())
+            .name(workflowId.name())
+            .domain(workflowId.domain())
+            .version(workflowId.version())
+            .build();
+    if (subWorkflowNodes.stream()
+        .map(Node::workflowNode)
+        .filter(Objects::nonNull)
+        .map(n -> n.reference().subWorkflowRef())
+        .anyMatch(nodeId -> nodeId.equals(partialWorkflowId))) {
+      throw new IllegalArgumentException(
+          String.format("Workflow [%s] cannot have itself as a node", partialWorkflowId));
+    }
   }
 
   static Map<TaskIdentifier, TaskTemplate> collectTasks(

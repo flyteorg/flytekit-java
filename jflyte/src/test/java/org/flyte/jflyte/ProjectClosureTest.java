@@ -20,6 +20,8 @@ import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -74,14 +76,6 @@ public class ProjectClosureTest {
 
     WorkflowMetadata emptyMetadata = WorkflowMetadata.builder().build();
 
-    WorkflowTemplate emptyWorkflowTemplate =
-        WorkflowTemplate.builder()
-            .interface_(emptyInterface)
-            .metadata(emptyMetadata)
-            .nodes(ImmutableList.of())
-            .outputs(ImmutableList.of())
-            .build();
-
     PartialWorkflowIdentifier rewrittenSubWorkflowRef =
         PartialWorkflowIdentifier.builder()
             .project("project")
@@ -106,9 +100,74 @@ public class ProjectClosureTest {
             .domain("domain")
             .build();
 
+    PartialWorkflowIdentifier rewrittenNestedSubWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .project("project")
+            .name("nested")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier nestedSubWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("nested")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    PartialWorkflowIdentifier rewrittenNestedOtherSubWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .project("project")
+            .name("nested-other")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier nestedOtherSubWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("nested-other")
+            .version("version")
+            .domain("domain")
+            .build();
+
     WorkflowNode workflowNode =
         WorkflowNode.builder()
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenSubWorkflowRef))
+            .build();
+
+    WorkflowNode nestedWorkflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenNestedSubWorkflowRef))
+            .build();
+
+    WorkflowNode nestedOtherWorkflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenNestedOtherSubWorkflowRef))
+            .build();
+
+    WorkflowTemplate emptyWorkflowTemplate =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(ImmutableList.of())
+            .outputs(ImmutableList.of())
+            .build();
+
+    WorkflowTemplate nestedWorkflowTemplate =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(
+                ImmutableList.of(
+                    Node.builder()
+                        .id("nested-node")
+                        .inputs(ImmutableList.of())
+                        .upstreamNodeIds(ImmutableList.of())
+                        .workflowNode(nestedOtherWorkflowNode)
+                        .build()))
+            .outputs(ImmutableList.of())
             .build();
 
     List<Node> nodes =
@@ -125,18 +184,103 @@ public class ProjectClosureTest {
                 .inputs(ImmutableList.of())
                 .upstreamNodeIds(ImmutableList.of())
                 .workflowNode(workflowNode)
+                .build(),
+            // Sub-workflow which has a nested sub-workflow (nestedOtherWorkflowNode)
+            Node.builder()
+                .id("node-3")
+                .inputs(ImmutableList.of())
+                .upstreamNodeIds(ImmutableList.of())
+                .workflowNode(nestedWorkflowNode)
                 .build());
+    // nestedOtherWorkflowNode is not in the previous list because
+    // that node belongs to the template of a sub-workflow
 
     Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows =
         ImmutableMap.of(
             subWorkflowRef, emptyWorkflowTemplate,
-            otherSubWorkflowRef, emptyWorkflowTemplate);
+            otherSubWorkflowRef, emptyWorkflowTemplate,
+            nestedSubWorkflowRef, nestedWorkflowTemplate,
+            nestedOtherSubWorkflowRef, emptyWorkflowTemplate);
 
     Map<WorkflowIdentifier, WorkflowTemplate> collectedSubWorkflows =
         ProjectClosure.collectSubWorkflows(nodes, allWorkflows);
 
     assertThat(
-        collectedSubWorkflows, equalTo(ImmutableMap.of(subWorkflowRef, emptyWorkflowTemplate)));
+        collectedSubWorkflows,
+        equalTo(
+            ImmutableMap.of(
+                subWorkflowRef,
+                emptyWorkflowTemplate,
+                nestedSubWorkflowRef,
+                nestedWorkflowTemplate,
+                nestedOtherSubWorkflowRef,
+                emptyWorkflowTemplate)));
+  }
+
+  @Test
+  public void testCollectSubWorkflowsRecursion() {
+    TypedInterface emptyInterface =
+        TypedInterface.builder().inputs(ImmutableMap.of()).outputs(ImmutableMap.of()).build();
+
+    WorkflowMetadata emptyMetadata = WorkflowMetadata.builder().build();
+
+    PartialWorkflowIdentifier rewrittenSubWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .project("project")
+            .name("name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier subWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowNode workflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenSubWorkflowRef))
+            .build();
+
+    WorkflowTemplate workflowTemplate =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(
+                ImmutableList.of(
+                    Node.builder()
+                        .id("recursion")
+                        .inputs(ImmutableList.of())
+                        .upstreamNodeIds(ImmutableList.of())
+                        .workflowNode(workflowNode)
+                        .build()))
+            .outputs(ImmutableList.of())
+            .build();
+
+    List<Node> nodes =
+        ImmutableList.of(
+            Node.builder()
+                .id("node-1")
+                .inputs(ImmutableList.of())
+                .upstreamNodeIds(ImmutableList.of())
+                .workflowNode(workflowNode)
+                .build());
+
+    Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows =
+        ImmutableMap.of(subWorkflowRef, workflowTemplate);
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ProjectClosure.collectSubWorkflows(nodes, allWorkflows));
+
+    assertEquals(
+        "Workflow [PartialWorkflowIdentifier{domain=domain, project=project, "
+            + "name=name, version=version}] cannot have itself as a node",
+        exception.getMessage());
   }
 
   @Test

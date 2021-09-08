@@ -74,7 +74,7 @@
   </licenses>
   <scm>
     <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
-    <developerConnection>scm:git:git@github.com:flyteorg/flytekit-java.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git</developerConnection>
     <url>https://github.com/flyteorg/flytekit-java</url>
     <tag>HEAD</tag>
   </scm>

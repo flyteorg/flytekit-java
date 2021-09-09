@@ -33,7 +33,7 @@
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.11</scala.version>
 
-    <magnolia.version>0.17.0</magnolia.version>
+    <magnolia.version>1.0.0-M4</magnolia.version>
 
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
@@ -46,8 +46,8 @@
       <artifactId>flytekit-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.propensive</groupId>
-      <artifactId>magnolia_${scala.baseVersion}</artifactId>
+      <groupId>com.softwaremill.magnolia</groupId>
+      <artifactId>magnolia-core_${scala.baseVersion}</artifactId>
       <version>${magnolia.version}</version>
     </dependency>
 

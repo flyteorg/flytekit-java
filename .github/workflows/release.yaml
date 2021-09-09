@@ -24,19 +24,6 @@ jobs:
           distribution: 'adopt'
           server-id: snapshots
 
-      - uses: crazy-max/ghaction-import-gpg@v3
-        with:
-          gpg-private-key: ${{ secrets.FLYTE_BOT_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.FLYTE_BOT_GPG_PASSPHRASE }}
-          git-user-signingkey: true
-          git-commit-gpgsign: false
-
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY_PEM }}
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
-
       - name: Setup git configuration
         run: |
           git config --global user.email ${{ github.actor }}@users.noreply.github.com
@@ -56,5 +43,6 @@ jobs:
         env:
           RELEASE_REPOSITORY_URL: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
           SNAPSHOTS_REPOSITORY_URL: "https://s01.oss.sonatype.org/content/repositories/snapshots"
+          GITHUB_TOKEN: ${{ secrets.FLYTE_BOT_PAT }}
           MAVEN_USERNAME: flytekit
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

@@ -27,6 +27,7 @@ import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.flyte.jflyte.api.TokenSource;
 import picocli.CommandLine.Command;
@@ -60,7 +61,7 @@ public class SerializeWorkflows implements Callable<Integer> {
   private String folder;
 
   @Override
-  public Integer call() throws Exception {
+  public Integer call() {
     Config config = Config.load();
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
 
@@ -68,7 +69,7 @@ public class SerializeWorkflows implements Callable<Integer> {
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
-      ArtifactStager stager = ArtifactStager.create(config, modules);
+      Supplier<ArtifactStager> stagerSupplier = () -> ArtifactStager.create(config, modules);
       ExecutionConfig executionConfig =
           ExecutionConfig.builder()
               .domain(DOMAIN_PLACEHOLDER)
@@ -78,7 +79,7 @@ public class SerializeWorkflows implements Callable<Integer> {
               .build();
 
       ProjectClosure closure =
-          ProjectClosure.loadAndStage(packageDir, executionConfig, stager, adminClient);
+          ProjectClosure.loadAndStage(packageDir, executionConfig, stagerSupplier, adminClient);
 
       closure.serialize(fileWriter(folder));
     }

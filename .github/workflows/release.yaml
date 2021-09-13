@@ -23,6 +23,8 @@ jobs:
           java-version: 11.0
           distribution: 'adopt'
           server-id: snapshots
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
 
       - name: Setup git configuration
         run: |

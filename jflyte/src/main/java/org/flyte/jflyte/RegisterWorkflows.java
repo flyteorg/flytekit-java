@@ -20,6 +20,7 @@ import static org.flyte.jflyte.TokenSourceFactoryLoader.getTokenSource;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.flyte.jflyte.api.TokenSource;
 import picocli.CommandLine.Command;
@@ -72,7 +73,7 @@ public class RegisterWorkflows implements Callable<Integer> {
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
-      ArtifactStager stager = ArtifactStager.create(config, modules);
+      Supplier<ArtifactStager> stagerSupplier = () -> ArtifactStager.create(config, modules);
 
       ExecutionConfig executionConfig =
           ExecutionConfig.builder()
@@ -83,7 +84,7 @@ public class RegisterWorkflows implements Callable<Integer> {
               .build();
 
       ProjectClosure closure =
-          ProjectClosure.loadAndStage(packageDir, executionConfig, stager, adminClient);
+          ProjectClosure.loadAndStage(packageDir, executionConfig, stagerSupplier, adminClient);
 
       closure.taskSpecs().forEach((id, spec) -> adminClient.createTask(id, spec.taskTemplate()));
 

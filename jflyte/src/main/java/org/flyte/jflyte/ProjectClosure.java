@@ -36,16 +36,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
@@ -130,7 +136,7 @@ abstract class ProjectClosure {
   static ProjectClosure loadAndStage(
       String packageDir,
       ExecutionConfig config,
-      ArtifactStager stager,
+      Supplier<ArtifactStager> stagerSupplier,
       FlyteAdminClient adminClient) {
     IdentifierRewrite rewrite =
         IdentifierRewrite.builder()
@@ -148,7 +154,7 @@ abstract class ProjectClosure {
 
     List<Artifact> artifacts;
     if (!closure.taskSpecs().isEmpty()) {
-      artifacts = stagePackageFiles(stager, packageDir);
+      artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
     } else {
       artifacts = emptyList();
       LOG.info(
@@ -220,6 +226,8 @@ abstract class ProjectClosure {
     Map<LaunchPlanIdentifier, LaunchPlan> rewrittenLaunchPlans =
         mapValues(launchPlans, rewrite::apply);
 
+    checkCycles(rewrittenWorkflowTemplates);
+
     // 3. create specs for registration
     Map<WorkflowIdentifier, WorkflowSpec> workflowSpecs =
         mapValues(
@@ -241,6 +249,61 @@ abstract class ProjectClosure {
         .workflowSpecs(workflowSpecs)
         .launchPlans(rewrittenLaunchPlans)
         .build();
+  }
+
+  @VisibleForTesting
+  static void checkCycles(Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows) {
+    Optional<WorkflowIdentifier> cycle =
+        allWorkflows.keySet().stream()
+            .filter(
+                workflowId ->
+                    checkCycles(
+                        workflowId,
+                        allWorkflows,
+                        /*beingVisited=*/ new HashSet<>(),
+                        /*visited=*/ new HashSet<>()))
+            .findFirst();
+    if (cycle.isPresent()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Workflow [%s] cannot have itself as a node, directly or indirectly", cycle.get()));
+    }
+  }
+
+  static boolean checkCycles(
+      WorkflowIdentifier workflowId,
+      Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows,
+      Set<WorkflowIdentifier> beingVisited,
+      Set<WorkflowIdentifier> visited) {
+
+    beingVisited.add(workflowId);
+    WorkflowTemplate workflow = allWorkflows.get(workflowId);
+
+    List<Node> nodes =
+        workflow.nodes().stream().flatMap(ProjectClosure::flatBranch).collect(toUnmodifiableList());
+
+    for (Node node : nodes) {
+      if (isSubWorkflowNode(node)) {
+        PartialWorkflowIdentifier partialSubWorkflowId =
+            Objects.requireNonNull(node.workflowNode()).reference().subWorkflowRef();
+        WorkflowIdentifier subWorkflowId =
+            WorkflowIdentifier.builder()
+                .project(partialSubWorkflowId.project())
+                .name(partialSubWorkflowId.name())
+                .domain(partialSubWorkflowId.domain())
+                .version(partialSubWorkflowId.version())
+                .build();
+        if (beingVisited.contains(subWorkflowId) // backward edge
+            || (!visited.contains(subWorkflowId)
+                && checkCycles(subWorkflowId, allWorkflows, beingVisited, visited))) {
+          return true;
+        }
+      }
+    }
+
+    beingVisited.remove(workflowId);
+    visited.add(workflowId);
+    return false;
   }
 
   @VisibleForTesting
@@ -266,35 +329,14 @@ abstract class ProjectClosure {
                     "Can't find referenced sub-workflow " + workflowId);
               }
 
-              List<Node> subWorkflowNodes = subWorkflow.nodes();
-              checkRecursion(workflowId, subWorkflowNodes);
-
               Map<WorkflowIdentifier, WorkflowTemplate> nestedSubWorkflows =
-                  collectSubWorkflows(subWorkflowNodes, allWorkflows);
+                  collectSubWorkflows(subWorkflow.nodes(), allWorkflows);
 
               return Stream.concat(
                   Stream.of(Maps.immutableEntry(workflowId, subWorkflow)),
                   nestedSubWorkflows.entrySet().stream());
             })
         .collect(toUnmodifiableMap());
-  }
-
-  static void checkRecursion(WorkflowIdentifier workflowId, List<Node> subWorkflowNodes) {
-    PartialWorkflowIdentifier partialWorkflowId =
-        PartialWorkflowIdentifier.builder()
-            .project(workflowId.project())
-            .name(workflowId.name())
-            .domain(workflowId.domain())
-            .version(workflowId.version())
-            .build();
-    if (subWorkflowNodes.stream()
-        .map(Node::workflowNode)
-        .filter(Objects::nonNull)
-        .map(n -> n.reference().subWorkflowRef())
-        .anyMatch(nodeId -> nodeId.equals(partialWorkflowId))) {
-      throw new IllegalArgumentException(
-          String.format("Workflow [%s] cannot have itself as a node", partialWorkflowId));
-    }
   }
 
   static Map<TaskIdentifier, TaskTemplate> collectTasks(
@@ -422,12 +464,28 @@ abstract class ProjectClosure {
 
   private static List<PartialWorkflowIdentifier> collectSubWorkflowIds(List<Node> rewrittenNodes) {
     return rewrittenNodes.stream()
-        .filter(x -> x.workflowNode() != null)
-        .filter(
-            x ->
-                x.workflowNode().reference().kind() == WorkflowNode.Reference.Kind.SUB_WORKFLOW_REF)
-        .map(x -> x.workflowNode().reference().subWorkflowRef())
+        .flatMap(ProjectClosure::flatBranch)
+        .filter(ProjectClosure::isSubWorkflowNode)
+        .map(x -> Objects.requireNonNull(x.workflowNode()).reference().subWorkflowRef())
         .collect(toUnmodifiableList());
+  }
+
+  private static Stream<Node> flatBranch(Node node) {
+    if (node.branchNode() == null) {
+      return Stream.of(node);
+    }
+    IfElseBlock ifElseBlock = node.branchNode().ifElse();
+    return Stream.concat(
+            ifElseBlock.other().stream().map(IfBlock::thenNode),
+            Stream.of(ifElseBlock.case_().thenNode(), ifElseBlock.elseNode()))
+        .filter(Objects::nonNull)
+        // Nested branch
+        .flatMap(ProjectClosure::flatBranch);
+  }
+
+  private static boolean isSubWorkflowNode(Node node) {
+    return node.workflowNode() != null
+        && node.workflowNode().reference().kind() == WorkflowNode.Reference.Kind.SUB_WORKFLOW_REF;
   }
 
   static Builder builder() {

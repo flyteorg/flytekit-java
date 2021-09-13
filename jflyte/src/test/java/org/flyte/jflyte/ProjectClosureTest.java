@@ -29,10 +29,17 @@ import com.google.protobuf.ByteString;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -170,6 +177,15 @@ public class ProjectClosureTest {
             .outputs(ImmutableList.of())
             .build();
 
+    Operand opTrue = Operand.ofPrimitive(Primitive.ofBooleanValue(true));
+    BooleanExpression exprTrue =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .leftValue(opTrue)
+                .rightValue(opTrue)
+                .operator(ComparisonExpression.Operator.EQ)
+                .build());
+
     List<Node> nodes =
         ImmutableList.of(
             Node.builder()
@@ -185,12 +201,29 @@ public class ProjectClosureTest {
                 .upstreamNodeIds(ImmutableList.of())
                 .workflowNode(workflowNode)
                 .build(),
-            // Sub-workflow which has a nested sub-workflow (nestedOtherWorkflowNode)
+            // Sub-workflow which has a nested sub-workflow in branch (nestedOtherWorkflowNode)
             Node.builder()
                 .id("node-3")
                 .inputs(ImmutableList.of())
                 .upstreamNodeIds(ImmutableList.of())
-                .workflowNode(nestedWorkflowNode)
+                .branchNode(
+                    BranchNode.builder()
+                        .ifElse(
+                            IfElseBlock.builder()
+                                .case_(
+                                    IfBlock.builder()
+                                        .condition(exprTrue)
+                                        .thenNode(
+                                            Node.builder()
+                                                .id("node-4")
+                                                .inputs(ImmutableList.of())
+                                                .upstreamNodeIds(ImmutableList.of())
+                                                .workflowNode(nestedWorkflowNode)
+                                                .build())
+                                        .build())
+                                .other(ImmutableList.of())
+                                .build())
+                        .build())
                 .build());
     // nestedOtherWorkflowNode is not in the previous list because
     // that node belongs to the template of a sub-workflow
@@ -218,13 +251,13 @@ public class ProjectClosureTest {
   }
 
   @Test
-  public void testCollectSubWorkflowsRecursion() {
+  public void testCheckCycles() {
     TypedInterface emptyInterface =
         TypedInterface.builder().inputs(ImmutableMap.of()).outputs(ImmutableMap.of()).build();
 
     WorkflowMetadata emptyMetadata = WorkflowMetadata.builder().build();
 
-    PartialWorkflowIdentifier rewrittenSubWorkflowRef =
+    PartialWorkflowIdentifier rewrittenWorkflowRef =
         PartialWorkflowIdentifier.builder()
             .project("project")
             .name("name")
@@ -232,7 +265,15 @@ public class ProjectClosureTest {
             .domain("domain")
             .build();
 
-    WorkflowIdentifier subWorkflowRef =
+    PartialWorkflowIdentifier otherRewrittenWorkflowRef =
+        PartialWorkflowIdentifier.builder()
+            .project("project")
+            .name("other-name")
+            .version("version")
+            .domain("domain")
+            .build();
+
+    WorkflowIdentifier workflowRef =
         WorkflowIdentifier.builder()
             .project("project")
             .name("name")
@@ -240,9 +281,22 @@ public class ProjectClosureTest {
             .domain("domain")
             .build();
 
+    WorkflowIdentifier otherWorkflowRef =
+        WorkflowIdentifier.builder()
+            .project("project")
+            .name("other-name")
+            .version("version")
+            .domain("domain")
+            .build();
+
     WorkflowNode workflowNode =
         WorkflowNode.builder()
-            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenSubWorkflowRef))
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(rewrittenWorkflowRef))
+            .build();
+
+    WorkflowNode otherWorkflowNode =
+        WorkflowNode.builder()
+            .reference(WorkflowNode.Reference.ofSubWorkflowRef(otherRewrittenWorkflowRef))
             .build();
 
     WorkflowTemplate workflowTemplate =
@@ -252,7 +306,22 @@ public class ProjectClosureTest {
             .nodes(
                 ImmutableList.of(
                     Node.builder()
-                        .id("recursion")
+                        .id("sub-1")
+                        .inputs(ImmutableList.of())
+                        .upstreamNodeIds(ImmutableList.of())
+                        .workflowNode(otherWorkflowNode)
+                        .build()))
+            .outputs(ImmutableList.of())
+            .build();
+
+    WorkflowTemplate otherWorkflowTemplate =
+        WorkflowTemplate.builder()
+            .interface_(emptyInterface)
+            .metadata(emptyMetadata)
+            .nodes(
+                ImmutableList.of(
+                    Node.builder()
+                        .id("sub-2")
                         .inputs(ImmutableList.of())
                         .upstreamNodeIds(ImmutableList.of())
                         .workflowNode(workflowNode)
@@ -260,26 +329,17 @@ public class ProjectClosureTest {
             .outputs(ImmutableList.of())
             .build();
 
-    List<Node> nodes =
-        ImmutableList.of(
-            Node.builder()
-                .id("node-1")
-                .inputs(ImmutableList.of())
-                .upstreamNodeIds(ImmutableList.of())
-                .workflowNode(workflowNode)
-                .build());
-
     Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows =
-        ImmutableMap.of(subWorkflowRef, workflowTemplate);
+        ImmutableMap.of(workflowRef, workflowTemplate, otherWorkflowRef, otherWorkflowTemplate);
 
+    // workflow -> otherWorkflow -> workflow
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class,
-            () -> ProjectClosure.collectSubWorkflows(nodes, allWorkflows));
+            IllegalArgumentException.class, () -> ProjectClosure.checkCycles(allWorkflows));
 
     assertEquals(
-        "Workflow [PartialWorkflowIdentifier{domain=domain, project=project, "
-            + "name=name, version=version}] cannot have itself as a node",
+        "Workflow [WorkflowIdentifier{name=name, domain=domain, project=project, version=version}] "
+            + "cannot have itself as a node, directly or indirectly",
         exception.getMessage());
   }
 

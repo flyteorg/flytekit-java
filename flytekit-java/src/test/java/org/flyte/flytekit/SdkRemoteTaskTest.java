@@ -47,7 +47,11 @@ class SdkRemoteTaskTest {
 
     SdkNode node =
         remoteTask.apply(
-            mock(SdkWorkflowBuilder.class), "lookup-endsong", singletonList("upstream-1"), inputs);
+            mock(SdkWorkflowBuilder.class),
+            "lookup-endsong",
+            singletonList("upstream-1"),
+            /*metadata=*/ null,
+            inputs);
 
     assertAll(
         () -> assertThat(node.getNodeId(), is("lookup-endsong")),

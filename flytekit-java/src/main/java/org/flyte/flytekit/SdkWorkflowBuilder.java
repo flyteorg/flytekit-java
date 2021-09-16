@@ -17,16 +17,17 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -49,17 +50,18 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
-    return apply(nodeId, transform, Collections.emptyMap());
+    return apply(nodeId, transform, emptyMap());
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
-    return applyInternal(nodeId, transform, emptyList(), inputs);
+    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs);
   }
 
   protected SdkNode applyInternal(
       String nodeId,
       SdkTransform transform,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
 
     if (nodes.containsKey(nodeId)) {
@@ -72,7 +74,7 @@ public class SdkWorkflowBuilder {
       throw new CompilerException(error);
     }
 
-    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, inputs);
+    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;

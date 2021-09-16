@@ -21,6 +21,7 @@ import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -32,6 +33,7 @@ public class SdkTaskNode extends SdkNode {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
   private final List<String> upstreamNodeIds;
+  @Nullable private final SdkNodeMetadata metadata;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, Variable> outputs;
 
@@ -40,6 +42,7 @@ public class SdkTaskNode extends SdkNode {
       String nodeId,
       PartialTaskIdentifier taskId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs,
       Map<String, Variable> outputs) {
     super(builder);
@@ -47,6 +50,7 @@ public class SdkTaskNode extends SdkNode {
     this.nodeId = nodeId;
     this.taskId = taskId;
     this.upstreamNodeIds = upstreamNodeIds;
+    this.metadata = metadata;
     this.inputs = inputs;
     this.outputs = outputs;
   }
@@ -79,6 +83,7 @@ public class SdkTaskNode extends SdkNode {
     return Node.builder()
         .id(nodeId)
         .upstreamNodeIds(upstreamNodeIds)
+        .metadata((metadata == null) ? null : metadata.toIdl())
         .taskNode(taskNode)
         .inputs(bindings)
         .build();

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import flyteidl.admin.Common;
 import flyteidl.admin.LaunchPlanOuterClass;
@@ -73,6 +74,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Parameter;
@@ -662,6 +664,10 @@ class ProtoUtil {
     Workflow.Node.Builder builder =
         Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
 
+    if (node.metadata() != null) {
+      builder.setMetadata(serialize(node.metadata()));
+    }
+
     if (node.taskNode() != null) {
       builder.setTaskNode(serialize(node.taskNode()));
     }
@@ -675,6 +681,22 @@ class ProtoUtil {
     }
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
+
+    return builder.build();
+  }
+
+  private static Workflow.NodeMetadata serialize(NodeMetadata metadata) {
+    Workflow.NodeMetadata.Builder builder = Workflow.NodeMetadata.newBuilder();
+
+    if (metadata.name() != null) {
+      builder.setName(metadata.name());
+    }
+    if (metadata.timeout() != null) {
+      builder.setTimeout(serialize(metadata.timeout()));
+    }
+    if (metadata.retries() != null) {
+      builder.setRetries(serialize(metadata.retries()));
+    }
 
     return builder.build();
   }
@@ -946,23 +968,29 @@ class ProtoUtil {
         break;
       case DATETIME:
         Instant datetime = primitive.datetime();
-        builder.setDatetime(
-            com.google.protobuf.Timestamp.newBuilder()
-                .setSeconds(datetime.getEpochSecond())
-                .setNanos(datetime.getNano())
-                .build());
+        builder.setDatetime(serialize(datetime));
         break;
       case DURATION:
         Duration duration = primitive.duration();
-        builder.setDuration(
-            com.google.protobuf.Duration.newBuilder()
-                .setSeconds(duration.getSeconds())
-                .setNanos(duration.getNano())
-                .build());
+        builder.setDuration(serialize(duration));
         break;
     }
 
     return builder.build();
+  }
+
+  private static Timestamp serialize(Instant datetime) {
+    return Timestamp.newBuilder()
+        .setSeconds(datetime.getEpochSecond())
+        .setNanos(datetime.getNano())
+        .build();
+  }
+
+  private static com.google.protobuf.Duration serialize(Duration duration) {
+    return com.google.protobuf.Duration.newBuilder()
+        .setSeconds(duration.getSeconds())
+        .setNanos(duration.getNano())
+        .build();
   }
 
   static Literals.Blob serialize(Blob blob) {

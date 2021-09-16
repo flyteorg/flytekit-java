@@ -104,7 +104,8 @@ public class SdkBranchNode extends SdkNode {
     }
 
     Builder addCase(SdkConditionCase case_) {
-      SdkNode sdkNode = case_.then().apply(builder, case_.name(), emptyList(), emptyMap());
+      SdkNode sdkNode =
+          case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
       Map<String, SdkBindingData> thatOutputs = sdkNode.getOutputs();
       Map<String, LiteralType> thatOutputTypes =
           thatOutputs.entrySet().stream()
@@ -141,7 +142,7 @@ public class SdkBranchNode extends SdkNode {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", name));
       }
 
-      elseNode = otherwise.apply(builder, name, emptyList(), emptyMap());
+      elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap());
       caseOutputs.put(name, elseNode.getOutputs());
 
       return this;

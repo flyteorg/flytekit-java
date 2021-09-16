@@ -32,6 +32,9 @@ public abstract class Node {
   public abstract String id();
 
   @Nullable
+  public abstract NodeMetadata metadata();
+
+  @Nullable
   public abstract TaskNode taskNode();
 
   @Nullable
@@ -52,17 +55,20 @@ public abstract class Node {
 
   @AutoValue.Builder
   public abstract static class Builder {
+
     public abstract Builder id(String id);
 
+    public abstract Builder metadata(NodeMetadata metadata);
+
     public abstract Builder taskNode(TaskNode taskNode);
-
-    public abstract Builder inputs(List<Binding> inputs);
-
-    public abstract Builder upstreamNodeIds(List<String> upstreamNodeIds);
 
     public abstract Builder branchNode(BranchNode branchNode);
 
     public abstract Builder workflowNode(WorkflowNode workflowNode);
+
+    public abstract Builder inputs(List<Binding> inputs);
+
+    public abstract Builder upstreamNodeIds(List<String> upstreamNodeIds);
 
     public abstract Node build();
   }

@@ -16,6 +16,7 @@
  */
 package org.flyte.jflyte;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Objects.requireNonNull;
 import static org.flyte.jflyte.MoreCollectors.mapValues;
 import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
@@ -101,6 +102,13 @@ import org.flyte.api.v1.WorkflowTemplate;
 /** Utility to serialize between flytekit-api and flyteidl proto. */
 @SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtil {
+  // Datetime is a proto Timestamp and therefore must conform to the Timestamp range. See:
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#google.protobuf.Timestamp
+  private static final Instant DATETIME_MIN =
+      ISO_DATE_TIME.parse("0001-01-01T00:00:00Z", Instant::from);
+  private static final Instant DATETIME_MAX =
+      ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from);
+
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
 
@@ -980,6 +988,7 @@ class ProtoUtil {
   }
 
   private static Timestamp serialize(Instant datetime) {
+    dateTimeRangeCheck(datetime);
     return Timestamp.newBuilder()
         .setSeconds(datetime.getEpochSecond())
         .setNanos(datetime.getNano())
@@ -991,6 +1000,21 @@ class ProtoUtil {
         .setSeconds(duration.getSeconds())
         .setNanos(duration.getNano())
         .build();
+  }
+
+  private static void dateTimeRangeCheck(Instant datetime) {
+    if (datetime.isBefore(DATETIME_MIN)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Datetime out of range, minimum allowed value [%s] but was [%s]",
+              DATETIME_MIN, datetime));
+    }
+    if (datetime.isAfter(DATETIME_MAX)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Datetime out of range, maximum allowed value [%s] but was [%s]",
+              DATETIME_MAX, datetime));
+    }
   }
 
   static Literals.Blob serialize(Blob blob) {

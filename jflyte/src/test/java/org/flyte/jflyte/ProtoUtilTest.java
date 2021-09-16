@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.TASK;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -27,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -1083,6 +1085,29 @@ class ProtoUtilTest {
     DynamicJob.DynamicJobSpec proto = ProtoUtil.serialize(dynamicJobSpec);
 
     assertThat(proto, equalTo(DynamicJob.DynamicJobSpec.newBuilder().build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("outOfRangeDatetimes")
+  void shouldRejectDatetimeOutOfTimestampRange(Instant timestamp, String expectedErrMsg) {
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ProtoUtil.serialize(Primitive.ofDatetime(timestamp)));
+
+    assertEquals(expectedErrMsg, ex.getMessage());
+  }
+
+  public static Stream<Arguments> outOfRangeDatetimes() {
+    return Stream.of(
+        Arguments.of(
+            ISO_DATE_TIME.parse("0001-01-01T00:00:00Z", Instant::from).minusNanos(1),
+            "Datetime out of range, minimum allowed value [0001-01-01T00:00:00Z] but was [0000-12-31T23:59:59"
+                + ".999999999Z]"),
+        Arguments.of(
+            ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from).plusNanos(1),
+            "Datetime out of range, maximum allowed value [9999-12-31T23:59:59.999999999Z] but was "
+                + "[+10000-01-01T00:00:00Z]"));
   }
 
   private Node createNode(String id) {

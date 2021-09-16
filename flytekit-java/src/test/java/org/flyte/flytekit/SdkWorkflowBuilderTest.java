@@ -21,9 +21,12 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -36,6 +39,7 @@ import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -335,6 +339,57 @@ class SdkWorkflowBuilderTest {
                     "node2", new PrintHello().withUpstreamNode(node1).withUpstreamNode(node1)));
 
     assertEquals("Duplicate upstream node id [node1]", e.getMessage());
+  }
+
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testNodeMetadataOverrides(SdkTransform transform) {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData el0 = builder.inputOfInteger("el0");
+    SdkBindingData el1 = builder.inputOfInteger("el1");
+
+    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+
+    SdkNode el3 =
+        builder.apply(
+            "el3",
+            transform
+                .withUpstreamNode(el2)
+                .withInput("a", el0)
+                .withInput("b", el1)
+                .withNameOverride("fancy-el3")
+                .withTimeoutOverride(Duration.ofMinutes(15)));
+
+    assertThat(
+        el3.toIdl().metadata(),
+        equalTo(NodeMetadata.builder().name("fancy-el3").timeout(Duration.ofMinutes(15)).build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testNodeMetadataOverrides_duplicate(SdkTransform transform) {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData el0 = builder.inputOfInteger("el0");
+    SdkBindingData el1 = builder.inputOfInteger("el1");
+
+    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                builder.apply(
+                    "el3",
+                    transform
+                        .withUpstreamNode(el2)
+                        .withInput("a", el0)
+                        .withInput("b", el1)
+                        .withNameOverride("fancy-el3")
+                        .withNameOverride("another-name")));
+
+    assertThat(ex.getMessage(), equalTo("Duplicate values for metadata: name"));
   }
 
   @Test

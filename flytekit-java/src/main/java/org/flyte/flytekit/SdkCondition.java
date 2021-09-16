@@ -19,6 +19,7 @@ package org.flyte.flytekit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class SdkCondition extends SdkTransform {
   private final List<SdkConditionCase> cases;
@@ -51,7 +52,11 @@ public class SdkCondition extends SdkTransform {
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
+    if (metadata != null) {
+      throw new IllegalArgumentException("invariant failed: metadata must be null");
+    }
     if (!inputs.isEmpty()) {
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }

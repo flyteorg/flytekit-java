@@ -19,6 +19,7 @@ package org.flyte.flytekit;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Building block for tasks that execute Java code. */
@@ -79,6 +80,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
     List<CompilerError> errors =
@@ -89,7 +91,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     }
 
     return new SdkTaskNode(
-        builder, nodeId, taskId, upstreamNodeIds, inputs, outputType.getVariableMap());
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType.getVariableMap());
   }
 
   public abstract OutputT run(InputT input);

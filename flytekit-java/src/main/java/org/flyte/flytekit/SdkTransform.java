@@ -18,11 +18,13 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
 public abstract class SdkTransform {
@@ -30,6 +32,7 @@ public abstract class SdkTransform {
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs);
 
   public SdkTransform withInput(String name, String value) {
@@ -62,5 +65,19 @@ public abstract class SdkTransform {
 
   public SdkTransform withUpstreamNode(SdkNode node) {
     return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
+  }
+
+  public SdkTransform withNameOverride(String name) {
+    requireNonNull(name, "Name override cannot be null");
+
+    SdkNodeMetadata metadata = SdkNodeMetadata.builder().name(name).build();
+    return SdkPartialTransform.of(this, metadata);
+  }
+
+  public SdkTransform withTimeoutOverride(Duration timeout) {
+    requireNonNull(timeout, "Timeout override cannot be null");
+
+    SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();
+    return SdkPartialTransform.of(this, metadata);
   }
 }

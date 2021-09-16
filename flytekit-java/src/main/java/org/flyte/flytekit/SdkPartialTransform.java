@@ -20,33 +20,44 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Objects.requireNonNull;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /** {@link SdkTransform} with partially specified inputs. */
 class SdkPartialTransform extends SdkTransform {
   private final SdkTransform transform;
   private final Map<String, SdkBindingData> fixedInputs;
   private final List<String> extraUpstreamNodeIds;
+  @Nullable private final SdkNodeMetadata metadata;
 
   private SdkPartialTransform(
       SdkTransform transform,
       Map<String, SdkBindingData> fixedInputs,
-      List<String> extraUpstreamNodeIds) {
+      List<String> extraUpstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata) {
     this.transform = transform;
     this.fixedInputs = unmodifiableMap(new HashMap<>(fixedInputs));
     this.extraUpstreamNodeIds = unmodifiableList(new ArrayList<>(extraUpstreamNodeIds));
+    this.metadata = metadata;
   }
 
   static SdkTransform of(SdkTransform transform, Map<String, SdkBindingData> fixedInputs) {
-    return new SdkPartialTransform(transform, fixedInputs, emptyList());
+    return new SdkPartialTransform(transform, fixedInputs, emptyList(), /*metadata=*/ null);
   }
 
   static SdkTransform of(SdkTransform transform, List<String> extraUpstreamNodeIds) {
-    return new SdkPartialTransform(transform, emptyMap(), extraUpstreamNodeIds);
+    return new SdkPartialTransform(transform, emptyMap(), extraUpstreamNodeIds, /*metadata=*/ null);
+  }
+
+  static SdkTransform of(SdkTransform transform, SdkNodeMetadata metadata) {
+    return new SdkPartialTransform(transform, emptyMap(), emptyList(), metadata);
   }
 
   @Override
@@ -64,7 +75,7 @@ class SdkPartialTransform extends SdkTransform {
     newFixedInputs.put(name, value);
 
     return new SdkPartialTransform(
-        transform, unmodifiableMap(newFixedInputs), extraUpstreamNodeIds);
+        transform, unmodifiableMap(newFixedInputs), extraUpstreamNodeIds, metadata);
   }
 
   @Override
@@ -78,7 +89,29 @@ class SdkPartialTransform extends SdkTransform {
     newExtraUpstreamNodeIds.add(node.getNodeId());
 
     return new SdkPartialTransform(
-        transform, fixedInputs, unmodifiableList(newExtraUpstreamNodeIds));
+        transform, fixedInputs, unmodifiableList(newExtraUpstreamNodeIds), metadata);
+  }
+
+  @Override
+  public SdkTransform withNameOverride(String name) {
+    requireNonNull(name, "Name override cannot be null");
+
+    SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().name(name).build();
+    checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::name, "name");
+    SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
+
+    return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+  }
+
+  @Override
+  public SdkTransform withTimeoutOverride(Duration timeout) {
+    requireNonNull(timeout, "Timeout override cannot be null");
+
+    SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().timeout(timeout).build();
+    checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::timeout, "timeout");
+    SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
+
+    return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
   }
 
   @Override
@@ -86,10 +119,9 @@ class SdkPartialTransform extends SdkTransform {
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
-    Map<String, SdkBindingData> allInputs = new HashMap<>();
-
-    fixedInputs.forEach(allInputs::put);
+    Map<String, SdkBindingData> allInputs = new HashMap<>(fixedInputs);
 
     inputs.forEach(
         (k, v) ->
@@ -113,7 +145,44 @@ class SdkPartialTransform extends SdkTransform {
     List<String> allUpstreamNodeIds = new ArrayList<>(upstreamNodeIds);
     allUpstreamNodeIds.addAll(extraUpstreamNodeIds);
 
+    checkForDuplicateMetadata(this.metadata, metadata, SdkNodeMetadata::name, "name");
+    checkForDuplicateMetadata(this.metadata, metadata, SdkNodeMetadata::timeout, "timeout");
+    SdkNodeMetadata mergedMetadata = mergeMetadata(this.metadata, metadata);
+
     return transform.apply(
-        builder, nodeId, unmodifiableList(allUpstreamNodeIds), unmodifiableMap(allInputs));
+        builder,
+        nodeId,
+        unmodifiableList(allUpstreamNodeIds),
+        mergedMetadata,
+        unmodifiableMap(allInputs));
+  }
+
+  private static void checkForDuplicateMetadata(
+      @Nullable SdkNodeMetadata m1,
+      @Nullable SdkNodeMetadata m2,
+      Function<SdkNodeMetadata, ?> function,
+      String fieldName) {
+    if (m1 != null && m2 != null && function.apply(m1) != null && function.apply(m2) != null) {
+      throw new IllegalArgumentException(
+          String.format("Duplicate values for metadata: %s", fieldName));
+    }
+  }
+
+  private SdkNodeMetadata mergeMetadata(
+      @Nullable SdkNodeMetadata m1, @Nullable SdkNodeMetadata m2) {
+    if (m1 == null) {
+      return m2;
+    } else if (m2 == null) {
+      return m1;
+    }
+
+    SdkNodeMetadata.Builder builder = m1.toBuilder();
+    if (m2.name() != null) {
+      builder.name(m2.name());
+    }
+    if (m2.timeout() != null) {
+      builder.timeout(m2.timeout());
+    }
+    return builder.build();
   }
 }

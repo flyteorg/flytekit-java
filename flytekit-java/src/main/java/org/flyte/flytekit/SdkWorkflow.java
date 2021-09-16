@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
@@ -35,6 +36,7 @@ public abstract class SdkWorkflow extends SdkTransform {
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
 
     PartialWorkflowIdentifier workflowId =
@@ -56,6 +58,12 @@ public abstract class SdkWorkflow extends SdkTransform {
             .build();
 
     return new SdkWorkflowNode(
-        builder, nodeId, upstreamNodeIds, workflowNode, inputs, innerBuilder.getOutputs());
+        builder,
+        nodeId,
+        upstreamNodeIds,
+        metadata,
+        workflowNode,
+        inputs,
+        innerBuilder.getOutputs());
   }
 }

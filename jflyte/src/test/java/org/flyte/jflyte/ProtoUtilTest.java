@@ -73,6 +73,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
@@ -494,7 +495,17 @@ class ProtoUtilTest {
   @Test
   void shouldSerializeWorkflowTemplate() {
     Node nodeA = createNode("a").toBuilder().upstreamNodeIds(singletonList("b")).build();
-    Node nodeB = createNode("b");
+    Node nodeB =
+        createNode("b")
+            .toBuilder()
+            .metadata(
+                NodeMetadata.builder()
+                    .name("fancy-b")
+                    .timeout(Duration.ofMinutes(15))
+                    .retries(RetryStrategy.builder().retries(3).build())
+                    .build())
+            .build();
+    ;
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
     TypedInterface interface_ =
         TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();
@@ -540,6 +551,13 @@ class ProtoUtilTest {
     Workflow.Node expectedNode2 =
         Workflow.Node.newBuilder()
             .setId("b")
+            .setMetadata(
+                Workflow.NodeMetadata.newBuilder()
+                    .setName("fancy-b")
+                    .setTimeout(
+                        com.google.protobuf.Duration.newBuilder().setSeconds(15 * 60).build())
+                    .setRetries(Literals.RetryStrategy.newBuilder().setRetries(3).build())
+                    .build())
             .setTaskNode(
                 Workflow.TaskNode.newBuilder()
                     .setReferenceId(

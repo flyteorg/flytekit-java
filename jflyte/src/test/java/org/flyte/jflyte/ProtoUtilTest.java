@@ -101,6 +101,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtilTest {
@@ -1108,6 +1109,21 @@ class ProtoUtilTest {
             ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from).plusNanos(1),
             "Datetime out of range, maximum allowed value [9999-12-31T23:59:59.999999999Z] but was "
                 + "[+10000-01-01T00:00:00Z]"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "id with spaces is invalid",
+        "CamelCaseIsInvalid",
+      })
+  void shouldRejectNonDNS1123NodesIds(String nodeId) {
+    Node node = Node.builder().id(nodeId).upstreamNodeIds(emptyList()).inputs(emptyList()).build();
+    IllegalArgumentException ex =
+        assertThrows(IllegalArgumentException.class, () -> ProtoUtil.serialize(node));
+
+    assertEquals(
+        "Node id [" + nodeId + "] must conform to DNS 1123 naming format", ex.getMessage());
   }
 
   private Node createNode(String id) {

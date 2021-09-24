@@ -52,6 +52,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -108,6 +109,7 @@ class ProtoUtil {
       ISO_DATE_TIME.parse("0001-01-01T00:00:00Z", Instant::from);
   private static final Instant DATETIME_MAX =
       ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from);
+  private static final Pattern DNS_1123_REGEXP = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$");
 
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
@@ -667,7 +669,12 @@ class ProtoUtil {
     return Workflow.WorkflowMetadata.newBuilder().build();
   }
 
-  private static Workflow.Node serialize(Node node) {
+  @VisibleForTesting
+  static Workflow.Node serialize(Node node) {
+    if (!isDNS1123Label(node.id())) {
+      throw new IllegalArgumentException(
+          String.format("Node id [%s] must conform to DNS 1123 naming format", node.id()));
+    }
 
     Workflow.Node.Builder builder =
         Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
@@ -691,6 +698,10 @@ class ProtoUtil {
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
 
     return builder.build();
+  }
+
+  private static boolean isDNS1123Label(String label) {
+    return DNS_1123_REGEXP.matcher(label).matches();
   }
 
   private static Workflow.NodeMetadata serialize(NodeMetadata metadata) {

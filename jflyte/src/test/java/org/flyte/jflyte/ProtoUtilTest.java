@@ -20,6 +20,7 @@ import static flyteidl.core.IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.TASK;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -48,7 +49,6 @@ import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +82,7 @@ import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
@@ -514,7 +515,7 @@ class ProtoUtilTest {
         TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();
     WorkflowTemplate template =
         WorkflowTemplate.builder()
-            .nodes(Arrays.asList(nodeA, nodeB))
+            .nodes(asList(nodeA, nodeB))
             .metadata(metadata)
             .interface_(interface_)
             .outputs(emptyList())
@@ -848,7 +849,7 @@ class ProtoUtilTest {
             LiteralType.ofSchemaType(
                 SchemaType.builder()
                     .columns(
-                        Arrays.asList(
+                        asList(
                             apiColumn("i", SchemaType.ColumnType.INTEGER),
                             apiColumn("f", SchemaType.ColumnType.FLOAT),
                             apiColumn("s", SchemaType.ColumnType.STRING),
@@ -1124,6 +1125,109 @@ class ProtoUtilTest {
 
     assertEquals(
         "Node id [" + nodeId + "] must conform to DNS 1123 naming format", ex.getMessage());
+  }
+
+  @Test
+  void shouldSerializeContainerWithResources() {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .requests(
+                    ImmutableMap.of(
+                        Resources.ResourceName.CPU, "200m", Resources.ResourceName.MEMORY, "1Gi"))
+                .limits(
+                    ImmutableMap.of(
+                        Resources.ResourceName.CPU, "8", Resources.ResourceName.MEMORY, "32G"))
+                .build());
+
+    Tasks.Container actual = ProtoUtil.serialize(container);
+
+    assertThat(
+        actual,
+        equalTo(
+            Tasks.Container.newBuilder()
+                .setImage("busybox")
+                .addCommand("bash")
+                .addAllArgs(asList("-c", "echo", "hello"))
+                .setResources(
+                    Tasks.Resources.newBuilder()
+                        .addRequests(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue("200m")
+                                .build())
+                        .addRequests(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.MEMORY)
+                                .setValue("1Gi")
+                                .build())
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue("8")
+                                .build())
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.MEMORY)
+                                .setValue("32G")
+                                .build())
+                        .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"4", "2.3", "+1", "-2", "-2Ki", "4m", "5e-3", "3E6"})
+  void shouldAcceptResourcesWithValidQuantities(String quantity) {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .limits(ImmutableMap.of(Resources.ResourceName.CPU, quantity))
+                .build());
+
+    Tasks.Container actual = ProtoUtil.serialize(container);
+
+    assertThat(
+        actual,
+        equalTo(
+            Tasks.Container.newBuilder()
+                .setImage("busybox")
+                .addCommand("bash")
+                .addAllArgs(asList("-c", "echo", "hello"))
+                .setResources(
+                    Tasks.Resources.newBuilder()
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue(quantity)
+                                .build())
+                        .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "1.1.", "+-1", "2+2", "Ki", "1Qi"})
+  void shouldRejectResourcesWithInvalidQuantities(String quantity) {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .requests(ImmutableMap.of(Resources.ResourceName.CPU, quantity))
+                .build());
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> ProtoUtil.serialize(container));
+
+    assertEquals(
+        "Resource requests [CPU] has invalid quantity: " + quantity, exception.getMessage());
+  }
+
+  private Container createContainer(Resources resources) {
+    return Container.builder()
+        .image("busybox")
+        .command(singletonList("bash"))
+        .args(asList("-c", "echo", "hello"))
+        .env(emptyList())
+        .resources(resources)
+        .build();
   }
 
   private Node createNode(String id) {

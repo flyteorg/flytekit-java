@@ -18,6 +18,7 @@ package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /** Defines properties for a container. */
 @AutoValue
@@ -30,6 +31,9 @@ public abstract class Container {
   public abstract String image();
 
   public abstract List<KeyValuePair> env();
+
+  @Nullable
+  public abstract Resources resources();
 
   public static Builder builder() {
     return new AutoValue_Container.Builder();
@@ -44,6 +48,8 @@ public abstract class Container {
     public abstract Builder image(String image);
 
     public abstract Builder env(List<KeyValuePair> env);
+
+    public abstract Builder resources(Resources resources);
 
     public abstract Container build();
   }

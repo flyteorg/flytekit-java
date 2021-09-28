@@ -52,6 +52,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
@@ -85,6 +86,7 @@ import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
@@ -110,6 +112,15 @@ class ProtoUtil {
   private static final Instant DATETIME_MAX =
       ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from);
   private static final Pattern DNS_1123_REGEXP = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$");
+  private static final String DIGITS = "(\\d+(\\.(\\d+)?)?|\\.(\\d+))";
+  private static final String SIGNED_NUMBER = "([+-])?" + DIGITS;
+  private static final String DECIMAL_EXPONENT = "[eE]" + SIGNED_NUMBER;
+  private static final String BINARY_SI = "Ki|Mi|Gi|Ti|Pi|Ei";
+  private static final String DECIMAL_SI = "m||k|M|G|T|P|E";
+  private static final String SUFFIX =
+      "(" + BINARY_SI + "|" + DECIMAL_SI + "|" + DECIMAL_EXPONENT + ")";
+  private static final Pattern QUANTITY_PATTERN =
+      Pattern.compile("^" + SIGNED_NUMBER + SUFFIX + "$");
 
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
@@ -578,7 +589,8 @@ class ProtoUtil {
     return Types.BlobType.BlobDimensionality.UNRECOGNIZED;
   }
 
-  private static Tasks.Container serialize(Container container) {
+  @VisibleForTesting
+  static Tasks.Container serialize(Container container) {
     Tasks.Container.Builder builder =
         Tasks.Container.newBuilder()
             .setImage(container.image())
@@ -586,8 +598,60 @@ class ProtoUtil {
             .addAllArgs(container.args());
 
     container.env().forEach(pair -> builder.addEnv(serialize(pair)));
-
+    Resources resources = container.resources();
+    if (resources != null) {
+      builder.setResources(serialize(resources));
+    }
     return builder.build();
+  }
+
+  private static Tasks.Resources serialize(Resources resources) {
+    Tasks.Resources.Builder builder = Tasks.Resources.newBuilder();
+    if (resources.requests() != null) {
+      populateBuilder("requests", resources.requests(), builder::addRequests);
+    }
+    if (resources.limits() != null) {
+      populateBuilder("limits", resources.limits(), builder::addLimits);
+    }
+    return builder.build();
+  }
+
+  private static void populateBuilder(
+      String type,
+      Map<Resources.ResourceName, String> resourceMap,
+      Consumer<Tasks.Resources.ResourceEntry> builder) {
+    resourceMap.forEach(
+        (name, value) -> {
+          if (!isValidQuantity(value)) {
+            throw new IllegalArgumentException(
+                String.format("Resource %s [%s] has invalid quantity: %s", type, name, value));
+          }
+          builder.accept(
+              Tasks.Resources.ResourceEntry.newBuilder()
+                  .setName(serialize(name))
+                  .setValue(value)
+                  .build());
+        });
+  }
+
+  private static boolean isValidQuantity(String value) {
+    return QUANTITY_PATTERN.matcher(value).matches();
+  }
+
+  private static Tasks.Resources.ResourceName serialize(Resources.ResourceName name) {
+    switch (name) {
+      case UNKNOWN:
+        return Tasks.Resources.ResourceName.UNKNOWN;
+      case CPU:
+        return Tasks.Resources.ResourceName.CPU;
+      case GPU:
+        return Tasks.Resources.ResourceName.GPU;
+      case MEMORY:
+        return Tasks.Resources.ResourceName.MEMORY;
+      case STORAGE:
+        return Tasks.Resources.ResourceName.STORAGE;
+    }
+    throw new AssertionError("Unexpected Resources.ResourceName: " + name);
   }
 
   private static Container deserialize(Tasks.Container container) {

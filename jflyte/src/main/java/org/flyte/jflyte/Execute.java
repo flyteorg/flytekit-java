@@ -71,37 +71,38 @@ public class Execute implements Callable<Integer> {
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
     Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
 
-    FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
     FileSystem outputFs = FileSystemLoader.getFileSystem(fileSystems, outputPrefix);
-    ProtoReaderWriter protoReaderWriter = new ProtoReaderWriter(outputPrefix, inputFs, outputFs);
-
-    TaskTemplate taskTemplate = protoReaderWriter.getTaskTemplate(taskTemplatePath);
-    ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
+    ProtoWriter protoWriter = new ProtoWriter(outputPrefix, outputFs);
 
     try {
+      FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
+      ProtoReader protoReader = new ProtoReader(inputFs);
+
+      TaskTemplate taskTemplate = protoReader.getTaskTemplate(taskTemplatePath);
+      ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
+
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,
       // FileSystemRegister in Apache Beam
-
       Map<String, Literal> outputs =
           withClassLoader(
               packageClassLoader,
               () -> {
-                Map<String, Literal> input = protoReaderWriter.getInput(inputs);
+                Map<String, Literal> input = protoReader.getInput(inputs);
                 RunnableTask runnableTask = getTask(task);
 
                 return runnableTask.run(input);
               });
 
-      protoReaderWriter.writeOutputs(outputs);
+      protoWriter.writeOutputs(outputs);
     } catch (ContainerError e) {
       LOG.error("failed to run task", e);
 
-      protoReaderWriter.writeError(ProtoUtil.serializeContainerError(e));
+      protoWriter.writeError(ProtoUtil.serializeContainerError(e));
     } catch (Throwable e) {
       LOG.error("failed to run task", e);
 
-      protoReaderWriter.writeError(ProtoUtil.serializeThrowable(e));
+      protoWriter.writeError(ProtoUtil.serializeThrowable(e));
     }
   }
 

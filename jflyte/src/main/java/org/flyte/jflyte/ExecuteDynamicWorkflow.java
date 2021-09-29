@@ -93,27 +93,30 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     Collection<ClassLoader> modules = ClassLoaders.forModuleDir(config.moduleDir()).values();
     Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
 
-    FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
     FileSystem outputFs = FileSystemLoader.getFileSystem(fileSystems, outputPrefix);
-    ProtoReaderWriter protoReaderWriter = new ProtoReaderWriter(outputPrefix, inputFs, outputFs);
-
-    TaskTemplate taskTemplate = protoReaderWriter.getTaskTemplate(taskTemplatePath);
-    ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
-
-    Map<String, String> env = getEnv();
-    Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates =
-        ClassLoaders.withClassLoader(
-            packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
-
-    Map<TaskIdentifier, RunnableTask> runnableTasks =
-        ClassLoaders.withClassLoader(
-            packageClassLoader, () -> Registrars.loadAll(RunnableTaskRegistrar.class, env));
-
-    Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks =
-        ClassLoaders.withClassLoader(
-            packageClassLoader, () -> Registrars.loadAll(DynamicWorkflowTaskRegistrar.class, env));
+    ProtoWriter protoWriter = new ProtoWriter(outputPrefix, outputFs);
 
     try {
+      FileSystem inputFs = FileSystemLoader.getFileSystem(fileSystems, inputs);
+      ProtoReader protoReader = new ProtoReader(inputFs);
+
+      TaskTemplate taskTemplate = protoReader.getTaskTemplate(taskTemplatePath);
+      ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
+
+      Map<String, String> env = getEnv();
+      Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates =
+          ClassLoaders.withClassLoader(
+              packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
+
+      Map<TaskIdentifier, RunnableTask> runnableTasks =
+          ClassLoaders.withClassLoader(
+              packageClassLoader, () -> Registrars.loadAll(RunnableTaskRegistrar.class, env));
+
+      Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks =
+          ClassLoaders.withClassLoader(
+              packageClassLoader,
+              () -> Registrars.loadAll(DynamicWorkflowTaskRegistrar.class, env));
+
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,
       // FileSystemRegister in Apache Beam
@@ -137,7 +140,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
           withClassLoader(
               packageClassLoader,
               () -> {
-                Map<String, Literal> input = protoReaderWriter.getInput(inputs);
+                Map<String, Literal> input = protoReader.getInput(inputs);
                 DynamicWorkflowTask task = getDynamicWorkflowTask(this.task);
 
                 return task.run(input);
@@ -149,18 +152,18 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
       if (rewrittenFutures.nodes().isEmpty()) {
         Map<String, Literal> outputs = getLiteralMap(rewrittenFutures.outputs());
 
-        protoReaderWriter.writeOutputs(outputs);
+        protoWriter.writeOutputs(outputs);
       } else {
-        protoReaderWriter.writeFutures(rewrittenFutures);
+        protoWriter.writeFutures(rewrittenFutures);
       }
     } catch (ContainerError e) {
       LOG.error("failed to run dynamic workflow", e);
 
-      protoReaderWriter.writeError(ProtoUtil.serializeContainerError(e));
+      protoWriter.writeError(ProtoUtil.serializeContainerError(e));
     } catch (Throwable e) {
       LOG.error("failed to run dynamic workflow", e);
 
-      protoReaderWriter.writeError(ProtoUtil.serializeThrowable(e));
+      protoWriter.writeError(ProtoUtil.serializeThrowable(e));
     }
   }
 
@@ -235,7 +238,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
             .build();
       }
 
-      // in this cases all referenced workflows are sub-workflows, and we can't include
+      // in these cases all referenced workflows are sub-workflows, and we can't include
       // templates for tasks used in them
 
       throw new IllegalArgumentException(

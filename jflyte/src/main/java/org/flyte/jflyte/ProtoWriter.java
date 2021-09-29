@@ -19,59 +19,34 @@ package org.flyte.jflyte;
 import flyteidl.core.DynamicJob;
 import flyteidl.core.Errors;
 import flyteidl.core.Literals;
-import flyteidl.core.Tasks;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ProtoReaderWriter {
+class ProtoWriter {
   private static final String OUTPUTS_PB = "outputs.pb";
   private static final String FUTURES_PB = "futures.pb";
   private static final String ERROR_PB = "error.pb";
-  private static final Logger LOG = LoggerFactory.getLogger(ProtoReaderWriter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ProtoWriter.class);
 
   private final String outputPrefix;
-  private final FileSystem inputFs;
   private final FileSystem outputFs;
 
-  ProtoReaderWriter(String outputPrefix, FileSystem inputFs, FileSystem outputFs) {
+  ProtoWriter(String outputPrefix, FileSystem outputFs) {
     this.outputPrefix = outputPrefix;
-    this.inputFs = inputFs;
     this.outputFs = outputFs;
   }
 
   interface Writer {
     void write(OutputStream os) throws IOException;
-  }
-
-  TaskTemplate getTaskTemplate(String uri) {
-    try (ReadableByteChannel channel = inputFs.reader(uri)) {
-      Tasks.TaskTemplate proto = Tasks.TaskTemplate.parseFrom(Channels.newInputStream(channel));
-
-      return ProtoUtil.deserialize(proto);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  Map<String, Literal> getInput(String uri) {
-    try (ReadableByteChannel channel = inputFs.reader(uri)) {
-      Literals.LiteralMap proto = Literals.LiteralMap.parseFrom(Channels.newInputStream(channel));
-
-      return ProtoUtil.deserialize(proto);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
   }
 
   void writeOutputs(Map<String, Literal> outputs) {

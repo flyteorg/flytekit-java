@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
@@ -32,20 +33,27 @@ import java.util.Map;
 import org.flyte.api.v1.BooleanExpression;
 import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.Container;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
+import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
+import org.flyte.api.v1.RetryStrategy;
+import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
 
 public class ProjectClosureTest {
@@ -388,5 +396,100 @@ public class ProjectClosureTest {
     closure.serialize(output::put);
 
     assertThat(output.keySet(), containsInAnyOrder("0_name0_3.pb", "1_name1_3.pb"));
+  }
+
+  @Test
+  public void testCreateTaskTemplateForRunnableTask() {
+    // given
+    RunnableTask task = createRunnableTask(null);
+    String image = "my-image";
+    Resources expectedResources = Resources.builder().build();
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("java-task"));
+  }
+
+  @Test
+  public void testCreateTaskTemplateForRunnableTaskWithResources() {
+    // given
+    Map<Resources.ResourceName, String> resourceValues = new HashMap<>();
+    resourceValues.put(Resources.ResourceName.MEMORY, "0.5Gi");
+
+    Resources expectedResources =
+        Resources.builder().limits(resourceValues).requests(resourceValues).build();
+    RunnableTask task = createRunnableTask(expectedResources);
+    String image = "my-image";
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("java-task"));
+  }
+
+  private RunnableTask createRunnableTask(Resources expectedResources) {
+    return new RunnableTask() {
+      @Override
+      public String getName() {
+        return "my-test-task";
+      }
+
+      @Override
+      public TypedInterface getInterface() {
+        return TypedInterface.builder()
+            .inputs(SdkTypes.nulls().getVariableMap())
+            .outputs(SdkTypes.nulls().getVariableMap())
+            .build();
+      }
+
+      @Override
+      public Map<String, Literal> run(Map<String, Literal> inputs) {
+        System.out.println("Hello World");
+        return null;
+      }
+
+      @Override
+      public RetryStrategy getRetries() {
+        return RetryStrategy.builder().retries(0).build();
+      }
+
+      @Override
+      public Resources getResources() {
+        if (expectedResources == null) {
+          return RunnableTask.super.getResources();
+        } else {
+          return expectedResources;
+        }
+      }
+    };
   }
 }

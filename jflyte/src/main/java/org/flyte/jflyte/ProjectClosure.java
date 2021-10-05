@@ -395,7 +395,8 @@ abstract class ProjectClosure {
     return taskTemplates;
   }
 
-  private static TaskTemplate createTaskTemplateForRunnableTask(RunnableTask task, String image) {
+  @VisibleForTesting
+  static TaskTemplate createTaskTemplateForRunnableTask(RunnableTask task, String image) {
     Container container =
         Container.builder()
             .command(ImmutableList.of())
@@ -413,6 +414,7 @@ abstract class ProjectClosure {
                     "{{.taskTemplatePath}}"))
             .image(image)
             .env(emptyList())
+            .resources(task.getResources())
             .build();
 
     return TaskTemplate.builder()

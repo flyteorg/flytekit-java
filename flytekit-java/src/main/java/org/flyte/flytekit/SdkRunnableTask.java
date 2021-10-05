@@ -65,6 +65,10 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     return SdkStruct.empty();
   }
 
+  public SdkResources getResources() {
+    return SdkResources.empty();
+  }
+
   /**
    * Number of retries. Retries will be consumed when the task fails with a recoverable error. The
    * number of retries must be less than or equals to 10.

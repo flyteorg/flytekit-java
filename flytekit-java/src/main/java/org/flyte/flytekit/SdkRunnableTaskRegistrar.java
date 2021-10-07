@@ -119,6 +119,8 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
           return Resources.ResourceName.MEMORY;
         case STORAGE:
           return Resources.ResourceName.STORAGE;
+        case EPHEMERAL_STORAGE:
+          return Resources.ResourceName.EPHEMERAL_STORAGE;
       }
       throw new AssertionError("Unexpected SdkResources.ResourceName: " + sdkResourceName);
     }

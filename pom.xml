@@ -57,6 +57,7 @@
     <module>flytekit-examples-scala</module>
     <module>flytekit-local-engine</module>
     <module>jflyte</module>
+    <module>flyteidl-protos</module>
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
     <module>jflyte-build</module>
@@ -80,6 +81,11 @@
   <dependencyManagement>
     <dependencies>
       <!-- modules -->
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flyteidl-protos</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>flytekit-api</artifactId>

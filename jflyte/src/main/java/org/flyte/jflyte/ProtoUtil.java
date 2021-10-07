@@ -437,7 +437,8 @@ class ProtoUtil {
         return LiteralType.ofSchemaType(deserialize(proto.getSchema()));
       case MAP_VALUE_TYPE:
         return LiteralType.ofMapValueType(deserialize(proto.getMapValueType()));
-
+      case ENUM_TYPE:
+        throw new IllegalArgumentException("Type ENUM not supported"); // TODO
       case TYPE_NOT_SET:
         throw new IllegalArgumentException("Can't deserialize LiteralType because TYPE_NOT_SET");
     }
@@ -650,6 +651,8 @@ class ProtoUtil {
         return Tasks.Resources.ResourceName.MEMORY;
       case STORAGE:
         return Tasks.Resources.ResourceName.STORAGE;
+      case EPHEMERAL_STORAGE:
+        return Tasks.Resources.ResourceName.EPHEMERAL_STORAGE;
     }
     throw new AssertionError("Unexpected Resources.ResourceName: " + name);
   }

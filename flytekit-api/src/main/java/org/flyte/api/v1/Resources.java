@@ -35,7 +35,10 @@ public abstract class Resources {
     CPU,
     GPU,
     MEMORY,
-    STORAGE
+    STORAGE,
+    // For Kubernetes-based deployments, pods use ephemeral local storage for scratch space,
+    // caching, and for logs.
+    EPHEMERAL_STORAGE
   }
 
   // Values must be a valid k8s quantity. See

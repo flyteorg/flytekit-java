@@ -31,7 +31,10 @@ public abstract class SdkResources {
     CPU,
     GPU,
     MEMORY,
-    STORAGE
+    STORAGE,
+    // For Kubernetes-based deployments, pods use ephemeral local storage for scratch space,
+    // caching, and for logs.
+    EPHEMERAL_STORAGE
   }
 
   private static final SdkResources EMPTY = builder().build();

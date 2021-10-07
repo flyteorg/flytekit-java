@@ -1,0 +1,214 @@
+syntax = "proto3";
+package flyteidl.service;
+
+option go_package = "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/service";
+
+import "flyteidl/admin/project.proto";
+import "flyteidl/admin/project_domain_attributes.proto";
+import "flyteidl/admin/task.proto";
+import "flyteidl/admin/workflow.proto";
+import "flyteidl/admin/workflow_attributes.proto";
+import "flyteidl/admin/launch_plan.proto";
+import "flyteidl/admin/event.proto";
+import "flyteidl/admin/execution.proto";
+import "flyteidl/admin/matchable_resource.proto";
+import "flyteidl/admin/node_execution.proto";
+import "flyteidl/admin/task_execution.proto";
+import "flyteidl/admin/version.proto";
+import "flyteidl/admin/common.proto";
+
+// The following defines an RPC service that is also served over HTTP via grpc-gateway.
+// Standard response codes for both are defined here: https://github.com/grpc-ecosystem/grpc-gateway/blob/master/runtime/errors.go
+service AdminService {
+  // Create and upload a :ref:`ref_flyteidl.admin.Task` definition
+  rpc CreateTask (flyteidl.admin.TaskCreateRequest) returns (flyteidl.admin.TaskCreateResponse) {
+  }
+
+  // Fetch a :ref:`ref_flyteidl.admin.Task` definition.
+  rpc GetTask (flyteidl.admin.ObjectGetRequest) returns (flyteidl.admin.Task) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.NamedEntityIdentifier` of task objects.
+  rpc ListTaskIds (flyteidl.admin.NamedEntityIdentifierListRequest) returns (flyteidl.admin.NamedEntityIdentifierList) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.Task` definitions.
+  rpc ListTasks (flyteidl.admin.ResourceListRequest) returns (flyteidl.admin.TaskList) {
+  }
+
+  // Create and upload a :ref:`ref_flyteidl.admin.Workflow` definition
+  rpc CreateWorkflow (flyteidl.admin.WorkflowCreateRequest) returns (flyteidl.admin.WorkflowCreateResponse) {
+  }
+
+  // Fetch a :ref:`ref_flyteidl.admin.Workflow` definition.
+  rpc GetWorkflow (flyteidl.admin.ObjectGetRequest) returns (flyteidl.admin.Workflow) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.NamedEntityIdentifier` of workflow objects.
+  rpc ListWorkflowIds (flyteidl.admin.NamedEntityIdentifierListRequest) returns (flyteidl.admin.NamedEntityIdentifierList) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.Workflow` definitions.
+  rpc ListWorkflows (flyteidl.admin.ResourceListRequest) returns (flyteidl.admin.WorkflowList) {
+  }
+
+  // Create and upload a :ref:`ref_flyteidl.admin.LaunchPlan` definition
+  rpc CreateLaunchPlan (flyteidl.admin.LaunchPlanCreateRequest) returns (flyteidl.admin.LaunchPlanCreateResponse) {
+  }
+
+  // Fetch a :ref:`ref_flyteidl.admin.LaunchPlan` definition.
+  rpc GetLaunchPlan (flyteidl.admin.ObjectGetRequest) returns (flyteidl.admin.LaunchPlan) {
+  }
+
+  // Fetch the active version of a :ref:`ref_flyteidl.admin.LaunchPlan`.
+  rpc GetActiveLaunchPlan (flyteidl.admin.ActiveLaunchPlanRequest) returns (flyteidl.admin.LaunchPlan) {
+  }
+
+  // List active versions of :ref:`ref_flyteidl.admin.LaunchPlan`.
+  rpc ListActiveLaunchPlans (flyteidl.admin.ActiveLaunchPlanListRequest) returns (flyteidl.admin.LaunchPlanList) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.NamedEntityIdentifier` of launch plan objects.
+  rpc ListLaunchPlanIds (flyteidl.admin.NamedEntityIdentifierListRequest) returns (flyteidl.admin.NamedEntityIdentifierList) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.LaunchPlan` definitions.
+  rpc ListLaunchPlans (flyteidl.admin.ResourceListRequest) returns (flyteidl.admin.LaunchPlanList) {
+  }
+
+  // Updates the status of a registered :ref:`ref_flyteidl.admin.LaunchPlan`.
+  rpc UpdateLaunchPlan (flyteidl.admin.LaunchPlanUpdateRequest) returns (flyteidl.admin.LaunchPlanUpdateResponse) {
+  }
+
+  // Triggers the creation of a :ref:`ref_flyteidl.admin.Execution`
+  rpc CreateExecution (flyteidl.admin.ExecutionCreateRequest) returns (flyteidl.admin.ExecutionCreateResponse) {
+  }
+
+  // Triggers the creation of an identical :ref:`ref_flyteidl.admin.Execution`
+  rpc RelaunchExecution (flyteidl.admin.ExecutionRelaunchRequest) returns (flyteidl.admin.ExecutionCreateResponse) {
+  }
+
+  // Recreates a previously-run workflow execution that will only start executing from the last known failure point.
+  // In Recover mode, users cannot change any input parameters or update the version of the execution.
+  // This is extremely useful to recover from system errors and byzantine faults like - Loss of K8s cluster, bugs in platform or instability, machine failures,
+  // downstream system failures (downstream services), or simply to recover executions that failed because of retry exhaustion and should complete if tried again.
+  // See :ref:`ref_flyteidl.admin.ExecutionRecoverRequest` for more details.
+  rpc RecoverExecution (flyteidl.admin.ExecutionRecoverRequest) returns (flyteidl.admin.ExecutionCreateResponse) {
+  }
+
+  // Fetches a :ref:`ref_flyteidl.admin.Execution`.
+  rpc GetExecution (flyteidl.admin.WorkflowExecutionGetRequest) returns (flyteidl.admin.Execution) {
+  }
+
+  // Fetches input and output data for a :ref:`ref_flyteidl.admin.Execution`.
+  rpc GetExecutionData (flyteidl.admin.WorkflowExecutionGetDataRequest) returns (flyteidl.admin.WorkflowExecutionGetDataResponse) {
+  };
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.Execution`.
+  rpc ListExecutions (flyteidl.admin.ResourceListRequest) returns (flyteidl.admin.ExecutionList) {
+  }
+
+  // Terminates an in-progress :ref:`ref_flyteidl.admin.Execution`.
+  rpc TerminateExecution (flyteidl.admin.ExecutionTerminateRequest) returns (flyteidl.admin.ExecutionTerminateResponse) {
+  }
+
+  // Fetches a :ref:`ref_flyteidl.admin.NodeExecution`.
+  rpc GetNodeExecution (flyteidl.admin.NodeExecutionGetRequest) returns (flyteidl.admin.NodeExecution) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.NodeExecution`.
+  rpc ListNodeExecutions (flyteidl.admin.NodeExecutionListRequest) returns (flyteidl.admin.NodeExecutionList) {
+  }
+
+  // Fetch a list of :ref:`ref_flyteidl.admin.NodeExecution` launched by the reference :ref:`ref_flyteidl.admin.TaskExecution`.
+  rpc ListNodeExecutionsForTask (flyteidl.admin.NodeExecutionForTaskListRequest) returns (flyteidl.admin.NodeExecutionList) {
+  }
+
+  // Fetches input and output data for a :ref:`ref_flyteidl.admin.NodeExecution`.
+  rpc GetNodeExecutionData (flyteidl.admin.NodeExecutionGetDataRequest) returns (flyteidl.admin.NodeExecutionGetDataResponse) {
+  };
+
+  // Registers a :ref:`ref_flyteidl.admin.Project` with the Flyte deployment.
+  rpc RegisterProject (flyteidl.admin.ProjectRegisterRequest) returns (flyteidl.admin.ProjectRegisterResponse) {
+  }
+
+  // Updates an existing :ref:`ref_flyteidl.admin.Project`
+  // flyteidl.admin.Project should be passed but the domains property should be empty;
+  // it will be ignored in the handler as domains cannot be updated via this API.
+  rpc UpdateProject (flyteidl.admin.Project) returns (flyteidl.admin.ProjectUpdateResponse) {
+  }
+
+  // Fetches a list of :ref:`ref_flyteidl.admin.Project`
+  rpc ListProjects (flyteidl.admin.ProjectListRequest) returns (flyteidl.admin.Projects) {
+  }
+
+  // Indicates a :ref:`ref_flyteidl.event.WorkflowExecutionEvent` has occurred.
+  rpc CreateWorkflowEvent (flyteidl.admin.WorkflowExecutionEventRequest) returns (flyteidl.admin.WorkflowExecutionEventResponse) {
+  }
+
+  // Indicates a :ref:`ref_flyteidl.event.NodeExecutionEvent` has occurred.
+  rpc CreateNodeEvent (flyteidl.admin.NodeExecutionEventRequest) returns (flyteidl.admin.NodeExecutionEventResponse) {
+  }
+
+  // Indicates a :ref:`ref_flyteidl.event.TaskExecutionEvent` has occurred.
+  rpc CreateTaskEvent (flyteidl.admin.TaskExecutionEventRequest) returns (flyteidl.admin.TaskExecutionEventResponse) {
+  }
+
+  // Fetches a :ref:`ref_flyteidl.admin.TaskExecution`.
+  rpc GetTaskExecution (flyteidl.admin.TaskExecutionGetRequest) returns (flyteidl.admin.TaskExecution) {
+  }
+
+  // Fetches a list of :ref:`ref_flyteidl.admin.TaskExecution`.
+  rpc ListTaskExecutions (flyteidl.admin.TaskExecutionListRequest) returns (flyteidl.admin.TaskExecutionList) {
+
+  }
+
+  // Fetches input and output data for a :ref:`ref_flyteidl.admin.TaskExecution`.
+  rpc GetTaskExecutionData (flyteidl.admin.TaskExecutionGetDataRequest) returns (flyteidl.admin.TaskExecutionGetDataResponse) {
+  }
+
+  // Creates or updates custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project and domain.
+  rpc UpdateProjectDomainAttributes (flyteidl.admin.ProjectDomainAttributesUpdateRequest) returns (flyteidl.admin.ProjectDomainAttributesUpdateResponse) {
+  }
+
+  // Fetches custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project and domain.
+  rpc GetProjectDomainAttributes (flyteidl.admin.ProjectDomainAttributesGetRequest) returns (flyteidl.admin.ProjectDomainAttributesGetResponse) {
+  }
+
+  // Deletes custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project and domain.
+  rpc DeleteProjectDomainAttributes (flyteidl.admin.ProjectDomainAttributesDeleteRequest) returns (flyteidl.admin.ProjectDomainAttributesDeleteResponse) {
+  }
+
+  // Creates or updates custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project, domain and workflow.
+  rpc UpdateWorkflowAttributes (flyteidl.admin.WorkflowAttributesUpdateRequest) returns (flyteidl.admin.WorkflowAttributesUpdateResponse) {
+  }
+
+  // Fetches custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project, domain and workflow.
+  rpc GetWorkflowAttributes (flyteidl.admin.WorkflowAttributesGetRequest) returns (flyteidl.admin.WorkflowAttributesGetResponse) {
+  }
+
+  // Deletes custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a project, domain and workflow.
+  rpc DeleteWorkflowAttributes (flyteidl.admin.WorkflowAttributesDeleteRequest) returns (flyteidl.admin.WorkflowAttributesDeleteResponse) {
+  }
+
+  // Lists custom :ref:`ref_flyteidl.admin.MatchableAttributesConfiguration` for a specific resource type.
+  rpc ListMatchableAttributes (flyteidl.admin.ListMatchableAttributesRequest) returns (flyteidl.admin.ListMatchableAttributesResponse) {
+  }
+
+  // Returns a list of :ref:`ref_flyteidl.admin.NamedEntity` objects.
+  rpc ListNamedEntities (flyteidl.admin.NamedEntityListRequest) returns (flyteidl.admin.NamedEntityList) {
+  }
+
+  // Returns a :ref:`ref_flyteidl.admin.NamedEntity` object.
+  rpc GetNamedEntity (flyteidl.admin.NamedEntityGetRequest) returns (flyteidl.admin.NamedEntity) {
+  }
+
+  // Updates a :ref:`ref_flyteidl.admin.NamedEntity` object.
+  rpc UpdateNamedEntity (flyteidl.admin.NamedEntityUpdateRequest) returns (flyteidl.admin.NamedEntityUpdateResponse) {
+  }
+
+  rpc GetVersion (flyteidl.admin.GetVersionRequest) returns (flyteidl.admin.GetVersionResponse) {
+  }
+
+}
+

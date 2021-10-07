@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-FLYTEIDL_VERSION="0.18.8"
+FLYTEIDL_VERSION="0.21.3"
 
 out=src/main/proto
 

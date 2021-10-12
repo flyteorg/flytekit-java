@@ -1176,7 +1176,7 @@ class ProtoUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"4", "2.3", "+1", "-2", "-2Ki", "4m", "5e-3", "3E6"})
+  @ValueSource(strings = {"4", "2.3", "+1", "2Ki", "4m", "5e-3", "3E6"})
   void shouldAcceptResourcesWithValidQuantities(String quantity) {
     Container container =
         createContainer(
@@ -1205,7 +1205,7 @@ class ProtoUtilTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"", "1.1.", "+-1", "2+2", "Ki", "1Qi"})
+  @ValueSource(strings = {"", "1.1.", "+-1", "2+2", "Ki", "1Qi", "-1", "-5G"})
   void shouldRejectResourcesWithInvalidQuantities(String quantity) {
     Container container =
         createContainer(

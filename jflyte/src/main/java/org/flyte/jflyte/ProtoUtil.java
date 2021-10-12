@@ -114,13 +114,14 @@ class ProtoUtil {
   private static final Pattern DNS_1123_REGEXP = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$");
   private static final String DIGITS = "(\\d+(\\.(\\d+)?)?|\\.(\\d+))";
   private static final String SIGNED_NUMBER = "([+-])?" + DIGITS;
+  private static final String POSITIVE_NUMBER = "([+])?" + DIGITS;
   private static final String DECIMAL_EXPONENT = "[eE]" + SIGNED_NUMBER;
   private static final String BINARY_SI = "Ki|Mi|Gi|Ti|Pi|Ei";
   private static final String DECIMAL_SI = "m||k|M|G|T|P|E";
   private static final String SUFFIX =
       "(" + BINARY_SI + "|" + DECIMAL_SI + "|" + DECIMAL_EXPONENT + ")";
   private static final Pattern QUANTITY_PATTERN =
-      Pattern.compile("^" + SIGNED_NUMBER + SUFFIX + "$");
+      Pattern.compile("^" + POSITIVE_NUMBER + SUFFIX + "$");
 
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";

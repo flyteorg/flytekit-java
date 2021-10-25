@@ -8,3 +8,8 @@ TIMESTAMP := $(shell date '+%Y-%m-%d')
 update_boilerplate:
 	@curl https://raw.githubusercontent.com/flyteorg/boilerplate/master/boilerplate/update.sh -o boilerplate/update.sh
 	@boilerplate/update.sh
+
+# It will copy the latest proto from flyteidl to flytekit-java
+.PHONY: update_flyteidl
+update_flyteidl:
+	@scripts/update_flyteidl.sh

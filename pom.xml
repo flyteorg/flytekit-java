@@ -208,15 +208,10 @@
 
   <distributionManagement>
     <repository>
-      <id>repo</id>
-      <name>repo</name>
-      <url>${env.RELEASE_REPOSITORY_URL}</url>
+      <id>github</id>
+      <name>GitHub flyteorg flytekit-java Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/flyteorg/flytekit-java</url>
     </repository>
-    <snapshotRepository>
-      <id>snapshots</id>
-      <name>snapshots</name>
-      <url>${env.SNAPSHOTS_REPOSITORY_URL}</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <build>

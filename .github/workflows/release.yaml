@@ -22,9 +22,6 @@ jobs:
         with:
           java-version: 11.0
           distribution: 'adopt'
-          server-id: snapshots
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
 
       - name: Setup git configuration
         run: |
@@ -43,5 +40,4 @@ jobs:
           mvn --batch-mode release:prepare  -DpreparationGoals=clean -DgenerateBackupPoms=false
           mvn --batch-mode release:perform  -DpreparationGoals=clean -Ddockerfile.push
         env:
-          GITHUB_USERNAME: "${{ secrets.FLYTE_BOT_USERNAME }}"
-          GITHUB_TOKEN: "${{ secrets.FLYTE_BOT_PAT }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -32,6 +32,6 @@ class ApiUtils {
   }
 
   static Variable createVar(LiteralType type) {
-    return Variable.builder().literalType(type).description(null).build();
+    return Variable.builder().literalType(type).description("").build();
   }
 }

@@ -35,6 +35,11 @@ public interface RunnableTask {
     return Struct.of(emptyMap());
   }
 
+  default Resources getResources() {
+    // FIXME default only for backwards-compatibility, remove in 0.3.x
+    return Resources.builder().build();
+  }
+
   TypedInterface getInterface();
 
   Map<String, Literal> run(Map<String, Literal> inputs);

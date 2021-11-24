@@ -14,7 +14,7 @@ FLYTE_INTERNAL_IMAGE=${FLYTE_INTERNAL_IMAGE:-$CUSTOM_FLYTE_INTERNAL_IMAGE}
 docker run -it \
     --env-file=.env.local \
     -e "FLYTE_INTERNAL_IMAGE=${FLYTE_INTERNAL_IMAGE}" \
-    -v "$(pwd):/workdir:ro" \
+    -v "$(pwd):/workdir" \
     -v "$HOME/.config/gcloud/:/root/.config/gcloud:ro" \
     -w "/workdir" \
     --net=host \

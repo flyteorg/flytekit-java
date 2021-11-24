@@ -17,9 +17,10 @@
 package org.flyte.jflyte;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.jflyte.ClassLoaders.withClassLoader;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -73,13 +74,13 @@ public class ExecuteLocalLoader {
     Map<String, Map<String, ItemT>> loadedItemsBySource =
         modules.entrySet().stream()
             .map(mod -> Maps.immutableEntry(mod.getKey(), loader.apply(mod.getValue(), env)))
-            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(toUnmodifiableMap());
 
     verifyNoDuplicateItems(loadedItemsBySource);
 
     return loadedItemsBySource.values().stream()
         .flatMap(items -> items.entrySet().stream())
-        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(toUnmodifiableMap());
   }
 
   private static <ItemT> void verifyNoDuplicateItems(
@@ -92,7 +93,7 @@ public class ExecuteLocalLoader {
     List<String> duplicateItemsId =
         sourcesByItemId.keySet().stream()
             .filter(itemId -> sourcesByItemId.get(itemId).size() > 1)
-            .collect(toList());
+            .collect(toUnmodifiableList());
 
     if (!duplicateItemsId.isEmpty()) {
       String errorMessage =

@@ -16,6 +16,7 @@
  */
 package org.flyte.localengine;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -29,26 +30,48 @@ import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.ContainerError;
+import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class LocalEngine {
 
+  @Deprecated
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, Literal> inputs) {
-    return compileAndExecute(template, runnableTasks, inputs, NoopExecutionListener.create());
+    return compileAndExecute(
+        template, runnableTasks, emptyMap(), inputs, NoopExecutionListener.create());
   }
 
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, Literal> inputs) {
+    return compileAndExecute(
+        template, runnableTasks, dynamicWorkflowTasks, inputs, NoopExecutionListener.create());
+  }
+
+  @Deprecated
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, Literal> inputs,
+      ExecutionListener listener) {
+    return compileAndExecute(template, runnableTasks, emptyMap(), inputs, listener);
+  }
+
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, Literal> inputs,
       ExecutionListener listener) {
     List<ExecutionNode> executionNodes =
-        ExecutionNodeCompiler.compile(template.nodes(), runnableTasks);
+        ExecutionNodeCompiler.compile(template.nodes(), runnableTasks, dynamicWorkflowTasks);
 
     return execute(executionNodes, inputs, template.outputs(), listener);
   }

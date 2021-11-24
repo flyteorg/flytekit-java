@@ -23,11 +23,11 @@
   <artifactId>flytekit-parent</artifactId>
 
   <packaging>pom</packaging>
-  <version>0.3.2-SNAPSHOT</version>
+  <version>0.3.3-SNAPSHOT</version>
 
   <properties>
     <auto-service.version>1.0-rc5</auto-service.version>
-    <auto-value.version>1.7</auto-value.version>
+    <auto-value.version>1.8.2</auto-value.version>
     <grpc.version>1.27.2</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
@@ -51,17 +51,20 @@
     <module>flytekit-api</module>
     <module>flytekit-jackson</module>
     <module>flytekit-java</module>
-    <module>flytekit-scala</module>
+    <module>flytekit-scala_2.12</module>
+    <module>flytekit-scala_2.13</module>
     <module>flytekit-scala-tests</module>
     <module>flytekit-testing</module>
     <module>flytekit-examples</module>
     <module>flytekit-examples-scala</module>
     <module>flytekit-local-engine</module>
     <module>jflyte</module>
+    <module>flyteidl-protos</module>
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
     <module>jflyte-build</module>
     <module>jflyte-google-cloud</module>
+    <module>integration-tests</module>
   </modules>
 
   <licenses>
@@ -80,6 +83,11 @@
   <dependencyManagement>
     <dependencies>
       <!-- modules -->
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flyteidl-protos</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>flytekit-api</artifactId>
@@ -107,6 +115,21 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
+        <artifactId>flytekit-scala_2.13</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-examples</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>flytekit-examples-scala</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
         <artifactId>jflyte-api</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -118,6 +141,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>jflyte-aws</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-build</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -203,20 +231,21 @@
         <artifactId>mockito-core</artifactId>
         <version>3.3.3</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.marschall</groupId>
+        <artifactId>memoryfilesystem</artifactId>
+        <version>2.2.0</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <distributionManagement>
     <repository>
-      <id>repo</id>
-      <name>repo</name>
-      <url>${env.RELEASE_REPOSITORY_URL}</url>
+      <id>github</id>
+      <name>GitHub flyteorg flytekit-java Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/flyteorg/flytekit-java</url>
     </repository>
-    <snapshotRepository>
-      <id>snapshots</id>
-      <name>snapshots</name>
-      <url>${env.SNAPSHOTS_REPOSITORY_URL}</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <build>
@@ -275,6 +304,8 @@
             <showDeprecation>true</showDeprecation>
             <forceJavacCompilerUse>true</forceJavacCompilerUse>
             <failOnWarning>true</failOnWarning>
+            <!-- The semantics of this option are reversed, see MCOMPILER-209. -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
             <encoding>utf-8</encoding>
             <compilerArgs>
               <!-- for AutoValue reflection -->
@@ -286,6 +317,8 @@
               <!-- we don't care about classes being deserialized with different classpath -->
               <arg>-Xlint:-serial</arg>
               <arg>-implicit:class</arg>
+              <!-- see https://stackoverflow.com/a/57004351 -->
+              <arg>-Xpkginfo:always</arg>
             </compilerArgs>
             <annotationProcessorPaths>
               <path>
@@ -431,7 +464,7 @@
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>3.1.12.2</version>
+          <version>4.2.3</version>
           <configuration>
             <includeTests>true</includeTests>
             <effort>Max</effort>

@@ -16,6 +16,7 @@
  */
 package org.flyte.localengine;
 
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.localengine.TestingListener.ofCompleted;
 import static org.flyte.localengine.TestingListener.ofError;
@@ -68,6 +69,7 @@ class LocalEngineTest {
         LocalEngine.compileAndExecute(
             workflows.get(workflowName),
             tasks,
+            emptyMap(),
             ImmutableMap.of("fib0", fib0, "fib1", fib1),
             listener);
 
@@ -107,7 +109,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -125,7 +127,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -149,7 +151,7 @@ class LocalEngineTest {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
       RetryableTask.ATTEMPTS.set(0L);
 
-      LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener);
+      LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of(), listener);
 
       assertEquals(
           ImmutableList.<List<Object>>builder()
@@ -187,7 +189,9 @@ class LocalEngineTest {
       RuntimeException e =
           Assertions.assertThrows(
               RuntimeException.class,
-              () -> LocalEngine.compileAndExecute(workflow, tasks, ImmutableMap.of(), listener));
+              () ->
+                  LocalEngine.compileAndExecute(
+                      workflow, tasks, emptyMap(), ImmutableMap.of(), listener));
 
       assertEquals("oops", e.getMessage());
 
@@ -212,9 +216,9 @@ class LocalEngineTest {
   private static Map<String, WorkflowTemplate> loadWorkflows() {
     Map<String, String> env =
         ImmutableMap.of(
-            "JFLYTE_DOMAIN", "development",
-            "JFLYTE_VERSION", "test",
-            "JFLYTE_PROJECT", "flytetester");
+            "FLYTE_INTERNAL_DOMAIN", "development",
+            "FLYTE_INTERNAL_VERSION", "test",
+            "FLYTE_INTERNAL_PROJECT", "flytetester");
 
     Map<WorkflowIdentifier, WorkflowTemplate> registrarWorkflows =
         loadAll(WorkflowTemplateRegistrar.class, env);
@@ -226,9 +230,9 @@ class LocalEngineTest {
   private static Map<String, RunnableTask> loadTasks() {
     Map<String, String> env =
         ImmutableMap.of(
-            "JFLYTE_DOMAIN", "development",
-            "JFLYTE_VERSION", "test",
-            "JFLYTE_PROJECT", "flytetester");
+            "FLYTE_INTERNAL_DOMAIN", "development",
+            "FLYTE_INTERNAL_VERSION", "test",
+            "FLYTE_INTERNAL_PROJECT", "flytetester");
 
     Map<TaskIdentifier, RunnableTask> registrarRunnableTasks =
         loadAll(RunnableTaskRegistrar.class, env);

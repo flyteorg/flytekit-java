@@ -16,13 +16,14 @@
  */
 package org.flyte.flytekit;
 
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Struct.Value;
 
@@ -103,7 +104,7 @@ public abstract class SdkStruct {
       }
 
       List<Value> result =
-          values.stream().map(value -> ofNullable(value, fn)).collect(Collectors.toList());
+          values.stream().map(value -> ofNullable(value, fn)).collect(toUnmodifiableList());
       return addValueField(name, Value.ofListValue(result));
     }
 

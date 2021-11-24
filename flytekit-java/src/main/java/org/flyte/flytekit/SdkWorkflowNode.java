@@ -16,12 +16,11 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowNode;
@@ -29,6 +28,7 @@ import org.flyte.api.v1.WorkflowNode;
 public class SdkWorkflowNode extends SdkNode {
   private final String nodeId;
   private final List<String> upstreamNodeIds;
+  private final SdkNodeMetadata metadata;
   private final WorkflowNode workflowNode;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, SdkBindingData> outputs;
@@ -37,6 +37,7 @@ public class SdkWorkflowNode extends SdkNode {
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
       WorkflowNode workflowNode,
       Map<String, SdkBindingData> inputs,
       Map<String, SdkBindingData> outputs) {
@@ -44,6 +45,7 @@ public class SdkWorkflowNode extends SdkNode {
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
+    this.metadata = metadata;
     this.workflowNode = workflowNode;
     this.inputs = inputs;
     this.outputs = outputs;
@@ -64,13 +66,14 @@ public class SdkWorkflowNode extends SdkNode {
     List<Binding> inputBindings =
         inputs.entrySet().stream()
             .map(x -> toBinding(x.getKey(), x.getValue()))
-            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+            .collect(toUnmodifiableList());
 
     return Node.builder()
         .id(nodeId)
         .inputs(inputBindings)
         .workflowNode(workflowNode)
         .upstreamNodeIds(upstreamNodeIds)
+        .metadata((metadata == null) ? null : metadata.toIdl())
         .build();
   }
 

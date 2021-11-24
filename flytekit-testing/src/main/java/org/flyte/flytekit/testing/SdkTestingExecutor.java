@@ -34,6 +34,7 @@ import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.flytekit.SdkRemoteTask;
@@ -143,18 +144,21 @@ public abstract class SdkTestingExecutor {
     WorkflowTemplate workflowTemplate = builder.toIdlTemplate();
 
     for (Node node : workflowTemplate.nodes()) {
-      String taskName = node.taskNode().referenceId().name();
+      TaskNode taskNode = node.taskNode();
+      if (taskNode != null) {
+        String taskName = taskNode.referenceId().name();
 
-      checkArgument(
-          fixedTaskMap().containsKey(taskName),
-          "Can't execute remote task [%s], "
-              + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
-          taskName);
+        checkArgument(
+            fixedTaskMap().containsKey(taskName),
+            "Can't execute remote task [%s], "
+                + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
+            taskName);
+      }
     }
 
     Map<String, Literal> outputLiteralMap =
         LocalEngine.compileAndExecute(
-            workflowTemplate, unmodifiableMap(fixedTaskMap()), fixedInputMap());
+            workflowTemplate, unmodifiableMap(fixedTaskMap()), emptyMap(), fixedInputMap());
 
     Map<String, LiteralType> outputLiteralTypeMap =
         workflowTemplate.interface_().outputs().entrySet().stream()

@@ -37,6 +37,8 @@ public abstract class TaskTemplate {
 
   public abstract Struct custom();
 
+  public abstract Builder toBuilder();
+
   public static Builder builder() {
     return new AutoValue_TaskTemplate.Builder();
   }

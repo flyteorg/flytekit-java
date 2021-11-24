@@ -22,14 +22,14 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.3.2-SNAPSHOT</version>
+    <version>0.3.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>flytekit-examples-scala</artifactId>
 
   <properties>
-    <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.11</scala.version>
+    <scala.baseVersion>2.13</scala.baseVersion>
+    <scala.version>2.13.5</scala.version>
 
     <maven.deploy.skip>true</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
@@ -40,13 +40,6 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
-    </dependency>
-
-    <!-- provided -->
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 

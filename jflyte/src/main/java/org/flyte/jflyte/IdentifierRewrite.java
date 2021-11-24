@@ -16,29 +16,19 @@
  */
 package org.flyte.jflyte;
 
-import static java.util.stream.Collectors.toList;
-
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Verify;
-import java.util.List;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import org.flyte.api.v1.BranchNode;
-import org.flyte.api.v1.IfBlock;
-import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.NamedEntityIdentifier;
-import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.TaskIdentifier;
-import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.WorkflowIdentifier;
-import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Overrides project, domain and version for nodes in {@link WorkflowTemplate}. */
@@ -54,74 +44,32 @@ abstract class IdentifierRewrite {
   abstract FlyteAdminClient adminClient();
 
   WorkflowTemplate apply(WorkflowTemplate template) {
-    List<Node> newNodes = template.nodes().stream().map(this::apply).collect(toList());
-
-    return template.toBuilder().nodes(newNodes).build();
-  }
-
-  private Node apply(@Nullable Node node) {
-    if (node == null) {
-      return null;
-    }
-
-    return node.toBuilder()
-        .branchNode(apply(node.branchNode()))
-        .taskNode(apply(node.taskNode()))
-        .workflowNode(apply(node.workflowNode()))
-        .build();
-  }
-
-  private TaskNode apply(@Nullable TaskNode taskNode) {
-    if (taskNode == null) {
-      return null;
-    }
-
-    return TaskNode.builder().referenceId(apply(taskNode.referenceId())).build();
+    return visitor().visitWorkflowTemplate(template);
   }
 
   @VisibleForTesting
-  WorkflowNode apply(@Nullable WorkflowNode workflowNode) {
-    if (workflowNode == null) {
-      return null;
-    }
-
-    return workflowNode.toBuilder().reference(apply(workflowNode.reference())).build();
+  Visitor visitor() {
+    return new Visitor();
   }
 
-  private WorkflowNode.Reference apply(WorkflowNode.Reference reference) {
-    switch (reference.kind()) {
-      case LAUNCH_PLAN_REF:
-        return WorkflowNode.Reference.ofLaunchPlanRef(apply(reference.launchPlanRef()));
-      case SUB_WORKFLOW_REF:
-        return WorkflowNode.Reference.ofSubWorkflowRef(apply(reference.subWorkflowRef()));
+  class Visitor extends WorkflowNodeVisitor {
+    @Override
+    PartialTaskIdentifier visitTaskIdentifier(PartialTaskIdentifier value) {
+      return apply(value);
     }
 
-    throw new AssertionError("Unexpected WorkflowNode.Reference.Kind: " + reference.kind());
+    @Override
+    PartialWorkflowIdentifier visitWorkflowIdentifier(PartialWorkflowIdentifier value) {
+      return apply(value);
+    }
+
+    @Override
+    PartialLaunchPlanIdentifier visitLaunchPlanIdentifier(PartialLaunchPlanIdentifier value) {
+      return apply(value);
+    }
   }
 
   @VisibleForTesting
-  BranchNode apply(@Nullable BranchNode branchNode) {
-    if (branchNode == null) {
-      return null;
-    }
-
-    return branchNode.toBuilder().ifElse(apply(branchNode.ifElse())).build();
-  }
-
-  private IfElseBlock apply(IfElseBlock ifElse) {
-    return ifElse
-        .toBuilder()
-        .case_(apply(ifElse.case_()))
-        .other(ifElse.other().stream().map(this::apply).collect(toList()))
-        .elseNode(apply(ifElse.elseNode()))
-        .build();
-  }
-
-  private IfBlock apply(IfBlock ifBlock) {
-    return ifBlock.toBuilder().thenNode(apply(ifBlock.thenNode())).build();
-  }
-
-  // Visible for testing
   PartialTaskIdentifier apply(PartialTaskIdentifier taskId) {
     String name = Preconditions.checkNotNull(taskId.name(), "name is null");
 
@@ -156,6 +104,7 @@ abstract class IdentifierRewrite {
     return latestTaskId.version();
   }
 
+  @VisibleForTesting
   LaunchPlan apply(LaunchPlan launchPlan) {
     return LaunchPlan.builder()
         .name(launchPlan.name())

@@ -19,6 +19,8 @@ package org.flyte.jflyte;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.LAUNCH_PLAN;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.TASK;
 import static flyteidl.core.IdentifierOuterClass.ResourceType.WORKFLOW;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -27,6 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,6 +38,7 @@ import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Condition;
+import flyteidl.core.DynamicJob;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -45,7 +49,6 @@ import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +65,7 @@ import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.CronSchedule;
+import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
@@ -71,12 +75,14 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
@@ -96,6 +102,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtilTest {
@@ -398,7 +405,7 @@ class ProtoUtilTest {
   }
 
   @Test
-  void shouldSerializeTaskTemplate() {
+  void shouldSerDeTaskTemplate() {
     Container container =
         Container.builder()
             .command(ImmutableList.of("echo"))
@@ -429,78 +436,86 @@ class ProtoUtilTest {
                     ImmutableMap.of("custom-prop", Struct.Value.ofStringValue("custom-value"))))
             .build();
 
-    Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
+    Tasks.TaskTemplate templateProto =
+        Tasks.TaskTemplate.newBuilder()
+            .setContainer(
+                Tasks.Container.newBuilder()
+                    .setImage("alpine:3.7")
+                    .addCommand("echo")
+                    .addArgs("hello world")
+                    .addEnv(
+                        Literals.KeyValuePair.newBuilder().setKey("key").setValue("value").build())
+                    .build())
+            .setMetadata(
+                Tasks.TaskMetadata.newBuilder()
+                    .setRuntime(
+                        Tasks.RuntimeMetadata.newBuilder()
+                            .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
+                            .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
+                            .setVersion(ProtoUtil.RUNTIME_VERSION)
+                            .build())
+                    .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
+                    .build())
+            .setInterface(
+                Interface.TypedInterface.newBuilder()
+                    .setInputs(
+                        Interface.VariableMap.newBuilder()
+                            .putVariables(
+                                "x",
+                                Interface.Variable.newBuilder()
+                                    .setType(
+                                        Types.LiteralType.newBuilder()
+                                            .setSimple(Types.SimpleType.STRING)
+                                            .build())
+                                    .build())
+                            .build())
+                    .setOutputs(
+                        Interface.VariableMap.newBuilder()
+                            .putVariables(
+                                "y",
+                                Interface.Variable.newBuilder()
+                                    .setType(
+                                        Types.LiteralType.newBuilder()
+                                            .setSimple(Types.SimpleType.INTEGER)
+                                            .build())
+                                    .build())
+                            .build())
+                    .build())
+            .setType("custom-task")
+            .setCustom(
+                com.google.protobuf.Struct.newBuilder()
+                    .putFields(
+                        "custom-prop", Value.newBuilder().setStringValue("custom-value").build())
+                    .build())
+            .build();
 
-    assertThat(
-        serializedTemplate,
-        equalTo(
-            Tasks.TaskTemplate.newBuilder()
-                .setContainer(
-                    Tasks.Container.newBuilder()
-                        .setImage("alpine:3.7")
-                        .addCommand("echo")
-                        .addArgs("hello world")
-                        .addEnv(
-                            Literals.KeyValuePair.newBuilder()
-                                .setKey("key")
-                                .setValue("value")
-                                .build())
-                        .build())
-                .setMetadata(
-                    Tasks.TaskMetadata.newBuilder()
-                        .setRuntime(
-                            Tasks.RuntimeMetadata.newBuilder()
-                                .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
-                                .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
-                                .setVersion(ProtoUtil.RUNTIME_VERSION)
-                                .build())
-                        .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
-                        .build())
-                .setInterface(
-                    Interface.TypedInterface.newBuilder()
-                        .setInputs(
-                            Interface.VariableMap.newBuilder()
-                                .putVariables(
-                                    "x",
-                                    Interface.Variable.newBuilder()
-                                        .setType(
-                                            Types.LiteralType.newBuilder()
-                                                .setSimple(Types.SimpleType.STRING)
-                                                .build())
-                                        .build())
-                                .build())
-                        .setOutputs(
-                            Interface.VariableMap.newBuilder()
-                                .putVariables(
-                                    "y",
-                                    Interface.Variable.newBuilder()
-                                        .setType(
-                                            Types.LiteralType.newBuilder()
-                                                .setSimple(Types.SimpleType.INTEGER)
-                                                .build())
-                                        .build())
-                                .build())
-                        .build())
-                .setType("custom-task")
-                .setCustom(
-                    com.google.protobuf.Struct.newBuilder()
-                        .putFields(
-                            "custom-prop",
-                            Value.newBuilder().setStringValue("custom-value").build())
-                        .build())
-                .build()));
+    Tasks.TaskTemplate serializedTemplate = ProtoUtil.serialize(template);
+    TaskTemplate deserializedTemplate = ProtoUtil.deserialize(templateProto);
+
+    assertThat(serializedTemplate, equalTo(templateProto));
+    assertThat(deserializedTemplate, equalTo(template));
   }
 
   @Test
   void shouldSerializeWorkflowTemplate() {
     Node nodeA = createNode("a").toBuilder().upstreamNodeIds(singletonList("b")).build();
-    Node nodeB = createNode("b");
+    Node nodeB =
+        createNode("b")
+            .toBuilder()
+            .metadata(
+                NodeMetadata.builder()
+                    .name("fancy-b")
+                    .timeout(Duration.ofMinutes(15))
+                    .retries(RetryStrategy.builder().retries(3).build())
+                    .build())
+            .build();
+    ;
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
     TypedInterface interface_ =
         TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();
     WorkflowTemplate template =
         WorkflowTemplate.builder()
-            .nodes(Arrays.asList(nodeA, nodeB))
+            .nodes(asList(nodeA, nodeB))
             .metadata(metadata)
             .interface_(interface_)
             .outputs(emptyList())
@@ -540,6 +555,13 @@ class ProtoUtilTest {
     Workflow.Node expectedNode2 =
         Workflow.Node.newBuilder()
             .setId("b")
+            .setMetadata(
+                Workflow.NodeMetadata.newBuilder()
+                    .setName("fancy-b")
+                    .setTimeout(
+                        com.google.protobuf.Duration.newBuilder().setSeconds(15 * 60).build())
+                    .setRetries(Literals.RetryStrategy.newBuilder().setRetries(3).build())
+                    .build())
             .setTaskNode(
                 Workflow.TaskNode.newBuilder()
                     .setReferenceId(
@@ -758,6 +780,12 @@ class ProtoUtilTest {
     assertThat(ProtoUtil.serialize(input), equalTo(expected));
   }
 
+  @ParameterizedTest
+  @MethodSource("createSimpleSerializeLiteralArguments")
+  void shouldDeserializeSimpleLiteralTypes(LiteralType expected, Types.LiteralType input) {
+    assertThat(ProtoUtil.deserialize(input), equalTo(expected));
+  }
+
   static Stream<Arguments> createSimpleSerializeLiteralArguments() {
     ImmutableMap<SimpleType, Types.SimpleType> types =
         ImmutableMap.<SimpleType, Types.SimpleType>builder()
@@ -782,6 +810,12 @@ class ProtoUtilTest {
   @MethodSource("createSerializeComplexLiteralArguments")
   void shouldSerializeComplexLiteralTypes(LiteralType input, Types.LiteralType expected) {
     assertThat(ProtoUtil.serialize(input), equalTo(expected));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createSerializeComplexLiteralArguments")
+  void shouldDeserializeComplexLiteralTypes(LiteralType expected, Types.LiteralType input) {
+    assertThat(ProtoUtil.deserialize(input), equalTo(expected));
   }
 
   static Stream<Arguments> createSerializeComplexLiteralArguments() {
@@ -815,7 +849,7 @@ class ProtoUtilTest {
             LiteralType.ofSchemaType(
                 SchemaType.builder()
                     .columns(
-                        Arrays.asList(
+                        asList(
                             apiColumn("i", SchemaType.ColumnType.INTEGER),
                             apiColumn("f", SchemaType.ColumnType.FLOAT),
                             apiColumn("s", SchemaType.ColumnType.STRING),
@@ -1038,6 +1072,162 @@ class ProtoUtilTest {
                         .build())
                 .uri("file://csv")
                 .build()));
+  }
+
+  @Test
+  void shouldSerializeDynamicJobSpec() {
+    DynamicJobSpec dynamicJobSpec =
+        DynamicJobSpec.builder()
+            .nodes(emptyList())
+            .subWorkflows(emptyMap())
+            .tasks(emptyMap())
+            .outputs(emptyList())
+            .build();
+
+    DynamicJob.DynamicJobSpec proto = ProtoUtil.serialize(dynamicJobSpec);
+
+    assertThat(proto, equalTo(DynamicJob.DynamicJobSpec.newBuilder().build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("outOfRangeDatetimes")
+  void shouldRejectDatetimeOutOfTimestampRange(Instant timestamp, String expectedErrMsg) {
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> ProtoUtil.serialize(Primitive.ofDatetime(timestamp)));
+
+    assertEquals(expectedErrMsg, ex.getMessage());
+  }
+
+  public static Stream<Arguments> outOfRangeDatetimes() {
+    return Stream.of(
+        Arguments.of(
+            ISO_DATE_TIME.parse("0001-01-01T00:00:00Z", Instant::from).minusNanos(1),
+            "Datetime out of range, minimum allowed value [0001-01-01T00:00:00Z] but was [0000-12-31T23:59:59"
+                + ".999999999Z]"),
+        Arguments.of(
+            ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from).plusNanos(1),
+            "Datetime out of range, maximum allowed value [9999-12-31T23:59:59.999999999Z] but was "
+                + "[+10000-01-01T00:00:00Z]"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "id with spaces is invalid",
+        "CamelCaseIsInvalid",
+      })
+  void shouldRejectNonDNS1123NodesIds(String nodeId) {
+    Node node = Node.builder().id(nodeId).upstreamNodeIds(emptyList()).inputs(emptyList()).build();
+    IllegalArgumentException ex =
+        assertThrows(IllegalArgumentException.class, () -> ProtoUtil.serialize(node));
+
+    assertEquals(
+        "Node id [" + nodeId + "] must conform to DNS 1123 naming format", ex.getMessage());
+  }
+
+  @Test
+  void shouldSerializeContainerWithResources() {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .requests(
+                    ImmutableMap.of(
+                        Resources.ResourceName.CPU, "200m", Resources.ResourceName.MEMORY, "1Gi"))
+                .limits(
+                    ImmutableMap.of(
+                        Resources.ResourceName.CPU, "8", Resources.ResourceName.MEMORY, "32G"))
+                .build());
+
+    Tasks.Container actual = ProtoUtil.serialize(container);
+
+    assertThat(
+        actual,
+        equalTo(
+            Tasks.Container.newBuilder()
+                .setImage("busybox")
+                .addCommand("bash")
+                .addAllArgs(asList("-c", "echo", "hello"))
+                .setResources(
+                    Tasks.Resources.newBuilder()
+                        .addRequests(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue("200m")
+                                .build())
+                        .addRequests(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.MEMORY)
+                                .setValue("1Gi")
+                                .build())
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue("8")
+                                .build())
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.MEMORY)
+                                .setValue("32G")
+                                .build())
+                        .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"4", "2.3", "+1", "2Ki", "4m", "5e-3", "3E6"})
+  void shouldAcceptResourcesWithValidQuantities(String quantity) {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .limits(ImmutableMap.of(Resources.ResourceName.CPU, quantity))
+                .build());
+
+    Tasks.Container actual = ProtoUtil.serialize(container);
+
+    assertThat(
+        actual,
+        equalTo(
+            Tasks.Container.newBuilder()
+                .setImage("busybox")
+                .addCommand("bash")
+                .addAllArgs(asList("-c", "echo", "hello"))
+                .setResources(
+                    Tasks.Resources.newBuilder()
+                        .addLimits(
+                            Tasks.Resources.ResourceEntry.newBuilder()
+                                .setName(Tasks.Resources.ResourceName.CPU)
+                                .setValue(quantity)
+                                .build())
+                        .build())
+                .build()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "1.1.", "+-1", "2+2", "Ki", "1Qi", "-1", "-5G"})
+  void shouldRejectResourcesWithInvalidQuantities(String quantity) {
+    Container container =
+        createContainer(
+            Resources.builder()
+                .requests(ImmutableMap.of(Resources.ResourceName.CPU, quantity))
+                .build());
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> ProtoUtil.serialize(container));
+
+    assertEquals(
+        "Resource requests [CPU] has invalid quantity: " + quantity, exception.getMessage());
+  }
+
+  private Container createContainer(Resources resources) {
+    return Container.builder()
+        .image("busybox")
+        .command(singletonList("bash"))
+        .args(asList("-c", "echo", "hello"))
+        .env(emptyList())
+        .resources(resources)
+        .build();
   }
 
   private Node createNode(String id) {

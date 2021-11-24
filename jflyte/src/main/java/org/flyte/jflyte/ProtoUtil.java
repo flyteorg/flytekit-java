@@ -16,19 +16,27 @@
  */
 package org.flyte.jflyte;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static org.flyte.jflyte.MoreCollectors.mapValues;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
+import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import flyteidl.admin.Common;
+import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.ScheduleOuterClass;
+import flyteidl.admin.TaskOuterClass;
+import flyteidl.admin.WorkflowOuterClass;
 import flyteidl.core.Condition;
+import flyteidl.core.DynamicJob;
 import flyteidl.core.Errors;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
@@ -41,11 +49,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -58,15 +66,18 @@ import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.CronSchedule;
+import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Parameter;
@@ -75,6 +86,7 @@ import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SchemaType;
@@ -93,6 +105,24 @@ import org.flyte.api.v1.WorkflowTemplate;
 /** Utility to serialize between flytekit-api and flyteidl proto. */
 @SuppressWarnings("PreferJavaTimeOverload")
 class ProtoUtil {
+  // Datetime is a proto Timestamp and therefore must conform to the Timestamp range. See:
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#google.protobuf.Timestamp
+  private static final Instant DATETIME_MIN =
+      ISO_DATE_TIME.parse("0001-01-01T00:00:00Z", Instant::from);
+  private static final Instant DATETIME_MAX =
+      ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from);
+  private static final Pattern DNS_1123_REGEXP = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$");
+  private static final String DIGITS = "(\\d+(\\.(\\d+)?)?|\\.(\\d+))";
+  private static final String SIGNED_NUMBER = "([+-])?" + DIGITS;
+  private static final String POSITIVE_NUMBER = "([+])?" + DIGITS;
+  private static final String DECIMAL_EXPONENT = "[eE]" + SIGNED_NUMBER;
+  private static final String BINARY_SI = "Ki|Mi|Gi|Ti|Pi|Ei";
+  private static final String DECIMAL_SI = "m||k|M|G|T|P|E";
+  private static final String SUFFIX =
+      "(" + BINARY_SI + "|" + DECIMAL_SI + "|" + DECIMAL_EXPONENT + ")";
+  private static final Pattern QUANTITY_PATTERN =
+      Pattern.compile("^" + POSITIVE_NUMBER + SUFFIX + "$");
+
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
 
@@ -203,16 +233,11 @@ class ProtoUtil {
   static List<Literal> deserialize(Literals.LiteralCollection literalCollection) {
     return literalCollection.getLiteralsList().stream()
         .map(ProtoUtil::deserialize)
-        .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+        .collect(toUnmodifiableList());
   }
 
   private static Struct deserialize(com.google.protobuf.Struct struct) {
-    Map<String, Struct.Value> fields =
-        struct.getFieldsMap().entrySet().stream()
-            .collect(
-                collectingAndThen(
-                    toMap(Map.Entry::getKey, x -> deserialize(x.getValue())),
-                    Collections::unmodifiableMap));
+    Map<String, Struct.Value> fields = mapValues(struct.getFieldsMap(), ProtoUtil::deserialize);
 
     return Struct.of(fields);
   }
@@ -235,7 +260,7 @@ class ProtoUtil {
         List<Struct.Value> valuesList =
             value.getListValue().getValuesList().stream()
                 .map(ProtoUtil::deserialize)
-                .collect(collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .collect(toUnmodifiableList());
 
         return Struct.Value.ofListValue(valuesList);
 
@@ -276,6 +301,14 @@ class ProtoUtil {
     throw new IllegalArgumentException("Unknown Identifier type: " + id.getClass());
   }
 
+  static Tasks.TaskTemplate serialize(TaskIdentifier id, TaskTemplate taskTemplate) {
+    return serialize(taskTemplate).toBuilder().setId(serialize(id)).build();
+  }
+
+  static TaskOuterClass.TaskSpec serialize(TaskSpec spec) {
+    return TaskOuterClass.TaskSpec.newBuilder().setTemplate(serialize(spec.taskTemplate())).build();
+  }
+
   static Tasks.TaskTemplate serialize(TaskTemplate taskTemplate) {
     Tasks.RuntimeMetadata runtime =
         Tasks.RuntimeMetadata.newBuilder()
@@ -303,8 +336,22 @@ class ProtoUtil {
         .build();
   }
 
+  static TaskTemplate deserialize(Tasks.TaskTemplate proto) {
+    return TaskTemplate.builder()
+        .container(proto.hasContainer() ? deserialize(proto.getContainer()) : null)
+        .custom(deserialize(proto.getCustom()))
+        .interface_(deserialize(proto.getInterface()))
+        .retries(deserialize(proto.getMetadata().getRetries()))
+        .type(proto.getType())
+        .build();
+  }
+
   private static Literals.RetryStrategy serialize(RetryStrategy retryStrategy) {
     return Literals.RetryStrategy.newBuilder().setRetries(retryStrategy.retries()).build();
+  }
+
+  private static RetryStrategy deserialize(Literals.RetryStrategy proto) {
+    return RetryStrategy.builder().retries(proto.getRetries()).build();
   }
 
   private static Interface.TypedInterface serialize(TypedInterface interface_) {
@@ -314,10 +361,25 @@ class ProtoUtil {
         .build();
   }
 
+  private static TypedInterface deserialize(Interface.TypedInterface proto) {
+    return TypedInterface.builder()
+        .inputs(deserialize(proto.getInputs()))
+        .outputs(deserialize(proto.getOutputs()))
+        .build();
+  }
+
   private static Interface.VariableMap serializeVariableMap(Map<String, Variable> inputs) {
     Interface.VariableMap.Builder builder = Interface.VariableMap.newBuilder();
 
     inputs.forEach((key, value) -> builder.putVariables(key, serialize(value)));
+
+    return builder.build();
+  }
+
+  private static Map<String, Variable> deserialize(Interface.VariableMap proto) {
+    ImmutableMap.Builder<String, Variable> builder = ImmutableMap.builder();
+
+    proto.getVariablesMap().forEach((key, value) -> builder.put(key, deserialize(value)));
 
     return builder.build();
   }
@@ -332,6 +394,13 @@ class ProtoUtil {
     }
 
     return builder.build();
+  }
+
+  private static Variable deserialize(Interface.Variable proto) {
+    return Variable.builder()
+        .literalType(deserialize(proto.getType()))
+        .description(proto.getDescription())
+        .build();
   }
 
   @VisibleForTesting
@@ -357,6 +426,27 @@ class ProtoUtil {
     return builder.build();
   }
 
+  static LiteralType deserialize(Types.LiteralType proto) {
+    switch (proto.getTypeCase()) {
+      case SIMPLE:
+        return LiteralType.ofSimpleType(deserialize(proto.getSimple()));
+      case BLOB:
+        return LiteralType.ofBlobType(deserialize(proto.getBlob()));
+      case COLLECTION_TYPE:
+        return LiteralType.ofCollectionType(deserialize(proto.getCollectionType()));
+      case SCHEMA:
+        return LiteralType.ofSchemaType(deserialize(proto.getSchema()));
+      case MAP_VALUE_TYPE:
+        return LiteralType.ofMapValueType(deserialize(proto.getMapValueType()));
+      case ENUM_TYPE:
+        throw new IllegalArgumentException("Type ENUM not supported"); // TODO
+      case TYPE_NOT_SET:
+        throw new IllegalArgumentException("Can't deserialize LiteralType because TYPE_NOT_SET");
+    }
+
+    throw new AssertionError("Unexpected LiteralType: " + proto);
+  }
+
   private static Types.SimpleType serialize(SimpleType simpleType) {
     switch (simpleType) {
       case INTEGER:
@@ -378,16 +468,59 @@ class ProtoUtil {
     return Types.SimpleType.UNRECOGNIZED;
   }
 
+  private static SimpleType deserialize(Types.SimpleType proto) {
+    switch (proto) {
+      case INTEGER:
+        return SimpleType.INTEGER;
+      case FLOAT:
+        return SimpleType.FLOAT;
+      case STRING:
+        return SimpleType.STRING;
+      case BOOLEAN:
+        return SimpleType.BOOLEAN;
+      case DATETIME:
+        return SimpleType.DATETIME;
+      case DURATION:
+        return SimpleType.DURATION;
+      case STRUCT:
+        return SimpleType.STRUCT;
+      case ERROR:
+      case BINARY:
+      case NONE:
+        throw new IllegalArgumentException("Unsupported SimpleType: " + proto);
+
+      case UNRECOGNIZED:
+        throw new IllegalArgumentException("Can't deserialize LiteralType because UNRECOGNIZED");
+    }
+
+    throw new IllegalArgumentException("Unexpected SimpleType: " + proto);
+  }
+
   private static Types.SchemaType serialize(SchemaType schemaType) {
     Types.SchemaType.Builder builder = Types.SchemaType.newBuilder();
     schemaType.columns().forEach(column -> builder.addColumns(serialize(column)));
     return builder.build();
   }
 
+  private static SchemaType deserialize(Types.SchemaType proto) {
+    ImmutableList.Builder<SchemaType.Column> columns = ImmutableList.builder();
+
+    proto.getColumnsList().forEach(column -> columns.add(deserialize(column)));
+
+    return SchemaType.builder().columns(columns.build()).build();
+  }
+
   private static Types.SchemaType.SchemaColumn serialize(SchemaType.Column schemaColumn) {
     return Types.SchemaType.SchemaColumn.newBuilder()
         .setName(schemaColumn.name())
         .setType(serialize(schemaColumn.type()))
+        .build();
+  }
+
+  private static SchemaType.Column deserialize(Types.SchemaType.SchemaColumn proto) {
+    return SchemaType.Column.builder()
+        .name(proto.getName())
+        .type(deserialize(proto.getType()))
         .build();
   }
 
@@ -410,10 +543,40 @@ class ProtoUtil {
     return SchemaColumnType.UNRECOGNIZED;
   }
 
+  private static SchemaType.ColumnType deserialize(
+      Types.SchemaType.SchemaColumn.SchemaColumnType proto) {
+    switch (proto) {
+      case INTEGER:
+        return SchemaType.ColumnType.INTEGER;
+      case FLOAT:
+        return SchemaType.ColumnType.FLOAT;
+      case STRING:
+        return SchemaType.ColumnType.STRING;
+      case BOOLEAN:
+        return SchemaType.ColumnType.BOOLEAN;
+      case DATETIME:
+        return SchemaType.ColumnType.DATETIME;
+      case DURATION:
+        return SchemaType.ColumnType.DURATION;
+      case UNRECOGNIZED:
+        throw new IllegalArgumentException(
+            "Can't deserialize SchemaColumnType because UNRECOGNIZED");
+    }
+
+    throw new IllegalArgumentException("Unexpected SchemaColumnType: " + proto);
+  }
+
   private static Types.BlobType serialize(BlobType blobType) {
     return Types.BlobType.newBuilder()
         .setFormat(blobType.format())
         .setDimensionality(serialize(blobType.dimensionality()))
+        .build();
+  }
+
+  private static BlobType deserialize(Types.BlobType blobType) {
+    return BlobType.builder()
+        .format(blobType.getFormat())
+        .dimensionality(deserialize(blobType.getDimensionality()))
         .build();
   }
 
@@ -428,7 +591,8 @@ class ProtoUtil {
     return Types.BlobType.BlobDimensionality.UNRECOGNIZED;
   }
 
-  private static Tasks.Container serialize(Container container) {
+  @VisibleForTesting
+  static Tasks.Container serialize(Container container) {
     Tasks.Container.Builder builder =
         Tasks.Container.newBuilder()
             .setImage(container.image())
@@ -436,8 +600,75 @@ class ProtoUtil {
             .addAllArgs(container.args());
 
     container.env().forEach(pair -> builder.addEnv(serialize(pair)));
-
+    Resources resources = container.resources();
+    if (resources != null) {
+      builder.setResources(serialize(resources));
+    }
     return builder.build();
+  }
+
+  private static Tasks.Resources serialize(Resources resources) {
+    Tasks.Resources.Builder builder = Tasks.Resources.newBuilder();
+    if (resources.requests() != null) {
+      populateBuilder("requests", resources.requests(), builder::addRequests);
+    }
+    if (resources.limits() != null) {
+      populateBuilder("limits", resources.limits(), builder::addLimits);
+    }
+    return builder.build();
+  }
+
+  private static void populateBuilder(
+      String type,
+      Map<Resources.ResourceName, String> resourceMap,
+      Consumer<Tasks.Resources.ResourceEntry> builder) {
+    resourceMap.forEach(
+        (name, value) -> {
+          if (!isValidQuantity(value)) {
+            throw new IllegalArgumentException(
+                String.format("Resource %s [%s] has invalid quantity: %s", type, name, value));
+          }
+          builder.accept(
+              Tasks.Resources.ResourceEntry.newBuilder()
+                  .setName(serialize(name))
+                  .setValue(value)
+                  .build());
+        });
+  }
+
+  private static boolean isValidQuantity(String value) {
+    return QUANTITY_PATTERN.matcher(value).matches();
+  }
+
+  private static Tasks.Resources.ResourceName serialize(Resources.ResourceName name) {
+    switch (name) {
+      case UNKNOWN:
+        return Tasks.Resources.ResourceName.UNKNOWN;
+      case CPU:
+        return Tasks.Resources.ResourceName.CPU;
+      case GPU:
+        return Tasks.Resources.ResourceName.GPU;
+      case MEMORY:
+        return Tasks.Resources.ResourceName.MEMORY;
+      case STORAGE:
+        return Tasks.Resources.ResourceName.STORAGE;
+      case EPHEMERAL_STORAGE:
+        return Tasks.Resources.ResourceName.EPHEMERAL_STORAGE;
+    }
+    throw new AssertionError("Unexpected Resources.ResourceName: " + name);
+  }
+
+  private static Container deserialize(Tasks.Container container) {
+    ImmutableList.Builder<KeyValuePair> env = ImmutableList.builder();
+
+    container.getEnvList().forEach(keyValuePair -> env.add(deserialize(keyValuePair)));
+
+    return Container.builder()
+        .args(ImmutableList.copyOf(container.getArgsList()))
+        .command(ImmutableList.copyOf(container.getCommandList()))
+        .env(env.build())
+        .image(container.getImage())
+        .build();
   }
 
   private static Literals.KeyValuePair serialize(KeyValuePair pair) {
@@ -452,12 +683,44 @@ class ProtoUtil {
     return builder.build();
   }
 
-  public static Workflow.WorkflowTemplate serialize(
-      WorkflowIdentifier id, WorkflowTemplate template) {
+  private static KeyValuePair deserialize(Literals.KeyValuePair pair) {
+    return KeyValuePair.of(pair.getKey(), pair.getValue());
+  }
+
+  static LaunchPlanOuterClass.LaunchPlanSpec serialize(LaunchPlan launchPlan) {
+    LaunchPlanOuterClass.LaunchPlanSpec.Builder specBuilder =
+        LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
+            .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
+            .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
+            .setDefaultInputs(ProtoUtil.serializeParameters(launchPlan.defaultInputs()));
+
+    if (launchPlan.cronSchedule() != null) {
+      ScheduleOuterClass.Schedule schedule = ProtoUtil.serialize(launchPlan.cronSchedule());
+      specBuilder.setEntityMetadata(
+          LaunchPlanOuterClass.LaunchPlanMetadata.newBuilder().setSchedule(schedule).build());
+    }
+
+    return specBuilder.build();
+  }
+
+  static WorkflowOuterClass.WorkflowSpec serialize(WorkflowIdentifier id, WorkflowSpec spec) {
+    WorkflowOuterClass.WorkflowSpec.Builder builder =
+        WorkflowOuterClass.WorkflowSpec.newBuilder()
+            .setTemplate(serialize(id, spec.workflowTemplate()));
+
+    spec.subWorkflows()
+        .forEach(
+            (subWorkflowId, subWorkflow) ->
+                builder.addSubWorkflows(serialize(subWorkflowId, subWorkflow)));
+
+    return builder.build();
+  }
+
+  static Workflow.WorkflowTemplate serialize(WorkflowIdentifier id, WorkflowTemplate template) {
     return serialize(template).toBuilder().setId(serialize(id)).build();
   }
 
-  public static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
+  static Workflow.WorkflowTemplate serialize(WorkflowTemplate template) {
     Workflow.WorkflowTemplate.Builder builder =
         Workflow.WorkflowTemplate.newBuilder()
             .setMetadata(serialize(template.metadata()))
@@ -474,10 +737,19 @@ class ProtoUtil {
     return Workflow.WorkflowMetadata.newBuilder().build();
   }
 
-  private static Workflow.Node serialize(Node node) {
+  @VisibleForTesting
+  static Workflow.Node serialize(Node node) {
+    if (!isDNS1123Label(node.id())) {
+      throw new IllegalArgumentException(
+          String.format("Node id [%s] must conform to DNS 1123 naming format", node.id()));
+    }
 
     Workflow.Node.Builder builder =
         Workflow.Node.newBuilder().setId(node.id()).addAllUpstreamNodeIds(node.upstreamNodeIds());
+
+    if (node.metadata() != null) {
+      builder.setMetadata(serialize(node.metadata()));
+    }
 
     if (node.taskNode() != null) {
       builder.setTaskNode(serialize(node.taskNode()));
@@ -492,6 +764,26 @@ class ProtoUtil {
     }
 
     node.inputs().forEach(input -> builder.addInputs(serialize(input)));
+
+    return builder.build();
+  }
+
+  private static boolean isDNS1123Label(String label) {
+    return DNS_1123_REGEXP.matcher(label).matches();
+  }
+
+  private static Workflow.NodeMetadata serialize(NodeMetadata metadata) {
+    Workflow.NodeMetadata.Builder builder = Workflow.NodeMetadata.newBuilder();
+
+    if (metadata.name() != null) {
+      builder.setName(metadata.name());
+    }
+    if (metadata.timeout() != null) {
+      builder.setTimeout(serialize(metadata.timeout()));
+    }
+    if (metadata.retries() != null) {
+      builder.setRetries(serialize(metadata.retries()));
+    }
 
     return builder.build();
   }
@@ -532,7 +824,7 @@ class ProtoUtil {
     return Workflow.BranchNode.newBuilder().setIfElse(serialize(branchNode.ifElse())).build();
   }
 
-  public static Workflow.IfElseBlock serialize(IfElseBlock ifElse) {
+  static Workflow.IfElseBlock serialize(IfElseBlock ifElse) {
     Workflow.IfElseBlock.Builder builder = Workflow.IfElseBlock.newBuilder();
 
     builder.setCase(serialize(ifElse.case_()));
@@ -763,23 +1055,45 @@ class ProtoUtil {
         break;
       case DATETIME:
         Instant datetime = primitive.datetime();
-        builder.setDatetime(
-            com.google.protobuf.Timestamp.newBuilder()
-                .setSeconds(datetime.getEpochSecond())
-                .setNanos(datetime.getNano())
-                .build());
+        builder.setDatetime(serialize(datetime));
         break;
       case DURATION:
         Duration duration = primitive.duration();
-        builder.setDuration(
-            com.google.protobuf.Duration.newBuilder()
-                .setSeconds(duration.getSeconds())
-                .setNanos(duration.getNano())
-                .build());
+        builder.setDuration(serialize(duration));
         break;
     }
 
     return builder.build();
+  }
+
+  private static Timestamp serialize(Instant datetime) {
+    dateTimeRangeCheck(datetime);
+    return Timestamp.newBuilder()
+        .setSeconds(datetime.getEpochSecond())
+        .setNanos(datetime.getNano())
+        .build();
+  }
+
+  private static com.google.protobuf.Duration serialize(Duration duration) {
+    return com.google.protobuf.Duration.newBuilder()
+        .setSeconds(duration.getSeconds())
+        .setNanos(duration.getNano())
+        .build();
+  }
+
+  private static void dateTimeRangeCheck(Instant datetime) {
+    if (datetime.isBefore(DATETIME_MIN)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Datetime out of range, minimum allowed value [%s] but was [%s]",
+              DATETIME_MIN, datetime));
+    }
+    if (datetime.isAfter(DATETIME_MAX)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Datetime out of range, maximum allowed value [%s] but was [%s]",
+              DATETIME_MAX, datetime));
+    }
   }
 
   static Literals.Blob serialize(Blob blob) {
@@ -912,7 +1226,7 @@ class ProtoUtil {
         .putAllParameters(
             defaultInputs.entrySet().stream()
                 .collect(
-                    toMap(
+                    toUnmodifiableMap(
                         Map.Entry::getKey,
                         e -> {
                           Interface.Variable variable = serialize(e.getValue().var());
@@ -929,5 +1243,21 @@ class ProtoUtil {
                           return parameterBuilder.build();
                         })))
         .build();
+  }
+
+  static DynamicJob.DynamicJobSpec serialize(DynamicJobSpec dynamicJobSpec) {
+    DynamicJob.DynamicJobSpec.Builder builder = DynamicJob.DynamicJobSpec.newBuilder();
+
+    dynamicJobSpec.nodes().forEach(node -> builder.addNodes(serialize(node)));
+    dynamicJobSpec.outputs().forEach(binding -> builder.addOutputs(serialize(binding)));
+    dynamicJobSpec
+        .subWorkflows()
+        .forEach(
+            (id, workflowTemplate) -> builder.addSubworkflows(serialize(id, workflowTemplate)));
+    dynamicJobSpec
+        .tasks()
+        .forEach((id, taskTemplate) -> builder.addTasks(serialize(id, taskTemplate)));
+
+    return builder.build();
   }
 }

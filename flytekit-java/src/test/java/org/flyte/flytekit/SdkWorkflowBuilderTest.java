@@ -18,8 +18,6 @@ package org.flyte.flytekit;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
@@ -28,6 +26,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -40,6 +39,7 @@ import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -341,6 +341,57 @@ class SdkWorkflowBuilderTest {
     assertEquals("Duplicate upstream node id [node1]", e.getMessage());
   }
 
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testNodeMetadataOverrides(SdkTransform transform) {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData el0 = builder.inputOfInteger("el0");
+    SdkBindingData el1 = builder.inputOfInteger("el1");
+
+    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+
+    SdkNode el3 =
+        builder.apply(
+            "el3",
+            transform
+                .withUpstreamNode(el2)
+                .withInput("a", el0)
+                .withInput("b", el1)
+                .withNameOverride("fancy-el3")
+                .withTimeoutOverride(Duration.ofMinutes(15)));
+
+    assertThat(
+        el3.toIdl().metadata(),
+        equalTo(NodeMetadata.builder().name("fancy-el3").timeout(Duration.ofMinutes(15)).build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createTransform")
+  void testNodeMetadataOverrides_duplicate(SdkTransform transform) {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkBindingData el0 = builder.inputOfInteger("el0");
+    SdkBindingData el1 = builder.inputOfInteger("el1");
+
+    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                builder.apply(
+                    "el3",
+                    transform
+                        .withUpstreamNode(el2)
+                        .withInput("a", el0)
+                        .withInput("b", el1)
+                        .withNameOverride("fancy-el3")
+                        .withNameOverride("another-name")));
+
+    assertThat(ex.getMessage(), equalTo("Duplicate values for metadata: name"));
+  }
+
   @Test
   void testInputOf() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
@@ -368,46 +419,6 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
         builder.inputOfInteger("input6"));
-  }
-
-  @Test
-  void testBranchNodeGetSubNode() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-
-    SdkBooleanExpression true_ =
-        SdkConditions.eq(SdkBindingData.ofBoolean(true), SdkBindingData.ofBoolean(true));
-    SdkBindingData a = SdkBindingData.ofInteger(1);
-    SdkBindingData b = SdkBindingData.ofInteger(2);
-
-    // FIXME: we have to cast because there is no better API
-    //
-    // We have two ways forward:
-    // 1. Add getSubNode into SdkNode
-    // 2. Extend SdkTransform with <T extends SdkNode>
-    //
-    // It isn't clear which one is better. We need to see how it's going to fit other composite
-    // nodes
-    // like sub-workflows and dynamic workflows. For that it's also good to collect more use-cases.
-    SdkBranchNode node =
-        (SdkBranchNode)
-            builder.apply(
-                "conditional",
-                SdkConditions.when("case-1", true_, new PrintHello())
-                    .otherwise(
-                        "case-2", new MultiplicationTask().withInput("a", a).withInput("b", b)));
-
-    SdkNode case1 = node.getSubNode("case-1");
-    SdkNode case2 = node.getSubNode("case-2");
-
-    assertThat(case1.getNodeId(), equalTo("conditional-case-1"));
-    assertThat(case1.getOutputs().keySet(), equalTo(emptySet()));
-
-    assertThat(case2.getNodeId(), equalTo("conditional-case-2"));
-    assertThat(case2.getOutputs().keySet(), equalTo(singleton("c")));
-
-    IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> node.getSubNode("case-3"));
-    assertThat(e.getMessage(), equalTo("Sub-node [case-3] doesn't exist among [case-1, case-2]"));
   }
 
   static List<SdkTransform> createTransform() {

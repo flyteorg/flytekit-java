@@ -23,6 +23,7 @@ import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
@@ -30,7 +31,7 @@ import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
-/** A registrar that creates {@link SdkRunnableTask} instances. */
+/** A registrar that creates {@link RunnableTask} instances. */
 @AutoService(RunnableTaskRegistrar.class)
 public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
   private static final Logger LOG = Logger.getLogger(SdkRunnableTaskRegistrar.class.getName());
@@ -81,6 +82,47 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     @Override
     public String getName() {
       return sdkTask.getName();
+    }
+
+    @Override
+    public Resources getResources() {
+      SdkResources sdkResources = sdkTask.getResources();
+      Resources.Builder builder = Resources.builder();
+
+      if (sdkResources.limits() != null) {
+        builder.limits(toResourceMap(sdkResources.limits()));
+      }
+      if (sdkResources.requests() != null) {
+        builder.requests(toResourceMap(sdkResources.requests()));
+      }
+
+      return builder.build();
+    }
+
+    private Map<Resources.ResourceName, String> toResourceMap(
+        Map<SdkResources.ResourceName, String> sdkResources) {
+      Map<Resources.ResourceName, String> result = new HashMap<>();
+      sdkResources.forEach(
+          (sdkResourceName, value) -> result.put(toResourceName(sdkResourceName), value));
+      return result;
+    }
+
+    private Resources.ResourceName toResourceName(SdkResources.ResourceName sdkResourceName) {
+      switch (sdkResourceName) {
+        case UNKNOWN:
+          return Resources.ResourceName.UNKNOWN;
+        case CPU:
+          return Resources.ResourceName.CPU;
+        case GPU:
+          return Resources.ResourceName.GPU;
+        case MEMORY:
+          return Resources.ResourceName.MEMORY;
+        case STORAGE:
+          return Resources.ResourceName.STORAGE;
+        case EPHEMERAL_STORAGE:
+          return Resources.ResourceName.EPHEMERAL_STORAGE;
+      }
+      throw new AssertionError("Unexpected SdkResources.ResourceName: " + sdkResourceName);
     }
   }
 

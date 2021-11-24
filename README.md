@@ -1,5 +1,5 @@
 <!--
-  Copyright 2020 Spotify AB.
+  Copyright 2021 Flyte Authors.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -54,13 +54,3 @@ $ scripts/jflyte register workflows \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
 ```
-
-## Code of Conduct
-
-This project adheres to the Spotify FOSS Code of Conduct. By participating, you are expected to honor this code.
-
-## License
-
-Copyright 2020 Spotify AB.
-
-Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0

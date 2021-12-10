@@ -34,7 +34,7 @@
     <netty.tcnative.version>2.0.26.Final</netty.tcnative.version>
     <picocli.version>4.2.0</picocli.version>
     <protobuf.version>3.11.4</protobuf.version>
-    <sl4j.version>1.7.30</sl4j.version>
+    <sl4j.version>1.7.32</sl4j.version>
     <spotless.version>1.30.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
     <error_prone.version>2.3.4</error_prone.version>
@@ -154,6 +154,13 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>2.15.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-bom</artifactId>

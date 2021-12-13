@@ -59,6 +59,10 @@ public abstract class SdkTransform {
     return withInput(name, SdkBindingData.ofFloat(value));
   }
 
+  public SdkTransform withInput(String name, SdkStruct value) {
+    return withInput(name, SdkBindingData.ofStruct(value));
+  }
+
   public SdkTransform withInput(String name, SdkBindingData value) {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }

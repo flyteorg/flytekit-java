@@ -35,6 +35,7 @@ import org.flyte.api.v1.Registrar;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -44,6 +45,7 @@ import org.flyte.localengine.examples.ListWorkflow;
 import org.flyte.localengine.examples.MapWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
+import org.flyte.localengine.examples.StructWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -134,6 +136,42 @@ class LocalEngineTest {
     Literal i7 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7)));
 
     assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
+  }
+
+  @Test
+  public void testStructWorkflow() {
+    String workflowName = new StructWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+    WorkflowTemplate workflow = workflows.get(workflowName);
+
+    Literal inputStructLiteral =
+        Literal.ofScalar(
+            Scalar.ofGeneric(
+                Struct.of(
+                    ImmutableMap.of(
+                        "someKey1", Struct.Value.ofStringValue("some_value_1"),
+                        "someKey2", Struct.Value.ofBoolValue(true)))));
+
+    Map<String, Literal> inputs =
+        ImmutableMap.of(
+            "someString",
+            Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("some_string_value"))),
+            "someStruct",
+            inputStructLiteral);
+
+    Map<String, Literal> outputs =
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), inputs);
+
+    Literal expectedOutput =
+        Literal.ofScalar(
+            Scalar.ofGeneric(
+                Struct.of(
+                    ImmutableMap.of(
+                        "someKey1", Struct.Value.ofStringValue("some_value_1-output"),
+                        "someKey2", Struct.Value.ofBoolValue(true)))));
+    assertEquals(expectedOutput, outputs.get("outputStructData"));
   }
 
   @Test

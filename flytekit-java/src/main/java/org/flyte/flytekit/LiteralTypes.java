@@ -28,4 +28,5 @@ class LiteralTypes {
   static final LiteralType BOOLEAN = ofSimpleType(SimpleType.BOOLEAN);
   static final LiteralType DATETIME = ofSimpleType(SimpleType.DATETIME);
   static final LiteralType DURATION = ofSimpleType(SimpleType.DURATION);
+  static final LiteralType STRUCT = ofSimpleType(SimpleType.STRUCT);
 }

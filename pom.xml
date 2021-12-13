@@ -558,6 +558,8 @@
             <excludes>
               <!-- Generated during build to shade dependencies -->
               <exclude>**/dependency-reduced-pom.xml</exclude>
+              <exclude>**/target/checkstyle-result.xml</exclude>
+              <exclude>**/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml</exclude>
             </excludes>
           </configuration>
           <executions>

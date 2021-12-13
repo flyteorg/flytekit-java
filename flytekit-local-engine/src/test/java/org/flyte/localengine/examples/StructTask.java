@@ -32,36 +32,36 @@ public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Out
   public Output run(Input input) {
     return Output.create(
         CustomStruct.create(
-            input.struct_data().some_key_1() + "-output", input.struct_data().some_key_2()));
+            input.structData().someKey1() + "-output", input.structData().someKey2()));
   }
 
   @AutoValue
   public abstract static class CustomStruct {
-    public abstract String some_key_1();
+    public abstract String someKey1();
 
-    public abstract Boolean some_key_2();
+    public abstract Boolean someKey2();
 
-    public static CustomStruct create(String some_key_1, Boolean some_key_2) {
-      return new AutoValue_StructTask_CustomStruct(some_key_1, some_key_2);
+    public static CustomStruct create(String someKey1, Boolean someKey2) {
+      return new AutoValue_StructTask_CustomStruct(someKey1, someKey2);
     }
   }
 
   @AutoValue
   public abstract static class Input {
 
-    public abstract String some_string();
+    public abstract String someString();
 
-    public abstract CustomStruct struct_data();
+    public abstract CustomStruct structData();
 
-    public static Input create(String some_string, CustomStruct struct) {
-      return new AutoValue_StructTask_Input(some_string, struct);
+    public static Input create(String someString, CustomStruct struct) {
+      return new AutoValue_StructTask_Input(someString, struct);
     }
   }
 
   @AutoValue
   public abstract static class Output {
 
-    public abstract CustomStruct output_struct_data();
+    public abstract CustomStruct outputStructData();
 
     public static Output create(CustomStruct struct) {
       return new AutoValue_StructTask_Output(struct);

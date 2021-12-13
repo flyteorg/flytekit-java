@@ -151,14 +151,14 @@ class LocalEngineTest {
             Scalar.ofGeneric(
                 Struct.of(
                     ImmutableMap.of(
-                        "some_key_1", Struct.Value.ofStringValue("some_value_1"),
-                        "some_key_2", Struct.Value.ofBoolValue(true)))));
+                        "someKey1", Struct.Value.ofStringValue("some_value_1"),
+                        "someKey2", Struct.Value.ofBoolValue(true)))));
 
     Map<String, Literal> inputs =
         ImmutableMap.of(
-            "some_string",
+            "someString",
             Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("some_string_value"))),
-            "some_struct",
+            "someStruct",
             inputStructLiteral);
 
     Map<String, Literal> outputs =
@@ -169,9 +169,9 @@ class LocalEngineTest {
             Scalar.ofGeneric(
                 Struct.of(
                     ImmutableMap.of(
-                        "some_key_1", Struct.Value.ofStringValue("some_value_1-output"),
-                        "some_key_2", Struct.Value.ofBoolValue(true)))));
-    assertEquals(expectedOutput, outputs.get("output_struct_data"));
+                        "someKey1", Struct.Value.ofStringValue("some_value_1-output"),
+                        "someKey2", Struct.Value.ofBoolValue(true)))));
+    assertEquals(expectedOutput, outputs.get("outputStructData"));
   }
 
   @Test

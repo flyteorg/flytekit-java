@@ -26,14 +26,14 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 public class StructWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData someString = builder.inputOfString("some_string");
-    SdkBindingData someStruct = builder.inputOfStruct("some_struct");
+    SdkBindingData someString = builder.inputOfString("someString");
+    SdkBindingData someStruct = builder.inputOfStruct("someStruct");
     SdkNode structNode =
         builder.apply(
             "node-struct-1",
             new StructTask()
-                .withInput("some_string", someString)
-                .withInput("struct_data", someStruct));
-    builder.output("output_struct_data", structNode.getOutput("output_struct_data"));
+                .withInput("someString", someString)
+                .withInput("structData", someStruct));
+    builder.output("outputStructData", structNode.getOutput("outputStructData"));
   }
 }

@@ -37,9 +37,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
   public abstract String name();
 
   @Nullable
-  public String version() {
-    return null;
-  }
+  public abstract String version();
 
   public abstract SdkType<InputT> inputs();
 
@@ -113,6 +111,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
     public abstract Builder<InputT, OutputT> project(String project);
 
     public abstract Builder<InputT, OutputT> name(String name);
+
+    public abstract Builder<InputT, OutputT> version(String version);
 
     public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 

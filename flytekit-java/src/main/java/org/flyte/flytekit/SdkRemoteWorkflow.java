@@ -16,18 +16,18 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
-
 import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.flyte.api.v1.PartialLaunchPlanIdentifier;
-import org.flyte.api.v1.WorkflowNode;
 
-/** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
+/**
+ * Remote workflow execution is not intended to be supported without a launch plan. This code
+ * "glues" the SdkRemoteWorkflow by referencing the default Flyte LaunchPlan instead. Consider using
+ * SdkRemoteLaunchPlan instead
+ */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform {
+public abstract class SdkRemoteWorkflow<InputT, OutputT> extends SdkTransform {
 
   @Nullable
   public abstract String domain();
@@ -37,19 +37,21 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
   public abstract String name();
 
   @Nullable
-  public abstract String version();
+  public String version() {
+    return null;
+  }
 
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
 
-  public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
+  public static <InputT, OutputT> SdkRemoteWorkflow<InputT, OutputT> create(
       String domain,
       String project,
       String name,
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
-    return SdkRemoteLaunchPlan.<InputT, OutputT>builder()
+    return SdkRemoteWorkflow.<InputT, OutputT>builder()
         .domain(domain)
         .project(project)
         .name(name)
@@ -65,42 +67,21 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
-    PartialLaunchPlanIdentifier workflowId =
-        PartialLaunchPlanIdentifier.builder()
-            .name(name())
+    SdkRemoteLaunchPlan<InputT, OutputT> defaultLaunchPlan =
+        AutoValue_SdkRemoteLaunchPlan.<InputT, OutputT>builder()
             .project(project())
             .domain(domain())
+            .name(name())
             .version(version())
+            .inputs(inputs())
+            .outputs(outputs())
             .build();
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
 
-    if (!errors.isEmpty()) {
-      throw new CompilerException(errors);
-    }
-
-    Map<String, SdkBindingData> outputs =
-        outputs().getVariableMap().entrySet().stream()
-            .collect(
-                toUnmodifiableMap(
-                    Map.Entry::getKey,
-                    entry ->
-                        SdkBindingData.ofOutputReference(
-                            nodeId, entry.getKey(), entry.getValue().literalType())));
-
-    return new SdkWorkflowNode(
-        builder,
-        nodeId,
-        upstreamNodeIds,
-        metadata,
-        WorkflowNode.builder()
-            .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
-            .build(),
-        inputs,
-        outputs);
+    return defaultLaunchPlan.apply(builder, nodeId, upstreamNodeIds, metadata, inputs);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {
-    return new AutoValue_SdkRemoteLaunchPlan.Builder<>();
+    return new AutoValue_SdkRemoteWorkflow.Builder<>();
   }
 
   @AutoValue.Builder
@@ -112,12 +93,10 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
 
     public abstract Builder<InputT, OutputT> name(String name);
 
-    public abstract Builder<InputT, OutputT> version(String version);
-
     public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 
     public abstract Builder<InputT, OutputT> outputs(SdkType<OutputT> outputs);
 
-    public abstract SdkRemoteLaunchPlan<InputT, OutputT> build();
+    public abstract SdkRemoteWorkflow<InputT, OutputT> build();
   }
 }

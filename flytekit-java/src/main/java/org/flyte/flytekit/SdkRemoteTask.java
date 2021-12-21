@@ -51,10 +51,21 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
       String name,
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
+    return create(domain, project, name, null, inputs, outputs);
+  }
+
+  public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
+      String domain,
+      String project,
+      String name,
+      String version,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
     return SdkRemoteTask.<InputT, OutputT>builder()
         .domain(domain)
         .project(project)
         .name(name)
+        .version(version)
         .inputs(inputs)
         .outputs(outputs)
         .build();
@@ -96,6 +107,9 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
     public abstract Builder<InputT, OutputT> project(String project);
 
     public abstract Builder<InputT, OutputT> name(String name);
+
+    @Nullable
+    public abstract Builder<InputT, OutputT> version(String name);
 
     public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 

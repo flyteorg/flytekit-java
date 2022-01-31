@@ -22,6 +22,11 @@ jobs:
         with:
           java-version: 11.0
           distribution: 'adopt'
+          server-id: ossrh
+          server-username: ${{ secrets.SONATYPE_USERNAME }}
+          server-password: ${{ secrets.SONATYPE_PASSWORD }}
+          gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.SONATYPE_PASSPHRASE }}
 
       - name: Setup git configuration
         run: |
@@ -34,10 +39,13 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.FLYTE_BOT_USERNAME }}
           password: ${{ secrets.FLYTE_BOT_PAT }}
-
-      - name: Release snapshot with Maven
+      
+      - name: Publish to MavenCentral
         run: |
           mvn --batch-mode release:prepare  -DpreparationGoals=clean -DgenerateBackupPoms=false
           mvn --batch-mode release:perform  -DpreparationGoals=clean -Ddockerfile.push
+          mvn --batch-mode deploy -Pci-cd
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}

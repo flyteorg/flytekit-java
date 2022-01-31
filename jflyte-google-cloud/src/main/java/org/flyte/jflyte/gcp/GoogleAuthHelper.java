@@ -77,7 +77,7 @@ class GoogleAuthHelper {
       throw new IOException("Couldn't get id token for credential");
     }
 
-    Instant expiryAt = Instant.ofEpochMilli(idToken.getExpirationTime().getTime());
+    Instant expiryAt = idToken.getExpirationTime().toInstant();
     return Token.builder()
         .accessToken(idToken.getTokenValue())
         .expiry(expiryAt)

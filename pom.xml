@@ -37,7 +37,7 @@
     <sl4j.version>1.7.32</sl4j.version>
     <spotless.version>1.30.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
-    <error_prone.version>2.3.4</error_prone.version>
+    <error_prone.version>2.10.0</error_prone.version>
     <!-- Using the error-prone-javac is required when running on JDK 8 -->
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
     <junit.version>5.6.2</junit.version>
@@ -181,7 +181,7 @@
       <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_annotations</artifactId>
-        <version>2.3.4</version>
+        <version>${error_prone.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>

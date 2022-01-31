@@ -38,6 +38,7 @@ import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
+import java.time.Instant;
 import org.flyte.jflyte.api.Token;
 import org.flyte.jflyte.api.TokenSource;
 import org.junit.Rule;
@@ -81,11 +82,10 @@ class AuthorizationHeaderInterceptorTest {
     String idToken = "awesome";
     String tokenType = "Bearer";
 
+    Token token =
+        Token.builder().tokenType(tokenType).accessToken(idToken).expiry(Instant.now()).build();
     TokenSource tokenSource = mock(TokenSource.class);
-    Token token = mock(Token.class);
     when(tokenSource.token()).thenReturn(token);
-    when(token.accessToken()).thenReturn(idToken);
-    when(token.tokenType()).thenReturn(tokenType);
 
     AdminServiceGrpc.AdminServiceBlockingStub blockingStub =
         AdminServiceGrpc.newBlockingStub(

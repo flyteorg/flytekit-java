@@ -33,10 +33,18 @@ public abstract class SchemaType {
 
   @AutoValue
   public abstract static class Column {
-    /** @return A unique name -within the schema type- for the column. */
+    /**
+     * Returns a unique name -within the schema type- for the column.
+     *
+     * @return unique name.
+     */
     public abstract String name();
 
-    /** @return The column type. This allows a limited set of types currently. */
+    /**
+     * Returns the column type. This allows a limited set of types currently.
+     *
+     * @return the column type.
+     */
     public abstract ColumnType type();
 
     public static Builder builder() {
@@ -54,7 +62,11 @@ public abstract class SchemaType {
     }
   }
 
-  /** @return A list of ordered columns this schema comprises of. */
+  /**
+   * Returns a list of ordered columns this schema comprises.
+   *
+   * @return list of ordered columns this schema.
+   */
   public abstract List<Column> columns();
 
   public static Builder builder() {

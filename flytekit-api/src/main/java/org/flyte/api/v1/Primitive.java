@@ -17,6 +17,7 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoOneOf;
+import com.google.errorprone.annotations.InlineMe;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -67,7 +68,8 @@ public abstract class Primitive {
    * @return integer value
    */
   @Deprecated
-  public long integer() {
+  @InlineMe(replacement = "this.integerValue()")
+  public final long integer() {
     return integerValue();
   }
 
@@ -78,7 +80,8 @@ public abstract class Primitive {
    * @return float value
    */
   @Deprecated
-  public double float_() {
+  @InlineMe(replacement = "this.floatValue()")
+  public final double float_() {
     return floatValue();
   }
 
@@ -89,7 +92,8 @@ public abstract class Primitive {
    * @return string value
    */
   @Deprecated
-  public String string() {
+  @InlineMe(replacement = "this.stringValue()")
+  public final String string() {
     return stringValue();
   }
 
@@ -100,7 +104,8 @@ public abstract class Primitive {
    * @return boolean value
    */
   @Deprecated
-  public boolean boolean_() {
+  @InlineMe(replacement = "this.booleanValue()")
+  public final boolean boolean_() {
     return booleanValue();
   }
 
@@ -124,8 +129,11 @@ public abstract class Primitive {
    * @return primitive
    */
   @Deprecated
+  @InlineMe(
+      replacement = "Primitive.ofIntegerValue(integer)",
+      imports = "org.flyte.api.v1.Primitive")
   public static Primitive ofInteger(long integer) {
-    return AutoOneOf_Primitive.integerValue(integer);
+    return ofIntegerValue(integer);
   }
 
   /**
@@ -136,8 +144,9 @@ public abstract class Primitive {
    * @return primitive
    */
   @Deprecated
+  @InlineMe(replacement = "Primitive.ofFloatValue(float_)", imports = "org.flyte.api.v1.Primitive")
   public static Primitive ofFloat(double float_) {
-    return AutoOneOf_Primitive.floatValue(float_);
+    return ofFloatValue(float_);
   }
 
   /**
@@ -148,8 +157,9 @@ public abstract class Primitive {
    * @return primitive
    */
   @Deprecated
+  @InlineMe(replacement = "Primitive.ofStringValue(string)", imports = "org.flyte.api.v1.Primitive")
   public static Primitive ofString(String string) {
-    return AutoOneOf_Primitive.stringValue(string);
+    return ofStringValue(string);
   }
 
   /**
@@ -160,6 +170,9 @@ public abstract class Primitive {
    * @return primitive
    */
   @Deprecated
+  @InlineMe(
+      replacement = "Primitive.ofBooleanValue(booleanValue)",
+      imports = "org.flyte.api.v1.Primitive")
   public static Primitive ofBoolean(boolean booleanValue) {
     return ofBooleanValue(booleanValue);
   }

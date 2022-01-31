@@ -22,6 +22,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
+import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.Var;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
@@ -38,6 +39,14 @@ import org.flyte.api.v1.WorkflowTemplate;
 public class LocalEngine {
 
   @Deprecated
+  @InlineMe(
+      replacement =
+          "LocalEngine.compileAndExecute(template, runnableTasks, emptyMap(), inputs, NoopExecutionListener.create())",
+      imports = {
+        "org.flyte.localengine.LocalEngine",
+        "org.flyte.localengine.NoopExecutionListener"
+      },
+      staticImports = "java.util.Collections.emptyMap")
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
@@ -56,6 +65,11 @@ public class LocalEngine {
   }
 
   @Deprecated
+  @InlineMe(
+      replacement =
+          "LocalEngine.compileAndExecute(template, runnableTasks, emptyMap(), inputs, listener)",
+      imports = "org.flyte.localengine.LocalEngine",
+      staticImports = "java.util.Collections.emptyMap")
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,

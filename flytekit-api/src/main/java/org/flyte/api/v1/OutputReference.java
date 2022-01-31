@@ -24,10 +24,18 @@ import com.google.auto.value.AutoValue;
  */
 @AutoValue
 public abstract class OutputReference {
-  /** @return Node id referenced. Node id must exist at the graph layer. */
+  /**
+   * Returns node id referenced. Node id must exist at the graph layer.
+   *
+   * @return node id referenced.
+   */
   public abstract String nodeId();
 
-  /** @return Variable reference. Variable name must refer to an output variable for the node. */
+  /**
+   * Returns variable reference. Variable name must refer to an output variable for the node.
+   *
+   * @return variable reference.
+   */
   public abstract String var();
 
   public static Builder builder() {

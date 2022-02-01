@@ -31,6 +31,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
   private final transient SdkType<InputT> inputType;
   private final transient SdkType<OutputT> outputType;
 
+  @SuppressWarnings("PublicConstructorForAbstractClass")
   public SdkRunnableTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;

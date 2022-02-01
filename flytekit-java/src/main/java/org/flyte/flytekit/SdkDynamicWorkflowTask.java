@@ -26,6 +26,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
 
+  @SuppressWarnings("PublicConstructorForAbstractClass")
   public SdkDynamicWorkflowTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;

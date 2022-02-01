@@ -27,8 +27,10 @@ public abstract class BlobType {
   }
 
   /**
-   * @return the format of the Blob. Format can be a free form string understood by SDK/UI etc like
-   *     csv, parquet etc.
+   * Returns the format of the Blob. Format can be a free form string understood by SDK/UI etc. like
+   * csv, or parquet.
+   *
+   * @return the format of the Blob.
    */
   public abstract String format();
 

@@ -38,10 +38,18 @@ public abstract class DynamicJobSpec {
    */
   public abstract List<Binding> outputs();
 
-  /** @return sub-workflows */
+  /**
+   * Returns sub-workflows templates.
+   *
+   * @return sub-workflows.
+   */
   public abstract Map<WorkflowIdentifier, WorkflowTemplate> subWorkflows();
 
-  /** @return tasks */
+  /**
+   * Returns tasks templates.
+   *
+   * @return tasks
+   */
   public abstract Map<TaskIdentifier, TaskTemplate> tasks();
 
   public static Builder builder() {

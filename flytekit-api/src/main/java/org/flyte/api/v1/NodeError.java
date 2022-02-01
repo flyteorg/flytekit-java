@@ -24,10 +24,18 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class NodeError {
 
-  /** @return the node id that threw the error. */
+  /**
+   * Returns the node id that threw the error.
+   *
+   * @return the node id.
+   */
   public abstract String failedNodeId();
 
-  /** @return the error message thrown. */
+  /**
+   * Returns the error message thrown.
+   *
+   * @return the error message.
+   */
   public abstract String message();
 
   public static Builder builder() {

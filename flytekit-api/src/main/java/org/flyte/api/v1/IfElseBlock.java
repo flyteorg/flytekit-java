@@ -27,17 +27,33 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class IfElseBlock {
 
-  /** @return first condition to evaluate. */
+  /**
+   * Returns first condition to evaluate.
+   *
+   * @return first condition.
+   */
   public abstract IfBlock case_();
 
-  /** @return additional branches to evaluate. */
+  /**
+   * Returns additional branches to evaluate.
+   *
+   * @return additional branches.
+   */
   public abstract List<IfBlock> other();
 
-  /** @return the node to execute in case none of the branches were taken. */
+  /**
+   * Returns the node to execute in case none of the branches were taken.
+   *
+   * @return the else node.
+   */
   @Nullable
   public abstract Node elseNode();
 
-  /** @return an error to throw in case none of the branches were taken. */
+  /**
+   * Returns an error to throw in case none of the branches were taken.
+   *
+   * @return the else error.
+   */
   @Nullable
   public abstract NodeError error();
 

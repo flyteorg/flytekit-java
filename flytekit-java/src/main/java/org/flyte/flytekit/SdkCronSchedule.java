@@ -60,8 +60,10 @@ public abstract class SdkCronSchedule {
   public abstract Duration offset();
 
   /**
+   * Creates a {@link SdkCronSchedule} with input schedule and no offset.
+   *
    * @param schedule A cron alias (days, months, etc.) or a cron expression '* * * * *'
-   * @return SdkCronSchedule with input schedule and no offset.
+   * @return the newly created {@link SdkCronSchedule}.
    */
   public static SdkCronSchedule of(String schedule) {
     return new AutoValue_SdkCronSchedule(schedule, null);

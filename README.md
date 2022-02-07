@@ -32,6 +32,21 @@ To learn more about Flyte refer to:
  - [Flyte homepage](https://flyte.org)
  - [Flyte master repository](https://github.com/lyft/flyte)
 
+## Build from source
+
+It requires **Java 1.8 and Docker**
+
+```bash
+mvn clean verify
+
+# Inspect dependency tree
+mvn dependency:tree
+
+# Inspect tooling dependency tree
+mvn dependency:resolve-plugins
+
+```
+
 ## How to run examples
 
 We don't publish artifacts yet, but you can build examples yourself. 
@@ -54,3 +69,9 @@ $ scripts/jflyte register workflows \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
 ```
+
+## Contributing 
+
+Run `mvn spotless:apply` before committing. 
+
+Also use `git commit --signoff "Commit message"` to comply with DCO. 

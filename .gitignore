@@ -1,5 +1,10 @@
 .env.local
 
+**/*.xml.releaseBackup
+
+.java-version
+release.properties
+
 # Compiled class file
 target
 *.class

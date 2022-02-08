@@ -234,6 +234,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
   <scm>
     <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
     <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git
@@ -241,6 +242,7 @@
     <url>https://github.com/flyteorg/flytekit-java</url>
     <tag>HEAD</tag>
   </scm>
+
   <developers>
     <developer>
       <name>flytekit</name>
@@ -249,12 +251,40 @@
       <organizationUrl>https://flyte.org</organizationUrl>
     </developer>
   </developers>
+
   <distributionManagement>
-    <snapshotRepository>
+    <repository>
       <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>github</id>
+      <name>GitHub OWNER Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/flyteorg/flytekit-java</url>
     </snapshotRepository>
   </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Development Snapshot Repository</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>ossrh</id>
+      <name>Sonatype OSS</name>
+      <url>https://oss.sonatype.org/content/repositories/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>
@@ -650,25 +680,14 @@
 
   <profiles>
     <profile>
-      <id>ci-cd
-      </id> <!-- taken from https://medium.com/geekculture/how-to-publish-artifacts-on-maven-central-24342fd286cd -->
+      <id>release</id>
+      <!-- Based on: https://central.sonatype.org/pages/apache-maven.html-->
       <build>
         <plugins>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>3.0.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -677,9 +696,8 @@
                   <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <!-- Prevent gpg from using pinentry programs. Fixes: gpg: signing
-                      failed: Inappropriate ioctl for device -->
                   <gpgArguments>
+                    <arg>--batch</arg>
                     <arg>--pinentry-mode</arg>
                     <arg>loopback</arg>
                   </gpgArguments>
@@ -687,9 +705,50 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <source>8</source>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
+
     <profile>
       <id>errorprone</id>
       <activation>
@@ -715,6 +774,7 @@
         </pluginManagement>
       </build>
     </profile>
+    
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>
       <id>jdk8</id>

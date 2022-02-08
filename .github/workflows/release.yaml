@@ -11,6 +11,7 @@ jobs:
         with:
           fetch: "0"
 
+      # https://docs.github.com/en/actions/guides/building-and-testing-java-with-maven#caching-dependencies
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
@@ -39,12 +40,20 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.FLYTE_BOT_USERNAME }}
           password: ${{ secrets.FLYTE_BOT_PAT }}
-      
+
       - name: Publish to MavenCentral
         run: |
+          export GPG_TTY=$(tty)
+          export DISPLAY=:0
+          gpg --version
+          gpg --list-secret-keys --keyid-format LONG
+          echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
+
           mvn --batch-mode release:prepare  -DpreparationGoals=clean -DgenerateBackupPoms=false
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode release:perform  -DpreparationGoals=clean -Ddockerfile.push
-          mvn --batch-mode deploy -Pci-cd
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          mvn --batch-mode deploy -P release
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

@@ -250,13 +250,6 @@
       <organization>Flyte</organization>
       <organizationUrl>https://flyte.org</organizationUrl>
     </developer>
-    <developer>
-      <id>dataex</id>
-      <name>Spotify DataEx</name>
-      <email>dataex@spotify.com</email>
-      <organization>Spotify AB</organization>
-      <organizationUrl>http://www.spotify.com</organizationUrl>
-    </developer>
   </developers>
 
   <distributionManagement>

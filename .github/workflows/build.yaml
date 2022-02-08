@@ -43,7 +43,15 @@ jobs:
 
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}
-        run: mvn --batch-mode deploy -DpreparationGoals=clean -Ddockerfile.push
+        run: |
+          export GPG_TTY=$(tty)
+          export DISPLAY=:0
+          gpg --version
+          gpg --list-secret-keys --keyid-format LONG
+          echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
+
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          mvn --batch-mode deploy -DpreparationGoals=clean -Ddockerfile.push
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

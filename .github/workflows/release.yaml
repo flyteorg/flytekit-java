@@ -58,3 +58,6 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}
+          GITHUB_TOKEN: ${{ secrets.FLYTE_BOT_PAT }}
+          GITHUB_USER: ${{ secrets.FLYTE_BOT_USERNAME }}
+          GITHUB_PASSWORD: ${{ secrets.FLYTE_BOT_PAT }}

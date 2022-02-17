@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static com.google.common.base.Verify.verifyNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import flyteidl.admin.Common;
 import flyteidl.admin.Common.ResourceListRequest;
 import flyteidl.admin.ExecutionOuterClass;
@@ -34,6 +35,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -81,16 +83,18 @@ class FlyteAdminClient implements AutoCloseable {
 
     ManagedChannel originChannel = builder.build();
     GrpcRetries retries = GrpcRetries.create();
-    if (tokenSource == null) {
-      // In case of no tokenSource, no need to intercept the grpc call.
-      return new FlyteAdminClient(
-          AdminServiceGrpc.newBlockingStub(originChannel), originChannel, retries);
-    } else {
-      ClientInterceptor interceptor = new AuthorizationHeaderInterceptor(tokenSource);
-      Channel channel = ClientInterceptors.intercept(originChannel, interceptor);
-      return new FlyteAdminClient(
-          AdminServiceGrpc.newBlockingStub(channel), originChannel, retries);
+    List<ClientInterceptor> clientInterceptors = new ArrayList<>();
+    String flyteRpcOrigin = System.getenv("FLYTE_RPC_ORIGIN");
+    if (!Strings.isNullOrEmpty(flyteRpcOrigin)) {
+      clientInterceptors.add(GrpcClientRpcOriginMetadataInterceptor.create(flyteRpcOrigin));
     }
+
+    if (tokenSource != null) {
+      clientInterceptors.add(new AuthorizationHeaderInterceptor(tokenSource));
+    }
+
+    Channel channel = ClientInterceptors.intercept(originChannel, clientInterceptors);
+    return new FlyteAdminClient(AdminServiceGrpc.newBlockingStub(channel), originChannel, retries);
   }
 
   void createTask(TaskIdentifier id, TaskTemplate template) {

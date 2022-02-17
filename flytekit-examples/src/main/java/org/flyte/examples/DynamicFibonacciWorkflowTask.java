@@ -52,7 +52,8 @@ public class DynamicFibonacciWorkflowTask
       @Var SdkBindingData prev = SdkBindingData.ofInteger(0);
       @Var SdkBindingData value = SdkBindingData.ofInteger(1);
       for (int i = 2; i <= input.n(); i++) {
-        SdkBindingData next = builder.apply("fib-" + i, SumTask.of(value, prev)).getOutput("c");;
+        SdkBindingData next = builder.apply("fib-" + i, SumTask.of(value, prev)).getOutput("c");
+        ;
         prev = value;
         value = next;
       }

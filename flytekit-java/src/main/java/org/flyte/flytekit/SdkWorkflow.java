@@ -42,7 +42,7 @@ public abstract class SdkWorkflow extends SdkTransform {
     PartialWorkflowIdentifier workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
 
-    SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
+    SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder(nodeId + "-");
     expand(innerBuilder);
 
     Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);

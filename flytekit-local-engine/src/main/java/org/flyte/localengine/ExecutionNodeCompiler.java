@@ -19,10 +19,13 @@ package org.flyte.localengine;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -31,12 +34,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowTemplate;
 
 /**
  * Performs following operations
@@ -60,14 +66,17 @@ class ExecutionNodeCompiler {
    * @param nodes nodes
    * @param runnableTasks runnable tasks
    * @param dynamicWorkflowTasks dynamic workflow tasks
+   * @param workflows workflow templates
    * @return execution nodes
    */
   static List<ExecutionNode> compile(
       List<Node> nodes,
       Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks) {
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows) {
     List<ExecutionNode> executableNodes =
         nodes.stream()
+            .flatMap(node -> expand(node, workflows).stream())
             .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks))
             .collect(toList());
 
@@ -93,12 +102,12 @@ class ExecutionNodeCompiler {
       upstreamNodeIds.add(START_NODE_ID);
     }
 
-    if (node.branchNode() != null) {
-      throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
+    if (node.workflowNode() != null) {
+      throw new IllegalArgumentException("WorkflowNode must be expanded");
     }
 
-    if (node.workflowNode() != null) {
-      throw new IllegalArgumentException("WorkflowNode isn't yet supported for local execution");
+    if (node.branchNode() != null) {
+      throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
     }
 
     String taskName = node.taskNode().referenceId().name();
@@ -211,6 +220,82 @@ class ExecutionNodeCompiler {
     }
 
     return topologicallySorted;
+  }
+
+  static List<Node> expand(Node node, Map<String, WorkflowTemplate> workflows) {
+    if (node.workflowNode() != null) {
+      WorkflowNode.Reference reference = node.workflowNode().reference();
+      switch (reference.kind()) {
+        case SUB_WORKFLOW_REF:
+          String workflowName = reference.subWorkflowRef().name();
+          WorkflowTemplate workflowTemplate = workflows.get(workflowName);
+
+          Objects.requireNonNull(
+              workflowTemplate, () -> String.format("Couldn't find workflow [%s]", workflowName));
+
+          // alter the template nodes, so we prefix and remap the inputs
+          return workflowTemplate.nodes().stream()
+              .map(
+                  n ->
+                      n.toBuilder()
+                          .id(node.id() + "-" + n.id())
+                          .inputs(remapBindings(node.inputs(), n.inputs()))
+                          .build())
+              .collect(toList());
+        case LAUNCH_PLAN_REF:
+          throw new IllegalArgumentException(
+              "LaunchPlanRef isn't yet supported for local execution");
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unsupported Reference.Kind: [%s]", reference.kind()));
+      }
+    } else {
+      return Collections.singletonList(node);
+    }
+  }
+
+  static List<Binding> remapBindings(List<Binding> startNodeBindings, List<Binding> bindings) {
+    Map<String, BindingData> startNodeBindingData =
+        startNodeBindings.stream().collect(Collectors.toMap(Binding::var_, Binding::binding));
+    return bindings.stream()
+        .map(
+            b ->
+                Binding.builder()
+                    .var_(b.var_())
+                    .binding(remapBindingData(startNodeBindingData, b.binding()))
+                    .build())
+        .collect(toList());
+  }
+
+  static BindingData remapBindingData(
+      Map<String, BindingData> startNodeBindingData, BindingData bindingData) {
+    switch (bindingData.kind()) {
+      case SCALAR:
+        return bindingData;
+      case COLLECTION:
+        return BindingData.ofCollection(
+            bindingData.collection().stream()
+                .map(b -> remapBindingData(startNodeBindingData, b))
+                .collect(toList()));
+      case PROMISE:
+        String nodeId = bindingData.promise().nodeId();
+        if (nodeId.equals(START_NODE_ID)) {
+          return startNodeBindingData.get(bindingData.promise().var());
+        } else {
+          return bindingData;
+        }
+      case MAP:
+        return BindingData.ofMap(
+            bindingData.map().entrySet().stream()
+                .map(
+                    entry ->
+                        new AbstractMap.SimpleImmutableEntry<>(
+                            entry.getKey(),
+                            remapBindingData(startNodeBindingData, entry.getValue())))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    }
+
+    throw new AssertionError("Unexpected BindingData.Kind: " + bindingData.kind());
   }
 
   private static Stream<BindingData> unpackBindingData(BindingData bindingData) {

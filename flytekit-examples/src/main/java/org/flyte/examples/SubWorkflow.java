@@ -17,28 +17,18 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import java.time.Duration;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow {
+public class SubWorkflow extends SdkWorkflow {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = SdkBindingData.ofInteger(0);
-    SdkBindingData b = SdkBindingData.ofInteger(1);
-
-    SdkBindingData c =
-        builder
-            .apply(
-                "sum-a-b",
-                SumTask.of(a, b)
-                    .withNameOverride("sum a+b")
-                    .withTimeoutOverride(Duration.ofMinutes(15)))
-            .getOutput("c");
-
-    builder.output("c", c, "Value of the sum");
+    SdkBindingData left = builder.inputOfInteger("left");
+    SdkBindingData right = builder.inputOfInteger("right");
+    SdkBindingData result = builder.apply("sum", SumTask.of(left, right)).getOutput("c");
+    builder.output("result", result);
   }
 }

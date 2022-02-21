@@ -38,6 +38,10 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
     public abstract long a();
 
     public abstract long b();
+
+    public static SumInput create(long a, long b) {
+      return new AutoValue_SumTask_SumInput(a, b);
+    }
   }
 
   @AutoValue

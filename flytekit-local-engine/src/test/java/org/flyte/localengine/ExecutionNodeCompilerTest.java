@@ -30,10 +30,16 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
+import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.WorkflowMetadata;
+import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.flytekit.SdkLiteralTypes;
 import org.junit.jupiter.api.Test;
 
 class ExecutionNodeCompilerTest {
@@ -192,6 +198,77 @@ class ExecutionNodeCompilerTest {
             node, ImmutableMap.of("empty_runnable_task", new EmptyRunnableTask()), emptyMap());
 
     assertEquals(ImmutableList.of("node-1", "node-2", "node-3"), execNode.upstreamNodeIds());
+  }
+
+  @Test
+  void testExpand_subWorkflow() {
+    PartialWorkflowIdentifier subWorkflowId =
+        PartialWorkflowIdentifier.builder().name("sub_workflow").build();
+    Node node =
+        Node.builder()
+            .id("workflow")
+            .workflowNode(
+                WorkflowNode.builder()
+                    .reference(WorkflowNode.Reference.ofSubWorkflowRef(subWorkflowId))
+                    .build())
+            .inputs(
+                ImmutableList.of(
+                    Binding.builder()
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder().nodeId("node-1").var("result").build()))
+                        .var_("any")
+                        .build()))
+            .upstreamNodeIds(ImmutableList.of())
+            .build();
+
+    Node workflowNode =
+        Node.builder()
+            .id("task")
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder().name("empty_runnable_task").build())
+                    .build())
+            .inputs(
+                ImmutableList.of(
+                    Binding.builder()
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder().nodeId(START_NODE_ID).var("any").build()))
+                        .var_("any")
+                        .build()))
+            .upstreamNodeIds(ImmutableList.of())
+            .build();
+
+    WorkflowTemplate template =
+        WorkflowTemplate.builder()
+            .nodes(ImmutableList.of(workflowNode))
+            .metadata(WorkflowMetadata.builder().build())
+            .interface_(
+                TypedInterface.builder()
+                    .inputs(
+                        ImmutableMap.of(
+                            "any",
+                            Variable.builder()
+                                .literalType(SdkLiteralTypes.integers().getLiteralType())
+                                .build()))
+                    .outputs(ImmutableMap.of())
+                    .build())
+            .outputs(ImmutableList.of())
+            .build();
+
+    List<Node> expandedNodes =
+        ExecutionNodeCompiler.expand(node, ImmutableMap.of("sub_workflow", template));
+
+    assertEquals(
+        ImmutableList.of("workflow-task"), expandedNodes.stream().map(Node::id).collect(toList()));
+    BindingData inputReference =
+        BindingData.ofOutputReference(
+            OutputReference.builder().var("result").nodeId("node-1").build());
+    assertEquals(
+        ImmutableList.of(Binding.builder().var_("any").binding(inputReference).build()),
+        expandedNodes.stream().map(Node::inputs).flatMap(List::stream).collect(toList()));
   }
 
   private static List<String> getNodeIds(List<ExecutionNode> nodes) {

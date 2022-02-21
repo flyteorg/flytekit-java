@@ -43,6 +43,10 @@
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+    </dependency>
 
     <!-- provided -->
     <dependency>
@@ -54,6 +58,18 @@
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-testing</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

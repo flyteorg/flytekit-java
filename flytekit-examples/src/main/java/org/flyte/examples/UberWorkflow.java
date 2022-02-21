@@ -17,28 +17,28 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import java.time.Duration;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow {
+public class UberWorkflow extends SdkWorkflow {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = SdkBindingData.ofInteger(0);
-    SdkBindingData b = SdkBindingData.ofInteger(1);
-
-    SdkBindingData c =
+    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData b = builder.inputOfInteger("b");
+    SdkBindingData c = builder.inputOfInteger("c");
+    SdkBindingData d = builder.inputOfInteger("d");
+    SdkBindingData ab =
         builder
-            .apply(
-                "sum-a-b",
-                SumTask.of(a, b)
-                    .withNameOverride("sum a+b")
-                    .withTimeoutOverride(Duration.ofMinutes(15)))
-            .getOutput("c");
-
-    builder.output("c", c, "Value of the sum");
+            .apply("sub-1", new SubWorkflow().withInput("left", a).withInput("right", b))
+            .getOutput("result");
+    SdkBindingData abc =
+        builder
+            .apply("sub-2", new SubWorkflow().withInput("left", ab).withInput("right", c))
+            .getOutput("result");
+    SdkBindingData abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutput("c");
+    builder.output("total", abcd);
   }
 }

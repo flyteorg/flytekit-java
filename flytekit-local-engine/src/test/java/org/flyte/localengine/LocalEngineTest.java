@@ -72,6 +72,7 @@ class LocalEngineTest {
             workflows.get(workflowName),
             tasks,
             emptyMap(),
+            emptyMap(),
             ImmutableMap.of("fib0", fib0, "fib1", fib1),
             listener);
 
@@ -111,7 +112,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -129,7 +130,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -162,7 +163,7 @@ class LocalEngineTest {
             inputStructLiteral);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), inputs);
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), inputs);
 
     Literal expectedOutput =
         Literal.ofScalar(
@@ -189,7 +190,8 @@ class LocalEngineTest {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
       RetryableTask.ATTEMPTS.set(0L);
 
-      LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of(), listener);
+      LocalEngine.compileAndExecute(
+          workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener);
 
       assertEquals(
           ImmutableList.<List<Object>>builder()
@@ -229,7 +231,7 @@ class LocalEngineTest {
               RuntimeException.class,
               () ->
                   LocalEngine.compileAndExecute(
-                      workflow, tasks, emptyMap(), ImmutableMap.of(), listener));
+                      workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener));
 
       assertEquals("oops", e.getMessage());
 

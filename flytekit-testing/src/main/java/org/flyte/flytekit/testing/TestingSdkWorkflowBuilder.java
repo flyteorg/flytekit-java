@@ -16,7 +16,6 @@
  */
 package org.flyte.flytekit.testing;
 
-import static java.util.Collections.emptyMap;
 import static org.flyte.flytekit.testing.Preconditions.checkArgument;
 
 import java.util.Map;

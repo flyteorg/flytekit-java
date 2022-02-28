@@ -104,11 +104,21 @@ public class LocalEngine {
         ExecutionNodeCompiler.compile(
             template.nodes(), runnableTasks, dynamicWorkflowTasks, workflows);
 
-    return execute(executionNodes, inputs, template.outputs(), listener);
+    return execute(
+        executionNodes,
+        runnableTasks,
+        dynamicWorkflowTasks,
+        workflows,
+        inputs,
+        template.outputs(),
+        listener);
   }
 
   static Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows,
       Map<String, Literal> workflowInputs,
       List<Binding> bindings,
       ExecutionListener listener) {
@@ -123,7 +133,20 @@ public class LocalEngine {
 
       listener.starting(executionNode, inputs);
 
-      Map<String, Literal> outputs = runWithRetries(executionNode, inputs, listener);
+      Map<String, Literal> outputs;
+      if (executionNode.subWorkflow() != null) {
+        outputs =
+            compileAndExecute(
+                executionNode.subWorkflow(),
+                runnableTasks,
+                dynamicWorkflowTasks,
+                workflows,
+                inputs);
+      } else {
+        // this must be a task
+        outputs = runWithRetries(executionNode, inputs, listener);
+      }
+
       Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
 
       if (previous != null) {

@@ -33,7 +33,6 @@ import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
-  private final String idPrefix;
   private final Map<String, SdkNode> nodes;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, SdkBindingData> outputs;
@@ -41,12 +40,6 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> outputDescriptions;
 
   public SdkWorkflowBuilder() {
-    this("");
-  }
-
-  public SdkWorkflowBuilder(String idPrefix) {
-    this.idPrefix = idPrefix;
-
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -70,19 +63,19 @@ public class SdkWorkflowBuilder {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
-    String id = idPrefix + nodeId;
-    if (nodes.containsKey(id)) {
+
+    if (nodes.containsKey(nodeId)) {
       CompilerError error =
           CompilerError.create(
               CompilerError.Kind.DUPLICATE_NODE_ID,
-              id,
+              nodeId,
               "Trying to insert two nodes with the same id.");
 
       throw new CompilerException(error);
     }
 
-    SdkNode sdkNode = transform.apply(this, id, upstreamNodeIds, metadata, inputs);
-    nodes.put(id, sdkNode);
+    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
+    nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;
   }

@@ -32,10 +32,10 @@ jobs:
           java-version: 11.0
           distribution: 'adopt'
           server-id: ossrh
-          server-username: ${{ secrets.SONATYPE_USERNAME }}
-          server-password: ${{ secrets.SONATYPE_PASSWORD }}
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.SONATYPE_PASSPHRASE }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
@@ -50,6 +50,8 @@ jobs:
           gpg --list-secret-keys --keyid-format LONG
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          grep username $HOME/.m2/settings.xml
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode deploy -DpreparationGoals=clean -Ddockerfile.push
         env:

@@ -51,8 +51,6 @@ jobs:
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          grep username $HOME/.m2/settings.xml
-          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode deploy -DpreparationGoals=clean -Ddockerfile.push
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

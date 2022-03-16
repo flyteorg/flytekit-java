@@ -23,7 +23,7 @@
   <artifactId>flytekit-parent</artifactId>
 
   <packaging>pom</packaging>
-  <version>0.3.4-SNAPSHOT</version>
+  <version>0.3.4</version>
 
   <properties>
     <auto-service.version>1.0-rc6</auto-service.version>
@@ -240,7 +240,7 @@
     <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git
     </developerConnection>
     <url>https://github.com/flyteorg/flytekit-java</url>
-    <tag>HEAD</tag>
+    <tag>0.3.4</tag>
   </scm>
 
   <developers>

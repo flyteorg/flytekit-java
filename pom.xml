@@ -321,7 +321,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>3.0.0-M4</version>
         <configuration>
-          <preparationGoals>spotless:apply</preparationGoals>
+          <preparationGoals>clean spotless:apply</preparationGoals>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <allowTimestampedSnapshots>false</allowTimestampedSnapshots>
           <tagNameFormat>@{project.version}</tagNameFormat>

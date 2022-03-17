@@ -25,6 +25,9 @@
 
   <artifactId>flytekit-testing</artifactId>
 
+  <name>Flytekit Java - Testing</name>
+  <description>Classes used by developers to unit test their Tasks and Workflows.</description>
+
   <dependencies>
     <!-- compile -->
     <dependency>

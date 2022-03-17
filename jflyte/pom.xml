@@ -25,6 +25,10 @@
 
   <artifactId>jflyte</artifactId>
 
+  <name>JFlyte - Flytekit Java SDK implementation</name>
+  <description>Compiles developer's Tasks, Workflows and Launch plans into Flyte's protos.
+  Also register the protos with Flyteadmin.</description>
+
   <dependencies>
     <!-- compile -->
     <dependency>

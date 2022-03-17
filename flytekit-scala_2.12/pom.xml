@@ -26,6 +26,9 @@
   <!-- can't use properties, artifact name should be constant -->
   <artifactId>flytekit-scala_2.12</artifactId>
 
+  <name>Flytekit Java - Scala 2.12</name>
+  <description>Classes used by developers to build Flyte's Tasks, Workflows and Launch plans in Scala 2.12.</description>
+
   <properties>
     <scala.baseVersion>2.12</scala.baseVersion>
     <scala.version>2.12.11</scala.version>

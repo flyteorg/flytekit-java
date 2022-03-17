@@ -25,6 +25,9 @@
 
   <artifactId>jflyte-api</artifactId>
 
+  <name>JFlyte API - Extensible API</name>
+  <description>Makes possible to extends jFlyte with Filesystems and id token source</description>
+
   <dependencies>
     <!-- provided -->
     <dependency>

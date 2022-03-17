@@ -25,6 +25,10 @@
   <packaging>pom</packaging>
   <version>0.3.5-SNAPSHOT</version>
 
+  <name>Flytekit Java</name>
+  <description>Flytekit Java is the Java/Scala SDK built on top of Flyte.</description>
+  <url>https://github.com/flyteorg/flytekit-java</url>
+
   <properties>
     <auto-service.version>1.0-rc6</auto-service.version>
     <auto-value.version>1.8.2</auto-value.version>

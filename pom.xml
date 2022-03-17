@@ -525,10 +525,13 @@
           <configuration>
             <show>private</show>
             <encoding>utf-8</encoding>
-            <failOnWarnings>true</failOnWarnings>
-
-            <!-- generated proto code, doesn't have proper javadoc -->
-            <excludePackageNames>flyteidl.*</excludePackageNames>
+            <!--
+            Generated proto classes contains a bug that produce invalid javadoc
+            https://github.com/protocolbuffers/protobuf/issues/9612
+            However we cannot just exclude the flyteidl.* package because maven central demands
+            javadocs-jars
+            -->
+            <failOnWarnings>false</failOnWarnings>
           </configuration>
           <executions>
             <execution>
@@ -731,6 +734,7 @@
             </executions>
             <configuration>
               <source>8</source>
+              <doclint>all,-missing</doclint>
             </configuration>
           </plugin>
           <plugin>

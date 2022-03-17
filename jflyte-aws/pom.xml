@@ -27,6 +27,9 @@
 
   <artifactId>jflyte-aws</artifactId>
 
+  <name>JFlyte - AWS Filesystem extension</name>
+  <description>Stages jars in S3.</description>
+
   <dependencyManagement>
     <dependencies>
       <!--

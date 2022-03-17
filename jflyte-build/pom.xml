@@ -27,6 +27,9 @@
 
   <artifactId>jflyte-build</artifactId>
 
+  <name>JFlyte - Base image builder</name>
+  <description>Base image builder. Base images are the used to run Java Tasks.</description>
+
   <properties>
     <docker.image>ghcr.io/flyteorg/flytekit-java</docker.image>
     <docker.tag>${project.version}</docker.tag>

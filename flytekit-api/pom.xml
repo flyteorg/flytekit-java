@@ -27,6 +27,9 @@
 
   <artifactId>flytekit-api</artifactId>
 
+  <name>Flytekit Java API</name>
+  <description>Java friendly representation of flyteidl protos.</description>
+
   <dependencies>
     <!-- provided -->
     <dependency>

@@ -27,6 +27,9 @@
 
   <artifactId>integration-tests</artifactId>
 
+  <name>Flytekit Java - Integration tests</name>
+  <description>Tests for Flytekit Java project.</description>
+
   <properties>
     <enforcer.skip>true</enforcer.skip>
   </properties>

@@ -27,6 +27,9 @@
 
   <artifactId>flytekit-jackson</artifactId>
 
+  <name>Flytekit Java - Jackson typing</name>
+  <description>Extension to flytekit java typing system with Jackson and AutoValue.</description>
+
   <dependencyManagement>
     <dependencies>
       <dependency>

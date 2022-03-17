@@ -32,6 +32,9 @@
     <junit.version>5.7.0</junit.version>
   </properties>
 
+  <name>JFlyte - Gcloud Filesystem and IdToken extension</name>
+  <description>Stages jars in GCS.</description>
+
   <dependencyManagement>
     <dependencies>
       <!--

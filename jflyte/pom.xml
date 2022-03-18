@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -76,7 +77,7 @@
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative-boringssl-static</artifactId>
     </dependency>
-    
+
     <!-- runtime -->
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -25,13 +26,13 @@
 
   <artifactId>jflyte-google-cloud</artifactId>
 
+  <name>JFlyte - Gcloud Filesystem and IdToken extension</name>
+  <description>Stages jars in GCS.</description>
+
   <properties>
     <mockito.version>3.3.3</mockito.version>
     <junit.version>5.7.0</junit.version>
   </properties>
-
-  <name>JFlyte - Gcloud Filesystem and IdToken extension</name>
-  <description>Stages jars in GCS.</description>
 
   <dependencyManagement>
     <dependencies>
@@ -85,8 +86,8 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
       <version>${junit.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -103,8 +104,8 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
       <version>${mockito.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

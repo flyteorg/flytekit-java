@@ -131,8 +131,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
               ProjectClosure.createTaskTemplates(
                   executionConfig, runnableTasks, dynamicWorkflowTasks),
               template ->
-                  template
-                      .toBuilder()
+                  template.toBuilder()
                       .custom(ProjectClosure.merge(template.custom(), custom))
                       .build());
 

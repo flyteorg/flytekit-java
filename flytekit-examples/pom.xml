@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -69,10 +70,10 @@
         <executions>
           <execution>
             <id>copy-compile</id>
-            <phase>prepare-package</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
+            <phase>prepare-package</phase>
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <useBaseVersion>false</useBaseVersion>

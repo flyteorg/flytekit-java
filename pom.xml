@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -19,35 +20,30 @@
 
   <groupId>org.flyte</groupId>
   <artifactId>flytekit-parent</artifactId>
+  <version>0.3.10-SNAPSHOT</version>
 
   <packaging>pom</packaging>
-  <version>0.3.10-SNAPSHOT</version>
 
   <name>Flytekit Java</name>
   <description>Flytekit Java is the Java/Scala SDK built on top of Flyte.</description>
   <url>https://github.com/flyteorg/flytekit-java</url>
 
-  <properties>
-    <auto-service.version>1.0-rc6</auto-service.version>
-    <auto-value.version>1.8.2</auto-value.version>
-    <grpc.version>1.40.1</grpc.version>
-    <!-- must be aligned with netty version -->
-    <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
-    <netty.tcnative.version>2.0.34.Final</netty.tcnative.version>
-    <picocli.version>4.2.0</picocli.version>
-    <protobuf.version>3.18.2</protobuf.version>
-    <sl4j.version>1.7.32</sl4j.version>
-    <spotless.version>1.30.0</spotless.version>
-    <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
-    <error_prone.version>2.10.0</error_prone.version>
-    <!-- Using the error-prone-javac is required when running on JDK 8 -->
-    <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
-    <junit.version>5.6.2</junit.version>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-    <!-- has to be one liner, or errorprone doesn't work -->
-    <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
-    <error-prone-additional-args>-Xep:AutoValueImmutableFields:OFF -Xep:Var:ERROR</error-prone-additional-args>
-  </properties>
+  <developers>
+    <developer>
+      <name>flytekit</name>
+      <email>admin@flyte.org</email>
+      <organization>Flyte</organization>
+      <organizationUrl>https://flyte.org</organizationUrl>
+    </developer>
+  </developers>
 
   <modules>
     <module>flytekit-api</module>
@@ -68,6 +64,46 @@
     <module>jflyte-google-cloud</module>
     <module>integration-tests</module>
   </modules>
+
+  <scm>
+    <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
+    <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/flyteorg/flytekit-java</url>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <properties>
+    <auto-service.version>1.0-rc6</auto-service.version>
+    <auto-value.version>1.8.2</auto-value.version>
+    <grpc.version>1.40.1</grpc.version>
+    <!-- must be aligned with netty version -->
+    <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
+    <netty.tcnative.version>2.0.34.Final</netty.tcnative.version>
+    <picocli.version>4.2.0</picocli.version>
+    <protobuf.version>3.18.2</protobuf.version>
+    <sl4j.version>1.7.32</sl4j.version>
+    <spotless.version>2.21.0</spotless.version>
+    <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
+    <error_prone.version>2.10.0</error_prone.version>
+    <!-- Using the error-prone-javac is required when running on JDK 8 -->
+    <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
+    <junit.version>5.6.2</junit.version>
+
+    <!-- has to be one liner, or errorprone doesn't work -->
+    <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
+    <error-prone-additional-args>-Xep:AutoValueImmutableFields:OFF -Xep:Var:ERROR</error-prone-additional-args>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -229,107 +265,29 @@
     </dependencies>
   </dependencyManagement>
 
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
-  <scm>
-    <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
-    <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git
-    </developerConnection>
-    <url>https://github.com/flyteorg/flytekit-java</url>
-    <tag>HEAD</tag>
-  </scm>
-
-  <developers>
-    <developer>
-      <name>flytekit</name>
-      <email>admin@flyte.org</email>
-      <organization>Flyte</organization>
-      <organizationUrl>https://flyte.org</organizationUrl>
-    </developer>
-  </developers>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
-
   <repositories>
     <repository>
-      <id>apache.snapshots</id>
-      <name>Apache Development Snapshot Repository</name>
-      <url>https://repository.apache.org/content/repositories/snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+      <id>apache.snapshots</id>
+      <name>Apache Development Snapshot Repository</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
     </repository>
     <repository>
-      <id>ossrh</id>
-      <name>Sonatype OSS</name>
-      <url>https://oss.sonatype.org/content/repositories/releases/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
+      <id>ossrh</id>
+      <name>Sonatype OSS</name>
+      <url>https://oss.sonatype.org/content/repositories/releases/</url>
     </repository>
   </repositories>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.0-M4</version>
-        <configuration>
-          <preparationGoals>clean spotless:apply</preparationGoals>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <allowTimestampedSnapshots>false</allowTimestampedSnapshots>
-          <tagNameFormat>@{project.version}</tagNameFormat>
-        </configuration>
-      </plugin>
-    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -404,11 +362,10 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */
-]]></content>
+ */]]></content>
               </licenseHeader>
               <googleJavaFormat>
-                <version>1.7</version>
+                <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
               <removeUnusedImports />
@@ -434,13 +391,10 @@
   KIND, either express or implied.  See the License for the
   specific language governing permissions and limitations
   under the License.
--->
-]]></content>
+-->]]></content>
               </licenseHeader>
               <eclipse>
-                <file>
-                  ${maven.multiModuleProjectDirectory}/spotless.xmlformat.prefs
-                </file>
+                <file>${maven.multiModuleProjectDirectory}/spotless.xmlformat.prefs</file>
               </eclipse>
             </xml>
             <scala>
@@ -463,14 +417,34 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */
-]]></content>
+ */]]></content>
               </licenseHeader>
             </scala>
+            <pom>
+              <!-- These are the defaults, you can override if you want -->
+              <includes>
+                <include>pom.xml</include>
+              </includes>
+
+              <sortPom>
+                <encoding>UTF-8</encoding>
+                <lineSeparator>${line.separator}</lineSeparator>
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <keepBlankLines>true</keepBlankLines>
+                <nrOfIndentSpace>2</nrOfIndentSpace>
+                <indentBlankLines>false</indentBlankLines>
+                <indentSchemaLocation>false</indentSchemaLocation>
+                <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                <sortProperties>false</sortProperties>
+                <sortModules>false</sortModules>
+                <sortExecutions>false</sortExecutions>
+              </sortPom>
+            </pom>
+
             <formats>
               <format>
                 <includes>
-                  <include>**/pom.xml</include>
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
@@ -480,10 +454,10 @@
           </configuration>
           <executions>
             <execution>
-              <phase>verify</phase>
               <goals>
                 <goal>check</goal>
               </goals>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>
@@ -514,10 +488,10 @@
           </configuration>
           <executions>
             <execution>
-              <phase>verify</phase>
               <goals>
                 <goal>check</goal>
               </goals>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>
@@ -575,10 +549,10 @@
           </configuration>
           <executions>
             <execution>
-              <phase>verify</phase>
               <goals>
                 <goal>check</goal>
               </goals>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>
@@ -595,17 +569,15 @@
               <!-- Generated during build to shade dependencies -->
               <exclude>**/dependency-reduced-pom.xml</exclude>
               <exclude>**/target/checkstyle-result.xml</exclude>
-              <exclude>
-                **/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml
-              </exclude>
+              <exclude>**/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml</exclude>
             </excludes>
           </configuration>
           <executions>
             <execution>
-              <phase>verify</phase>
               <goals>
                 <goal>check</goal>
               </goals>
+              <phase>verify</phase>
             </execution>
           </executions>
         </plugin>
@@ -624,6 +596,9 @@
           <executions>
             <execution>
               <id>enforce</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
               <configuration>
                 <rules>
                   <requireMavenVersion>
@@ -632,9 +607,6 @@
                   <requireUpperBoundDeps />
                 </rules>
               </configuration>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
             </execution>
           </executions>
         </plugin>
@@ -645,31 +617,22 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.2.0</version>
-          <executions>
-            <execution>
-              <id>default-jar</id>
-              <phase>prepare-package</phase>
-              <goals>
-                <goal>jar</goal>
-              </goals>
-            </execution>
-          </executions>
           <configuration>
             <outputDirectory>${project.build.directory}/lib</outputDirectory>
           </configuration>
+          <executions>
+            <execution>
+              <id>default-jar</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <phase>prepare-package</phase>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>3.1.2</version>
-          <executions>
-            <execution>
-              <id>copy-dependencies</id>
-              <phase>package</phase>
-              <goals>
-                <goal>copy-dependencies</goal>
-              </goals>
-            </execution>
-          </executions>
           <configuration>
             <outputDirectory>${project.build.directory}/lib</outputDirectory>
             <useBaseVersion>false</useBaseVersion>
@@ -677,9 +640,60 @@
             <overWriteSnapshots>true</overWriteSnapshots>
             <includeScope>runtime</includeScope>
           </configuration>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <phase>package</phase>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.0.0-M4</version>
+        <configuration>
+          <preparationGoals>clean spotless:apply</preparationGoals>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <allowTimestampedSnapshots>false</allowTimestampedSnapshots>
+          <tagNameFormat>@{project.version}</tagNameFormat>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
@@ -695,10 +709,10 @@
             <executions>
               <execution>
                 <id>sign-artifacts</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>verify</phase>
                 <configuration>
                   <gpgArguments>
                     <arg>--batch</arg>
@@ -726,6 +740,10 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>3.3.1</version>
+            <configuration>
+              <source>8</source>
+              <doclint>all,-missing</doclint>
+            </configuration>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -734,10 +752,6 @@
                 </goals>
               </execution>
             </executions>
-            <configuration>
-              <source>8</source>
-              <doclint>all,-missing</doclint>
-            </configuration>
           </plugin>
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
@@ -779,8 +793,7 @@
               <configuration>
                 <compilerArgs combine.children="append">
                   <arg>-XDcompilePolicy=simple</arg>
-                  <arg>${error-prone-base-config} ${error-prone-additional-args}
-                  </arg>
+                  <arg>${error-prone-base-config} ${error-prone-additional-args}</arg>
                 </compilerArgs>
               </configuration>
             </plugin>
@@ -788,7 +801,7 @@
         </pluginManagement>
       </build>
     </profile>
-    
+
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>
       <id>jdk8</id>
@@ -804,9 +817,7 @@
               <configuration>
                 <fork>true</fork>
                 <compilerArgs combine.children="append">
-                  <arg>
-                    -J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${error_prone.javac.version}/javac-${error_prone.javac.version}.jar
-                  </arg>
+                  <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${error_prone.javac.version}/javac-${error_prone.javac.version}.jar</arg>
                 </compilerArgs>
               </configuration>
             </plugin>

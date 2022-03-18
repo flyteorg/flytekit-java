@@ -22,19 +22,22 @@ import org.flyte.flytekitscala.SdkScalaType
 case class GreetTaskInput(name: String)
 case class GreetTaskOutput(greeting: String)
 
-/** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
+/** Example Flyte task that takes a name as the input and outputs a simple
+  * greeting message.
+  */
 class GreetTask
     extends SdkRunnableTask(
       SdkScalaType[GreetTaskInput],
       SdkScalaType[GreetTaskOutput]
     ) {
 
-  /**
-    * Defines task behavior. This task takes a name as the input, wraps it in a welcome message, and
-    * outputs the message.
+  /** Defines task behavior. This task takes a name as the input, wraps it in a
+    * welcome message, and outputs the message.
     *
-    * @param input the name of the person to be greeted
-    * @return the welcome message
+    * @param input
+    *   the name of the person to be greeted
+    * @return
+    *   the welcome message
     */
   override def run(input: GreetTaskInput): GreetTaskOutput =
     GreetTaskOutput(s"Welcome, ${input.name}!")
@@ -42,11 +45,12 @@ class GreetTask
 
 object GreetTask {
 
-  /**
-    * Binds input data to this task
+  /** Binds input data to this task
     *
-    * @param name the input name
-    * @return a transformed instance of this class with input data
+    * @param name
+    *   the input name
+    * @return
+    *   a transformed instance of this class with input data
     */
   def apply(name: SdkBindingData): SdkTransform =
     new GreetTask().withInput("name", name)

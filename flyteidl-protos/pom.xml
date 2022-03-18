@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -39,13 +40,6 @@
     </dependency>
   </dependencies>
   <build>
-    <extensions>
-      <extension>
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-        <version>1.6.2</version>
-      </extension>
-    </extensions>
     <plugins>
       <plugin>
         <groupId>org.xolstice.maven.plugins</groupId>
@@ -75,7 +69,8 @@
           <showWarnings>true</showWarnings>
           <showDeprecation>true</showDeprecation>
           <forceJavacCompilerUse>true</forceJavacCompilerUse>
-          <failOnWarning>false</failOnWarning> <!-- Generated proto classes produce warnings -->
+          <failOnWarning>false</failOnWarning>
+          <!-- Generated proto classes produce warnings -->
           <!-- The semantics of this option are reversed, see MCOMPILER-209. -->
           <useIncrementalCompilation>false</useIncrementalCompilation>
           <encoding>utf-8</encoding>
@@ -118,5 +113,12 @@
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
     </plugins>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.6.2</version>
+      </extension>
+    </extensions>
   </build>
 </project>

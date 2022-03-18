@@ -14,7 +14,9 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -24,6 +26,9 @@
   </parent>
 
   <artifactId>flytekit-examples-scala</artifactId>
+
+  <name>Flytekit Java Examples in Scala</name>
+  <description>Examples of Tasks, Workflows and Launch plans written in Scala.</description>
 
   <properties>
     <scala.baseVersion>2.13</scala.baseVersion>
@@ -81,6 +86,26 @@
             <goals>
               <goal>compile</goal>
               <goal>testCompile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>doc-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Disabling the default javadoc plugin - we use scala-maven-plugin instead -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <phase>none</phase>
+            <goals>
+              <goal>jar</goal>
             </goals>
           </execution>
         </executions>

@@ -14,7 +14,9 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.flyte</groupId>
@@ -22,6 +24,10 @@
 
   <packaging>pom</packaging>
   <version>0.3.9-SNAPSHOT</version>
+
+  <name>Flytekit Java</name>
+  <description>Flytekit Java is the Java/Scala SDK built on top of Flyte.</description>
+  <url>https://github.com/flyteorg/flytekit-java</url>
 
   <properties>
     <auto-service.version>1.0-rc6</auto-service.version>
@@ -523,10 +529,13 @@
           <configuration>
             <show>private</show>
             <encoding>utf-8</encoding>
-            <failOnWarnings>true</failOnWarnings>
-
-            <!-- generated proto code, doesn't have proper javadoc -->
-            <excludePackageNames>flyteidl.*</excludePackageNames>
+            <!--
+            Generated proto classes contains a bug that produce invalid javadoc
+            https://github.com/protocolbuffers/protobuf/issues/9612
+            However we cannot just exclude the flyteidl.* package because maven central demands
+            javadocs-jars
+            -->
+            <failOnWarnings>false</failOnWarnings>
           </configuration>
           <executions>
             <execution>
@@ -729,6 +738,7 @@
             </executions>
             <configuration>
               <source>8</source>
+              <doclint>all,-missing</doclint>
             </configuration>
           </plugin>
           <plugin>

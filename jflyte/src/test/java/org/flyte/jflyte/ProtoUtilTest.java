@@ -500,8 +500,7 @@ class ProtoUtilTest {
   void shouldSerializeWorkflowTemplate() {
     Node nodeA = createNode("a").toBuilder().upstreamNodeIds(singletonList("b")).build();
     Node nodeB =
-        createNode("b")
-            .toBuilder()
+        createNode("b").toBuilder()
             .metadata(
                 NodeMetadata.builder()
                     .name("fancy-b")

@@ -25,7 +25,9 @@ import org.flyte.flytekit.SdkType
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
 
-/** Type class to map between Flyte `Variable` and `Literal` and Scala case classes. */
+/** Type class to map between Flyte `Variable` and `Literal` and Scala case
+  * classes.
+  */
 sealed trait SdkScalaType[T]
 
 // products (e.g. case classes and tuples) can map into literal map
@@ -158,8 +160,8 @@ object SdkScalaType {
       _.scalar().primitive().duration()
     )
 
-  implicit def collectionLiteralType[T](
-      implicit sdkLiteral: SdkScalaLiteralType[T]
+  implicit def collectionLiteralType[T](implicit
+      sdkLiteral: SdkScalaLiteralType[T]
   ): SdkScalaLiteralType[List[T]] = {
     new SdkScalaLiteralType[List[T]] {
 
@@ -183,8 +185,8 @@ object SdkScalaType {
     }
   }
 
-  implicit def mapLiteralType[T](
-      implicit sdkLiteral: SdkScalaLiteralType[T]
+  implicit def mapLiteralType[T](implicit
+      sdkLiteral: SdkScalaLiteralType[T]
   ): SdkScalaLiteralType[Map[String, T]] = {
     new SdkScalaLiteralType[Map[String, T]] {
 
@@ -193,7 +195,9 @@ object SdkScalaType {
 
       override def toLiteral(values: Map[String, T]): Literal = {
         Literal.ofMap(
-          values.map { case (key, value) => key -> sdkLiteral.toLiteral(value) }.asJava
+          values.map { case (key, value) =>
+            key -> sdkLiteral.toLiteral(value)
+          }.asJava
         )
       }
 

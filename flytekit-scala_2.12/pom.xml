@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2021 Flyte Authors.
 
@@ -67,8 +68,6 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>../flytekit-scala_2.13/src/main/scala</sourceDirectory>
-    <testSourceDirectory>../flytekit-scala_2.13/src/test/scala</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>net.alchim31.maven</groupId>
@@ -97,5 +96,7 @@
         <artifactId>maven-source-plugin</artifactId>
       </plugin>
     </plugins>
+    <sourceDirectory>../flytekit-scala_2.13/src/main/scala</sourceDirectory>
+    <testSourceDirectory>../flytekit-scala_2.13/src/test/scala</testSourceDirectory>
   </build>
 </project>

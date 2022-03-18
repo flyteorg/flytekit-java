@@ -52,8 +52,7 @@ class WorkflowNodeVisitor {
   }
 
   WorkflowNode visitWorkflowNode(WorkflowNode workflowNode) {
-    return workflowNode
-        .toBuilder()
+    return workflowNode.toBuilder()
         .reference(visitWorkflowNodeReference(workflowNode.reference()))
         .build();
   }
@@ -63,8 +62,7 @@ class WorkflowNodeVisitor {
   }
 
   IfElseBlock visitIfElseBlock(IfElseBlock ifElse) {
-    return ifElse
-        .toBuilder()
+    return ifElse.toBuilder()
         .case_(visitIfBlock(ifElse.case_()))
         .other(ifElse.other().stream().map(this::visitIfBlock).collect(toUnmodifiableList()))
         .elseNode(ifElse.elseNode() != null ? visitNode(ifElse.elseNode()) : null)

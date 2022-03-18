@@ -19,30 +19,29 @@ package org.flyte.examples.flytekitscala
 import org.flyte.flytekit.{SdkWorkflow, SdkWorkflowBuilder}
 
 /** Example workflow that takes a name and outputs a welcome message
-  * +--------------------------------+
-  * |        start of workflow       |
-  * |      input: name(string)       |
-  * +--------------+-----------------+
-  *                |
-  *                |
+  * |  start of workflow  |
+  * |:-------------------:|
+  * | input: name(string) |
+  * |
+  * |
   * +--------------v-----------------+
-  * |          GreetTask             |
-  * |      input: name(string)       |
-  * |      output: greeting(string)  |
-  * +--------------+-----------------+
-  *                |
-  *                |
+  * | GreetTask                |
+  * |:-------------------------|
+  * | input: name(string)      |
+  * | output: greeting(string) |
+  * |
+  * |
   * +--------------v-----------------+
-  * |        AddQuestionTask         |
-  * |      input: greeting(string)   |
-  * |      output: greeting(string)  |
-  * +--------------+-----------------+
-  *                |
-  *                |
+  * |     AddQuestionTask      |
+  * |:------------------------:|
+  * | input: greeting(string)  |
+  * | output: greeting(string) |
+  * |
+  * |
   * +--------------v-----------------+
-  * |       end of workflow          |
-  * |     output: greeting(string)   |
-  * +--------------------------------+
+  * | end of workflow          |
+  * |:-------------------------|
+  * | output: greeting(string) |
   */
 class WelcomeWorkflow extends SdkWorkflow {
 

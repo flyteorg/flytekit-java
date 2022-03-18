@@ -14,16 +14,14 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.flyte</groupId>
   <artifactId>flytekit-parent</artifactId>
 
   <packaging>pom</packaging>
-  <version>0.3.9</version>
+  <version>0.3.10-SNAPSHOT</version>
 
   <name>Flytekit Java</name>
   <description>Flytekit Java is the Java/Scala SDK built on top of Flyte.</description>
@@ -244,7 +242,7 @@
     <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git
     </developerConnection>
     <url>https://github.com/flyteorg/flytekit-java</url>
-    <tag>0.3.9</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>

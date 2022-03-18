@@ -14,7 +14,9 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -27,7 +29,8 @@
   <artifactId>flytekit-scala-tests_2.13</artifactId>
 
   <name>Flytekit Java - Tests for Scala 2.13</name>
-  <description>Tests for Scala 2.13. tests are separate from flytekit-scala because we want to test macro expansion that can't be done
+  <description>Tests for Scala 2.13. tests are separate from flytekit-scala because we want to test
+    macro expansion that can't be done
     in the same module.</description>
 
   <properties>

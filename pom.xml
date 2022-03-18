@@ -23,7 +23,7 @@
   <artifactId>flytekit-parent</artifactId>
 
   <packaging>pom</packaging>
-  <version>0.3.9-SNAPSHOT</version>
+  <version>0.3.9</version>
 
   <name>Flytekit Java</name>
   <description>Flytekit Java is the Java/Scala SDK built on top of Flyte.</description>
@@ -244,7 +244,7 @@
     <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git
     </developerConnection>
     <url>https://github.com/flyteorg/flytekit-java</url>
-    <tag>HEAD</tag>
+    <tag>0.3.9</tag>
   </scm>
 
   <developers>

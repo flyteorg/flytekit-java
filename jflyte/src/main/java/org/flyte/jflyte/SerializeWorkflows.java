@@ -94,6 +94,7 @@ public class SerializeWorkflows implements Callable<Integer> {
       // ugly because spotbugs doesn't like try-with-resources
       try {
         fos = new FileOutputStream(new File(folder, filename));
+        bytes.writeTo(fos);
         fos.flush();
       } catch (IOException e) {
         throw new UncheckedIOException("failed to write to " + folder + "/" + filename, e);

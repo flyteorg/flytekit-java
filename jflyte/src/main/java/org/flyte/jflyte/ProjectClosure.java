@@ -21,6 +21,7 @@ import static java.util.Collections.emptyMap;
 import static org.flyte.jflyte.MoreCollectors.mapValues;
 import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
 import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+import static org.flyte.jflyte.QuantityUtil.asJavaQuantity;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
@@ -52,12 +53,15 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.LaunchPlanRegistrar;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.Resources;
+import org.flyte.api.v1.Resources.ResourceName;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Struct;
@@ -397,6 +401,7 @@ abstract class ProjectClosure {
 
   @VisibleForTesting
   static TaskTemplate createTaskTemplateForRunnableTask(RunnableTask task, String image) {
+    Resources resources = task.getResources();
     Container container =
         Container.builder()
             .command(ImmutableList.of())
@@ -413,8 +418,8 @@ abstract class ProjectClosure {
                     "--taskTemplatePath",
                     "{{.taskTemplatePath}}"))
             .image(image)
-            .env(emptyList())
-            .resources(task.getResources())
+            .env(javaToolOptionsEnv(resources).map(ImmutableList::of).orElse(ImmutableList.of()))
+            .resources(resources)
             .build();
 
     return TaskTemplate.builder()
@@ -424,6 +429,15 @@ abstract class ProjectClosure {
         .type(task.getType())
         .custom(task.getCustom())
         .build();
+  }
+
+  private static Optional<KeyValuePair> javaToolOptionsEnv(Resources resources) {
+    Map<ResourceName, String> limits = resources.limits();
+    if (limits == null || !limits.containsKey(ResourceName.MEMORY)) {
+      return Optional.empty();
+    }
+    String maxMemory = asJavaQuantity(limits.get(ResourceName.MEMORY));
+    return Optional.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", "-Xmx" + maxMemory));
   }
 
   private static TaskTemplate createTaskTemplateForDynamicWorkflow(

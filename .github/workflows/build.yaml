@@ -37,6 +37,20 @@ jobs:
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      - name: Repo
+        run: |
+          ## Release repository
+          ## Have to find the stagingRepositoryId that was auto-generated
+          rcList=$(mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:rc-list -DnexusUrl=https://oss.sonatype.org/ -DserverId=sonatype-nexus-staging)
+          echo $rcList
+          stagingRepositoryId=$(echo $rcList | grep -o "\[INFO\] flyte-[0-9]*[ ]*OPEN" | grep -o "flyte-[0-9]*")
+          echo "Staging Repository Id: $stagingRepositoryId"
+        env:
+          MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
         run: mvn --batch-mode verify

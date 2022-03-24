@@ -16,7 +16,9 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.flyte.api.v1.Resources.ResourceName.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,6 +38,7 @@ import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.Container;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
+import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
@@ -413,6 +416,7 @@ public class ProjectClosureTest {
     assertNotNull(container);
     assertThat(container.image(), equalTo(image));
     assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(container.env(), equalTo(emptyList()));
     assertThat(
         result.interface_(),
         equalTo(
@@ -428,11 +432,12 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForRunnableTaskWithResources() {
     // given
-    Map<Resources.ResourceName, String> resourceValues = new HashMap<>();
-    resourceValues.put(Resources.ResourceName.MEMORY, "0.5Gi");
-
     Resources expectedResources =
-        Resources.builder().limits(resourceValues).requests(resourceValues).build();
+        Resources.builder()
+            .limits(ImmutableMap.of(MEMORY, "16G"))
+            .requests(ImmutableMap.of(CPU, "4"))
+            .build();
+
     RunnableTask task = createRunnableTask(expectedResources);
     String image = "my-image";
 
@@ -444,6 +449,9 @@ public class ProjectClosureTest {
     assertNotNull(container);
     assertThat(container.image(), equalTo(image));
     assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(
+        container.env(),
+        equalTo(ImmutableList.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", "-Xmx16G"))));
     assertThat(
         result.interface_(),
         equalTo(

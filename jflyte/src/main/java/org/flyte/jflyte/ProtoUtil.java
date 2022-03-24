@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import static org.flyte.jflyte.MoreCollectors.mapValues;
 import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
 import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+import static org.flyte.jflyte.QuantityUtil.isValidQuantity;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -112,16 +113,6 @@ class ProtoUtil {
   private static final Instant DATETIME_MAX =
       ISO_DATE_TIME.parse("9999-12-31T23:59:59.999999999Z", Instant::from);
   private static final Pattern DNS_1123_REGEXP = Pattern.compile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$");
-  private static final String DIGITS = "(\\d+(\\.(\\d+)?)?|\\.(\\d+))";
-  private static final String SIGNED_NUMBER = "([+-])?" + DIGITS;
-  private static final String POSITIVE_NUMBER = "([+])?" + DIGITS;
-  private static final String DECIMAL_EXPONENT = "[eE]" + SIGNED_NUMBER;
-  private static final String BINARY_SI = "Ki|Mi|Gi|Ti|Pi|Ei";
-  private static final String DECIMAL_SI = "m||k|M|G|T|P|E";
-  private static final String SUFFIX =
-      "(" + BINARY_SI + "|" + DECIMAL_SI + "|" + DECIMAL_EXPONENT + ")";
-  private static final Pattern QUANTITY_PATTERN =
-      Pattern.compile("^" + POSITIVE_NUMBER + SUFFIX + "$");
 
   static final String RUNTIME_FLAVOR = "java";
   static final String RUNTIME_VERSION = "0.0.1";
@@ -634,10 +625,6 @@ class ProtoUtil {
                   .setValue(value)
                   .build());
         });
-  }
-
-  private static boolean isValidQuantity(String value) {
-    return QUANTITY_PATTERN.matcher(value).matches();
   }
 
   private static Tasks.Resources.ResourceName serialize(Resources.ResourceName name) {

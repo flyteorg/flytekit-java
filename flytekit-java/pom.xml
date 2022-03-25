@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.3.13-SNAPSHOT</version>
+    <version>0.3.13</version>
   </parent>
 
   <artifactId>flytekit-java</artifactId>

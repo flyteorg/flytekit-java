@@ -37,6 +37,16 @@ jobs:
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      - name: rc-list
+        env:
+          MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_TOKEN }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          ## Release repository
+          ## Have to find the stagingRepositoryId that was auto-generated
+          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:rc-list -P release
+
       - name: Print
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

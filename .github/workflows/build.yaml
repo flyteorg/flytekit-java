@@ -46,7 +46,7 @@ jobs:
         run: |
           ## Release repository
           ## Have to find the stagingRepositoryId that was auto-generated
-          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:rc-list -DnexusUrl=https://oss.sonatype.org/ -DserverId=ossrh
+          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:rc-list -DnexusUrl=https://oss.sonatype.org/ -DserverId=ossrh -P release
 
       - name: Print
         env:

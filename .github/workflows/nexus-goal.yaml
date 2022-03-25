@@ -1,11 +1,15 @@
-name: Print nexus staging repository id
+name: Run Nexus goal
 on:
   workflow_dispatch:
+    inputs:
+      nexus_goal:
+        description: 'Nexus goal to run'
+        required: true
 
 jobs:
-  build-snapshot:
+  run-goal:
     runs-on: ubuntu-latest
-    name: nexus staging repository id
+    name: Runs nexus goal
     steps:
       - uses: actions/checkout@v2
         with:
@@ -29,25 +33,11 @@ jobs:
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Setup git configuration
-        run: |
-          git config --global user.email ${{ github.actor }}@users.noreply.github.com
-          git config --global user.name ${{ github.actor }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.FLYTE_BOT_USERNAME }}
-          password: ${{ secrets.FLYTE_BOT_PAT }}
-
-      - name: rc-list
+      - name: Run nexus goal
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ## Release repository
-          ## Have to find the stagingRepositoryId that was auto-generated
-          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:rc-list -DnexusUrl=https://oss.sonatype.org/ -DserverId=ossrh -P release
+          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:${nexus_goal} -DnexusUrl=https://oss.sonatype.org/ -DserverId=ossrh -P release

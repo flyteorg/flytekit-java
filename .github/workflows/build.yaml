@@ -51,6 +51,9 @@ jobs:
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          mvn --batch-mode release:prepare -DgenerateBackupPoms=false
+
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode deploy -Ddockerfile.push
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

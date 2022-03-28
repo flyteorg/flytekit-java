@@ -60,6 +60,9 @@ jobs:
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode deploy -Ddockerfile.push
+
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          mvn --batch-mode release:update-versions -DautoVersionSubmodules
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

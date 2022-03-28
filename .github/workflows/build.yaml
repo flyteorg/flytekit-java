@@ -41,6 +41,11 @@ jobs:
         if: ${{ github.ref != 'refs/heads/master' }}
         run: mvn --batch-mode verify
 
+      - name: Setup git configuration
+        run: |
+          git config --global user.email ${{ github.actor }}@users.noreply.github.com
+          git config --global user.name ${{ github.actor }}
+
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}
         run: |
@@ -55,6 +60,9 @@ jobs:
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           mvn --batch-mode deploy -Ddockerfile.push
+
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          mvn --batch-mode release:update-versions -DautoVersionSubmodules
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

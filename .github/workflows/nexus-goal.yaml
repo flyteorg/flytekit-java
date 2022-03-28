@@ -40,4 +40,4 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn -B org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:${{inputs.nexus_goal}} -DnexusUrl=https://oss.sonatype.org/ -DserverId=ossrh -P release
+          mvn clean deploy

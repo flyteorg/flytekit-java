@@ -35,6 +35,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.TaskNode;
+import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -289,6 +290,38 @@ public abstract class SdkTestingExecutor {
     return toBuilder().putFixedTask(task.getName(), fixedTask.withRunFn(runFn)).build();
   }
 
+  public <InputT, OutputT> SdkTestingExecutor withWorkflowOutput(
+      SdkWorkflow workflow,
+      SdkType<InputT> inputType,
+      InputT input,
+      SdkType<OutputT> outputType,
+      OutputT output) {
+    return withWorkflowOutput(
+        workflow, inputType.toLiteralMap(input), outputType.toLiteralMap(output));
+  }
+
+  public SdkTestingExecutor withWorkflowOutput(
+      SdkWorkflow workflow, Map<String, Literal> input, Map<String, Literal> output) {
+    // TODO type checking
+    TypedInterface intf = workflowTemplateMap().get(workflow.getName()).interface_();
+
+    // fixed tasks
+    SdkType<Map<String, Literal>> inputType = TestingSdkType.of(intf.inputs());
+    SdkType<Map<String, Literal>> outputType = TestingSdkType.of(intf.outputs());
+    TestingRunnableTask<Map<String, Literal>, Map<String, Literal>> fixedTask =
+        getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
+
+    // replace workflow
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+    SdkWorkflow w = new TestingWorkflow(workflow, inputType, outputType);
+    w.expand(builder);
+
+    return toBuilder()
+        .putWorkflowTemplate(workflow.getName(), builder.toIdlTemplate())
+        .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
+        .build();
+  }
+
   private <InputT, OutputT> TestingRunnableTask<InputT, OutputT> getFixedTaskOrDefault(
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     @SuppressWarnings({"unchecked"})
@@ -344,6 +377,12 @@ public abstract class SdkTestingExecutor {
       newFixedTaskMap.put(name, fn);
 
       return fixedTaskMap(newFixedTaskMap);
+    }
+
+    Builder putWorkflowTemplate(String name, WorkflowTemplate template) {
+      Map<String, WorkflowTemplate> newWorkflowTemplateMap = new HashMap<>(workflowTemplateMap());
+      newWorkflowTemplateMap.put(name, template);
+      return workflowTemplateMap(newWorkflowTemplateMap);
     }
 
     abstract SdkTestingExecutor build();

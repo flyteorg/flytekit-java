@@ -49,7 +49,7 @@ mvn dependency:resolve-plugins
 
 ## How to run examples
 
-We don't publish artifacts yet, but you can build examples yourself. 
+You can build und run examples yourself. 
 
 Create `.env.local` with:
 
@@ -68,6 +68,30 @@ $ scripts/jflyte register workflows \
   -p=flytesnacks \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
+```
+
+## Usage
+
+
+### Maven
+
+```
+<dependency>
+    <groupId>org.flyte</groupId>
+    <artifactId>flytekit-java</artifactId>
+    <version>0.3.15</version>
+</dependency>
+```
+
+### SBT
+
+Scala 2.12 and Scala 2.13 are supported.
+
+```scala
+libraryDependencies ++= Seq(
+  "org.flyte" % "flytekit-java" % "0.3.15",
+  "org.flyte" %% "flytekit-scala" % "0.3.15"
+)
 ```
 
 ## Contributing 

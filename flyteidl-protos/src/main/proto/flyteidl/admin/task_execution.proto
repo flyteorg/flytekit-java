@@ -77,13 +77,15 @@ message TaskExecutionList {
 message TaskExecutionClosure {
     oneof output_result {
         // Path to remote data store where output blob is stored if the execution succeeded (and produced outputs).
-        string output_uri                  = 1;
+        // DEPRECATED. Use GetTaskExecutionData to fetch output data instead.
+        string output_uri                  = 1 [deprecated = true];
 
         // Error information for the task execution. Populated if the execution failed.
         core.ExecutionError error          = 2;
 
         // Raw output data produced by this task execution.
-        core.LiteralMap output_data        = 12;
+        // DEPRECATED. Use GetTaskExecutionData to fetch output data instead.
+        core.LiteralMap output_data        = 12 [deprecated = true];
     }
 
     // The last recorded phase for this task execution.
@@ -115,6 +117,12 @@ message TaskExecutionClosure {
 
     // Metadata around how a task was executed.
     event.TaskExecutionMetadata metadata  = 16;
+
+    // The event version is used to indicate versioned changes in how data is maintained using this
+    // proto message. For example, event_verison > 0 means that maps tasks logs use the
+    // TaskExecutionMetadata ExternalResourceInfo fields for each subtask rather than the TaskLog
+    // in this message.
+    int32 event_version = 17;
 }
 
 // Request structure to fetch inputs and output for a task execution.

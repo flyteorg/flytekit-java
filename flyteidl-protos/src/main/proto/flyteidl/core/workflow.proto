@@ -98,7 +98,7 @@ message Alias {
 // A Workflow graph Node. One unit of execution in the graph. Each node can be linked to a Task, a Workflow or a branch
 // node.
 message Node {
-    // A workflow-level unique identifier that identifies this node in the workflow. "inputs" and "outputs" are reserved
+    // A workflow-level unique identifier that identifies this node in the workflow. 'inputs' and 'outputs' are reserved
     // node ids that cannot be used by other nodes.
     string id = 1;
 
@@ -135,7 +135,7 @@ message Node {
 // This is workflow layer metadata. These settings are only applicable to the workflow as a whole, and do not
 // percolate down to child entities (like tasks) launched by the workflow.
 message WorkflowMetadata {
-    // Indicates the runtime priority of workflow executions.
+    // Indicates the runtime priority of workflow executions. 
     QualityOfService quality_of_service = 1;
 
     // Failure Handling Strategy
@@ -179,7 +179,7 @@ message WorkflowTemplate {
     // Defines a strongly typed interface for the Workflow. This can include some optional parameters.
     TypedInterface interface = 3;
 
-    // A list of nodes. In addition, "globals" is a special reserved node id that can be used to consume workflow inputs.
+    // A list of nodes. In addition, 'globals' is a special reserved node id that can be used to consume workflow inputs.
     repeated Node nodes = 4;
 
     // A list of output bindings that specify how to construct workflow outputs. Bindings can pull node outputs or
@@ -192,7 +192,7 @@ message WorkflowTemplate {
     repeated Binding outputs = 5;
 
     //+optional A catch-all node. This node is executed whenever the execution engine determines the workflow has failed.
-    // The interface of this node must match the Workflow interface with an additional input named "error" of type
+    // The interface of this node must match the Workflow interface with an additional input named 'error' of type
     // pb.lyft.flyte.core.Error.
     Node failure_node = 6;
 
@@ -202,6 +202,6 @@ message WorkflowTemplate {
 
 // Optional task node overrides that will be applied at task execution time.
 message TaskNodeOverrides {
-    // A customizable interface to convey resources requested for a task container.
+    // A customizable interface to convey resources requested for a task container. 
     Resources resources = 1;
 }

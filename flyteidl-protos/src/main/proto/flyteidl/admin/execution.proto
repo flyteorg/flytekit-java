@@ -3,6 +3,7 @@ syntax = "proto3";
 package flyteidl.admin;
 option go_package = "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/admin";
 
+import "flyteidl/admin/cluster_assignment.proto";
 import "flyteidl/admin/common.proto";
 import "flyteidl/core/literals.proto";
 import "flyteidl/core/execution.proto";
@@ -10,6 +11,7 @@ import "flyteidl/core/identifier.proto";
 import "flyteidl/core/security.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 // Request to launch an execution with the given project, domain and optionally-assigned name.
 message ExecutionCreateRequest {
@@ -60,7 +62,7 @@ message ExecutionRecoverRequest {
     string name = 2;
 
    // Additional metadata which will be used to overwrite any metadata in the reference execution when triggering a recovery execution.
-   ExecutionMetadata metadata = 3;
+   ExecutionMetadata metadata = 3; 
 }
 
 // The unique identifier for a successfully created execution.
@@ -126,7 +128,8 @@ message ExecutionClosure {
     // A pending (non-terminal) execution will not have any output result.
     oneof output_result {
         // Output URI in the case of a successful execution.
-        LiteralMapBlob outputs = 1;
+        // DEPRECATED. Use GetExecutionData to fetch output data instead.
+        LiteralMapBlob outputs = 1 [deprecated = true];
 
         // Error information in the case of a failed execution.
         core.ExecutionError error = 2;
@@ -138,7 +141,8 @@ message ExecutionClosure {
         AbortMetadata abort_metadata = 12;
 
         // Raw output data produced by this execution.
-        core.LiteralMap output_data = 13;
+        // DEPRECATED. Use GetExecutionData to fetch output data instead.
+        core.LiteralMap output_data = 13 [deprecated = true];
     }
 
     // Inputs computed and passed for execution.
@@ -167,6 +171,9 @@ message ExecutionClosure {
 
     // Identifies the workflow definition for this execution.
     core.Identifier workflow_id = 11;
+
+    // Provides the details of the last stage change
+    ExecutionStateChangeDetails state_change_details = 14;
 }
 
 // Represents system, rather than user-facing, metadata about an execution.
@@ -276,6 +283,19 @@ message ExecutionSpec {
     // This is useful to achieve fairness. Note: MapTasks are regarded as one unit,
     // and parallelism/concurrency of MapTasks is independent from this.
     int32 max_parallelism = 18;
+
+    // User setting to configure where to store offloaded data (i.e. Blobs, structured datasets, query data, etc.).
+    // This should be a prefix like s3://my-bucket/my-data
+    RawOutputDataConfig raw_output_data_config = 19;
+
+    // Controls how to select an available cluster on which this execution should run.
+    ClusterAssignment cluster_assignment = 20;
+
+    // Allows for the interruptible flag of a workflow to be overwritten for a single execution.
+    // Omitting this field uses the workflow's value as a default.
+    // As we need to distinguish between the field not being provided and its default value false, we have to use a wrapper
+    // around the bool field.
+    google.protobuf.BoolValue interruptible = 21;
 }
 
 // Request to terminate an in-progress execution.  This action is irreversible.
@@ -318,3 +338,33 @@ message WorkflowExecutionGetDataResponse {
     // Full_outputs will only be populated if they are under a configured size threshold.
     core.LiteralMap full_outputs = 4;
 }
+
+// The state of the execution is used to control its visibility in the UI/CLI.
+enum ExecutionState {
+    // By default, all executions are considered active.
+    EXECUTION_ACTIVE = 0;
+
+    // Archived executions are no longer visible in the UI.
+    EXECUTION_ARCHIVED = 1;
+}
+
+message ExecutionUpdateRequest {
+    // Identifier of the execution to update
+    core.WorkflowExecutionIdentifier id = 1;
+
+    // State to set as the new value active/archive
+    ExecutionState state = 2;
+}
+
+message ExecutionStateChangeDetails {
+    // The state of the execution is used to control its visibility in the UI/CLI.
+    ExecutionState state = 1;
+
+    // This timestamp represents when the state changed.
+    google.protobuf.Timestamp occurred_at = 2;
+
+    // Identifies the entity (if any) responsible for causing the state change of the execution
+    string principal = 3;
+}
+
+message ExecutionUpdateResponse {}

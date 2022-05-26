@@ -133,6 +133,7 @@ public class FlyteSandboxClient {
       case TIMED_OUT:
       case SUCCEEDED:
       case ABORTED:
+      case ABORTING:
       case FAILED:
       case FAILING:
       case UNRECOGNIZED:

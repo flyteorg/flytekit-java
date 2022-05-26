@@ -161,6 +161,8 @@ class ProtoUtil {
       case ERROR:
       case NONE_TYPE:
       case SCHEMA:
+      case STRUCTURED_DATASET:
+      case UNION:
         // TODO unsupported
 
       case VALUE_NOT_SET:
@@ -431,6 +433,10 @@ class ProtoUtil {
         return LiteralType.ofMapValueType(deserialize(proto.getMapValueType()));
       case ENUM_TYPE:
         throw new IllegalArgumentException("Type ENUM not supported"); // TODO
+      case STRUCTURED_DATASET_TYPE:
+        throw new IllegalArgumentException("Type STRUCTURED_DATASET not supported"); // TODO
+      case UNION_TYPE:
+        throw new IllegalArgumentException("Type UNION not supported"); // TODO
       case TYPE_NOT_SET:
         throw new IllegalArgumentException("Can't deserialize LiteralType because TYPE_NOT_SET");
     }

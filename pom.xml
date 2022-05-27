@@ -90,7 +90,7 @@
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.34.Final</netty.tcnative.version>
-    <picocli.version>4.2.0</picocli.version>
+    <picocli.version>4.6.3</picocli.version>
     <protobuf.version>3.18.2</protobuf.version>
     <sl4j.version>1.7.32</sl4j.version>
     <spotless.version>2.21.0</spotless.version>
@@ -368,7 +368,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <xml>
               <includes>
@@ -448,7 +448,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -604,7 +604,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

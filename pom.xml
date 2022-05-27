@@ -84,7 +84,7 @@
   </distributionManagement>
 
   <properties>
-    <auto-service.version>1.0-rc6</auto-service.version>
+    <auto-service.version>1.0.1</auto-service.version>
     <auto-value.version>1.8.2</auto-value.version>
     <grpc.version>1.40.1</grpc.version>
     <!-- must be aligned with netty version -->
@@ -368,7 +368,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <xml>
               <includes>
@@ -448,7 +448,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -604,7 +604,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

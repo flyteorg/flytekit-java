@@ -86,6 +86,7 @@
   <properties>
     <auto-service.version>1.0-rc6</auto-service.version>
     <auto-value.version>1.8.2</auto-value.version>
+    <common-proto.version>2.3.2</common-proto.version>
     <grpc.version>1.40.1</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
@@ -220,6 +221,11 @@
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-java</artifactId>
         <version>${protobuf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.api.grpc</groupId>
+        <artifactId>proto-google-common-protos</artifactId>
+        <version>${common-proto.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.auto.value</groupId>

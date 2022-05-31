@@ -57,7 +57,7 @@ message Projects {
     string token        = 2;
 }
 
-// Request to retrieve a list of projects matching specified filters.
+// Request to retrieve a list of projects matching specified filters. 
 // See :ref:`ref_flyteidl.admin.Project` for more details
 message ProjectListRequest {
     // Indicates the number of projects to be returned.

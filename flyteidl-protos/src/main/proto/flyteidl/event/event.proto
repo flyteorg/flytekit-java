@@ -87,6 +87,14 @@ message NodeExecutionEvent {
 
     // Friendly readable name for the node
     string node_name = 13;
+
+    int32 event_version = 16;
+
+    // Whether this node launched a subworkflow.
+    bool is_parent = 17;
+
+    // Whether this node yielded a dynamic workflow.
+    bool is_dynamic = 18;
 }
 
 // For Workflow Nodes we need to send information about the workflow that's launched
@@ -99,6 +107,8 @@ message TaskNodeMetadata {
     core.CatalogCacheStatus cache_status = 1;
     // This structure carries the catalog artifact information
     core.CatalogMetadata catalog_key = 2;
+    // Captures the status of cache reservations for this execution.
+    core.CatalogReservation.Status reservation_status = 3;
 
     // In the case this task launched a dynamic workflow we capture its structure here.
     DynamicWorkflowNodeMetadata dynamic_workflow = 16;
@@ -119,7 +129,7 @@ message ParentTaskExecutionMetadata {
 
 message ParentNodeExecutionMetadata {
     // Unique identifier of the parent node id within the execution
-    // This is value of core.NodeExecutionIdentifier.node_id of the parent node
+    // This is value of core.NodeExecutionIdentifier.node_id of the parent node 
     string node_id = 1;
 }
 
@@ -184,6 +194,12 @@ message TaskExecutionEvent {
 
     // Metadata around how a task was executed.
     TaskExecutionMetadata metadata = 16;
+
+    // The event version is used to indicate versioned changes in how data is reported using this
+    // proto message. For example, event_verison > 0 means that maps tasks report logs using the
+    // TaskExecutionMetadata ExternalResourceInfo fields for each subtask rather than the TaskLog
+    // in this message.
+    int32 event_version = 18;
 }
 
 // This message contains metadata about external resources produced or used by a specific task execution.
@@ -191,6 +207,23 @@ message ExternalResourceInfo {
 
     // Identifier for an external resource created by this task execution, for example Qubole query ID or presto query ids.
     string external_id = 1;
+
+    // A unique index for the external resource with respect to all external resources for this task. Although the
+    // identifier may change between task reporting events or retries, this will remain the same to enable aggregating
+    // information from multiple reports.
+    uint32 index = 2;
+
+    // Retry attempt number for this external resource, ie., 2 for the second attempt
+    uint32 retry_attempt = 3;
+
+    // Phase associated with the external resource
+    core.TaskExecution.Phase phase = 4;
+
+    // Captures the status of caching for this external resource execution.
+    core.CatalogCacheStatus cache_status = 5;
+
+    // log information for the external resource execution
+    repeated core.TaskLog logs = 6;
 }
 
 

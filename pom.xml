@@ -777,11 +777,11 @@
       </build>
     </profile>
 
-    <!--<profile>
+    <profile>
       <id>errorprone</id>
       <activation>
         <property>
-          <name>!errorprone.skip</name>
+          <name>errorprone.enable</name>
         </property>
       </activation>
       <build>
@@ -800,7 +800,7 @@
           </plugins>
         </pluginManagement>
       </build>
-    </profile>-->
+    </profile>
 
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>

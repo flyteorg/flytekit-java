@@ -802,29 +802,6 @@
       </build>
     </profile>
 
-    <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
-    <profile>
-      <id>jdk8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                <fork>true</fork>
-                <!--<compilerArgs combine.children="append">
-                  <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${error_prone.javac.version}/javac-${error_prone.javac.version}.jar</arg>
-                </compilerArgs>-->
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
     <profile>
       <id>jdk9+</id>
       <activation>

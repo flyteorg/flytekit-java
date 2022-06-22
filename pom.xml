@@ -102,6 +102,9 @@
     <!-- has to be one liner, or errorprone doesn't work -->
     <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
     <error-prone-additional-args>-Xep:AutoValueImmutableFields:OFF -Xep:Var:ERROR</error-prone-additional-args>
+
+    <!-- Keep generated .class files java 8 compatible -->
+    <maven.compiler.release>8</maven.compiler.release>
   </properties>
 
   <dependencyManagement>
@@ -801,19 +804,5 @@
         </pluginManagement>
       </build>
     </profile>
-
-    <profile>
-      <id>jdk9+</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <properties>
-        <!-- Javac introduced the "release" option only in Java 9+.  It
-          properly sets up source, target and boot classpath for the best
-          compatibility with different versions of Java. -->
-        <maven.compiler.release>8</maven.compiler.release>
-      </properties>
-    </profile>
   </profiles>
-
 </project>

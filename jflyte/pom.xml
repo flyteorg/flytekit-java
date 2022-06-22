@@ -171,9 +171,6 @@
           <from>
             <image>gcr.io/distroless/java11:debug</image>
           </from>
-          <!--            <to>
-            <image>gcr.io/${gcpProjectId}/${project.artifactId}:${project.version}-${buildTimestamp}-${buildNumber}</image>
-          </to>-->
           <container>
             <environment>
               <FLYTE_INTERNAL_MODULE_DIR>/jflyte/modules</FLYTE_INTERNAL_MODULE_DIR>
@@ -215,7 +212,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 </project>

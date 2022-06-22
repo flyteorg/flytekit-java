@@ -56,11 +56,11 @@
     <module>flytekit-examples</module>
     <module>flytekit-examples-scala</module>
     <module>flytekit-local-engine</module>
-    <module>jflyte</module>
     <module>flyteidl-protos</module>
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
     <module>jflyte-google-cloud</module>
+    <module>jflyte</module>
     <module>integration-tests</module>
   </modules>
 

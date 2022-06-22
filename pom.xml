@@ -84,21 +84,19 @@
   </distributionManagement>
 
   <properties>
-    <auto-service.version>1.0-rc6</auto-service.version>
+    <auto-service.version>1.0.1</auto-service.version>
     <auto-value.version>1.8.2</auto-value.version>
     <common-proto.version>2.3.2</common-proto.version>
     <grpc.version>1.40.1</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
-    <netty.tcnative.version>2.0.34.Final</netty.tcnative.version>
-    <picocli.version>4.2.0</picocli.version>
+    <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
+    <picocli.version>4.6.3</picocli.version>
     <protobuf.version>3.18.2</protobuf.version>
     <sl4j.version>1.7.32</sl4j.version>
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
-    <error_prone.version>2.10.0</error_prone.version>
-    <!-- Using the error-prone-javac is required when running on JDK 8 -->
-    <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
+    <error_prone.version>2.13.1</error_prone.version>
     <junit.version>5.6.2</junit.version>
 
     <!-- has to be one liner, or errorprone doesn't work -->
@@ -180,6 +178,11 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>31.0.1-jre</version>
+      </dependency>
       <dependency>
         <groupId>io.grpc</groupId>
         <artifactId>grpc-bom</artifactId>
@@ -333,11 +336,11 @@
                 <artifactId>auto-service</artifactId>
                 <version>${auto-service.version}</version>
               </path>
-              <path>
+              <!--<path>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_core</artifactId>
                 <version>${error_prone.version}</version>
-              </path>
+              </path>-->
             </annotationProcessorPaths>
           </configuration>
         </plugin>
@@ -774,7 +777,7 @@
       </build>
     </profile>
 
-    <profile>
+    <!--<profile>
       <id>errorprone</id>
       <activation>
         <property>
@@ -797,7 +800,7 @@
           </plugins>
         </pluginManagement>
       </build>
-    </profile>
+    </profile>-->
 
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
     <profile>
@@ -813,9 +816,9 @@
               <artifactId>maven-compiler-plugin</artifactId>
               <configuration>
                 <fork>true</fork>
-                <compilerArgs combine.children="append">
+                <!--<compilerArgs combine.children="append">
                   <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${error_prone.javac.version}/javac-${error_prone.javac.version}.jar</arg>
-                </compilerArgs>
+                </compilerArgs>-->
               </configuration>
             </plugin>
           </plugins>

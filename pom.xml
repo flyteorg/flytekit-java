@@ -60,7 +60,6 @@
     <module>flyteidl-protos</module>
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
-    <module>jflyte-build</module>
     <module>jflyte-google-cloud</module>
     <module>integration-tests</module>
   </modules>
@@ -464,20 +463,6 @@
                 <goal>check</goal>
               </goals>
               <phase>verify</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>com.spotify</groupId>
-          <artifactId>dockerfile-maven-plugin</artifactId>
-          <version>1.4.9</version>
-          <executions>
-            <execution>
-              <id>default</id>
-              <goals>
-                <goal>build</goal>
-                <goal>push</goal>
-              </goals>
             </execution>
           </executions>
         </plugin>

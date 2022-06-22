@@ -81,7 +81,7 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>jflyte-build</artifactId>
+      <artifactId>jflyte</artifactId>
       <scope>test</scope>
       <optional>true</optional>
     </dependency>

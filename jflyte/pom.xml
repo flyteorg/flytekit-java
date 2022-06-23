@@ -176,6 +176,9 @@
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
         <configuration>
+          <from>
+            <image>gcr.io/distroless/java11:latest</image>
+          </from>
           <container>
             <environment>
               <FLYTE_INTERNAL_MODULE_DIR>/jflyte/modules</FLYTE_INTERNAL_MODULE_DIR>

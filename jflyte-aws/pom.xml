@@ -31,18 +31,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <!--
-        NB: we don't add bom to root pom on purpose,
-        because jflyte-aws is loaded in a separate class loader
-        not to cause dependency conflicts with the user code
-      -->
-      <dependency>
-        <groupId>com.amazonaws</groupId>
-        <artifactId>aws-java-sdk-bom</artifactId>
-        <version>1.11.327</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers-bom</artifactId>

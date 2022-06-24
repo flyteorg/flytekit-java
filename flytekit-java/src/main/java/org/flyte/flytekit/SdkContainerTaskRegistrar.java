@@ -103,7 +103,7 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
 
     @Override
     public Resources getResources() {
-      return sdkTask.getResources().toResources();
+      return sdkTask.getResources().toIdl();
     }
   }
 

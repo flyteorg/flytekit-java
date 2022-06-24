@@ -19,7 +19,6 @@ package org.flyte.api.v1;
 import static java.util.Collections.emptyMap;
 
 import java.util.List;
-import java.util.Locale;
 
 /** Building block for tasks that execute arbitrary containers. */
 public interface ContainerTask {
@@ -40,7 +39,7 @@ public interface ContainerTask {
   List<KeyValuePair> getEnv();
 
   default String getType() {
-    return "raw-container".toLowerCase(Locale.ROOT);
+    return "raw-container";
   }
 
   TypedInterface getInterface();

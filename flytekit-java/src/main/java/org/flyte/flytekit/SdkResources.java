@@ -75,7 +75,7 @@ public abstract class SdkResources {
     return EMPTY;
   }
 
-  public Resources toResources() {
+  public Resources toIdl() {
     Resources.Builder builder = Resources.builder();
 
     if (limits() != null) {

@@ -159,7 +159,7 @@ abstract class ProjectClosure {
     ProjectClosure closure = ProjectClosure.load(config, rewrite, packageClassLoader);
 
     List<Artifact> artifacts;
-    if (!closure.taskSpecs().isEmpty()) {
+    if (isStagingRequired(closure)) {
       artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
     } else {
       artifacts = emptyList();
@@ -170,6 +170,13 @@ abstract class ProjectClosure {
     JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
 
     return closure.applyCustom(custom);
+  }
+
+  private static boolean isStagingRequired(ProjectClosure closure) {
+    return closure.taskSpecs().values().stream()
+        .map(TaskSpec::taskTemplate)
+        .map(TaskTemplate::type)
+        .anyMatch(type -> !type.equals("raw-container"));
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {

@@ -86,7 +86,7 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
 
     @Override
     public Resources getResources() {
-      return sdkTask.getResources().toResources();
+      return sdkTask.getResources().toIdl();
     }
   }
 

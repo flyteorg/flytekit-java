@@ -36,6 +36,7 @@ import org.flyte.api.v1.BooleanExpression;
 import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.ContainerTask;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
@@ -464,6 +465,43 @@ public class ProjectClosureTest {
     assertThat(result.type(), equalTo("java-task"));
   }
 
+  @Test
+  public void testCreateTaskTemplateForContainerTask() {
+    // given
+    Resources expectedResources =
+        Resources.builder()
+            .limits(ImmutableMap.of(MEMORY, "16G"))
+            .requests(ImmutableMap.of(CPU, "4"))
+            .build();
+    String image = "test-image";
+    List<String> args = ImmutableList.of("test", "--verbose");
+    List<String> command = ImmutableList.of("bin", "program");
+    List<KeyValuePair> env = ImmutableList.of(KeyValuePair.of("KEY", "VALUE"));
+    ContainerTask task = createContainerTask(expectedResources, image, args, command, env);
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForContainerTask(task);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(container.env(), equalTo(env));
+    assertThat(container.args(), equalTo(args));
+    assertThat(container.command(), equalTo(command));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("raw-container"));
+  }
+
   private RunnableTask createRunnableTask(Resources expectedResources) {
     return new RunnableTask() {
       @Override
@@ -497,6 +535,58 @@ public class ProjectClosureTest {
         } else {
           return expectedResources;
         }
+      }
+    };
+  }
+
+  private ContainerTask createContainerTask(
+      Resources resources,
+      String image,
+      List<String> args,
+      List<String> command,
+      List<KeyValuePair> env) {
+    return new ContainerTask() {
+      @Override
+      public String getName() {
+        return "test-container-task";
+      }
+
+      @Override
+      public TypedInterface getInterface() {
+        return TypedInterface.builder()
+            .inputs(SdkTypes.nulls().getVariableMap())
+            .outputs(SdkTypes.nulls().getVariableMap())
+            .build();
+      }
+
+      @Override
+      public RetryStrategy getRetries() {
+        return RetryStrategy.builder().retries(0).build();
+      }
+
+      @Override
+      public Resources getResources() {
+        return resources;
+      }
+
+      @Override
+      public String getImage() {
+        return image;
+      }
+
+      @Override
+      public List<String> getArgs() {
+        return args;
+      }
+
+      @Override
+      public List<String> getCommand() {
+        return command;
+      }
+
+      @Override
+      public List<KeyValuePair> getEnv() {
+        return env;
       }
     };
   }

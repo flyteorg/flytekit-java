@@ -92,7 +92,7 @@
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
     <picocli.version>4.6.3</picocli.version>
     <protobuf.version>3.20.1</protobuf.version>
-    <sl4j.version>1.7.32</sl4j.version>
+    <sl4j.version>1.7.36</sl4j.version>
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
     <error_prone.version>2.14.0</error_prone.version>

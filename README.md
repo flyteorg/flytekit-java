@@ -34,7 +34,7 @@ To learn more about Flyte refer to:
 
 ## Build from source
 
-It requires **Java 1.8 and Docker**
+It requires **Java 11 and Docker**
 
 ```bash
 mvn clean verify
@@ -69,6 +69,8 @@ $ scripts/jflyte register workflows \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
 ```
+
+**Note**: `scripts/jflyte` requires `jq` to run, in adition to `docker`
 
 ## Usage
 

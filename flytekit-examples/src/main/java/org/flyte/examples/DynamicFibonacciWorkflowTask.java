@@ -18,11 +18,9 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.errorprone.annotations.Var;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkDynamicWorkflowTask;
-import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -46,42 +44,20 @@ public class DynamicFibonacciWorkflowTask
 
   @Override
   public void run(SdkWorkflowBuilder builder, Input input) {
-    SdkBindingData fib0 = SdkBindingData.ofInteger(0);
-    SdkBindingData fib1 = SdkBindingData.ofInteger(1);
-    SdkBindingData fib2 = SdkBindingData.ofInteger(1);
-
     if (input.n() < 0) {
       throw new IllegalArgumentException("n < 0");
+    } else if (input.n() == 0) {
+      builder.output("output", SdkBindingData.ofInteger(0));
+    } else {
+      @Var SdkBindingData prev = SdkBindingData.ofInteger(0);
+      @Var SdkBindingData value = SdkBindingData.ofInteger(1);
+      for (int i = 2; i <= input.n(); i++) {
+        SdkBindingData next = builder.apply("fib-" + i, SumTask.of(value, prev)).getOutput("c");
+        ;
+        prev = value;
+        value = next;
+      }
+      builder.output("output", value);
     }
-
-    if (input.n() == 0) {
-      builder.output("output", fib0);
-      return;
-    }
-
-    if (input.n() == 1) {
-      builder.output("output", fib1);
-      return;
-    }
-
-    if (input.n() == 2) {
-      builder.output("output", fib2);
-      return;
-    }
-
-    List<SdkNode> nodes = new ArrayList<>();
-    nodes.add(builder.apply("fib-2", SumTask.of(fib0, fib1)));
-    nodes.add(builder.apply("fib-3", SumTask.of(fib1, fib2)));
-
-    for (int i = 4; i <= input.n(); i++) {
-      SdkBindingData a = nodes.get(nodes.size() - 2).getOutput("c");
-      SdkBindingData b = nodes.get(nodes.size() - 1).getOutput("c");
-
-      nodes.add(builder.apply("fib-" + i, SumTask.of(a, b)));
-    }
-
-    SdkBindingData output = nodes.get(nodes.size() - 1).getOutput("c");
-
-    builder.output("output", output);
   }
 }

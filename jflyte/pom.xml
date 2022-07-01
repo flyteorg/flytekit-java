@@ -31,6 +31,12 @@
     Also
     register the protos with Flyteadmin.</description>
 
+  <properties>
+    <docker.image>ghcr.io/flyteorg/flytekit-java</docker.image>
+    <docker.tag>${project.version}</docker.tag>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
   <dependencies>
     <!-- compile -->
     <dependency>
@@ -48,6 +54,14 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>jflyte-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>jflyte-aws</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>jflyte-google-cloud</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -157,6 +171,54 @@
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <configuration>
+          <from>
+            <image>gcr.io/distroless/java11:latest</image>
+          </from>
+          <container>
+            <environment>
+              <FLYTE_INTERNAL_MODULE_DIR>/jflyte/modules</FLYTE_INTERNAL_MODULE_DIR>
+              <FLYTE_INTERNAL_IMAGE>${docker.image}:${docker.tag}</FLYTE_INTERNAL_IMAGE>
+            </environment>
+            <jvmFlags>
+              <jvmFlag>-Dorg.slf4j.simpleLogger.defaultLogLevel=INFO</jvmFlag>
+              <jvmFlag>-Dorg.slf4j.simpleLogger.log.org.flyte=DEBUG</jvmFlag>
+            </jvmFlags>
+            <mainClass>org.flyte.jflyte.Main</mainClass>
+            <appRoot>/jflyte/</appRoot>
+            <extraClasspath>/jflyte/modules/*</extraClasspath>
+          </container>
+          <to>
+            <image>${docker.image}</image>
+            <tags>
+              <tag>${docker.tag}</tag>
+            </tags>
+          </to>
+          <extraDirectories>
+            <paths>
+              <path>
+                <from>${project.parent.basedir}/jflyte-aws/target/lib</from>
+                <into>/jflyte/modules/jflyte-aws</into>
+              </path>
+              <path>
+                <from>${project.parent.basedir}/jflyte-google-cloud/target/lib</from>
+                <into>/jflyte/modules/jflyte-google-cloud</into>
+              </path>
+            </paths>
+          </extraDirectories>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>dockerBuild</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

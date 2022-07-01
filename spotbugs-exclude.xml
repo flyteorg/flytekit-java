@@ -26,6 +26,11 @@
     <Package name="~flyteidl\b.*"/>
   </Match>
 
+  <!-- Filter protoc_gen_swagger protos generated classes -->
+  <Match>
+    <Package name="~grpc.gateway.protoc_gen_swagger.options\b.*"/>
+  </Match>
+
   <!-- Don't need serialVersionUID in examples -->
   <Match>
     <Package name="~.*examples.*"/>

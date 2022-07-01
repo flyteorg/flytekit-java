@@ -49,6 +49,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
+import org.flyte.api.v1.ContainerTask;
+import org.flyte.api.v1.ContainerTaskRegistrar;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.IfBlock;
@@ -157,7 +159,7 @@ abstract class ProjectClosure {
     ProjectClosure closure = ProjectClosure.load(config, rewrite, packageClassLoader);
 
     List<Artifact> artifacts;
-    if (!closure.taskSpecs().isEmpty()) {
+    if (isStagingRequired(closure)) {
       artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
     } else {
       artifacts = emptyList();
@@ -168,6 +170,13 @@ abstract class ProjectClosure {
     JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
 
     return closure.applyCustom(custom);
+  }
+
+  private static boolean isStagingRequired(ProjectClosure closure) {
+    return closure.taskSpecs().values().stream()
+        .map(TaskSpec::taskTemplate)
+        .map(TaskTemplate::type)
+        .anyMatch(type -> !type.equals("raw-container"));
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {
@@ -203,6 +212,10 @@ abstract class ProjectClosure {
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(DynamicWorkflowTaskRegistrar.class, env));
 
+    Map<TaskIdentifier, ContainerTask> containerTasks =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(ContainerTaskRegistrar.class, env));
+
     Map<WorkflowIdentifier, WorkflowTemplate> workflows =
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
@@ -211,7 +224,14 @@ abstract class ProjectClosure {
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(LaunchPlanRegistrar.class, env));
 
-    return load(config, rewrite, runnableTasks, dynamicWorkflowTasks, workflows, launchPlans);
+    return load(
+        config,
+        rewrite,
+        runnableTasks,
+        dynamicWorkflowTasks,
+        containerTasks,
+        workflows,
+        launchPlans);
   }
 
   static ProjectClosure load(
@@ -219,10 +239,11 @@ abstract class ProjectClosure {
       IdentifierRewrite rewrite,
       Map<TaskIdentifier, RunnableTask> runnableTasks,
       Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<TaskIdentifier, ContainerTask> containerTasks,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates,
       Map<LaunchPlanIdentifier, LaunchPlan> launchPlans) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates =
-        createTaskTemplates(config, runnableTasks, dynamicWorkflowTasks);
+        createTaskTemplates(config, runnableTasks, dynamicWorkflowTasks, containerTasks);
 
     // 2. rewrite workflows and launch plans
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenWorkflowTemplates =
@@ -379,7 +400,8 @@ abstract class ProjectClosure {
   static Map<TaskIdentifier, TaskTemplate> createTaskTemplates(
       ExecutionConfig config,
       Map<TaskIdentifier, RunnableTask> runnableTasks,
-      Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks) {
+      Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<TaskIdentifier, ContainerTask> containerTasks) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates = new HashMap<>();
 
     runnableTasks.forEach(
@@ -392,6 +414,13 @@ abstract class ProjectClosure {
     dynamicWorkflowTasks.forEach(
         (id, task) -> {
           TaskTemplate taskTemplate = createTaskTemplateForDynamicWorkflow(task, config.image());
+
+          taskTemplates.put(id, taskTemplate);
+        });
+
+    containerTasks.forEach(
+        (id, task) -> {
+          TaskTemplate taskTemplate = createTaskTemplateForContainerTask(task);
 
           taskTemplates.put(id, taskTemplate);
         });
@@ -419,6 +448,27 @@ abstract class ProjectClosure {
                     "{{.taskTemplatePath}}"))
             .image(image)
             .env(javaToolOptionsEnv(resources).map(ImmutableList::of).orElse(ImmutableList.of()))
+            .resources(resources)
+            .build();
+
+    return TaskTemplate.builder()
+        .container(container)
+        .interface_(task.getInterface())
+        .retries(task.getRetries())
+        .type(task.getType())
+        .custom(task.getCustom())
+        .build();
+  }
+
+  @VisibleForTesting
+  static TaskTemplate createTaskTemplateForContainerTask(ContainerTask task) {
+    Resources resources = task.getResources();
+    Container container =
+        Container.builder()
+            .command(task.getCommand())
+            .args(task.getArgs())
+            .image(task.getImage())
+            .env(task.getEnv())
             .resources(resources)
             .build();
 

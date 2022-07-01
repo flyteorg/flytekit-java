@@ -18,7 +18,7 @@ message NodeExecutionGetRequest {
 
    // Uniquely identifies an individual node execution.
    // +required
-   core.NodeExecutionIdentifier id  = 1;
+   core.NodeExecutionIdentifier id  = 1;  
 }
 
 // Represents a request structure to retrieve a list of node execution entities.
@@ -110,6 +110,10 @@ message NodeExecutionMetaData {
     // Node id of the node in the original workflow
     // This maps to value of WorkflowTemplate.nodes[X].id
     string spec_node_id = 3;
+
+    // Boolean flag indicating if the node has contains a dynamic workflow which then produces child nodes.
+    // This is to distinguish between subworkflows and dynamic workflows which can both have is_parent_node as true.
+    bool is_dynamic = 4;
 }
 
 // Request structure to retrieve a list of node execution entities.
@@ -127,13 +131,15 @@ message NodeExecutionClosure {
     // Only a node in a terminal state will have a non-empty output_result.
     oneof output_result {
         // Links to a remotely stored, serialized core.LiteralMap of node execution outputs.
-        string output_uri                  = 1;
+        // DEPRECATED. Use GetNodeExecutionData to fetch output data instead.
+        string output_uri                  = 1 [deprecated = true];
 
         // Error information for the Node
         core.ExecutionError error          = 2;
 
         // Raw output data produced by this node execution.
-        core.LiteralMap output_data        = 10;
+        // DEPRECATED. Use GetNodeExecutionData to fetch output data instead.
+        core.LiteralMap output_data        = 10 [deprecated = true];
     }
 
     // The last recorded phase for this node execution.
@@ -202,7 +208,7 @@ message NodeExecutionGetDataResponse {
     // Full_inputs will only be populated if they are under a configured size threshold.
     core.LiteralMap full_inputs                = 3;
 
-    // Full_outputs will only be populated if they are under a configured size threshold.
+    // Full_outputs will only be populated if they are under a configured size threshold. 
     core.LiteralMap full_outputs               = 4;
 
     // Optional Workflow closure for a dynamically generated workflow, in the case this node yields a dynamic workflow we return its structure here.

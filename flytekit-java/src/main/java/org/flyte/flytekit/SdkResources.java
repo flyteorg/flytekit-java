@@ -20,8 +20,10 @@ import static java.util.Collections.unmodifiableMap;
 
 import com.google.auto.value.AutoValue;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.Resources;
 
 @AutoValue
 public abstract class SdkResources {
@@ -34,7 +36,25 @@ public abstract class SdkResources {
     STORAGE,
     // For Kubernetes-based deployments, pods use ephemeral local storage for scratch space,
     // caching, and for logs.
-    EPHEMERAL_STORAGE
+    EPHEMERAL_STORAGE;
+
+    public Resources.ResourceName toResourceName() {
+      switch (this) {
+        case UNKNOWN:
+          return Resources.ResourceName.UNKNOWN;
+        case CPU:
+          return Resources.ResourceName.CPU;
+        case GPU:
+          return Resources.ResourceName.GPU;
+        case MEMORY:
+          return Resources.ResourceName.MEMORY;
+        case STORAGE:
+          return Resources.ResourceName.STORAGE;
+        case EPHEMERAL_STORAGE:
+          return Resources.ResourceName.EPHEMERAL_STORAGE;
+      }
+      throw new AssertionError("Unexpected SdkResources.ResourceName: " + this);
+    }
   }
 
   private static final SdkResources EMPTY = builder().build();
@@ -53,6 +73,27 @@ public abstract class SdkResources {
 
   public static SdkResources empty() {
     return EMPTY;
+  }
+
+  public Resources toIdl() {
+    Resources.Builder builder = Resources.builder();
+
+    if (limits() != null) {
+      builder.limits(toResourceMap(limits()));
+    }
+    if (requests() != null) {
+      builder.requests(toResourceMap(requests()));
+    }
+
+    return builder.build();
+  }
+
+  private Map<Resources.ResourceName, String> toResourceMap(
+      Map<SdkResources.ResourceName, String> sdkResources) {
+    Map<Resources.ResourceName, String> result = new HashMap<>();
+    sdkResources.forEach(
+        (sdkResourceName, value) -> result.put(sdkResourceName.toResourceName(), value));
+    return result;
   }
 
   @AutoValue.Builder

@@ -3,7 +3,11 @@ syntax = "proto3";
 package flyteidl.admin;
 option go_package = "github.com/flyteorg/flyteidl/gen/pb-go/flyteidl/admin";
 
+import "flyteidl/admin/common.proto";
+import "flyteidl/admin/cluster_assignment.proto";
 import "flyteidl/core/execution.proto";
+import "flyteidl/core/security.proto";
+import "google/protobuf/wrappers.proto";
 
 // Defines a resource that can be configured by customizable Project-, ProjectDomain- or WorkflowAttributes
 // based on matching tags.
@@ -28,6 +32,9 @@ enum MatchableResource {
 
   // Adds defaults for customizable workflow-execution specifications and overrides.
   WORKFLOW_EXECUTION_CONFIG = 6;
+
+  // Controls how to select an available cluster on which this execution should run.
+  CLUSTER_ASSIGNMENT = 7;
 }
 
 // Defines a set of overridable task resource attributes set during task registration.
@@ -38,7 +45,7 @@ message TaskResourceSpec {
 
   string memory = 3;
 
-  string storage = 4;
+  string storage = 4;  
 
   string ephemeral_storage = 5;
 }
@@ -59,7 +66,7 @@ message ClusterResourceAttributes {
 
 message ExecutionQueueAttributes {
   // Tags used for assigning execution queues for tasks defined within this project.
-  repeated string tags           = 1;
+  repeated string tags           = 1; 
 }
 
 message ExecutionClusterLabel {
@@ -84,7 +91,7 @@ message PluginOverride {
     // Uses the system-configured default implementation.
     USE_DEFAULT = 1;
   }
-
+  
   // Defines the behavior when no plugin from the plugin_id list is not found.
   MissingPluginBehavior missing_plugin_behavior = 4;
 }
@@ -98,14 +105,32 @@ message PluginOverrides {
 message WorkflowExecutionConfig {
   // Can be used to control the number of parallel nodes to run within the workflow. This is useful to achieve fairness.
   int32 max_parallelism = 1;
+
+  // Indicates security context permissions for executions triggered with this matchable attribute. 
+  core.SecurityContext security_context = 2;
+
+  // Encapsulates user settings pertaining to offloaded data (i.e. Blobs, Schema, query data, etc.).
+  RawOutputDataConfig raw_output_data_config = 3;
+
+  // Custom labels to be applied to a triggered execution resource.
+  Labels labels = 4;
+
+  // Custom annotations to be applied to a triggered execution resource.
+  Annotations annotations = 5;
+
+  // Allows for the interruptible flag of a workflow to be overwritten for a single execution.
+  // Omitting this field uses the workflow's value as a default.
+  // As we need to distinguish between the field not being provided and its default value false, we have to use a wrapper
+  // around the bool field.
+  google.protobuf.BoolValue interruptible = 6;
 }
 
 // Generic container for encapsulating all types of the above attributes messages.
 message MatchingAttributes {
   oneof target {
-    TaskResourceAttributes task_resource_attributes = 1;
+    TaskResourceAttributes task_resource_attributes = 1; 
 
-    ClusterResourceAttributes cluster_resource_attributes = 2;
+    ClusterResourceAttributes cluster_resource_attributes = 2; 
 
     ExecutionQueueAttributes execution_queue_attributes = 3;
 
@@ -116,6 +141,8 @@ message MatchingAttributes {
     PluginOverrides plugin_overrides = 6;
 
     WorkflowExecutionConfig workflow_execution_config = 7;
+
+    ClusterAssignment cluster_assignment = 8;
   }
 }
 

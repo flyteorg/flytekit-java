@@ -85,7 +85,7 @@
   <properties>
     <auto-service.version>1.0.1</auto-service.version>
     <auto-value.version>1.9</auto-value.version>
-    <common-proto.version>2.8.3</common-proto.version>
+    <common-proto.version>2.9.0</common-proto.version>
     <grpc.version>1.46.0</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
@@ -412,7 +412,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <xml>
               <includes>
@@ -492,7 +492,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -634,7 +634,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

@@ -249,8 +249,18 @@ class LocalEngineTest {
   }
 
   @Test
-  public void testNestedSubWorkflow(){
+  public void testNestedSubWorkflow() {
     String workflowName = new NestedSubWorkflow().getName();
+
+    Literal a = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
+    Literal b = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(6L)));
+    Literal c = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal result = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(16L)));
+    Literal outerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal outerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal outerC = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
 
     Map<String, WorkflowTemplate> workflows = loadWorkflows();
     Map<String, RunnableTask> tasks = loadTasks();
@@ -258,17 +268,45 @@ class LocalEngineTest {
     TestingListener listener = new TestingListener();
 
     Map<String, Literal> outputs =
-            LocalEngine.compileAndExecute(
-                    workflows.get(workflowName),
-                    tasks,
-                    emptyMap(),
-                    emptyMap(),
-                    emptyMap(),
-                    listener);
+        LocalEngine.compileAndExecute(
+            workflows.get(workflowName),
+            tasks,
+            emptyMap(),
+            workflows,
+            ImmutableMap.of("a", a, "b", b, "c", c),
+            listener);
 
-
-    assert outputs.isEmpty();
-
+    assertEquals(ImmutableMap.of("result", result), outputs);
+    assertEquals(
+        ImmutableList.<List<Object>>builder()
+            .add(ofPending("nested-workflow"))
+            .add(ofStarting("nested-workflow", ImmutableMap.of("a", a, "b", b, "c", c)))
+            .add(ofPending("outer-sum-a-b"))
+            .add(ofPending("outer-sum-ab-c"))
+            .add(ofStarting("outer-sum-a-b", ImmutableMap.of("a", a, "b", b)))
+            .add(
+                ofCompleted(
+                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("c", outerC)))
+            .add(ofStarting("outer-sum-ab-c", ImmutableMap.of("a", outerA, "b", outerB)))
+            .add(ofPending("inner-sum-a-b"))
+            .add(ofStarting("inner-sum-a-b", ImmutableMap.of("a", innerA, "b", innerB)))
+            .add(
+                ofCompleted(
+                    "inner-sum-a-b",
+                    ImmutableMap.of("a", outerA, "b", outerB),
+                    ImmutableMap.of("c", result)))
+            .add(
+                ofCompleted(
+                    "outer-sum-ab-c",
+                    ImmutableMap.of("a", outerA, "b", outerB),
+                    ImmutableMap.of("result", result)))
+            .add(
+                ofCompleted(
+                    "nested-workflow",
+                    ImmutableMap.of("a", a, "b", b, "c", c),
+                    ImmutableMap.of("result", result)))
+            .build(),
+        listener.actions);
   }
 
   private static Map<String, WorkflowTemplate> loadWorkflows() {

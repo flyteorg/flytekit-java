@@ -141,7 +141,8 @@ public class LocalEngine {
                 runnableTasks,
                 dynamicWorkflowTasks,
                 workflows,
-                inputs);
+                inputs,
+                listener);
       } else {
         // this must be a task
         outputs = runWithRetries(executionNode, inputs, listener);
@@ -218,6 +219,8 @@ public class LocalEngine {
         Map<String, Literal> outputs = nodeOutputs.get(nodeId);
 
         requireNonNull(outputs, () -> String.format("missing output for node [%s]", nodeId));
+
+        Literal literalOutputs = outputs.get(bindingData.promise().var());
 
         return outputs.get(bindingData.promise().var());
 

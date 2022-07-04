@@ -22,16 +22,21 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class InnerSubWorkflow extends SdkWorkflow {
+public class OuterSubWorkflow extends SdkWorkflow {
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData a = builder.inputOfInteger("a");
     SdkBindingData b = builder.inputOfInteger("b");
-    SdkBindingData c =
+    SdkBindingData c = builder.inputOfInteger("c");
+    SdkBindingData ab =
         builder
-            .apply("inner-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
+            .apply("outer-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
             .getOutput("c");
-
-    builder.output("result", c);
+    SdkBindingData res =
+        builder
+            .apply("outer-sum-ab-c", new InnerSubWorkflow().withInput("a", ab).withInput("b", c))
+            .getOutput("result");
+    builder.output("result", res);
   }
 }

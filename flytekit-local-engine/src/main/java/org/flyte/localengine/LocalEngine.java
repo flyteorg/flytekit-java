@@ -220,7 +220,6 @@ public class LocalEngine {
 
         requireNonNull(outputs, () -> String.format("missing output for node [%s]", nodeId));
 
-        Literal literalOutputs = outputs.get(bindingData.promise().var());
 
         return outputs.get(bindingData.promise().var());
 

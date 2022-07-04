@@ -220,7 +220,6 @@ public class LocalEngine {
 
         requireNonNull(outputs, () -> String.format("missing output for node [%s]", nodeId));
 
-
         return outputs.get(bindingData.promise().var());
 
       case MAP:

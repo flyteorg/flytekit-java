@@ -40,12 +40,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
-import org.flyte.localengine.examples.FibonacciWorkflow;
-import org.flyte.localengine.examples.ListWorkflow;
-import org.flyte.localengine.examples.MapWorkflow;
-import org.flyte.localengine.examples.RetryableTask;
-import org.flyte.localengine.examples.RetryableWorkflow;
-import org.flyte.localengine.examples.StructWorkflow;
+import org.flyte.localengine.examples.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -251,6 +246,29 @@ class LocalEngineTest {
       // getRetries() returns 5, so we have 6 attempts/executions total
       assertEquals(6L, RetryableTask.ATTEMPTS.get());
     }
+  }
+
+  @Test
+  public void testNestedSubWorkflow(){
+    String workflowName = new NestedSubWorkflow().getName();
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    Map<String, Literal> outputs =
+            LocalEngine.compileAndExecute(
+                    workflows.get(workflowName),
+                    tasks,
+                    emptyMap(),
+                    emptyMap(),
+                    emptyMap(),
+                    listener);
+
+
+    assert outputs.isEmpty();
+
   }
 
   private static Map<String, WorkflowTemplate> loadWorkflows() {

@@ -41,7 +41,8 @@ public class LocalEngine {
   @Deprecated
   @InlineMe(
       replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, emptyMap(), inputs, NoopExecutionListener.create())",
+          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), "
+              + "inputs, NoopExecutionListener.create())",
       imports = {
         "org.flyte.localengine.LocalEngine",
         "org.flyte.localengine.NoopExecutionListener"
@@ -50,48 +51,74 @@ public class LocalEngine {
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, Literal> inputs) {
     return compileAndExecute(
-        template, runnableTasks, emptyMap(), inputs, NoopExecutionListener.create());
+        template,
+        runnableTasks,
+        dynamicWorkflowTasks,
+        emptyMap(),
+        inputs,
+        NoopExecutionListener.create());
   }
 
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows,
       Map<String, Literal> inputs) {
     return compileAndExecute(
-        template, runnableTasks, dynamicWorkflowTasks, inputs, NoopExecutionListener.create());
+        template,
+        runnableTasks,
+        dynamicWorkflowTasks,
+        workflows,
+        inputs,
+        NoopExecutionListener.create());
   }
 
   @Deprecated
   @InlineMe(
       replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, emptyMap(), inputs, listener)",
+          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener)",
       imports = "org.flyte.localengine.LocalEngine",
       staticImports = "java.util.Collections.emptyMap")
-  public static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, Literal> inputs,
-      ExecutionListener listener) {
-    return compileAndExecute(template, runnableTasks, emptyMap(), inputs, listener);
-  }
-
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, Literal> inputs,
       ExecutionListener listener) {
-    List<ExecutionNode> executionNodes =
-        ExecutionNodeCompiler.compile(template.nodes(), runnableTasks, dynamicWorkflowTasks);
+    return compileAndExecute(
+        template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener);
+  }
 
-    return execute(executionNodes, inputs, template.outputs(), listener);
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows,
+      Map<String, Literal> inputs,
+      ExecutionListener listener) {
+    List<ExecutionNode> executionNodes =
+        ExecutionNodeCompiler.compile(
+            template.nodes(), runnableTasks, dynamicWorkflowTasks, workflows);
+
+    return execute(
+        executionNodes,
+        runnableTasks,
+        dynamicWorkflowTasks,
+        workflows,
+        inputs,
+        template.outputs(),
+        listener);
   }
 
   static Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows,
       Map<String, Literal> workflowInputs,
       List<Binding> bindings,
       ExecutionListener listener) {
@@ -106,7 +133,21 @@ public class LocalEngine {
 
       listener.starting(executionNode, inputs);
 
-      Map<String, Literal> outputs = runWithRetries(executionNode, inputs, listener);
+      Map<String, Literal> outputs;
+      if (executionNode.subWorkflow() != null) {
+        outputs =
+            compileAndExecute(
+                executionNode.subWorkflow(),
+                runnableTasks,
+                dynamicWorkflowTasks,
+                workflows,
+                inputs,
+                listener);
+      } else {
+        // this must be a task
+        outputs = runWithRetries(executionNode, inputs, listener);
+      }
+
       Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
 
       if (previous != null) {

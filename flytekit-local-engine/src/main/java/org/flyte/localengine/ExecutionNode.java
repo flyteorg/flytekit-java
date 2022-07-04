@@ -18,8 +18,10 @@ package org.flyte.localengine;
 
 import com.google.auto.value.AutoValue;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.WorkflowTemplate;
 
 @AutoValue
 public abstract class ExecutionNode {
@@ -28,9 +30,14 @@ public abstract class ExecutionNode {
 
   public abstract List<String> upstreamNodeIds();
 
+  @Nullable
   public abstract List<Binding> bindings();
 
+  @Nullable
   public abstract RunnableTask runnableTask();
+
+  @Nullable
+  public abstract WorkflowTemplate subWorkflow();
 
   public abstract int attempts();
 
@@ -47,6 +54,8 @@ public abstract class ExecutionNode {
     abstract Builder bindings(List<Binding> bindings);
 
     abstract Builder runnableTask(RunnableTask runnableTask);
+
+    abstract Builder subWorkflow(WorkflowTemplate subWorkflow);
 
     abstract Builder attempts(int attempts);
 

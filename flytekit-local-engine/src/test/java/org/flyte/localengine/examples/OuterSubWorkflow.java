@@ -14,31 +14,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.examples;
+package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import java.time.Duration;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow {
+public class OuterSubWorkflow extends SdkWorkflow {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = SdkBindingData.ofInteger(0);
-    SdkBindingData b = SdkBindingData.ofInteger(1);
-
-    SdkBindingData c =
+    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData b = builder.inputOfInteger("b");
+    SdkBindingData c = builder.inputOfInteger("c");
+    SdkBindingData ab =
         builder
-            .apply(
-                "sum-a-b",
-                SumTask.of(a, b)
-                    .withNameOverride("sum a+b")
-                    .withTimeoutOverride(Duration.ofMinutes(15)))
+            .apply("outer-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
             .getOutput("c");
-
-    builder.output("c", c, "Value of the sum");
+    SdkBindingData res =
+        builder
+            .apply("outer-sum-ab-c", new InnerSubWorkflow().withInput("a", ab).withInput("b", c))
+            .getOutput("result");
+    builder.output("result", res);
   }
 }

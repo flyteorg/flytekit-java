@@ -37,6 +37,8 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowTemplate;
 
 /**
  * Performs following operations
@@ -60,15 +62,17 @@ class ExecutionNodeCompiler {
    * @param nodes nodes
    * @param runnableTasks runnable tasks
    * @param dynamicWorkflowTasks dynamic workflow tasks
+   * @param workflows workflow templates
    * @return execution nodes
    */
   static List<ExecutionNode> compile(
       List<Node> nodes,
       Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks) {
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows) {
     List<ExecutionNode> executableNodes =
         nodes.stream()
-            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks))
+            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows))
             .collect(toList());
 
     return sort(executableNodes);
@@ -77,9 +81,9 @@ class ExecutionNodeCompiler {
   static ExecutionNode compile(
       Node node,
       Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks) {
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflows) {
     List<String> upstreamNodeIds = new ArrayList<>();
-
     node.inputs().stream()
         .map(Binding::binding)
         .flatMap(ExecutionNodeCompiler::unpackBindingData)
@@ -88,39 +92,60 @@ class ExecutionNodeCompiler {
         .forEach(upstreamNodeIds::add);
 
     upstreamNodeIds.addAll(node.upstreamNodeIds());
-
     if (upstreamNodeIds.isEmpty()) {
       upstreamNodeIds.add(START_NODE_ID);
     }
 
     if (node.branchNode() != null) {
       throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
+    } else if (node.workflowNode() != null) {
+      WorkflowNode.Reference reference = node.workflowNode().reference();
+      switch (reference.kind()) {
+        case SUB_WORKFLOW_REF:
+          String workflowName = reference.subWorkflowRef().name();
+          WorkflowTemplate workflowTemplate = workflows.get(workflowName);
+
+          Objects.requireNonNull(
+              workflowTemplate, () -> String.format("Couldn't find workflow [%s]", workflowName));
+
+          return ExecutionNode.builder()
+              .nodeId(node.id())
+              .bindings(node.inputs())
+              .subWorkflow(workflowTemplate)
+              .upstreamNodeIds(upstreamNodeIds)
+              .attempts(0)
+              .build();
+        case LAUNCH_PLAN_REF:
+          throw new IllegalArgumentException(
+              "LaunchPlanRef isn't yet supported for local execution");
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unsupported Reference.Kind: [%s]", reference.kind()));
+      }
+    } else {
+      // this must be a task
+      String taskName = node.taskNode().referenceId().name();
+
+      DynamicWorkflowTask dynamicWorkflowTask = dynamicWorkflowTasks.get(taskName);
+      if (dynamicWorkflowTask != null) {
+        throw new IllegalArgumentException(
+            "DynamicWorkflowTask isn't yet supported for local execution");
+      }
+
+      RunnableTask runnableTask = runnableTasks.get(taskName);
+      Objects.requireNonNull(
+          runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
+
+      int attempts = runnableTask.getRetries().retries() + 1;
+
+      return ExecutionNode.builder()
+          .nodeId(node.id())
+          .bindings(node.inputs())
+          .runnableTask(runnableTask)
+          .upstreamNodeIds(upstreamNodeIds)
+          .attempts(attempts)
+          .build();
     }
-
-    if (node.workflowNode() != null) {
-      throw new IllegalArgumentException("WorkflowNode isn't yet supported for local execution");
-    }
-
-    String taskName = node.taskNode().referenceId().name();
-    DynamicWorkflowTask dynamicWorkflowTask = dynamicWorkflowTasks.get(taskName);
-    RunnableTask runnableTask = runnableTasks.get(taskName);
-
-    if (dynamicWorkflowTask != null) {
-      throw new IllegalArgumentException(
-          "DynamicWorkflowTask isn't yet supported for local execution");
-    }
-
-    Objects.requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
-
-    int attempts = runnableTask.getRetries().retries() + 1;
-
-    return ExecutionNode.builder()
-        .nodeId(node.id())
-        .bindings(node.inputs())
-        .runnableTask(runnableTask)
-        .upstreamNodeIds(upstreamNodeIds)
-        .attempts(attempts)
-        .build();
   }
 
   /**

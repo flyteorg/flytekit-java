@@ -148,6 +148,11 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
+        <artifactId>flytekit-testing</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
         <artifactId>flytekit-examples</artifactId>
         <version>${project.version}</version>
       </dependency>

@@ -40,12 +40,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
-import org.flyte.localengine.examples.FibonacciWorkflow;
-import org.flyte.localengine.examples.ListWorkflow;
-import org.flyte.localengine.examples.MapWorkflow;
-import org.flyte.localengine.examples.RetryableTask;
-import org.flyte.localengine.examples.RetryableWorkflow;
-import org.flyte.localengine.examples.StructWorkflow;
+import org.flyte.localengine.examples.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,6 +66,7 @@ class LocalEngineTest {
         LocalEngine.compileAndExecute(
             workflows.get(workflowName),
             tasks,
+            emptyMap(),
             emptyMap(),
             ImmutableMap.of("fib0", fib0, "fib1", fib1),
             listener);
@@ -111,7 +107,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -129,7 +125,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of());
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -162,7 +158,7 @@ class LocalEngineTest {
             inputStructLiteral);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), inputs);
+        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), inputs);
 
     Literal expectedOutput =
         Literal.ofScalar(
@@ -189,7 +185,8 @@ class LocalEngineTest {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
       RetryableTask.ATTEMPTS.set(0L);
 
-      LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), ImmutableMap.of(), listener);
+      LocalEngine.compileAndExecute(
+          workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener);
 
       assertEquals(
           ImmutableList.<List<Object>>builder()
@@ -229,7 +226,7 @@ class LocalEngineTest {
               RuntimeException.class,
               () ->
                   LocalEngine.compileAndExecute(
-                      workflow, tasks, emptyMap(), ImmutableMap.of(), listener));
+                      workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener));
 
       assertEquals("oops", e.getMessage());
 
@@ -249,6 +246,67 @@ class LocalEngineTest {
       // getRetries() returns 5, so we have 6 attempts/executions total
       assertEquals(6L, RetryableTask.ATTEMPTS.get());
     }
+  }
+
+  @Test
+  public void testNestedSubWorkflow() {
+    String workflowName = new NestedSubWorkflow().getName();
+
+    Literal a = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
+    Literal b = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(6L)));
+    Literal c = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal result = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(16L)));
+    Literal outerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal outerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal outerC = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+
+    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    Map<String, Literal> outputs =
+        LocalEngine.compileAndExecute(
+            workflows.get(workflowName),
+            tasks,
+            emptyMap(),
+            workflows,
+            ImmutableMap.of("a", a, "b", b, "c", c),
+            listener);
+
+    assertEquals(ImmutableMap.of("result", result), outputs);
+    assertEquals(
+        ImmutableList.<List<Object>>builder()
+            .add(ofPending("nested-workflow"))
+            .add(ofStarting("nested-workflow", ImmutableMap.of("a", a, "b", b, "c", c)))
+            .add(ofPending("outer-sum-a-b"))
+            .add(ofPending("outer-sum-ab-c"))
+            .add(ofStarting("outer-sum-a-b", ImmutableMap.of("a", a, "b", b)))
+            .add(
+                ofCompleted(
+                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("c", outerC)))
+            .add(ofStarting("outer-sum-ab-c", ImmutableMap.of("a", outerA, "b", outerB)))
+            .add(ofPending("inner-sum-a-b"))
+            .add(ofStarting("inner-sum-a-b", ImmutableMap.of("a", innerA, "b", innerB)))
+            .add(
+                ofCompleted(
+                    "inner-sum-a-b",
+                    ImmutableMap.of("a", outerA, "b", outerB),
+                    ImmutableMap.of("c", result)))
+            .add(
+                ofCompleted(
+                    "outer-sum-ab-c",
+                    ImmutableMap.of("a", outerA, "b", outerB),
+                    ImmutableMap.of("result", result)))
+            .add(
+                ofCompleted(
+                    "nested-workflow",
+                    ImmutableMap.of("a", a, "b", b, "c", c),
+                    ImmutableMap.of("result", result)))
+            .build(),
+        listener.actions);
   }
 
   private static Map<String, WorkflowTemplate> loadWorkflows() {

@@ -36,11 +36,13 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
+import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.localengine.LocalEngine;
 
 @AutoValue
@@ -54,26 +56,49 @@ public abstract class SdkTestingExecutor {
 
   abstract SdkWorkflow workflow();
 
+  abstract Map<String, WorkflowTemplate> workflowTemplateMap();
+
   public static SdkTestingExecutor of(SdkWorkflow workflow) {
     @SuppressWarnings({"unchecked", "rawtypes"})
-    ServiceLoader<SdkRunnableTask<?, ?>> loader =
+    ServiceLoader<SdkRunnableTask<?, ?>> taskLoader =
         (ServiceLoader) ServiceLoader.load(SdkRunnableTask.class);
 
     List<SdkRunnableTask<?, ?>> tasks = new ArrayList<>();
-    loader.iterator().forEachRemaining(tasks::add);
+    taskLoader.iterator().forEachRemaining(tasks::add);
 
-    return SdkTestingExecutor.of(workflow, tasks);
+    ServiceLoader<SdkWorkflow> workflowLoader = ServiceLoader.load(SdkWorkflow.class);
+    List<SdkWorkflow> workflows = new ArrayList<>();
+    workflowLoader.iterator().forEachRemaining(workflows::add);
+
+    return SdkTestingExecutor.of(workflow, tasks, workflows);
   }
 
+  @Deprecated
   public static SdkTestingExecutor of(SdkWorkflow workflow, List<SdkRunnableTask<?, ?>> tasks) {
-    Map<String, TestingRunnableTask<?, ?>> fixedTasks = new HashMap<>();
+    ServiceLoader<SdkWorkflow> workflowLoader = ServiceLoader.load(SdkWorkflow.class);
+    List<SdkWorkflow> workflows = new ArrayList<>();
+    workflowLoader.iterator().forEachRemaining(workflows::add);
 
+    return SdkTestingExecutor.of(workflow, tasks, workflows);
+  }
+
+  public static SdkTestingExecutor of(
+      SdkWorkflow workflow, List<SdkRunnableTask<?, ?>> tasks, List<SdkWorkflow> workflows) {
+    Map<String, TestingRunnableTask<?, ?>> fixedTasks = new HashMap<>();
     for (SdkRunnableTask<?, ?> task : tasks) {
       fixedTasks.put(task.getName(), TestingRunnableTask.create(task));
     }
 
+    Map<String, WorkflowTemplate> workflowTemplateMap = new HashMap<>();
+    for (SdkWorkflow w : workflows) {
+      SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+      w.expand(builder);
+      workflowTemplateMap.put(w.getName(), builder.toIdlTemplate());
+    }
+
     return SdkTestingExecutor.builder()
         .workflow(workflow)
+        .workflowTemplateMap(workflowTemplateMap)
         .fixedInputMap(emptyMap())
         .fixedInputTypeMap(emptyMap())
         .fixedTaskMap(fixedTasks)
@@ -139,11 +164,28 @@ public abstract class SdkTestingExecutor {
   public Result execute() {
     TestingSdkWorkflowBuilder builder =
         new TestingSdkWorkflowBuilder(fixedInputMap(), fixedInputTypeMap());
+
     workflow().expand(builder);
-
     WorkflowTemplate workflowTemplate = builder.toIdlTemplate();
+    checkFixedTransform(workflowTemplate);
 
-    for (Node node : workflowTemplate.nodes()) {
+    Map<String, Literal> outputLiteralMap =
+        LocalEngine.compileAndExecute(
+            workflowTemplate,
+            unmodifiableMap(fixedTaskMap()),
+            emptyMap(),
+            unmodifiableMap(workflowTemplateMap()),
+            fixedInputMap());
+
+    Map<String, LiteralType> outputLiteralTypeMap =
+        workflowTemplate.interface_().outputs().entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+
+    return Result.create(outputLiteralMap, outputLiteralTypeMap);
+  }
+
+  private void checkFixedTransform(WorkflowTemplate template) {
+    for (Node node : template.nodes()) {
       TaskNode taskNode = node.taskNode();
       if (taskNode != null) {
         String taskName = taskNode.referenceId().name();
@@ -154,17 +196,18 @@ public abstract class SdkTestingExecutor {
                 + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
             taskName);
       }
+
+      WorkflowNode workflowNode = node.workflowNode();
+      if (workflowNode != null) {
+        String subWorkflowName = workflowNode.reference().subWorkflowRef().name();
+        WorkflowTemplate subWorkflowTemplate = workflowTemplateMap().get(subWorkflowName);
+
+        checkArgument(
+            subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
+
+        checkFixedTransform(subWorkflowTemplate);
+      }
     }
-
-    Map<String, Literal> outputLiteralMap =
-        LocalEngine.compileAndExecute(
-            workflowTemplate, unmodifiableMap(fixedTaskMap()), emptyMap(), fixedInputMap());
-
-    Map<String, LiteralType> outputLiteralTypeMap =
-        workflowTemplate.interface_().outputs().entrySet().stream()
-            .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
-
-    return Result.create(outputLiteralMap, outputLiteralTypeMap);
   }
 
   public SdkTestingExecutor withFixedInput(String inputName, boolean value) {
@@ -273,13 +316,17 @@ public abstract class SdkTestingExecutor {
 
     abstract Builder fixedTaskMap(Map<String, TestingRunnableTask<?, ?>> fixedTaskMap);
 
+    abstract Builder workflow(SdkWorkflow workflow);
+
+    abstract Builder workflowTemplateMap(Map<String, WorkflowTemplate> workflowTemplateMap);
+
     abstract Map<String, Literal> fixedInputMap();
 
     abstract Map<String, LiteralType> fixedInputTypeMap();
 
     abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
 
-    abstract Builder workflow(SdkWorkflow workflow);
+    abstract Map<String, WorkflowTemplate> workflowTemplateMap();
 
     Builder putFixedInput(String key, Literal value, LiteralType type) {
       Map<String, Literal> newFixedInputMap = new HashMap<>(fixedInputMap());

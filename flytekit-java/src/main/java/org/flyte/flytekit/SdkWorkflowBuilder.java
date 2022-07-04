@@ -39,7 +39,7 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
 
-  protected SdkWorkflowBuilder() {
+  public SdkWorkflowBuilder() {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();

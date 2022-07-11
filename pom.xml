@@ -86,7 +86,7 @@
     <auto-service.version>1.0.1</auto-service.version>
     <auto-value.version>1.9</auto-value.version>
     <common-proto.version>2.9.1</common-proto.version>
-    <grpc.version>1.47.0</grpc.version>
+    <grpc.version>1.46.0</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>

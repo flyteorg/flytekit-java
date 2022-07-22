@@ -80,6 +80,18 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     return 0;
   }
 
+  public String getCacheVersion() {
+    return "";
+  }
+
+  public boolean getCache() {
+    return false;
+  }
+
+  public boolean getCacheSerializable() {
+    return false;
+  }
+
   @Override
   public SdkNode apply(
       SdkWorkflowBuilder builder,

@@ -428,6 +428,9 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
+    assertThat(result.cache(), equalTo(true));
+    assertThat(result.cacheSerializable(), equalTo(true));
+    assertThat(result.cacheVersion(), equalTo("0.0.1"));
   }
 
   @Test
@@ -463,6 +466,9 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
+    assertThat(result.cache(), equalTo(true));
+    assertThat(result.cacheSerializable(), equalTo(true));
+    assertThat(result.cacheVersion(), equalTo("0.0.1"));
   }
 
   @Test
@@ -535,6 +541,21 @@ public class ProjectClosureTest {
         } else {
           return expectedResources;
         }
+      }
+
+      @Override
+      public boolean getCache() {
+        return true;
+      }
+
+      @Override
+      public String getCacheVersion() {
+        return "0.0.1";
+      }
+
+      @Override
+      public boolean cacheSerializable() {
+        return true;
       }
     };
   }

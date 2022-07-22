@@ -314,6 +314,9 @@ class ProtoUtil {
         Tasks.TaskMetadata.newBuilder()
             .setRuntime(runtime)
             .setRetries(serialize(taskTemplate.retries()))
+            .setDiscoverable(taskTemplate.cache())
+            .setDiscoveryVersion(taskTemplate.cacheVersion())
+            .setCacheSerializable(taskTemplate.cacheSerializable())
             .build();
 
     Container container =
@@ -336,6 +339,9 @@ class ProtoUtil {
         .interface_(deserialize(proto.getInterface()))
         .retries(deserialize(proto.getMetadata().getRetries()))
         .type(proto.getType())
+        .cache(proto.getMetadata().getDiscoverable())
+        .cacheVersion(proto.getMetadata().getDiscoveryVersion())
+        .cacheSerializable(proto.getMetadata().getCacheSerializable())
         .build();
   }
 

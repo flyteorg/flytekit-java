@@ -80,6 +80,21 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
 
     @Override
+    public boolean getCache() {
+      return sdkTask.getCache();
+    }
+
+    @Override
+    public String getCacheVersion() {
+      return sdkTask.getCacheVersion();
+    }
+
+    @Override
+    public boolean cacheSerializable() {
+      return sdkTask.getCacheSerializable();
+    }
+
+    @Override
     public String getName() {
       return sdkTask.getName();
     }

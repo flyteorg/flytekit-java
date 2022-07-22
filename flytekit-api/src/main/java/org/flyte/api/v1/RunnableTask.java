@@ -45,4 +45,16 @@ public interface RunnableTask {
   Map<String, Literal> run(Map<String, Literal> inputs);
 
   RetryStrategy getRetries();
+
+  default boolean getCache() {
+    return false;
+  }
+
+  default String getCacheVersion() {
+    return "";
+  }
+
+  default boolean cacheSerializable() {
+    return false;
+  }
 }

@@ -37,10 +37,19 @@ public abstract class TaskTemplate {
 
   public abstract Struct custom();
 
+  public abstract boolean cache();
+
+  public abstract String cacheVersion();
+
+  public abstract boolean cacheSerializable();
+
   public abstract Builder toBuilder();
 
   public static Builder builder() {
-    return new AutoValue_TaskTemplate.Builder();
+    return new AutoValue_TaskTemplate.Builder()
+        .cache(false)
+        .cacheSerializable(false)
+        .cacheVersion("");
   }
 
   @AutoValue.Builder
@@ -55,6 +64,12 @@ public abstract class TaskTemplate {
     public abstract Builder type(String type);
 
     public abstract Builder custom(Struct custom);
+
+    public abstract Builder cache(boolean cache);
+
+    public abstract Builder cacheVersion(String cacheVersion);
+
+    public abstract Builder cacheSerializable(boolean cacheSerializable);
 
     public abstract TaskTemplate build();
   }

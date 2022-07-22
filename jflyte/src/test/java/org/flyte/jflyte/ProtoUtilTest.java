@@ -434,6 +434,9 @@ class ProtoUtilTest {
             .custom(
                 Struct.of(
                     ImmutableMap.of("custom-prop", Struct.Value.ofStringValue("custom-value"))))
+            .cache(true)
+            .cacheVersion("0.0.1")
+            .cacheSerializable(true)
             .build();
 
     Tasks.TaskTemplate templateProto =
@@ -455,6 +458,9 @@ class ProtoUtilTest {
                             .setVersion(ProtoUtil.RUNTIME_VERSION)
                             .build())
                     .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
+                    .setDiscoverable(true)
+                    .setDiscoveryVersion("0.0.1")
+                    .setCacheSerializable(true)
                     .build())
             .setInterface(
                 Interface.TypedInterface.newBuilder()

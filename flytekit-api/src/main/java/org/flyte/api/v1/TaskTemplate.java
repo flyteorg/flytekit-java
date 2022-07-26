@@ -37,9 +37,9 @@ public abstract class TaskTemplate {
 
   public abstract Struct custom();
 
-  public abstract boolean cache();
+  public abstract boolean discoverable();
 
-  public abstract String cacheVersion();
+  public abstract String discoveryVersion();
 
   public abstract boolean cacheSerializable();
 
@@ -47,9 +47,9 @@ public abstract class TaskTemplate {
 
   public static Builder builder() {
     return new AutoValue_TaskTemplate.Builder()
-        .cache(false)
+        .discoverable(false)
         .cacheSerializable(false)
-        .cacheVersion("");
+        .discoveryVersion("");
   }
 
   @AutoValue.Builder
@@ -65,9 +65,9 @@ public abstract class TaskTemplate {
 
     public abstract Builder custom(Struct custom);
 
-    public abstract Builder cache(boolean cache);
+    public abstract Builder discoverable(boolean discoverable);
 
-    public abstract Builder cacheVersion(String cacheVersion);
+    public abstract Builder discoveryVersion(String discoveryVersion);
 
     public abstract Builder cacheSerializable(boolean cacheSerializable);
 

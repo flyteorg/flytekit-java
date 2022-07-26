@@ -434,8 +434,8 @@ class ProtoUtilTest {
             .custom(
                 Struct.of(
                     ImmutableMap.of("custom-prop", Struct.Value.ofStringValue("custom-value"))))
-            .cache(true)
-            .cacheVersion("0.0.1")
+            .discoverable(true)
+            .discoveryVersion("0.0.1")
             .cacheSerializable(true)
             .build();
 

@@ -314,8 +314,8 @@ class ProtoUtil {
         Tasks.TaskMetadata.newBuilder()
             .setRuntime(runtime)
             .setRetries(serialize(taskTemplate.retries()))
-            .setDiscoverable(taskTemplate.cache())
-            .setDiscoveryVersion(taskTemplate.cacheVersion())
+            .setDiscoverable(taskTemplate.discoverable())
+            .setDiscoveryVersion(taskTemplate.discoveryVersion())
             .setCacheSerializable(taskTemplate.cacheSerializable())
             .build();
 
@@ -339,8 +339,8 @@ class ProtoUtil {
         .interface_(deserialize(proto.getInterface()))
         .retries(deserialize(proto.getMetadata().getRetries()))
         .type(proto.getType())
-        .cache(proto.getMetadata().getDiscoverable())
-        .cacheVersion(proto.getMetadata().getDiscoveryVersion())
+        .discoverable(proto.getMetadata().getDiscoverable())
+        .discoveryVersion(proto.getMetadata().getDiscoveryVersion())
         .cacheSerializable(proto.getMetadata().getCacheSerializable())
         .build();
   }

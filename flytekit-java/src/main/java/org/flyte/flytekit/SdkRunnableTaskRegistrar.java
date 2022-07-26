@@ -80,8 +80,8 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
 
     @Override
-    public boolean getCache() {
-      return sdkTask.getCache();
+    public boolean isCached() {
+      return sdkTask.isCached();
     }
 
     @Override
@@ -90,8 +90,8 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
 
     @Override
-    public boolean cacheSerializable() {
-      return sdkTask.getCacheSerializable();
+    public boolean isCacheSerializable() {
+      return sdkTask.isCacheSerializable();
     }
 
     @Override

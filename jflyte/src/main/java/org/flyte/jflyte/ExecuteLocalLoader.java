@@ -160,8 +160,8 @@ public class ExecuteLocalLoader {
     }
 
     @Override
-    public boolean getCache() {
-      return runnableTask.getCache();
+    public boolean isCached() {
+      return runnableTask.isCached();
     }
 
     @Override
@@ -170,8 +170,8 @@ public class ExecuteLocalLoader {
     }
 
     @Override
-    public boolean cacheSerializable() {
-      return runnableTask.cacheSerializable();
+    public boolean isCacheSerializable() {
+      return runnableTask.isCacheSerializable();
     }
   }
 }

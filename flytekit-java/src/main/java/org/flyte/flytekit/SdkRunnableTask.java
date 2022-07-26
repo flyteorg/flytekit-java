@@ -84,11 +84,11 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     return "";
   }
 
-  public boolean getCache() {
+  public boolean isCached() {
     return false;
   }
 
-  public boolean getCacheSerializable() {
+  public boolean isCacheSerializable() {
     return false;
   }
 

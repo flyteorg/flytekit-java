@@ -46,7 +46,7 @@ public interface RunnableTask {
 
   RetryStrategy getRetries();
 
-  default boolean getCache() {
+  default boolean isCached() {
     return false;
   }
 
@@ -54,7 +54,7 @@ public interface RunnableTask {
     return "";
   }
 
-  default boolean cacheSerializable() {
+  default boolean isCacheSerializable() {
     return false;
   }
 }

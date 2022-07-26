@@ -544,7 +544,7 @@ public class ProjectClosureTest {
       }
 
       @Override
-      public boolean getCache() {
+      public boolean isCached() {
         return true;
       }
 
@@ -554,7 +554,7 @@ public class ProjectClosureTest {
       }
 
       @Override
-      public boolean cacheSerializable() {
+      public boolean isCacheSerializable() {
         return true;
       }
     };

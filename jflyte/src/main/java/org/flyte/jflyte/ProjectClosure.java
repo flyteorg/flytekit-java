@@ -457,9 +457,9 @@ abstract class ProjectClosure {
         .retries(task.getRetries())
         .type(task.getType())
         .custom(task.getCustom())
-        .cache(task.getCache())
+        .cache(task.isCached())
         .cacheVersion(task.getCacheVersion())
-        .cacheSerializable(task.cacheSerializable())
+        .cacheSerializable(task.isCacheSerializable())
         .build();
   }
 

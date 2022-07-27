@@ -31,6 +31,12 @@ class SumTask
   override def run(input: SumTaskInput): SumTaskOutput = {
     SumTaskOutput(input.a + input.b)
   }
+
+  override def isCached: Boolean = true
+
+  override def getCacheVersion: String = "1"
+
+  override def isCacheSerializable: Boolean = true
 }
 
 object SumTask {

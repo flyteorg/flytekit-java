@@ -28,6 +28,7 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -44,6 +45,7 @@ import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
+import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
@@ -503,6 +505,76 @@ class ProtoUtilTest {
   }
 
   @Test
+  void shouldSerializeTaskTemplateHandlingNullStringsAsEmptyString() {
+    TaskTemplate apiTemplate =
+        TaskTemplate.builder()
+            .type("some-type")
+            .interface_(TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build())
+            .container(
+                Container.builder()
+                    .image("busybox")
+                    .command(emptyList())
+                    .args(emptyList())
+                    .env(emptyList())
+                    .build())
+            .retries(RetryStrategy.builder().retries(0).build())
+            .custom(Struct.of(emptyMap()))
+            .discoverable(false)
+            .cacheSerializable(false)
+            .build();
+
+    Tasks.TaskTemplate protoTemplate = ProtoUtil.serialize(apiTemplate);
+
+    assertThat(protoTemplate.getMetadata().getDiscoveryVersion(), equalTo(""));
+  }
+
+  @Test
+  void shouldSerializeTaskTemplatePropagatingNonNullStringAsIs() {
+    TaskTemplate apiTemplate =
+        TaskTemplate.builder()
+            .type("some-type")
+            .interface_(TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build())
+            .container(
+                Container.builder()
+                    .image("busybox")
+                    .command(emptyList())
+                    .args(emptyList())
+                    .env(emptyList())
+                    .build())
+            .retries(RetryStrategy.builder().retries(0).build())
+            .custom(Struct.of(emptyMap()))
+            .discoverable(true)
+            .cacheSerializable(true)
+            .discoveryVersion("1")
+            .build();
+
+    Tasks.TaskTemplate protoTemplate = ProtoUtil.serialize(apiTemplate);
+
+    assertThat(protoTemplate.getMetadata().getDiscoveryVersion(), equalTo("1"));
+  }
+
+  @Test
+  void shouldDeserializeTaskTemplateHandlingEmptyStringsAsNullString() {
+    Tasks.TaskTemplate protoTemplate = Tasks.TaskTemplate.getDefaultInstance();
+
+    TaskTemplate apiTemplate = ProtoUtil.deserialize(protoTemplate);
+
+    assertThat(apiTemplate.discoveryVersion(), nullValue());
+  }
+
+  @Test
+  void shouldDeserializeTaskTemplatePropagatingEmptyStringAsIs() {
+    Tasks.TaskTemplate protoTemplate =
+        Tasks.TaskTemplate.newBuilder()
+            .setMetadata(TaskMetadata.newBuilder().setDiscoveryVersion("1.2.3").build())
+            .build();
+
+    TaskTemplate apiTemplate = ProtoUtil.deserialize(protoTemplate);
+
+    assertThat(apiTemplate.discoveryVersion(), equalTo("1.2.3"));
+  }
+
+  @Test
   void shouldSerializeWorkflowTemplate() {
     Node nodeA = createNode("a").toBuilder().upstreamNodeIds(singletonList("b")).build();
     Node nodeB =
@@ -514,7 +586,7 @@ class ProtoUtilTest {
                     .retries(RetryStrategy.builder().retries(3).build())
                     .build())
             .build();
-    ;
+
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
     TypedInterface interface_ =
         TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();

@@ -521,10 +521,12 @@ class ProtoUtilTest {
             .custom(Struct.of(emptyMap()))
             .discoverable(false)
             .cacheSerializable(false)
+            .discoveryVersion(null)
             .build();
 
     Tasks.TaskTemplate protoTemplate = ProtoUtil.serialize(apiTemplate);
 
+    assertThat(apiTemplate.discoveryVersion(), nullValue());
     assertThat(protoTemplate.getMetadata().getDiscoveryVersion(), equalTo(""));
   }
 
@@ -559,6 +561,7 @@ class ProtoUtilTest {
 
     TaskTemplate apiTemplate = ProtoUtil.deserialize(protoTemplate);
 
+    assertThat(protoTemplate.getMetadata().getDiscoveryVersion(), equalTo(""));
     assertThat(apiTemplate.discoveryVersion(), nullValue());
   }
 

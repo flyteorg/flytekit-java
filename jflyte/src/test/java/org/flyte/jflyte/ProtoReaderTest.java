@@ -87,6 +87,8 @@ class ProtoReaderTest {
                 .interface_(TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build())
                 .retries(RetryStrategy.builder().retries(0).build())
                 .custom(Struct.of(emptyMap()))
+                .discoverable(false)
+                .cacheSerializable(false)
                 .build()));
   }
 

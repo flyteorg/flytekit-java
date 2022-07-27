@@ -451,16 +451,21 @@ abstract class ProjectClosure {
             .resources(resources)
             .build();
 
-    return TaskTemplate.builder()
-        .container(container)
-        .interface_(task.getInterface())
-        .retries(task.getRetries())
-        .type(task.getType())
-        .custom(task.getCustom())
-        .discoverable(task.isCached())
-        .discoveryVersion(task.getCacheVersion())
-        .cacheSerializable(task.isCacheSerializable())
-        .build();
+    TaskTemplate.Builder templateBuilder =
+        TaskTemplate.builder()
+            .container(container)
+            .interface_(task.getInterface())
+            .retries(task.getRetries())
+            .type(task.getType())
+            .custom(task.getCustom())
+            .discoverable(task.isCached())
+            .cacheSerializable(task.isCacheSerializable());
+
+    if (task.getCacheVersion() != null) {
+      templateBuilder.discoveryVersion(task.getCacheVersion());
+    }
+
+    return templateBuilder.build();
   }
 
   @VisibleForTesting

@@ -161,6 +161,8 @@ public class FlyteAdminClientTest {
             .interface_(interface_)
             .custom(Struct.of(emptyMap()))
             .retries(retries)
+            .discoverable(false)
+            .cacheSerializable(false)
             .build();
 
     client.createTask(identifier, template);

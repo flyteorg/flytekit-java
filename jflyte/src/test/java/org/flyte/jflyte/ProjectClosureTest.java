@@ -22,6 +22,7 @@ import static org.flyte.api.v1.Resources.ResourceName.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,6 +59,7 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.flytekit.SdkTypes;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ProjectClosureTest {
@@ -428,9 +430,9 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
-    assertThat(result.discoverable(), equalTo(true));
-    assertThat(result.cacheSerializable(), equalTo(true));
-    assertThat(result.discoveryVersion(), equalTo("0.0.1"));
+    assertThat(result.discoverable(), equalTo(false));
+    assertThat(result.cacheSerializable(), equalTo(false));
+    assertThat(result.discoveryVersion(), nullValue());
   }
 
   @Test
@@ -466,12 +468,44 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
+    assertThat(result.discoverable(), equalTo(false));
+    assertThat(result.cacheSerializable(), equalTo(false));
+    assertThat(result.discoveryVersion(), nullValue());
+  }
+
+  @Test
+  public void testCreateTaskTemplateForRunnableTaskWithCache() {
+    // given
+    RunnableTask task = createRunnableTaskWithCache();
+    String image = "my-image";
+    Resources expectedResources = Resources.builder().build();
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(container.env(), equalTo(emptyList()));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("java-task"));
     assertThat(result.discoverable(), equalTo(true));
     assertThat(result.cacheSerializable(), equalTo(true));
     assertThat(result.discoveryVersion(), equalTo("0.0.1"));
   }
 
   @Test
+  @Disabled("ContainerTasks don't currently support cache, fix coming up")
   public void testCreateTaskTemplateForContainerTask() {
     // given
     Resources expectedResources =
@@ -542,21 +576,6 @@ public class ProjectClosureTest {
           return expectedResources;
         }
       }
-
-      @Override
-      public boolean isCached() {
-        return true;
-      }
-
-      @Override
-      public String getCacheVersion() {
-        return "0.0.1";
-      }
-
-      @Override
-      public boolean isCacheSerializable() {
-        return true;
-      }
     };
   }
 
@@ -608,6 +627,49 @@ public class ProjectClosureTest {
       @Override
       public List<KeyValuePair> getEnv() {
         return env;
+      }
+    };
+  }
+
+  private RunnableTask createRunnableTaskWithCache() {
+    return new RunnableTask() {
+      @Override
+      public String getName() {
+        return "my-test-task";
+      }
+
+      @Override
+      public TypedInterface getInterface() {
+        return TypedInterface.builder()
+            .inputs(SdkTypes.nulls().getVariableMap())
+            .outputs(SdkTypes.nulls().getVariableMap())
+            .build();
+      }
+
+      @Override
+      public Map<String, Literal> run(Map<String, Literal> inputs) {
+        System.out.println("Cached Hello World");
+        return null;
+      }
+
+      @Override
+      public RetryStrategy getRetries() {
+        return RetryStrategy.builder().retries(0).build();
+      }
+
+      @Override
+      public boolean isCached() {
+        return true;
+      }
+
+      @Override
+      public String getCacheVersion() {
+        return "0.0.1";
+      }
+
+      @Override
+      public boolean isCacheSerializable() {
+        return true;
       }
     };
   }

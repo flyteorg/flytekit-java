@@ -16,6 +16,7 @@
  */
 package org.flyte.jflyte;
 
+import static com.google.common.base.Strings.emptyToNull;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Objects.requireNonNull;
 import static org.flyte.jflyte.MoreCollectors.mapValues;
@@ -43,6 +44,7 @@ import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
+import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
@@ -303,25 +305,11 @@ class ProtoUtil {
   }
 
   static Tasks.TaskTemplate serialize(TaskTemplate taskTemplate) {
-    Tasks.RuntimeMetadata runtime =
-        Tasks.RuntimeMetadata.newBuilder()
-            .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
-            .setFlavor(RUNTIME_FLAVOR)
-            .setVersion(RUNTIME_VERSION)
-            .build();
-
-    Tasks.TaskMetadata metadata =
-        Tasks.TaskMetadata.newBuilder()
-            .setRuntime(runtime)
-            .setRetries(serialize(taskTemplate.retries()))
-            .setDiscoverable(taskTemplate.discoverable())
-            .setDiscoveryVersion(taskTemplate.discoveryVersion())
-            .setCacheSerializable(taskTemplate.cacheSerializable())
-            .build();
-
     Container container =
         requireNonNull(
             taskTemplate.container(), "Only container based task templates are supported");
+
+    TaskMetadata metadata = serializeTaskMetadata(taskTemplate);
 
     return Tasks.TaskTemplate.newBuilder()
         .setContainer(serialize(container))
@@ -332,6 +320,28 @@ class ProtoUtil {
         .build();
   }
 
+  private static TaskMetadata serializeTaskMetadata(TaskTemplate taskTemplate) {
+    Tasks.RuntimeMetadata runtime =
+        Tasks.RuntimeMetadata.newBuilder()
+            .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
+            .setFlavor(RUNTIME_FLAVOR)
+            .setVersion(RUNTIME_VERSION)
+            .build();
+
+    TaskMetadata.Builder metadataBuilder =
+        TaskMetadata.newBuilder()
+            .setRuntime(runtime)
+            .setRetries(serialize(taskTemplate.retries()))
+            .setDiscoverable(taskTemplate.discoverable())
+            .setCacheSerializable(taskTemplate.cacheSerializable());
+
+    if (taskTemplate.discoveryVersion() != null) {
+      metadataBuilder.setDiscoveryVersion(taskTemplate.discoveryVersion());
+    }
+
+    return metadataBuilder.build();
+  }
+
   static TaskTemplate deserialize(Tasks.TaskTemplate proto) {
     return TaskTemplate.builder()
         .container(proto.hasContainer() ? deserialize(proto.getContainer()) : null)
@@ -340,7 +350,8 @@ class ProtoUtil {
         .retries(deserialize(proto.getMetadata().getRetries()))
         .type(proto.getType())
         .discoverable(proto.getMetadata().getDiscoverable())
-        .discoveryVersion(proto.getMetadata().getDiscoveryVersion())
+        // Proto uses empty strings instead of null, we use null in TaskTemplate
+        .discoveryVersion(emptyToNull(proto.getMetadata().getDiscoveryVersion()))
         .cacheSerializable(proto.getMetadata().getCacheSerializable())
         .build();
   }

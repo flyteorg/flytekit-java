@@ -51,7 +51,7 @@ public interface RunnableTask {
   }
 
   default String getCacheVersion() {
-    return "";
+    return null;
   }
 
   default boolean isCacheSerializable() {

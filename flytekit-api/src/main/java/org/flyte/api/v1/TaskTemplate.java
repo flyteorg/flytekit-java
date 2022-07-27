@@ -39,6 +39,7 @@ public abstract class TaskTemplate {
 
   public abstract boolean discoverable();
 
+  @Nullable
   public abstract String discoveryVersion();
 
   public abstract boolean cacheSerializable();
@@ -46,10 +47,7 @@ public abstract class TaskTemplate {
   public abstract Builder toBuilder();
 
   public static Builder builder() {
-    return new AutoValue_TaskTemplate.Builder()
-        .discoverable(false)
-        .cacheSerializable(false)
-        .discoveryVersion("");
+    return new AutoValue_TaskTemplate.Builder();
   }
 
   @AutoValue.Builder

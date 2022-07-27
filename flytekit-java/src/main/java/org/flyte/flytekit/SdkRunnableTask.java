@@ -81,7 +81,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
   }
 
   public String getCacheVersion() {
-    return "";
+    return null;
   }
 
   public boolean isCached() {

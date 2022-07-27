@@ -17,6 +17,7 @@
 package org.flyte.jflyte;
 
 import static com.google.common.base.Strings.emptyToNull;
+import static com.google.common.base.Strings.nullToEmpty;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Objects.requireNonNull;
 import static org.flyte.jflyte.MoreCollectors.mapValues;
@@ -328,18 +329,14 @@ class ProtoUtil {
             .setVersion(RUNTIME_VERSION)
             .build();
 
-    TaskMetadata.Builder metadataBuilder =
-        TaskMetadata.newBuilder()
-            .setRuntime(runtime)
-            .setRetries(serialize(taskTemplate.retries()))
-            .setDiscoverable(taskTemplate.discoverable())
-            .setCacheSerializable(taskTemplate.cacheSerializable());
-
-    if (taskTemplate.discoveryVersion() != null) {
-      metadataBuilder.setDiscoveryVersion(taskTemplate.discoveryVersion());
-    }
-
-    return metadataBuilder.build();
+    return TaskMetadata.newBuilder()
+        .setRuntime(runtime)
+        .setRetries(serialize(taskTemplate.retries()))
+        .setDiscoverable(taskTemplate.discoverable())
+        .setCacheSerializable(taskTemplate.cacheSerializable())
+        // Proto uses empty strings instead of null, we use null in TaskTemplate
+        .setDiscoveryVersion(nullToEmpty(taskTemplate.discoveryVersion()))
+        .build();
   }
 
   static TaskTemplate deserialize(Tasks.TaskTemplate proto) {

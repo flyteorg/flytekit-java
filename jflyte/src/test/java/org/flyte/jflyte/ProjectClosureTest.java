@@ -507,7 +507,7 @@ public class ProjectClosureTest {
   }
 
   @Test
-  public void testCreateTaskTemplateForTasksWithNoCache() {
+  public void testCreateTaskTemplateForTasksWithDefaultCacheSettings() {
     // given
     RunnableTask runnableTask = createRunnableTask(null);
     ContainerTask containerTask =
@@ -536,22 +536,24 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForTasksWithCache() {
     // given
-    RunnableTask runnableTask = wrapTaskWithRetries(RunnableTask.class, createRunnableTask(null));
+    RunnableTask runnableTask = createRunnableTask(null);
+    RunnableTask runnableTaskWithCache =
+        wrapTaskWithRetries(RunnableTask.class, runnableTask, true);
     ContainerTask containerTask =
-        wrapTaskWithRetries(
-            ContainerTask.class,
-            createContainerTask(
-                Resources.builder().build(),
-                "test-image",
-                emptyList(),
-                ImmutableList.of("program"),
-                emptyList()));
+        createContainerTask(
+            Resources.builder().build(),
+            "test-image",
+            emptyList(),
+            ImmutableList.of("program"),
+            emptyList());
+    ContainerTask containerTaskWithCache =
+        wrapTaskWithRetries(ContainerTask.class, containerTask, true);
 
     // when
     TaskTemplate runnableTaskTemplate =
-        ProjectClosure.createTaskTemplateForRunnableTask(runnableTask, "image");
+        ProjectClosure.createTaskTemplateForRunnableTask(runnableTaskWithCache, "image");
     TaskTemplate containerTakTemplate =
-        ProjectClosure.createTaskTemplateForContainerTask(containerTask);
+        ProjectClosure.createTaskTemplateForContainerTask(containerTaskWithCache);
     List<TaskTemplate> taskTemplates = ImmutableList.of(runnableTaskTemplate, containerTakTemplate);
 
     // then
@@ -559,6 +561,37 @@ public class ProjectClosureTest {
       assertThat(taskTemplate.discoverable(), equalTo(true));
       assertThat(taskTemplate.cacheSerializable(), equalTo(true));
       assertThat(taskTemplate.discoveryVersion(), equalTo("0.0.1"));
+    }
+  }
+
+  @Test
+  public void testCreateTaskTemplateForTasksWithCacheDisabled() {
+    // given
+    RunnableTask runnableTask = createRunnableTask(null);
+    RunnableTask runnableTaskWithNoCache =
+        wrapTaskWithRetries(RunnableTask.class, runnableTask, false);
+    ContainerTask containerTask =
+        createContainerTask(
+            Resources.builder().build(),
+            "test-image",
+            emptyList(),
+            ImmutableList.of("program"),
+            emptyList());
+    ContainerTask containerTaskWithNoCache =
+        wrapTaskWithRetries(ContainerTask.class, containerTask, false);
+
+    // when
+    TaskTemplate runnableTaskTemplate =
+        ProjectClosure.createTaskTemplateForRunnableTask(runnableTaskWithNoCache, "image");
+    TaskTemplate containerTakTemplate =
+        ProjectClosure.createTaskTemplateForContainerTask(containerTaskWithNoCache);
+    List<TaskTemplate> taskTemplates = ImmutableList.of(runnableTaskTemplate, containerTakTemplate);
+
+    // then
+    for (TaskTemplate taskTemplate : taskTemplates) {
+      assertThat(taskTemplate.discoverable(), equalTo(false));
+      assertThat(taskTemplate.cacheSerializable(), equalTo(false));
+      assertThat(taskTemplate.discoveryVersion(), nullValue());
     }
   }
 
@@ -651,17 +684,17 @@ public class ProjectClosureTest {
     };
   }
 
-  private <T extends Task> T wrapTaskWithRetries(Class<T> taskClass, T task) {
+  private <T extends Task> T wrapTaskWithRetries(Class<T> taskClass, T task, boolean cacheEnabled) {
     return Reflection.newProxy(
         taskClass,
         (proxy, method, methodArgs) -> {
           switch (method.getName()) {
             case "isCached":
             case "isCacheSerializable":
-              return true;
+              return cacheEnabled;
 
             case "getCacheVersion":
-              return "0.0.1";
+              return cacheEnabled ? "0.0.1" : null;
             default:
               return method.invoke(task, methodArgs);
           }

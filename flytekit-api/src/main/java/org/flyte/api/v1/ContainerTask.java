@@ -16,15 +16,10 @@
  */
 package org.flyte.api.v1;
 
-import static java.util.Collections.emptyMap;
-
 import java.util.List;
 
 /** Building block for tasks that execute arbitrary containers. */
-public interface ContainerTask {
-
-  /** Specifies task name. */
-  String getName();
+public interface ContainerTask extends Task {
 
   /** Specifies container image. */
   String getImage();
@@ -38,22 +33,13 @@ public interface ContainerTask {
   /** Specifies container environment variables. */
   List<KeyValuePair> getEnv();
 
+  @Override
   default String getType() {
     return "raw-container";
   }
 
-  TypedInterface getInterface();
-
   /** Specifies container resource requests. */
   default Resources getResources() {
     return Resources.builder().build();
-  }
-
-  /** Specifies task retry policy. */
-  RetryStrategy getRetries();
-
-  /** Specifies custom container parameters. */
-  default Struct getCustom() {
-    return Struct.of(emptyMap());
   }
 }

@@ -124,4 +124,25 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform
   public Map<String, String> getEnv() {
     return emptyMap();
   }
+
+  /**
+   * Indicates whether the system should attempt to lookup this task's output to avoid duplication
+   * of work.
+   */
+  public boolean isCached() {
+    return false;
+  }
+
+  /** Indicates a logical version to apply to this task for the purpose of cache. */
+  public String getCacheVersion() {
+    return null;
+  }
+
+  /**
+   * Indicates whether the system should attempt to execute cached instances in serial to avoid
+   * duplicate work.
+   */
+  public boolean isCacheSerializable() {
+    return false;
+  }
 }

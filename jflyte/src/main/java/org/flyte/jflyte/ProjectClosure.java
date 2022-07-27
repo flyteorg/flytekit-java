@@ -67,6 +67,7 @@ import org.flyte.api.v1.Resources.ResourceName;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.Task;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -451,6 +452,25 @@ abstract class ProjectClosure {
             .resources(resources)
             .build();
 
+    return createTaskTemplate(task, container);
+  }
+
+  @VisibleForTesting
+  static TaskTemplate createTaskTemplateForContainerTask(ContainerTask task) {
+    Resources resources = task.getResources();
+    Container container =
+        Container.builder()
+            .command(task.getCommand())
+            .args(task.getArgs())
+            .image(task.getImage())
+            .env(task.getEnv())
+            .resources(resources)
+            .build();
+
+    return createTaskTemplate(task, container);
+  }
+
+  private static TaskTemplate createTaskTemplate(Task task, Container container) {
     TaskTemplate.Builder templateBuilder =
         TaskTemplate.builder()
             .container(container)
@@ -466,27 +486,6 @@ abstract class ProjectClosure {
     }
 
     return templateBuilder.build();
-  }
-
-  @VisibleForTesting
-  static TaskTemplate createTaskTemplateForContainerTask(ContainerTask task) {
-    Resources resources = task.getResources();
-    Container container =
-        Container.builder()
-            .command(task.getCommand())
-            .args(task.getArgs())
-            .image(task.getImage())
-            .env(task.getEnv())
-            .resources(resources)
-            .build();
-
-    return TaskTemplate.builder()
-        .container(container)
-        .interface_(task.getInterface())
-        .retries(task.getRetries())
-        .type(task.getType())
-        .custom(task.getCustom())
-        .build();
   }
 
   private static Optional<KeyValuePair> javaToolOptionsEnv(Resources resources) {

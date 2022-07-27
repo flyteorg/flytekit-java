@@ -18,7 +18,8 @@ package org.flyte.jflyte;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.flyte.api.v1.Resources.ResourceName.*;
+import static org.flyte.api.v1.Resources.ResourceName.CPU;
+import static org.flyte.api.v1.Resources.ResourceName.MEMORY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.reflect.Reflection;
 import com.google.protobuf.ByteString;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +54,7 @@ import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.Task;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -59,7 +62,6 @@ import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.flytekit.SdkTypes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ProjectClosureTest {
@@ -430,9 +432,6 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
-    assertThat(result.discoverable(), equalTo(false));
-    assertThat(result.cacheSerializable(), equalTo(false));
-    assertThat(result.discoveryVersion(), nullValue());
   }
 
   @Test
@@ -468,44 +467,9 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("java-task"));
-    assertThat(result.discoverable(), equalTo(false));
-    assertThat(result.cacheSerializable(), equalTo(false));
-    assertThat(result.discoveryVersion(), nullValue());
   }
 
   @Test
-  public void testCreateTaskTemplateForRunnableTaskWithCache() {
-    // given
-    RunnableTask task = createRunnableTaskWithCache();
-    String image = "my-image";
-    Resources expectedResources = Resources.builder().build();
-
-    // when
-    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
-
-    // then
-    Container container = result.container();
-    assertNotNull(container);
-    assertThat(container.image(), equalTo(image));
-    assertThat(container.resources(), equalTo(expectedResources));
-    assertThat(container.env(), equalTo(emptyList()));
-    assertThat(
-        result.interface_(),
-        equalTo(
-            TypedInterface.builder()
-                .inputs(SdkTypes.nulls().getVariableMap())
-                .outputs(SdkTypes.nulls().getVariableMap())
-                .build()));
-    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
-    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
-    assertThat(result.type(), equalTo("java-task"));
-    assertThat(result.discoverable(), equalTo(true));
-    assertThat(result.cacheSerializable(), equalTo(true));
-    assertThat(result.discoveryVersion(), equalTo("0.0.1"));
-  }
-
-  @Test
-  @Disabled("ContainerTasks don't currently support cache, fix coming up")
   public void testCreateTaskTemplateForContainerTask() {
     // given
     Resources expectedResources =
@@ -540,6 +504,62 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("raw-container"));
+  }
+
+  @Test
+  public void testCreateTaskTemplateForTasksWithNoCache() {
+    // given
+    RunnableTask runnableTask = createRunnableTask(null);
+    ContainerTask containerTask =
+        createContainerTask(
+            Resources.builder().build(),
+            "test-image",
+            emptyList(),
+            ImmutableList.of("program"),
+            emptyList());
+
+    // when
+    TaskTemplate runnableTaskTemplate =
+        ProjectClosure.createTaskTemplateForRunnableTask(runnableTask, "image");
+    TaskTemplate containerTakTemplate =
+        ProjectClosure.createTaskTemplateForContainerTask(containerTask);
+    List<TaskTemplate> taskTemplates = ImmutableList.of(runnableTaskTemplate, containerTakTemplate);
+
+    // then
+    for (TaskTemplate taskTemplate : taskTemplates) {
+      assertThat(taskTemplate.discoverable(), equalTo(false));
+      assertThat(taskTemplate.cacheSerializable(), equalTo(false));
+      assertThat(taskTemplate.discoveryVersion(), nullValue());
+    }
+  }
+
+  @Test
+  public void testCreateTaskTemplateForTasksWithCache() {
+    // given
+    RunnableTask runnableTask = wrapTaskWithRetries(RunnableTask.class, createRunnableTask(null));
+    ContainerTask containerTask =
+        wrapTaskWithRetries(
+            ContainerTask.class,
+            createContainerTask(
+                Resources.builder().build(),
+                "test-image",
+                emptyList(),
+                ImmutableList.of("program"),
+                emptyList()));
+
+    // when
+    TaskTemplate runnableTaskTemplate =
+        ProjectClosure.createTaskTemplateForRunnableTask(runnableTask, "image");
+    TaskTemplate containerTakTemplate =
+        ProjectClosure.createTaskTemplateForContainerTask(containerTask);
+    List<TaskTemplate> taskTemplates = ImmutableList.of(runnableTaskTemplate, containerTakTemplate);
+
+    // then
+    for (TaskTemplate taskTemplate : taskTemplates) {
+      assertThat(taskTemplate.discoverable(), equalTo(true));
+      assertThat(taskTemplate.cacheSerializable(), equalTo(true));
+      assertThat(taskTemplate.discoveryVersion(), equalTo("0.0.1"));
+    }
   }
 
   private RunnableTask createRunnableTask(Resources expectedResources) {
@@ -631,46 +651,20 @@ public class ProjectClosureTest {
     };
   }
 
-  private RunnableTask createRunnableTaskWithCache() {
-    return new RunnableTask() {
-      @Override
-      public String getName() {
-        return "my-test-task";
-      }
+  private <T extends Task> T wrapTaskWithRetries(Class<T> taskClass, T task) {
+    return Reflection.newProxy(
+        taskClass,
+        (proxy, method, methodArgs) -> {
+          switch (method.getName()) {
+            case "isCached":
+            case "isCacheSerializable":
+              return true;
 
-      @Override
-      public TypedInterface getInterface() {
-        return TypedInterface.builder()
-            .inputs(SdkTypes.nulls().getVariableMap())
-            .outputs(SdkTypes.nulls().getVariableMap())
-            .build();
-      }
-
-      @Override
-      public Map<String, Literal> run(Map<String, Literal> inputs) {
-        System.out.println("Cached Hello World");
-        return null;
-      }
-
-      @Override
-      public RetryStrategy getRetries() {
-        return RetryStrategy.builder().retries(0).build();
-      }
-
-      @Override
-      public boolean isCached() {
-        return true;
-      }
-
-      @Override
-      public String getCacheVersion() {
-        return "0.0.1";
-      }
-
-      @Override
-      public boolean isCacheSerializable() {
-        return true;
-      }
-    };
+            case "getCacheVersion":
+              return "0.0.1";
+            default:
+              return method.invoke(task, methodArgs);
+          }
+        });
   }
 }

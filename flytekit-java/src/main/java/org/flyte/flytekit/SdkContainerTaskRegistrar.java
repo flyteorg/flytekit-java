@@ -105,6 +105,21 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     public Resources getResources() {
       return sdkTask.getResources().toIdl();
     }
+
+    @Override
+    public boolean isCached() {
+      return sdkTask.isCached();
+    }
+
+    @Override
+    public String getCacheVersion() {
+      return sdkTask.getCacheVersion();
+    }
+
+    @Override
+    public boolean isCacheSerializable() {
+      return sdkTask.isCacheSerializable();
+    }
   }
 
   @Override

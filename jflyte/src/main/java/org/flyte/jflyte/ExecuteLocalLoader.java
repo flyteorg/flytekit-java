@@ -158,5 +158,20 @@ public class ExecuteLocalLoader {
     public RetryStrategy getRetries() {
       return runnableTask.getRetries();
     }
+
+    @Override
+    public boolean isCached() {
+      return runnableTask.isCached();
+    }
+
+    @Override
+    public String getCacheVersion() {
+      return runnableTask.getCacheVersion();
+    }
+
+    @Override
+    public boolean isCacheSerializable() {
+      return runnableTask.isCacheSerializable();
+    }
   }
 }

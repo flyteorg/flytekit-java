@@ -67,6 +67,7 @@ import org.flyte.api.v1.Resources.ResourceName;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.Task;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -451,13 +452,7 @@ abstract class ProjectClosure {
             .resources(resources)
             .build();
 
-    return TaskTemplate.builder()
-        .container(container)
-        .interface_(task.getInterface())
-        .retries(task.getRetries())
-        .type(task.getType())
-        .custom(task.getCustom())
-        .build();
+    return createTaskTemplate(task, container);
   }
 
   @VisibleForTesting
@@ -472,13 +467,25 @@ abstract class ProjectClosure {
             .resources(resources)
             .build();
 
-    return TaskTemplate.builder()
-        .container(container)
-        .interface_(task.getInterface())
-        .retries(task.getRetries())
-        .type(task.getType())
-        .custom(task.getCustom())
-        .build();
+    return createTaskTemplate(task, container);
+  }
+
+  private static TaskTemplate createTaskTemplate(Task task, Container container) {
+    TaskTemplate.Builder templateBuilder =
+        TaskTemplate.builder()
+            .container(container)
+            .interface_(task.getInterface())
+            .retries(task.getRetries())
+            .type(task.getType())
+            .custom(task.getCustom())
+            .discoverable(task.isCached())
+            .cacheSerializable(task.isCacheSerializable());
+
+    if (task.getCacheVersion() != null) {
+      templateBuilder.discoveryVersion(task.getCacheVersion());
+    }
+
+    return templateBuilder.build();
   }
 
   private static Optional<KeyValuePair> javaToolOptionsEnv(Resources resources) {

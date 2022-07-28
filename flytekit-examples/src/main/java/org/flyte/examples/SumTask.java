@@ -57,4 +57,19 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   public SumOutput run(SumInput input) {
     return SumOutput.create(input.a() + input.b());
   }
+
+  @Override
+  public boolean isCached() {
+    return true;
+  }
+
+  @Override
+  public String getCacheVersion() {
+    return "1";
+  }
+
+  @Override
+  public boolean isCacheSerializable() {
+    return true;
+  }
 }

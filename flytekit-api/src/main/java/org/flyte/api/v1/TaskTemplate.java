@@ -37,6 +37,13 @@ public abstract class TaskTemplate {
 
   public abstract Struct custom();
 
+  public abstract boolean discoverable();
+
+  @Nullable
+  public abstract String discoveryVersion();
+
+  public abstract boolean cacheSerializable();
+
   public abstract Builder toBuilder();
 
   public static Builder builder() {
@@ -55,6 +62,12 @@ public abstract class TaskTemplate {
     public abstract Builder type(String type);
 
     public abstract Builder custom(Struct custom);
+
+    public abstract Builder discoverable(boolean discoverable);
+
+    public abstract Builder discoveryVersion(String discoveryVersion);
+
+    public abstract Builder cacheSerializable(boolean cacheSerializable);
 
     public abstract TaskTemplate build();
   }

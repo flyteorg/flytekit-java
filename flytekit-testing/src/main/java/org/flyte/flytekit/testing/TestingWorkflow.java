@@ -16,43 +16,38 @@
  */
 package org.flyte.flytekit.testing;
 
-import com.google.errorprone.annotations.Var;
 import java.util.Map;
+import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.SdkNode;
-import org.flyte.flytekit.SdkTransform;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-class TestingWorkflow extends SdkWorkflow {
+class TestingWorkflow<InputT, OutputT> extends SdkWorkflow {
 
-  private final SdkWorkflow workflow;
-  private final SdkType<Map<String, Literal>> inputs;
-  private final SdkType<Map<String, Literal>> outputs;
+  private final SdkType<InputT> inputType;
+  private final SdkType<OutputT> outputType;
+  private final Map<String, Literal> outputLiterals;
 
-  TestingWorkflow(
-      SdkWorkflow workflow,
-      SdkType<Map<String, Literal>> inputs,
-      SdkType<Map<String, Literal>> outputs) {
-    this.workflow = workflow;
-    this.inputs = inputs;
-    this.outputs = outputs;
+  TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
+    this.inputType = inputType;
+    this.outputType = outputType;
+    this.outputLiterals = outputType.toLiteralMap(output);
   }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    @Var SdkTransform task = new DummyTask(workflow.getName(), inputs, outputs);
-    for (Map.Entry<String, Variable> i : inputs.getVariableMap().entrySet()) {
-      task =
-          task.withInput(i.getKey(), builder.inputOf(i.getKey(), i.getValue().literalType(), ""));
-    }
+    inputType.getVariableMap().forEach((name, var) -> builder.inputOf(name, var.literalType(), ""));
 
-    SdkNode node = builder.apply(workflow.getName(), task);
+    for (Map.Entry<String, Variable> entries : outputType.getVariableMap().entrySet()) {
+      String name = entries.getKey();
+      Variable var = entries.getValue();
+      BindingData outputBinding = Literals.toBindingData(outputLiterals.get(name));
+      SdkBindingData output = SdkBindingData.create(outputBinding, var.literalType());
 
-    for (String o : outputs.getVariableMap().keySet()) {
-      builder.output(o, node.getOutput(o));
+      builder.output(name, output, "");
     }
   }
 }

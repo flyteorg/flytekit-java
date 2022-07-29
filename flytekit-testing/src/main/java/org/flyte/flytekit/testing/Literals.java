@@ -30,29 +30,29 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-public class Literals {
+class Literals {
 
-  public static Literal ofInteger(long value) {
+  static Literal ofInteger(long value) {
     return ofPrimitive(Primitive.ofIntegerValue(value));
   }
 
-  public static Literal ofFloat(double value) {
+  static Literal ofFloat(double value) {
     return ofPrimitive(Primitive.ofFloatValue(value));
   }
 
-  public static Literal ofString(String value) {
+  static Literal ofString(String value) {
     return ofPrimitive(Primitive.ofStringValue(value));
   }
 
-  public static Literal ofBoolean(boolean value) {
+  static Literal ofBoolean(boolean value) {
     return ofPrimitive(Primitive.ofBooleanValue(value));
   }
 
-  public static Literal ofDatetime(Instant value) {
+  static Literal ofDatetime(Instant value) {
     return ofPrimitive(Primitive.ofDatetime(value));
   }
 
-  public static Literal ofDuration(Duration value) {
+  static Literal ofDuration(Duration value) {
     return ofPrimitive(Primitive.ofDuration(value));
   }
 
@@ -60,7 +60,7 @@ public class Literals {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
-  public static BindingData toBindingData(Literal literal) {
+  static BindingData toBindingData(Literal literal) {
     switch (literal.kind()) {
       case SCALAR:
         return BindingData.ofScalar(literal.scalar());

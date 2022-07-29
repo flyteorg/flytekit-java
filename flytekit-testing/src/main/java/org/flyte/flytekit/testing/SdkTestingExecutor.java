@@ -296,30 +296,38 @@ public abstract class SdkTestingExecutor {
       InputT input,
       SdkType<OutputT> outputType,
       OutputT output) {
-    return withWorkflowOutput(
-        workflow, inputType.toLiteralMap(input), outputType.toLiteralMap(output));
-  }
-
-  public SdkTestingExecutor withWorkflowOutput(
-      SdkWorkflow workflow, Map<String, Literal> input, Map<String, Literal> output) {
-    // TODO type checking
-    TypedInterface intf = workflowTemplateMap().get(workflow.getName()).interface_();
+    verifyInputOutputMatchesWorkflowInterface(workflow, inputType, outputType);
 
     // fixed tasks
-    SdkType<Map<String, Literal>> inputType = TestingSdkType.of(intf.inputs());
-    SdkType<Map<String, Literal>> outputType = TestingSdkType.of(intf.outputs());
-    TestingRunnableTask<Map<String, Literal>, Map<String, Literal>> fixedTask =
+    TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
 
     // replace workflow
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    SdkWorkflow w = new TestingWorkflow(workflow, inputType, outputType);
-    w.expand(builder);
+    SdkWorkflowBuilder mockBuilder = new SdkWorkflowBuilder();
+    SdkWorkflow w = new TestingWorkflow<>(inputType, outputType, output);
+    w.expand(mockBuilder);
 
     return toBuilder()
-        .putWorkflowTemplate(workflow.getName(), builder.toIdlTemplate())
+        .putWorkflowTemplate(workflow.getName(), mockBuilder.toIdlTemplate())
         .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
         .build();
+  }
+
+  private static <InputT, OutputT> void verifyInputOutputMatchesWorkflowInterface(
+      SdkWorkflow workflow, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+    workflow.expand(builder);
+    TypedInterface intf = builder.toIdlTemplate().interface_();
+
+    if (!intf.inputs().equals(inputType.getVariableMap())) {
+      throw new IllegalArgumentException(
+          "input type doesn't corresponds with workflow interface: " + inputType.getVariableMap());
+    }
+    if (!intf.outputs().equals(outputType.getVariableMap())) {
+      throw new IllegalArgumentException(
+          "output type doesn't corresponds with workflow interface: "
+              + outputType.getVariableMap());
+    }
   }
 
   private <InputT, OutputT> TestingRunnableTask<InputT, OutputT> getFixedTaskOrDefault(

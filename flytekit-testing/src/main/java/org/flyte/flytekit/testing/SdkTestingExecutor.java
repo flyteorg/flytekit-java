@@ -390,6 +390,7 @@ public abstract class SdkTestingExecutor {
     Builder putWorkflowTemplate(String name, WorkflowTemplate template) {
       Map<String, WorkflowTemplate> newWorkflowTemplateMap = new HashMap<>(workflowTemplateMap());
       newWorkflowTemplateMap.put(name, template);
+
       return workflowTemplateMap(newWorkflowTemplateMap);
     }
 

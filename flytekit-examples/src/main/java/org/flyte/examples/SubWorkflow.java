@@ -17,6 +17,7 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -30,5 +31,25 @@ public class SubWorkflow extends SdkWorkflow {
     SdkBindingData right = builder.inputOfInteger("right");
     SdkBindingData result = builder.apply("sum", SumTask.of(left, right)).getOutput("c");
     builder.output("result", result);
+  }
+
+  @AutoValue
+  public abstract static class Input {
+    abstract long left();
+
+    abstract long right();
+
+    public static Input create(long left, long right) {
+      return new AutoValue_SubWorkflow_Input(left, right);
+    }
+  }
+
+  @AutoValue
+  public abstract static class Output {
+    abstract long result();
+
+    public static Output create(long result) {
+      return new AutoValue_SubWorkflow_Output(result);
+    }
   }
 }

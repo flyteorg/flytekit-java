@@ -18,10 +18,10 @@ package org.flyte.examples;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.flyte.api.v1.Literal;
-import org.flyte.flytekit.testing.Literals;
+import org.flyte.examples.SubWorkflow.Input;
+import org.flyte.examples.SumTask.SumInput;
+import org.flyte.examples.SumTask.SumOutput;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.flytekit.testing.SdkTestingExecutor;
 import org.junit.jupiter.api.Test;
 
@@ -61,30 +61,31 @@ public class WorkflowTest {
 
   @Test
   public void testMockSubWorkflow() {
-    Map<String, Literal> sub1Inputs = new HashMap<>();
-    sub1Inputs.put("left", Literals.ofInteger(1));
-    sub1Inputs.put("right", Literals.ofInteger(2));
-    Map<String, Literal> sub1Outputs = new HashMap<>();
-    sub1Outputs.put("result", Literals.ofInteger(0));
-
-    Map<String, Literal> sub2Inputs = new HashMap<>();
-    sub2Inputs.put("left", Literals.ofInteger(0));
-    sub2Inputs.put("right", Literals.ofInteger(3));
-    Map<String, Literal> sub2Outputs = new HashMap<>();
-    sub2Outputs.put("result", Literals.ofInteger(0));
-
+    JacksonSdkType<Input> sdkType = JacksonSdkType.of(Input.class);
+    System.out.println(sdkType.toLiteralMap(SubWorkflow.Input.create(1, 2)));
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new UberWorkflow())
             .withFixedInput("a", 1)
             .withFixedInput("b", 2)
             .withFixedInput("c", 3)
             .withFixedInput("d", 4)
-            .withWorkflowOutput(new SubWorkflow(), sub1Inputs, sub1Outputs)
-            .withWorkflowOutput(new SubWorkflow(), sub2Inputs, sub2Outputs)
-            .withTaskOutput(
-                new SumTask(), SumTask.SumInput.create(0L, 4L), SumTask.SumOutput.create(42L))
+            // Deliberately mock with absurd values to make sure that we are not picking the
+            // SumTask implementation
+            .withWorkflowOutput(
+                new SubWorkflow(),
+                JacksonSdkType.of(SubWorkflow.Input.class),
+                SubWorkflow.Input.create(1L, 2L),
+                JacksonSdkType.of(SubWorkflow.Output.class),
+                SubWorkflow.Output.create(5L))
+            .withWorkflowOutput(
+                new SubWorkflow(),
+                JacksonSdkType.of(SubWorkflow.Input.class),
+                SubWorkflow.Input.create(5L, 3L),
+                JacksonSdkType.of(SubWorkflow.Output.class),
+                SubWorkflow.Output.create(10L))
+            .withTaskOutput(new SumTask(), SumInput.create(10L, 4L), SumOutput.create(15L))
             .execute();
 
-    assertEquals(42L, result.getIntegerOutput("total"));
+    assertEquals(15L, result.getIntegerOutput("total"));
   }
 }

@@ -61,8 +61,6 @@ public class WorkflowTest {
 
   @Test
   public void testMockSubWorkflow() {
-    JacksonSdkType<Input> sdkType = JacksonSdkType.of(Input.class);
-    System.out.println(sdkType.toLiteralMap(SubWorkflow.Input.create(1, 2)));
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new UberWorkflow())
             .withFixedInput("a", 1)

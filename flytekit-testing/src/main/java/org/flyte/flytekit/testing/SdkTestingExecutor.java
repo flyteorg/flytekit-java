@@ -92,9 +92,7 @@ public abstract class SdkTestingExecutor {
 
     Map<String, WorkflowTemplate> workflowTemplateMap = new HashMap<>();
     for (SdkWorkflow w : workflows) {
-      SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-      w.expand(builder);
-      workflowTemplateMap.put(w.getName(), builder.toIdlTemplate());
+      workflowTemplateMap.put(w.getName(), w.toIdlTemplate());
     }
 
     return SdkTestingExecutor.builder()
@@ -163,11 +161,8 @@ public abstract class SdkTestingExecutor {
   }
 
   public Result execute() {
-    TestingSdkWorkflowBuilder builder =
-        new TestingSdkWorkflowBuilder(fixedInputMap(), fixedInputTypeMap());
-
-    workflow().expand(builder);
-    WorkflowTemplate workflowTemplate = builder.toIdlTemplate();
+    WorkflowTemplate workflowTemplate = workflow().toIdlTemplate();
+    checkInputsInFixedInputs(workflowTemplate);
     checkFixedTransform(workflowTemplate);
 
     Map<String, Literal> outputLiteralMap =
@@ -183,6 +178,31 @@ public abstract class SdkTestingExecutor {
             .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
     return Result.create(outputLiteralMap, outputLiteralTypeMap);
+  }
+
+  private void checkInputsInFixedInputs(WorkflowTemplate template) {
+    template
+        .interface_()
+        .inputs()
+        .forEach(
+            (inputName, inputVar) -> {
+              LiteralType inputType = inputVar.literalType();
+
+              LiteralType fixedInputType = fixedInputTypeMap().get(inputName);
+
+              checkArgument(
+                  fixedInputType != null,
+                  "Fixed input [%s] (of type %s) isn't defined, use SdkTestingExecutor#withFixedInput",
+                  inputName,
+                  LiteralTypes.toPrettyString(inputType));
+
+              checkArgument(
+                  fixedInputType.equals(inputType),
+                  "Fixed input [%s] (of type %s) doesn't match expected type %s",
+                  inputName,
+                  LiteralTypes.toPrettyString(fixedInputType),
+                  LiteralTypes.toPrettyString(inputType));
+            });
   }
 
   private void checkFixedTransform(WorkflowTemplate template) {
@@ -319,14 +339,19 @@ public abstract class SdkTestingExecutor {
     workflow.expand(builder);
     TypedInterface intf = builder.toIdlTemplate().interface_();
 
-    if (!intf.inputs().equals(inputType.getVariableMap())) {
+    verifyVariablesMatches("Input", intf.inputs(), inputType.getVariableMap());
+    verifyVariablesMatches("Output", intf.outputs(), outputType.getVariableMap());
+  }
+
+  private static void verifyVariablesMatches(
+      String type, Map<String, Variable> actualVariables, Map<String, Variable> variables) {
+    if (!actualVariables.equals(variables)) {
       throw new IllegalArgumentException(
-          "input type doesn't corresponds with workflow interface: " + inputType.getVariableMap());
-    }
-    if (!intf.outputs().equals(outputType.getVariableMap())) {
-      throw new IllegalArgumentException(
-          "output type doesn't corresponds with workflow interface: "
-              + outputType.getVariableMap());
+          String.format(
+              "%s type %s doesn't match expected type %s",
+              type,
+              LiteralTypes.toPrettyString(LiteralTypes.from(variables)),
+              LiteralTypes.toPrettyString(LiteralTypes.from(actualVariables))));
     }
   }
 

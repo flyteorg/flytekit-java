@@ -249,8 +249,7 @@ public class SdkTestingExecutorTest {
 
     assertThat(
         ex.getMessage(),
-        equalTo(
-            "input type doesn't corresponds with workflow interface: {out=Variable{literalType=LiteralType{simpleType=INTEGER}, description=}}"));
+        equalTo("Input type { out=INTEGER } doesn't match expected type { in=INTEGER }"));
   }
 
   @Test
@@ -271,8 +270,7 @@ public class SdkTestingExecutorTest {
 
     assertThat(
         ex.getMessage(),
-        equalTo(
-            "output type doesn't corresponds with workflow interface: {in=Variable{literalType=LiteralType{simpleType=INTEGER}, description=}}"));
+        equalTo("Output type { in=INTEGER } doesn't match expected type { out=INTEGER }"));
   }
 
   public static class SimpleUberWorkflow extends SdkWorkflow {

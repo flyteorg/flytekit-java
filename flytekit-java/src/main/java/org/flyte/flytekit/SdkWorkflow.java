@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowTemplate;
 
 public abstract class SdkWorkflow extends SdkTransform {
 
@@ -68,5 +69,12 @@ public abstract class SdkWorkflow extends SdkTransform {
 
     return new SdkWorkflowNode(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs);
+  }
+
+  public WorkflowTemplate toIdlTemplate() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+    this.expand(builder);
+
+    return builder.toIdlTemplate();
   }
 }

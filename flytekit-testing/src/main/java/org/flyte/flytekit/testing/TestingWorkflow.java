@@ -39,7 +39,9 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    inputType.getVariableMap().forEach((name, var) -> builder.inputOf(name, var.literalType(), ""));
+    inputType
+        .getVariableMap()
+        .forEach((name, var) -> builder.inputOf(name, var.literalType(), var.description()));
 
     for (Map.Entry<String, Variable> entries : outputType.getVariableMap().entrySet()) {
       String name = entries.getKey();
@@ -47,7 +49,7 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow {
       BindingData outputBinding = Literals.toBindingData(outputLiterals.get(name));
       SdkBindingData output = SdkBindingData.create(outputBinding, var.literalType());
 
-      builder.output(name, output, "");
+      builder.output(name, output, var.description());
     }
   }
 }

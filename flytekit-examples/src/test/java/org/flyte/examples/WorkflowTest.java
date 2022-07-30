@@ -18,7 +18,6 @@ package org.flyte.examples;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.flyte.examples.SubWorkflow.Input;
 import org.flyte.examples.SumTask.SumInput;
 import org.flyte.examples.SumTask.SumOutput;
 import org.flyte.flytekit.jackson.JacksonSdkType;

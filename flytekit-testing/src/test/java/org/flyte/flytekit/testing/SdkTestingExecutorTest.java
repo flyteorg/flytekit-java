@@ -21,10 +21,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.flytekit.testing.RemoteSumTask.RemoteSumInput;
 import org.flyte.flytekit.testing.RemoteSumTask.RemoteSumOutput;
 import org.junit.jupiter.api.Test;
@@ -210,5 +213,100 @@ public class SdkTestingExecutorTest {
             .execute();
 
     assertTrue(result.literalMap().isEmpty());
+  }
+
+  @Test
+  public void withWorkflowOutput_successfullyMocksWhenTypeMatches() {
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(new SimpleUberWorkflow())
+            .withFixedInput("n", 7)
+            .withWorkflowOutput(
+                new SimpleSubWorkflow(),
+                JacksonSdkType.of(SimpleSubWorkflowInput.class),
+                SimpleSubWorkflowInput.create(7),
+                JacksonSdkType.of(SimpleSubWorkflowOutput.class),
+                SimpleSubWorkflowOutput.create(5))
+            .execute();
+
+    assertThat(result.getIntegerOutput("result"), equalTo(5L));
+  }
+
+  @Test
+  public void withWorkflowOutput_mismatchInputTypeThrowsException() {
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SdkTestingExecutor.of(new SimpleUberWorkflow())
+                    .withFixedInput("n", 7)
+                    .withWorkflowOutput(
+                        new SimpleSubWorkflow(),
+                        // using output type wrongly as input type
+                        JacksonSdkType.of(SimpleSubWorkflowOutput.class),
+                        SimpleSubWorkflowOutput.create(7),
+                        JacksonSdkType.of(SimpleSubWorkflowOutput.class),
+                        SimpleSubWorkflowOutput.create(5)));
+
+    assertThat(
+        ex.getMessage(),
+        equalTo("Input type { out=INTEGER } doesn't match expected type { in=INTEGER }"));
+  }
+
+  @Test
+  public void withWorkflowOutput_mismatchOutputTypeThrowsException() {
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SdkTestingExecutor.of(new SimpleUberWorkflow())
+                    .withFixedInput("n", 7)
+                    .withWorkflowOutput(
+                        new SimpleSubWorkflow(),
+                        JacksonSdkType.of(SimpleSubWorkflowInput.class),
+                        SimpleSubWorkflowInput.create(7),
+                        // using input type wrongly as output type
+                        JacksonSdkType.of(SimpleSubWorkflowInput.class),
+                        SimpleSubWorkflowInput.create(5)));
+
+    assertThat(
+        ex.getMessage(),
+        equalTo("Output type { in=INTEGER } doesn't match expected type { out=INTEGER }"));
+  }
+
+  public static class SimpleUberWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      SdkBindingData input = builder.inputOfInteger("n", "");
+      SdkBindingData output =
+          builder.apply("void", new SimpleSubWorkflow().withInput("in", input)).getOutput("out");
+      builder.output("result", output);
+    }
+  }
+
+  public static class SimpleSubWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      builder.output("out", builder.inputOfInteger("in"));
+    }
+  }
+
+  @AutoValue
+  abstract static class SimpleSubWorkflowInput {
+    abstract long in();
+
+    public static SimpleSubWorkflowInput create(long in) {
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
+    }
+  }
+
+  @AutoValue
+  abstract static class SimpleSubWorkflowOutput {
+    abstract long out();
+
+    public static SimpleSubWorkflowOutput create(long out) {
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(out);
+    }
   }
 }

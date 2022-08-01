@@ -18,6 +18,9 @@ package org.flyte.examples;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.flyte.examples.SumTask.SumInput;
+import org.flyte.examples.SumTask.SumOutput;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.flytekit.testing.SdkTestingExecutor;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +40,7 @@ public class WorkflowTest {
   }
 
   @Test
-  public void testMockSubWorkflow() {
+  public void testMockTasks() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new UberWorkflow())
             .withFixedInput("a", 1)
@@ -53,5 +56,33 @@ public class WorkflowTest {
             .execute();
 
     assertEquals(42L, result.getIntegerOutput("total"));
+  }
+
+  @Test
+  public void testMockSubWorkflow() {
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(new UberWorkflow())
+            .withFixedInput("a", 1)
+            .withFixedInput("b", 2)
+            .withFixedInput("c", 3)
+            .withFixedInput("d", 4)
+            // Deliberately mock with absurd values to make sure that we are not picking the
+            // SumTask implementation
+            .withWorkflowOutput(
+                new SubWorkflow(),
+                JacksonSdkType.of(SubWorkflow.Input.class),
+                SubWorkflow.Input.create(1L, 2L),
+                JacksonSdkType.of(SubWorkflow.Output.class),
+                SubWorkflow.Output.create(5L))
+            .withWorkflowOutput(
+                new SubWorkflow(),
+                JacksonSdkType.of(SubWorkflow.Input.class),
+                SubWorkflow.Input.create(5L, 3L),
+                JacksonSdkType.of(SubWorkflow.Output.class),
+                SubWorkflow.Output.create(10L))
+            .withTaskOutput(new SumTask(), SumInput.create(10L, 4L), SumOutput.create(15L))
+            .execute();
+
+    assertEquals(15L, result.getIntegerOutput("total"));
   }
 }

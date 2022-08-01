@@ -43,7 +43,6 @@ import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
-import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.localengine.LocalEngine;
 
 @AutoValue
@@ -85,15 +84,11 @@ public abstract class SdkTestingExecutor {
 
   public static SdkTestingExecutor of(
       SdkWorkflow workflow, List<SdkRunnableTask<?, ?>> tasks, List<SdkWorkflow> workflows) {
-    Map<String, TestingRunnableTask<?, ?>> fixedTasks = new HashMap<>();
-    for (SdkRunnableTask<?, ?> task : tasks) {
-      fixedTasks.put(task.getName(), TestingRunnableTask.create(task));
-    }
+    Map<String, TestingRunnableTask<?, ?>> fixedTasks =
+        tasks.stream().collect(toMap(SdkRunnableTask::getName, TestingRunnableTask::create));
 
-    Map<String, WorkflowTemplate> workflowTemplateMap = new HashMap<>();
-    for (SdkWorkflow w : workflows) {
-      workflowTemplateMap.put(w.getName(), w.toIdlTemplate());
-    }
+    Map<String, WorkflowTemplate> workflowTemplateMap =
+        workflows.stream().collect(toMap(SdkWorkflow::getName, SdkWorkflow::toIdlTemplate));
 
     return SdkTestingExecutor.builder()
         .workflow(workflow)
@@ -323,21 +318,17 @@ public abstract class SdkTestingExecutor {
         getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
 
     // replace workflow
-    SdkWorkflowBuilder mockBuilder = new SdkWorkflowBuilder();
-    SdkWorkflow w = new TestingWorkflow<>(inputType, outputType, output);
-    w.expand(mockBuilder);
+    SdkWorkflow mockWorkflow = new TestingWorkflow<>(inputType, outputType, output);
 
     return toBuilder()
-        .putWorkflowTemplate(workflow.getName(), mockBuilder.toIdlTemplate())
+        .putWorkflowTemplate(workflow.getName(), mockWorkflow.toIdlTemplate())
         .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
         .build();
   }
 
   private static <InputT, OutputT> void verifyInputOutputMatchesWorkflowInterface(
       SdkWorkflow workflow, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    workflow.expand(builder);
-    TypedInterface intf = builder.toIdlTemplate().interface_();
+    TypedInterface intf = workflow.toIdlTemplate().interface_();
 
     verifyVariablesMatches("Input", intf.inputs(), inputType.getVariableMap());
     verifyVariablesMatches("Output", intf.outputs(), outputType.getVariableMap());

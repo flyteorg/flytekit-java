@@ -58,11 +58,11 @@ public abstract class SdkLaunchPlan {
    *
    * @return Workflow's expected input interface (names and types)
    */
-  abstract Map<String, LiteralType> workflowInputTypeMap();
+  public abstract Map<String, LiteralType> workflowInputTypeMap();
 
-  abstract Map<String, Literal> fixedInputs();
+  public abstract Map<String, Literal> fixedInputs();
 
-  abstract Map<String, Parameter> defaultInputs();
+  public abstract Map<String, Parameter> defaultInputs();
 
   @Nullable
   public abstract SdkCronSchedule cronSchedule();

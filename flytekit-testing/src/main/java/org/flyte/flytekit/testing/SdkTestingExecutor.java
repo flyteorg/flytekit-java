@@ -39,6 +39,7 @@ import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
@@ -53,6 +54,8 @@ public abstract class SdkTestingExecutor {
   abstract Map<String, LiteralType> fixedInputTypeMap();
 
   abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
+
+  abstract Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap();
 
   abstract SdkWorkflow workflow();
 
@@ -96,6 +99,7 @@ public abstract class SdkTestingExecutor {
         .fixedInputMap(emptyMap())
         .fixedInputTypeMap(emptyMap())
         .fixedTaskMap(fixedTasks)
+        .mockLaunchPlanMap(emptyMap())
         .build();
   }
 
@@ -166,6 +170,7 @@ public abstract class SdkTestingExecutor {
             unmodifiableMap(fixedTaskMap()),
             emptyMap(),
             unmodifiableMap(workflowTemplateMap()),
+            unmodifiableMap(mockLaunchPlanMap()),
             fixedInputMap());
 
     Map<String, LiteralType> outputLiteralTypeMap =
@@ -215,13 +220,18 @@ public abstract class SdkTestingExecutor {
 
       WorkflowNode workflowNode = node.workflowNode();
       if (workflowNode != null) {
-        String subWorkflowName = workflowNode.reference().subWorkflowRef().name();
-        WorkflowTemplate subWorkflowTemplate = workflowTemplateMap().get(subWorkflowName);
+        switch (workflowNode.reference().kind()) {
+          case LAUNCH_PLAN_REF:
+            return;
+          case SUB_WORKFLOW_REF:
+            String subWorkflowName = workflowNode.reference().subWorkflowRef().name();
+            WorkflowTemplate subWorkflowTemplate = workflowTemplateMap().get(subWorkflowName);
 
-        checkArgument(
-            subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
+            checkArgument(
+                subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
 
-        checkFixedTransform(subWorkflowTemplate);
+            checkFixedTransform(subWorkflowTemplate);
+        }
       }
     }
   }
@@ -297,6 +307,18 @@ public abstract class SdkTestingExecutor {
     return toBuilder().putFixedTask(task.name(), fixedTask.withFixedOutput(input, output)).build();
   }
 
+  public <InputT, OutputT> SdkTestingExecutor withMockLaunchPlan(
+      SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, InputT input, OutputT output) {
+    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
+        getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
+
+    // FIXME Careful reader would have noticed that here we ignore project, domain and version
+    // it's because LocalEngine doesn't support it yet. We only correctly function
+    // when task names are unique.
+
+    return toBuilder().putMockLaunchPlan(launchPlan.name(), mockLaunchPlan.withFixedOutput(input, output)).build();
+  }
+
   public <InputT, OutputT> SdkTestingExecutor withTask(
       SdkRunnableTask<InputT, OutputT> task, Function<InputT, OutputT> runFn) {
     TestingRunnableTask<InputT, OutputT> fixedTask =
@@ -359,6 +381,19 @@ public abstract class SdkTestingExecutor {
     }
   }
 
+  private <InputT, OutputT> TestingRunnableTask<InputT, OutputT> getMockLaunchPlanOrDefault(
+      String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+    @SuppressWarnings({"unchecked"})
+    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
+        (TestingRunnableTask<InputT, OutputT>) mockLaunchPlanMap().get(name);
+
+    if (mockLaunchPlan == null) {
+      return TestingRunnableTask.create(name, inputType, outputType);
+    } else {
+      return mockLaunchPlan;
+    }
+  }
+
   abstract Builder toBuilder();
 
   static Builder builder() {
@@ -375,6 +410,8 @@ public abstract class SdkTestingExecutor {
 
     abstract Builder workflow(SdkWorkflow workflow);
 
+    abstract Builder mockLaunchPlanMap(Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap);
+
     abstract Builder workflowTemplateMap(Map<String, WorkflowTemplate> workflowTemplateMap);
 
     abstract Map<String, Literal> fixedInputMap();
@@ -384,6 +421,8 @@ public abstract class SdkTestingExecutor {
     abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
 
     abstract Map<String, WorkflowTemplate> workflowTemplateMap();
+
+    abstract Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap();
 
     Builder putFixedInput(String key, Literal value, LiteralType type) {
       Map<String, Literal> newFixedInputMap = new HashMap<>(fixedInputMap());
@@ -408,6 +447,13 @@ public abstract class SdkTestingExecutor {
       newWorkflowTemplateMap.put(name, template);
 
       return workflowTemplateMap(newWorkflowTemplateMap);
+    }
+
+    Builder putMockLaunchPlan(String name, TestingRunnableTask<?, ?> fn) {
+      Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap = new HashMap<>(mockLaunchPlanMap());
+      mockLaunchPlanMap.put(name, fn);
+
+      return mockLaunchPlanMap(mockLaunchPlanMap);
     }
 
     abstract SdkTestingExecutor build();

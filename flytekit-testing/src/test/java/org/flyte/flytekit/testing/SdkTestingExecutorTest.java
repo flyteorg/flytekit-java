@@ -276,6 +276,12 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testRemoteLaunchPlan() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development", "flyte-warehouse", "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
     SdkWorkflow workflow =
         new SdkWorkflow() {
           @Override
@@ -283,9 +289,7 @@ public class SdkTestingExecutorTest {
             SdkBindingData a = builder.inputOfInteger("a");
             SdkBindingData b = builder.inputOfInteger("b");
 
-            SdkBindingData c = builder.apply("launchplanref", SdkRemoteLaunchPlan.create(
-                "development", "flyte-warehouse", "SumWorkflow",
-                JacksonSdkType.of(SumLaunchPlanInput.class), JacksonSdkType.of(SumLaunchPlanOutput.class))
+            SdkBindingData c = builder.apply("launchplanref", launchplanRef
                 .withInput("a", a)
                 .withInput("b", b)
             ).getOutput("c");
@@ -298,6 +302,8 @@ public class SdkTestingExecutorTest {
         SdkTestingExecutor.of(workflow)
             .withFixedInput("a", 3L)
             .withFixedInput("b", 5L)
+            .withMockLaunchPlan(launchplanRef, SumLaunchPlanInput.create(3L, 5L),
+                SumLaunchPlanOutput.create(8L))
             .execute();
 
     assertThat(result.getIntegerOutput("result"), equalTo(8L));

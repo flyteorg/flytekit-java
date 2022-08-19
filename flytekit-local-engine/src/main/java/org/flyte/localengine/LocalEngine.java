@@ -39,15 +39,15 @@ import org.flyte.api.v1.WorkflowTemplate;
 public class LocalEngine {
 
   @Deprecated
-  @InlineMe(
-      replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), "
-              + "inputs, NoopExecutionListener.create())",
-      imports = {
-        "org.flyte.localengine.LocalEngine",
-        "org.flyte.localengine.NoopExecutionListener"
-      },
-      staticImports = "java.util.Collections.emptyMap")
+//  @InlineMe(
+//      replacement =
+//          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), "
+//              + "inputs, NoopExecutionListener.create())",
+//      imports = {
+//        "org.flyte.localengine.LocalEngine",
+//        "org.flyte.localengine.NoopExecutionListener"
+//      },
+//      staticImports = "java.util.Collections.emptyMap")
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
@@ -58,6 +58,7 @@ public class LocalEngine {
         runnableTasks,
         dynamicWorkflowTasks,
         emptyMap(),
+        emptyMap(),
         inputs,
         NoopExecutionListener.create());
   }
@@ -67,30 +68,33 @@ public class LocalEngine {
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> mockLaunchPlans,
       Map<String, Literal> inputs) {
     return compileAndExecute(
         template,
         runnableTasks,
         dynamicWorkflowTasks,
         workflows,
+        mockLaunchPlans,
         inputs,
         NoopExecutionListener.create());
   }
 
   @Deprecated
-  @InlineMe(
-      replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener)",
-      imports = "org.flyte.localengine.LocalEngine",
-      staticImports = "java.util.Collections.emptyMap")
+//  @InlineMe(
+//      replacement =
+//          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener)",
+//      imports = "org.flyte.localengine.LocalEngine",
+//      staticImports = "java.util.Collections.emptyMap")
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
+      Map<String, RunnableTask> mockLaunchPlans,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, Literal> inputs,
       ExecutionListener listener) {
     return compileAndExecute(
-        template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener);
+        template, runnableTasks, dynamicWorkflowTasks, emptyMap(), mockLaunchPlans, inputs, listener);
   }
 
   public static Map<String, Literal> compileAndExecute(
@@ -98,17 +102,19 @@ public class LocalEngine {
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> mockLaunchPlans,
       Map<String, Literal> inputs,
       ExecutionListener listener) {
     List<ExecutionNode> executionNodes =
         ExecutionNodeCompiler.compile(
-            template.nodes(), runnableTasks, dynamicWorkflowTasks, workflows);
+            template.nodes(), runnableTasks, dynamicWorkflowTasks, workflows, mockLaunchPlans);
 
     return execute(
         executionNodes,
         runnableTasks,
         dynamicWorkflowTasks,
         workflows,
+        mockLaunchPlans,
         inputs,
         template.outputs(),
         listener);
@@ -119,6 +125,7 @@ public class LocalEngine {
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> mockLaunchPlans,
       Map<String, Literal> workflowInputs,
       List<Binding> bindings,
       ExecutionListener listener) {
@@ -141,10 +148,11 @@ public class LocalEngine {
                 runnableTasks,
                 dynamicWorkflowTasks,
                 workflows,
+                mockLaunchPlans,
                 inputs,
                 listener);
       } else {
-        // this must be a task
+        // this must be a task or a mock launch plan
         outputs = runWithRetries(executionNode, inputs, listener);
       }
 

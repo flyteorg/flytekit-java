@@ -35,7 +35,9 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.DynamicWorkflowTask;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -69,10 +71,11 @@ class ExecutionNodeCompiler {
       List<Node> nodes,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows) {
+      Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> mockLaunchPlans) {
     List<ExecutionNode> executableNodes =
         nodes.stream()
-            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows))
+            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows, mockLaunchPlans))
             .collect(toList());
 
     return sort(executableNodes);
@@ -82,7 +85,8 @@ class ExecutionNodeCompiler {
       Node node,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows) {
+      Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> mockLaunchPlans) {
     List<String> upstreamNodeIds = new ArrayList<>();
     node.inputs().stream()
         .map(Binding::binding)
@@ -116,8 +120,19 @@ class ExecutionNodeCompiler {
               .attempts(0)
               .build();
         case LAUNCH_PLAN_REF:
-          throw new IllegalArgumentException(
-              "LaunchPlanRef isn't yet supported for local execution");
+          String launchplanName = reference.launchPlanRef().name();
+          // For local executions we treat launch plan references as tasks
+          RunnableTask launchPlan = mockLaunchPlans.get(launchplanName);
+
+          Objects.requireNonNull(
+              launchPlan, () -> String.format("Couldn't find launchplan [%s]", launchplanName));
+          return ExecutionNode.builder()
+              .nodeId(node.id())
+              .bindings(node.inputs())
+              .runnableTask(launchPlan)
+              .upstreamNodeIds(upstreamNodeIds)
+              .attempts(1)
+              .build();
         default:
           throw new IllegalArgumentException(
               String.format("Unsupported Reference.Kind: [%s]", reference.kind()));

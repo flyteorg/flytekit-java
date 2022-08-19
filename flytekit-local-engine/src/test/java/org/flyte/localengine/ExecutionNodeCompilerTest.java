@@ -141,7 +141,7 @@ class ExecutionNodeCompilerTest {
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> ExecutionNodeCompiler.compile(node, emptyMap(), emptyMap(), emptyMap()));
+            () -> ExecutionNodeCompiler.compile(node, emptyMap(), emptyMap(), emptyMap(), emptyMap()));
 
     assertEquals("Couldn't find task [unknownTask]", exception.getMessage());
   }
@@ -191,6 +191,7 @@ class ExecutionNodeCompilerTest {
         ExecutionNodeCompiler.compile(
             node,
             ImmutableMap.of("empty_runnable_task", new EmptyRunnableTask()),
+            emptyMap(),
             emptyMap(),
             emptyMap());
 

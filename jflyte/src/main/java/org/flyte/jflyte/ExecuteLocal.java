@@ -88,7 +88,7 @@ public class ExecuteLocal implements Callable<Integer> {
 
       Map<String, Literal> outputs =
           LocalEngine.compileAndExecute(
-              workflow, runnableTasks, dynamicWorkflowTasks, workflows, inputs, listener);
+              workflow, runnableTasks, dynamicWorkflowTasks, workflows, emptyMap(), inputs, listener);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;

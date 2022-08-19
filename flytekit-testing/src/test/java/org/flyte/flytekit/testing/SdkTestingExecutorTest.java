@@ -25,6 +25,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -273,6 +274,35 @@ public class SdkTestingExecutorTest {
         equalTo("Output type { in=INTEGER } doesn't match expected type { out=INTEGER }"));
   }
 
+  @Test
+  public void testRemoteLaunchPlan() {
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData a = builder.inputOfInteger("a");
+            SdkBindingData b = builder.inputOfInteger("b");
+
+            SdkBindingData c = builder.apply("launchplanref", SdkRemoteLaunchPlan.create(
+                "development", "flyte-warehouse", "SumWorkflow",
+                JacksonSdkType.of(SumLaunchPlanInput.class), JacksonSdkType.of(SumLaunchPlanOutput.class))
+                .withInput("a", a)
+                .withInput("b", b)
+            ).getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(workflow)
+            .withFixedInput("a", 3L)
+            .withFixedInput("b", 5L)
+            .execute();
+
+    assertThat(result.getIntegerOutput("result"), equalTo(8L));
+  }
+
   public static class SimpleUberWorkflow extends SdkWorkflow {
 
     @Override
@@ -307,6 +337,25 @@ public class SdkTestingExecutorTest {
 
     public static SimpleSubWorkflowOutput create(long out) {
       return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(out);
+    }
+  }
+
+  @AutoValue
+  static abstract class SumLaunchPlanInput {
+    abstract long a();
+    abstract long b();
+
+    public static SumLaunchPlanInput create(long a, long b) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(a, b);
+    }
+  }
+
+  @AutoValue
+  static abstract class SumLaunchPlanOutput {
+    abstract long c();
+
+    public static SumLaunchPlanOutput create(long c) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(c);
     }
   }
 }

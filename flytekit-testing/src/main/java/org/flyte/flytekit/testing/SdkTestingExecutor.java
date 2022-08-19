@@ -165,13 +165,12 @@ public abstract class SdkTestingExecutor {
     checkFixedTransform(workflowTemplate);
 
     Map<String, Literal> outputLiteralMap =
-        LocalEngine.compileAndExecute(
-            workflowTemplate,
-            unmodifiableMap(fixedTaskMap()),
-            emptyMap(),
-            unmodifiableMap(workflowTemplateMap()),
-            unmodifiableMap(mockLaunchPlanMap()),
-            fixedInputMap());
+        LocalEngine.builder()
+            .runnableTasks(unmodifiableMap(fixedTaskMap()))
+            .workflows(unmodifiableMap(workflowTemplateMap()))
+            .mockLaunchPlans(unmodifiableMap(mockLaunchPlanMap()))
+            .build()
+            .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputMap()));
 
     Map<String, LiteralType> outputLiteralTypeMap =
         workflowTemplate.interface_().outputs().entrySet().stream()

@@ -87,8 +87,13 @@ public class ExecuteLocal implements Callable<Integer> {
       ExecutionListener listener = NoopExecutionListener.create();
 
       Map<String, Literal> outputs =
-          LocalEngine.compileAndExecute(
-              workflow, runnableTasks, dynamicWorkflowTasks, workflows, emptyMap(), inputs, listener);
+          LocalEngine.builder()
+              .runnableTasks(runnableTasks)
+              .dynamicWorkflowTasks(dynamicWorkflowTasks)
+              .workflows(workflows)
+              .listener(listener)
+              .build()
+              .compileAndExecute(workflow, inputs);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;

@@ -299,23 +299,23 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.name(), task.inputs(), task.outputs());
 
-    // FIXME Careful reader would have noticed that here we ignore project, domain and version
-    // it's because LocalEngine doesn't support it yet. We only correctly function
-    // when task names are unique.
-
     return toBuilder().putFixedTask(task.name(), fixedTask.withFixedOutput(input, output)).build();
   }
 
-  public <InputT, OutputT> SdkTestingExecutor withMockLaunchPlan(
+  public <InputT, OutputT> SdkTestingExecutor withLaunchPlanOutput(
       SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, InputT input, OutputT output) {
     TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
         getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
-    // FIXME Careful reader would have noticed that here we ignore project, domain and version
-    // it's because LocalEngine doesn't support it yet. We only correctly function
-    // when task names are unique.
-
     return toBuilder().putMockLaunchPlan(launchPlan.name(), mockLaunchPlan.withFixedOutput(input, output)).build();
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withLaunchPlan(
+      SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, Function<InputT, OutputT> runFn) {
+    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
+        getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
+
+    return toBuilder().putMockLaunchPlan(mockLaunchPlan.getName(), mockLaunchPlan.withRunFn(runFn)).build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTask(

@@ -275,7 +275,7 @@ public class SdkTestingExecutorTest {
   }
 
   @Test
-  public void testRemoteLaunchPlan() {
+  public void withLaunchPlanOutput() {
     SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
         SdkRemoteLaunchPlan.create(
             "development", "flyte-warehouse", "SumWorkflow",
@@ -286,12 +286,9 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData a = builder.inputOfInteger("a");
-            SdkBindingData b = builder.inputOfInteger("b");
-
             SdkBindingData c = builder.apply("launchplanref", launchplanRef
-                .withInput("a", a)
-                .withInput("b", b)
+                .withInput("a", builder.inputOfInteger("a"))
+                .withInput("b", builder.inputOfInteger("b"))
             ).getOutput("c");
 
             builder.output("result", c);
@@ -302,11 +299,72 @@ public class SdkTestingExecutorTest {
         SdkTestingExecutor.of(workflow)
             .withFixedInput("a", 3L)
             .withFixedInput("b", 5L)
-            .withMockLaunchPlan(launchplanRef, SumLaunchPlanInput.create(3L, 5L),
+            .withLaunchPlanOutput(launchplanRef, SumLaunchPlanInput.create(3L, 5L),
                 SumLaunchPlanOutput.create(8L))
             .execute();
 
     assertThat(result.getIntegerOutput("result"), equalTo(8L));
+  }
+
+  @Test
+  public void withLaunchPlanOutput_isMissing() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development", "flyte-warehouse", "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData c = builder.apply("launchplanref", launchplanRef
+                .withInput("a", builder.inputOfInteger("a"))
+                .withInput("b", builder.inputOfInteger("b"))
+            ).getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    NullPointerException ex = assertThrows(NullPointerException.class, () ->
+        SdkTestingExecutor.of(workflow)
+            .withFixedInput("a", 3L)
+            .withFixedInput("b", 5L)
+            .execute());
+
+    assertThat(ex.getMessage(), equalTo("Couldn't find launchplan [SumWorkflow]"));
+  }
+
+  @Test
+  public void withLaunchPlan() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development", "flyte-warehouse", "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData c = builder.apply("launchplanref", launchplanRef
+                .withInput("a", builder.inputOfInteger("a"))
+                .withInput("b", builder.inputOfInteger("b"))
+            ).getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(workflow)
+            .withFixedInput("a", 30L)
+            .withFixedInput("b", 5L)
+            .withLaunchPlan(launchplanRef, in -> SumLaunchPlanOutput.create(in.a() + in.b()))
+            .execute();
+
+    assertThat(result.getIntegerOutput("result"), equalTo(35L));
   }
 
   public static class SimpleUberWorkflow extends SdkWorkflow {

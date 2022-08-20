@@ -55,7 +55,7 @@ public abstract class SdkTestingExecutor {
 
   abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
 
-  abstract Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap();
+  abstract Map<String, TestingRunnableTask<?, ?>> fakeLaunchPlanMap();
 
   abstract SdkWorkflow workflow();
 
@@ -99,7 +99,7 @@ public abstract class SdkTestingExecutor {
         .fixedInputMap(emptyMap())
         .fixedInputTypeMap(emptyMap())
         .fixedTaskMap(fixedTasks)
-        .mockLaunchPlanMap(emptyMap())
+        .fakeLaunchPlanMap(emptyMap())
         .build();
   }
 
@@ -168,7 +168,7 @@ public abstract class SdkTestingExecutor {
         LocalEngine.builder()
             .runnableTasks(unmodifiableMap(fixedTaskMap()))
             .workflows(unmodifiableMap(workflowTemplateMap()))
-            .mockLaunchPlans(unmodifiableMap(mockLaunchPlanMap()))
+            .fakeLaunchPlans(unmodifiableMap(fakeLaunchPlanMap()))
             .build()
             .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputMap()));
 
@@ -304,18 +304,18 @@ public abstract class SdkTestingExecutor {
 
   public <InputT, OutputT> SdkTestingExecutor withLaunchPlanOutput(
       SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, InputT input, OutputT output) {
-    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
+    TestingRunnableTask<InputT, OutputT> fakeLaunchPlan =
         getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
-    return toBuilder().putMockLaunchPlan(launchPlan.name(), mockLaunchPlan.withFixedOutput(input, output)).build();
+    return toBuilder().putMockLaunchPlan(launchPlan.name(), fakeLaunchPlan.withFixedOutput(input, output)).build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withLaunchPlan(
       SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, Function<InputT, OutputT> runFn) {
-    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
+    TestingRunnableTask<InputT, OutputT> fakeLaunchPlan =
         getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
-    return toBuilder().putMockLaunchPlan(mockLaunchPlan.getName(), mockLaunchPlan.withRunFn(runFn)).build();
+    return toBuilder().putMockLaunchPlan(fakeLaunchPlan.getName(), fakeLaunchPlan.withRunFn(runFn)).build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTask(
@@ -383,13 +383,13 @@ public abstract class SdkTestingExecutor {
   private <InputT, OutputT> TestingRunnableTask<InputT, OutputT> getMockLaunchPlanOrDefault(
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     @SuppressWarnings({"unchecked"})
-    TestingRunnableTask<InputT, OutputT> mockLaunchPlan =
-        (TestingRunnableTask<InputT, OutputT>) mockLaunchPlanMap().get(name);
+    TestingRunnableTask<InputT, OutputT> fakeLaunchPlan =
+        (TestingRunnableTask<InputT, OutputT>) fakeLaunchPlanMap().get(name);
 
-    if (mockLaunchPlan == null) {
+    if (fakeLaunchPlan == null) {
       return TestingRunnableTask.create(name, inputType, outputType);
     } else {
-      return mockLaunchPlan;
+      return fakeLaunchPlan;
     }
   }
 
@@ -409,7 +409,7 @@ public abstract class SdkTestingExecutor {
 
     abstract Builder workflow(SdkWorkflow workflow);
 
-    abstract Builder mockLaunchPlanMap(Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap);
+    abstract Builder fakeLaunchPlanMap(Map<String, TestingRunnableTask<?, ?>> fakeLaunchPlanMap);
 
     abstract Builder workflowTemplateMap(Map<String, WorkflowTemplate> workflowTemplateMap);
 
@@ -421,7 +421,7 @@ public abstract class SdkTestingExecutor {
 
     abstract Map<String, WorkflowTemplate> workflowTemplateMap();
 
-    abstract Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap();
+    abstract Map<String, TestingRunnableTask<?, ?>> fakeLaunchPlanMap();
 
     Builder putFixedInput(String key, Literal value, LiteralType type) {
       Map<String, Literal> newFixedInputMap = new HashMap<>(fixedInputMap());
@@ -449,10 +449,10 @@ public abstract class SdkTestingExecutor {
     }
 
     Builder putMockLaunchPlan(String name, TestingRunnableTask<?, ?> fn) {
-      Map<String, TestingRunnableTask<?, ?>> mockLaunchPlanMap = new HashMap<>(mockLaunchPlanMap());
-      mockLaunchPlanMap.put(name, fn);
+      Map<String, TestingRunnableTask<?, ?>> fakeLaunchPlanMap = new HashMap<>(fakeLaunchPlanMap());
+      fakeLaunchPlanMap.put(name, fn);
 
-      return mockLaunchPlanMap(mockLaunchPlanMap);
+      return fakeLaunchPlanMap(fakeLaunchPlanMap);
     }
 
     abstract SdkTestingExecutor build();

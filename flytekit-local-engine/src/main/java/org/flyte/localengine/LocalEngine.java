@@ -46,14 +46,14 @@ public abstract class LocalEngine {
 
   abstract Map<String, WorkflowTemplate> workflows();
 
-  abstract Map<String, RunnableTask> mockLaunchPlans();
+  abstract Map<String, RunnableTask> fakeLaunchPlans();
 
   abstract ExecutionListener listener();
 
   public Map<String, Literal> compileAndExecute(WorkflowTemplate template, Map<String, Literal> inputs) {
     List<ExecutionNode> executionNodes =
         ExecutionNodeCompiler.compile(
-            template.nodes(), runnableTasks(), dynamicWorkflowTasks(), workflows(), mockLaunchPlans());
+            template.nodes(), runnableTasks(), dynamicWorkflowTasks(), workflows(), fakeLaunchPlans());
 
     return execute(executionNodes, inputs, template.outputs());
   }
@@ -171,7 +171,7 @@ public abstract class LocalEngine {
         .runnableTasks(emptyMap())
         .workflows(emptyMap())
         .dynamicWorkflowTasks(emptyMap())
-        .mockLaunchPlans(emptyMap())
+        .fakeLaunchPlans(emptyMap())
         .listener(NoopExecutionListener.create());
   }
 
@@ -185,7 +185,7 @@ public abstract class LocalEngine {
 
     public abstract Builder workflows(Map<String, WorkflowTemplate> workflows);
 
-    public abstract Builder mockLaunchPlans(Map<String, RunnableTask> mockLaunchPlans);
+    public abstract Builder fakeLaunchPlans(Map<String, RunnableTask> fakeLaunchPlans);
 
     public abstract Builder listener(ExecutionListener listener);
 

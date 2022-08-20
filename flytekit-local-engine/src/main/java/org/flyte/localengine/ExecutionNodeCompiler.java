@@ -71,10 +71,10 @@ class ExecutionNodeCompiler {
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableTask> mockLaunchPlans) {
+      Map<String, RunnableTask> fakeLaunchPlans) {
     List<ExecutionNode> executableNodes =
         nodes.stream()
-            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows, mockLaunchPlans))
+            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows, fakeLaunchPlans))
             .collect(toList());
 
     return sort(executableNodes);
@@ -85,7 +85,7 @@ class ExecutionNodeCompiler {
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableTask> mockLaunchPlans) {
+      Map<String, RunnableTask> fakeLaunchPlans) {
     List<String> upstreamNodeIds = new ArrayList<>();
     node.inputs().stream()
         .map(Binding::binding)
@@ -102,7 +102,7 @@ class ExecutionNodeCompiler {
     if (node.branchNode() != null) {
       throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
     } else if (node.workflowNode() != null) {
-      return compileWorkflowNode(node, workflows, mockLaunchPlans, upstreamNodeIds);
+      return compileWorkflowNode(node, workflows, fakeLaunchPlans, upstreamNodeIds);
     } else if (node.taskNode() != null) {
       return compileTaskNode(node, runnableTasks, dynamicWorkflowTasks, upstreamNodeIds);
     }
@@ -112,13 +112,13 @@ class ExecutionNodeCompiler {
   }
 
   private static ExecutionNode compileWorkflowNode(Node node, Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableTask> mockLaunchPlans, List<String> upstreamNodeIds) {
+      Map<String, RunnableTask> fakeLaunchPlans, List<String> upstreamNodeIds) {
     WorkflowNode.Reference reference = node.workflowNode().reference();
     switch (reference.kind()) {
       case SUB_WORKFLOW_REF:
         return compileSubWorkflowRef(node, workflows, upstreamNodeIds, reference);
       case LAUNCH_PLAN_REF:
-        return compileLaunchPlanRef(node, mockLaunchPlans, upstreamNodeIds, reference);
+        return compileLaunchPlanRef(node, fakeLaunchPlans, upstreamNodeIds, reference);
       default:
         throw new IllegalArgumentException(
             String.format("Unsupported Reference.Kind: [%s]", reference.kind()));
@@ -143,11 +143,11 @@ class ExecutionNodeCompiler {
   }
 
   private static ExecutionNode compileLaunchPlanRef(Node node,
-      Map<String, RunnableTask> mockLaunchPlans, List<String> upstreamNodeIds,
+      Map<String, RunnableTask> fakeLaunchPlans, List<String> upstreamNodeIds,
       Reference reference) {
     String launchPlanName = reference.launchPlanRef().name();
     // For local executions we treat launch plan references as tasks
-    RunnableTask launchPlan = mockLaunchPlans.get(launchPlanName);
+    RunnableTask launchPlan = fakeLaunchPlans.get(launchPlanName);
 
     Objects.requireNonNull(
         launchPlan, () -> String.format("Couldn't find launchplan [%s]", launchPlanName));

@@ -278,7 +278,9 @@ public class SdkTestingExecutorTest {
   public void withLaunchPlanOutput() {
     SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
         SdkRemoteLaunchPlan.create(
-            "development", "flyte-warehouse", "SumWorkflow",
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
@@ -286,10 +288,14 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c = builder.apply("launchplanref", launchplanRef
-                .withInput("a", builder.inputOfInteger("a"))
-                .withInput("b", builder.inputOfInteger("b"))
-            ).getOutput("c");
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
 
             builder.output("result", c);
           }
@@ -299,8 +305,8 @@ public class SdkTestingExecutorTest {
         SdkTestingExecutor.of(workflow)
             .withFixedInput("a", 3L)
             .withFixedInput("b", 5L)
-            .withLaunchPlanOutput(launchplanRef, SumLaunchPlanInput.create(3L, 5L),
-                SumLaunchPlanOutput.create(8L))
+            .withLaunchPlanOutput(
+                launchplanRef, SumLaunchPlanInput.create(3L, 5L), SumLaunchPlanOutput.create(8L))
             .execute();
 
     assertThat(result.getIntegerOutput("result"), equalTo(8L));
@@ -310,7 +316,9 @@ public class SdkTestingExecutorTest {
   public void withLaunchPlanOutput_isMissing() {
     SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
         SdkRemoteLaunchPlan.create(
-            "development", "flyte-warehouse", "SumWorkflow",
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
@@ -318,20 +326,27 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c = builder.apply("launchplanref", launchplanRef
-                .withInput("a", builder.inputOfInteger("a"))
-                .withInput("b", builder.inputOfInteger("b"))
-            ).getOutput("c");
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
 
             builder.output("result", c);
           }
         };
 
-    NullPointerException ex = assertThrows(NullPointerException.class, () ->
-        SdkTestingExecutor.of(workflow)
-            .withFixedInput("a", 3L)
-            .withFixedInput("b", 5L)
-            .execute());
+    NullPointerException ex =
+        assertThrows(
+            NullPointerException.class,
+            () ->
+                SdkTestingExecutor.of(workflow)
+                    .withFixedInput("a", 3L)
+                    .withFixedInput("b", 5L)
+                    .execute());
 
     assertThat(ex.getMessage(), equalTo("Couldn't find launchplan [SumWorkflow]"));
   }
@@ -340,7 +355,9 @@ public class SdkTestingExecutorTest {
   public void withLaunchPlan() {
     SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
         SdkRemoteLaunchPlan.create(
-            "development", "flyte-warehouse", "SumWorkflow",
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
@@ -348,10 +365,14 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c = builder.apply("launchplanref", launchplanRef
-                .withInput("a", builder.inputOfInteger("a"))
-                .withInput("b", builder.inputOfInteger("b"))
-            ).getOutput("c");
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
 
             builder.output("result", c);
           }
@@ -405,8 +426,9 @@ public class SdkTestingExecutorTest {
   }
 
   @AutoValue
-  static abstract class SumLaunchPlanInput {
+  abstract static class SumLaunchPlanInput {
     abstract long a();
+
     abstract long b();
 
     public static SumLaunchPlanInput create(long a, long b) {
@@ -415,7 +437,7 @@ public class SdkTestingExecutorTest {
   }
 
   @AutoValue
-  static abstract class SumLaunchPlanOutput {
+  abstract static class SumLaunchPlanOutput {
     abstract long c();
 
     public static SumLaunchPlanOutput create(long c) {

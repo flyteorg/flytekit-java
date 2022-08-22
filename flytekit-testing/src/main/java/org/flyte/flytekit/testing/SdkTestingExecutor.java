@@ -307,7 +307,9 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fakeLaunchPlan =
         getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
-    return toBuilder().putMockLaunchPlan(launchPlan.name(), fakeLaunchPlan.withFixedOutput(input, output)).build();
+    return toBuilder()
+        .putMockLaunchPlan(launchPlan.name(), fakeLaunchPlan.withFixedOutput(input, output))
+        .build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withLaunchPlan(
@@ -315,7 +317,9 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fakeLaunchPlan =
         getMockLaunchPlanOrDefault(launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
-    return toBuilder().putMockLaunchPlan(fakeLaunchPlan.getName(), fakeLaunchPlan.withRunFn(runFn)).build();
+    return toBuilder()
+        .putMockLaunchPlan(fakeLaunchPlan.getName(), fakeLaunchPlan.withRunFn(runFn))
+        .build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTask(

@@ -74,7 +74,9 @@ class ExecutionNodeCompiler {
       Map<String, RunnableTask> fakeLaunchPlans) {
     List<ExecutionNode> executableNodes =
         nodes.stream()
-            .map(node -> compile(node, runnableTasks, dynamicWorkflowTasks, workflows, fakeLaunchPlans))
+            .map(
+                node ->
+                    compile(node, runnableTasks, dynamicWorkflowTasks, workflows, fakeLaunchPlans))
             .collect(toList());
 
     return sort(executableNodes);
@@ -111,8 +113,11 @@ class ExecutionNodeCompiler {
         String.format("Node [%s] must be a task, branch or workflow node", node.id()));
   }
 
-  private static ExecutionNode compileWorkflowNode(Node node, Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableTask> fakeLaunchPlans, List<String> upstreamNodeIds) {
+  private static ExecutionNode compileWorkflowNode(
+      Node node,
+      Map<String, WorkflowTemplate> workflows,
+      Map<String, RunnableTask> fakeLaunchPlans,
+      List<String> upstreamNodeIds) {
     WorkflowNode.Reference reference = node.workflowNode().reference();
     switch (reference.kind()) {
       case SUB_WORKFLOW_REF:
@@ -125,8 +130,11 @@ class ExecutionNodeCompiler {
     }
   }
 
-  private static ExecutionNode compileSubWorkflowRef(Node node, Map<String, WorkflowTemplate> workflows,
-      List<String> upstreamNodeIds, Reference reference) {
+  private static ExecutionNode compileSubWorkflowRef(
+      Node node,
+      Map<String, WorkflowTemplate> workflows,
+      List<String> upstreamNodeIds,
+      Reference reference) {
     String workflowName = reference.subWorkflowRef().name();
     WorkflowTemplate workflowTemplate = workflows.get(workflowName);
 
@@ -142,8 +150,10 @@ class ExecutionNodeCompiler {
         .build();
   }
 
-  private static ExecutionNode compileLaunchPlanRef(Node node,
-      Map<String, RunnableTask> fakeLaunchPlans, List<String> upstreamNodeIds,
+  private static ExecutionNode compileLaunchPlanRef(
+      Node node,
+      Map<String, RunnableTask> fakeLaunchPlans,
+      List<String> upstreamNodeIds,
       Reference reference) {
     String launchPlanName = reference.launchPlanRef().name();
     // For local executions we treat launch plan references as tasks
@@ -160,8 +170,11 @@ class ExecutionNodeCompiler {
         .build();
   }
 
-  private static ExecutionNode compileTaskNode(Node node, Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks, List<String> upstreamNodeIds) {
+  private static ExecutionNode compileTaskNode(
+      Node node,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      List<String> upstreamNodeIds) {
     String taskName = node.taskNode().referenceId().name();
 
     DynamicWorkflowTask dynamicWorkflowTask = dynamicWorkflowTasks.get(taskName);
@@ -171,8 +184,7 @@ class ExecutionNodeCompiler {
     }
 
     RunnableTask runnableTask = runnableTasks.get(taskName);
-    Objects.requireNonNull(
-        runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
+    Objects.requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
 
     int attempts = runnableTask.getRetries().retries() + 1;
 

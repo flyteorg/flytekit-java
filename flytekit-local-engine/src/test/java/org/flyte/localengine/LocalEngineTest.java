@@ -67,8 +67,7 @@ class LocalEngineTest {
             .listener(listener)
             .build()
             .compileAndExecute(
-                workflows.get(workflowName),
-                ImmutableMap.of("fib0", fib0, "fib1", fib1));
+                workflows.get(workflowName), ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
     assertEquals(
@@ -163,10 +162,7 @@ class LocalEngineTest {
             inputStructLiteral);
 
     Map<String, Literal> outputs =
-        LocalEngine.builder()
-            .runnableTasks(tasks)
-            .build()
-            .compileAndExecute(workflow, inputs);
+        LocalEngine.builder().runnableTasks(tasks).build().compileAndExecute(workflow, inputs);
 
     Literal expectedOutput =
         Literal.ofScalar(
@@ -287,7 +283,8 @@ class LocalEngineTest {
             .listener(listener)
             .workflows(workflows)
             .build()
-            .compileAndExecute(workflows.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
+            .compileAndExecute(
+                workflows.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 
     assertEquals(ImmutableMap.of("result", result), outputs);
     assertEquals(

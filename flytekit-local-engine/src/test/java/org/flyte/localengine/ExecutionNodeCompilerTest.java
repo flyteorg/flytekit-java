@@ -141,7 +141,9 @@ class ExecutionNodeCompilerTest {
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> ExecutionNodeCompiler.compile(node, emptyMap(), emptyMap(), emptyMap(), emptyMap()));
+            () ->
+                ExecutionNodeCompiler.compile(
+                    node, emptyMap(), emptyMap(), emptyMap(), emptyMap()));
 
     assertEquals("Couldn't find task [unknownTask]", exception.getMessage());
   }

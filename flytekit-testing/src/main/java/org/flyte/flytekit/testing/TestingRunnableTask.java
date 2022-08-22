@@ -69,4 +69,14 @@ class TestingRunnableTask<InputT, OutputT>
     // no retries in testing
     return RetryStrategy.builder().retries(1).build();
   }
+
+  @Override
+  protected String getTestingType() {
+    return "task";
+  }
+
+  @Override
+  protected String getTestingSuggestion() {
+    return "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask";
+  }
 }

@@ -79,9 +79,9 @@ public abstract class TestingRunnableNode<
     if (runFn == null) {
       String message =
           String.format(
-              "Can't find input %s for remote task [%s] across known task inputs, "
-                  + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
-              input, getName());
+              "Can't find input %s for remote %s [%s] across known %s inputs, "
+                  + "use %s to provide a test double",
+              input, getTestingType(), getName(), getTestingType(), getTestingSuggestion());
 
       throw new IllegalArgumentException(message);
     }
@@ -104,4 +104,8 @@ public abstract class TestingRunnableNode<
   public T withRunFn(Function<InputT, OutputT> runFn) {
     return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs);
   }
+
+  protected abstract String getTestingType();
+
+  protected abstract String getTestingSuggestion();
 }

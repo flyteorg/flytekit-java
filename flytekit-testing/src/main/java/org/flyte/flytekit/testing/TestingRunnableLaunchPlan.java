@@ -45,4 +45,14 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
 
     return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap());
   }
+
+  @Override
+  protected String getTestingType() {
+    return "launch plan";
+  }
+
+  @Override
+  protected String getTestingSuggestion() {
+    return "SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan";
+  }
 }

@@ -266,7 +266,7 @@ class LocalEngineTest {
     Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
 
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -276,10 +276,10 @@ class LocalEngineTest {
                 ExecutionContext.builder()
                     .runnableTasks(tasks)
                     .executionListener(listener)
-                    .workflows(workflows)
+                    .workflowTemplates(workflowTemplates)
                     .build())
             .compileAndExecute(
-                workflows.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
+                workflowTemplates.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 
     assertEquals(ImmutableMap.of("result", result), outputs);
     assertEquals(

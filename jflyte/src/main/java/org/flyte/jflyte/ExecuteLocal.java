@@ -71,11 +71,12 @@ public class ExecuteLocal implements Callable<Integer> {
     Map<String, RunnableTask> runnableTasks = ExecuteLocalLoader.loadTasks(modules, env);
     Map<String, DynamicWorkflowTask> dynamicWorkflowTasks =
         emptyMap(); // TODO support dynamic tasks
-    Map<String, WorkflowTemplate> workflows = ExecuteLocalLoader.loadWorkflows(modules, env);
+    Map<String, WorkflowTemplate> workflowTemplates =
+        ExecuteLocalLoader.loadWorkflows(modules, env);
 
     WorkflowTemplate workflow =
         Preconditions.checkNotNull(
-            workflows.get(workflowName), "workflow not found [%s]", workflowName);
+            workflowTemplates.get(workflowName), "workflow not found [%s]", workflowName);
 
     String synopsis = getCustomSynopsis();
     List<String> inputArgsList =
@@ -92,7 +93,7 @@ public class ExecuteLocal implements Callable<Integer> {
                   ExecutionContext.builder()
                       .runnableTasks(runnableTasks)
                       .dynamicWorkflowTasks(dynamicWorkflowTasks)
-                      .workflows(workflows)
+                      .workflowTemplates(workflowTemplates)
                       .executionListener(listener)
                       .build())
               .compileAndExecute(workflow, inputs);

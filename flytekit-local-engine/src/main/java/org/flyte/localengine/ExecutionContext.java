@@ -30,7 +30,7 @@ public abstract class ExecutionContext {
 
   abstract Map<String, DynamicWorkflowTask> dynamicWorkflowTasks();
 
-  abstract Map<String, WorkflowTemplate> workflows();
+  abstract Map<String, WorkflowTemplate> workflowTemplates();
 
   abstract Map<String, RunnableLaunchPlan> runnableLaunchPlans();
 
@@ -42,7 +42,7 @@ public abstract class ExecutionContext {
         .executionListener(NoopExecutionListener.create())
         .runnableTasks(emptyMap())
         .runnableLaunchPlans(emptyMap())
-        .workflows(emptyMap());
+        .workflowTemplates(emptyMap());
   }
 
   @AutoValue.Builder
@@ -53,7 +53,7 @@ public abstract class ExecutionContext {
     public abstract Builder dynamicWorkflowTasks(
         Map<String, DynamicWorkflowTask> dynamicWorkflowTasks);
 
-    public abstract Builder workflows(Map<String, WorkflowTemplate> workflows);
+    public abstract Builder workflowTemplates(Map<String, WorkflowTemplate> workflowTemplates);
 
     public abstract Builder runnableLaunchPlans(
         Map<String, RunnableLaunchPlan> runnableLaunchPlans);

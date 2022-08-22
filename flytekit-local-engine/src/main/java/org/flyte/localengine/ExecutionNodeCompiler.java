@@ -121,7 +121,7 @@ class ExecutionNodeCompiler {
 
   private ExecutionNode compileSubWorkflowRef(
       Node node, List<String> upstreamNodeIds, String workflowName) {
-    WorkflowTemplate workflowTemplate = executionContext.workflows().get(workflowName);
+    WorkflowTemplate workflowTemplate = executionContext.workflowTemplates().get(workflowName);
 
     requireNonNull(
         workflowTemplate, () -> String.format("Couldn't find workflow [%s]", workflowName));

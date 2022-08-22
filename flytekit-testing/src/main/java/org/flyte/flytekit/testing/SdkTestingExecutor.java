@@ -170,7 +170,7 @@ public abstract class SdkTestingExecutor {
         new LocalEngine(
                 ExecutionContext.builder()
                     .runnableTasks(unmodifiableMap(taskTestDoubles()))
-                    .workflows(unmodifiableMap(workflowTemplates()))
+                    .workflowTemplates(unmodifiableMap(workflowTemplates()))
                     .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
                     .build())
             .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputs()));

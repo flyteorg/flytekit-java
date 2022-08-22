@@ -86,8 +86,7 @@ class TestingRunnableNodeTest {
   @Test
   void testWithFixedOutput() {
     TestNode node =
-        new TestNode(null, emptyMap())
-            .withFixedOutput(Input.create("7"), Output.create(7L));
+        new TestNode(null, emptyMap()).withFixedOutput(Input.create("7"), Output.create(7L));
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -114,8 +113,7 @@ class TestingRunnableNodeTest {
   static class TestNode
       extends TestingRunnableNode<PartialTaskIdentifier, Input, Output, TestNode> {
 
-    protected TestNode(
-        Function<Input, Output> runFn, Map<Input, Output> fixedOutputs) {
+    protected TestNode(Function<Input, Output> runFn, Map<Input, Output> fixedOutputs) {
       super(
           PartialTaskIdentifier.builder().name("TestTask").build(),
           JacksonSdkType.of(Input.class),

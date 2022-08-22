@@ -40,7 +40,6 @@ public class LocalEngine {
 
   public LocalEngine(ExecutionContext context) {
     this.context = requireNonNull(context);
-    ;
   }
 
   public Map<String, Literal> compileAndExecute(
@@ -186,20 +185,20 @@ public class LocalEngine {
   @InlineMe(
       replacement =
           "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
-              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).workflows(workflows).build())"
+              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).workflowTemplates(workflowTemplates).build())"
               + ".compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
+      Map<String, WorkflowTemplate> workflowTemplates,
       Map<String, Literal> inputs) {
     return new LocalEngine(
             ExecutionContext.builder()
                 .runnableTasks(runnableTasks)
                 .dynamicWorkflowTasks(dynamicWorkflowTasks)
-                .workflows(workflows)
+                .workflowTemplates(workflowTemplates)
                 .build())
         .compileAndExecute(template, inputs);
   }
@@ -209,7 +208,7 @@ public class LocalEngine {
       replacement =
           "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
               + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener).build())"
-              + ".compileAndExecute(template, inputs)\n",
+              + ".compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
@@ -231,13 +230,13 @@ public class LocalEngine {
       replacement =
           "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
               + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener)"
-              + ".workflows(workflows).build()).compileAndExecute(template, inputs)",
+              + ".workflowTemplates(workflowTemplates).build()).compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
       Map<String, RunnableTask> runnableTasks,
       Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
+      Map<String, WorkflowTemplate> workflowTemplates,
       Map<String, Literal> inputs,
       ExecutionListener listener) {
     return new LocalEngine(
@@ -245,7 +244,7 @@ public class LocalEngine {
                 .runnableTasks(runnableTasks)
                 .dynamicWorkflowTasks(dynamicWorkflowTasks)
                 .executionListener(listener)
-                .workflows(workflows)
+                .workflowTemplates(workflowTemplates)
                 .build())
         .compileAndExecute(template, inputs);
   }

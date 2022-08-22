@@ -208,7 +208,7 @@ class ExecutionNodeCompilerTest {
     return ExecutionNode.builder()
         .nodeId(nodeId)
         .upstreamNodeIds(upstreamNodeIds)
-        .runnableTask(new EmptyRunnableTask())
+        .runnableNode(new EmptyRunnableTask())
         .bindings(ImmutableList.of())
         .attempts(1)
         .build();

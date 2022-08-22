@@ -46,7 +46,7 @@ public class ChainedExecutionListenerTest {
             .nodeId("node-1")
             .upstreamNodeIds(ImmutableList.of())
             .bindings(ImmutableList.of())
-            .runnableTask(new EmptyRunnableTask())
+            .runnableNode(new EmptyRunnableTask())
             .attempts(1)
             .build();
 

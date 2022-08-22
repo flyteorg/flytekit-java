@@ -166,7 +166,8 @@ public class LocalEngine {
   @Deprecated
   @InlineMe(
       replacement =
-          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks).dynamicWorkflowTasks(dynamicWorkflowTasks).build()).compileAndExecute(template, inputs)",
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+          + ".dynamicWorkflowTasks(dynamicWorkflowTasks).build()).compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
@@ -184,7 +185,9 @@ public class LocalEngine {
   @Deprecated
   @InlineMe(
       replacement =
-          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks).dynamicWorkflowTasks(dynamicWorkflowTasks).workflows(workflows).build()).compileAndExecute(template, inputs)",
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+          + ".dynamicWorkflowTasks(dynamicWorkflowTasks).workflows(workflows).build())"
+          + ".compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
@@ -204,7 +207,9 @@ public class LocalEngine {
   @Deprecated
   @InlineMe(
       replacement =
-          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks).dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener).build()).compileAndExecute(template, inputs)\n",
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+          + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener).build())"
+          + ".compileAndExecute(template, inputs)\n",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,
@@ -224,7 +229,9 @@ public class LocalEngine {
   @Deprecated
   @InlineMe(
       replacement =
-          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks).dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener).workflows(workflows).build()).compileAndExecute(template, inputs)",
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+          + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener)"
+          + ".workflows(workflows).build()).compileAndExecute(template, inputs)",
       imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
   public static Map<String, Literal> compileAndExecute(
       WorkflowTemplate template,

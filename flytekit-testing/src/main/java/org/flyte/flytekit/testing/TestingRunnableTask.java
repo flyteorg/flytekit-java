@@ -18,10 +18,8 @@ package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
@@ -30,28 +28,25 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 
 /** {@link RunnableTask} that can fix output for specific input. */
-class TestingRunnableTask<InputT, OutputT> implements RunnableTask {
-
-  private final PartialTaskIdentifier taskId;
-  private final SdkType<InputT> inputType;
-  private final SdkType<OutputT> outputType;
-
-  // @Nullable
-  private final Function<InputT, OutputT> runFn;
-
-  private final Map<InputT, OutputT> fixedOutputs;
-
+class TestingRunnableTask<InputT, OutputT>
+    extends TestingRunnableNode<
+        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT>>
+    implements RunnableTask {
   private TestingRunnableTask(
       PartialTaskIdentifier taskId,
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       Map<InputT, OutputT> fixedOutputs) {
-    this.taskId = taskId;
-    this.inputType = inputType;
-    this.outputType = outputType;
-    this.runFn = runFn;
-    this.fixedOutputs = fixedOutputs;
+    super(
+        taskId,
+        inputType,
+        outputType,
+        runFn,
+        fixedOutputs,
+        TestingRunnableTask::new,
+        "task",
+        "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
@@ -70,11 +65,6 @@ class TestingRunnableTask<InputT, OutputT> implements RunnableTask {
   }
 
   @Override
-  public String getName() {
-    return taskId.name();
-  }
-
-  @Override
   public TypedInterface getInterface() {
     return TypedInterface.builder()
         .inputs(inputType.getVariableMap())
@@ -83,40 +73,8 @@ class TestingRunnableTask<InputT, OutputT> implements RunnableTask {
   }
 
   @Override
-  public Map<String, Literal> run(Map<String, Literal> inputs) {
-    InputT input = inputType.fromLiteralMap(inputs);
-
-    if (fixedOutputs.containsKey(input)) {
-      return outputType.toLiteralMap(fixedOutputs.get(input));
-    }
-
-    if (runFn == null) {
-      String message =
-          String.format(
-              "Can't find input %s for remote task [%s] across known task inputs, "
-                  + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
-              input, getName());
-
-      throw new IllegalArgumentException(message);
-    }
-
-    return outputType.toLiteralMap(runFn.apply(input));
-  }
-
-  @Override
   public RetryStrategy getRetries() {
     // no retries in testing
     return RetryStrategy.builder().retries(1).build();
-  }
-
-  public TestingRunnableTask<InputT, OutputT> withFixedOutput(InputT input, OutputT output) {
-    Map<InputT, OutputT> newFixedOutputs = new HashMap<>(fixedOutputs);
-    newFixedOutputs.put(input, output);
-
-    return new TestingRunnableTask<>(taskId, inputType, outputType, runFn, newFixedOutputs);
-  }
-
-  public TestingRunnableTask<InputT, OutputT> withRunFn(Function<InputT, OutputT> runFn) {
-    return new TestingRunnableTask<>(taskId, inputType, outputType, runFn, fixedOutputs);
   }
 }

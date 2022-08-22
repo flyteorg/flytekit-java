@@ -38,25 +38,30 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowNode.Reference;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
+import org.flyte.localengine.ExecutionContext;
 import org.flyte.localengine.LocalEngine;
 
 @AutoValue
 public abstract class SdkTestingExecutor {
 
-  abstract Map<String, Literal> fixedInputMap();
+  abstract Map<String, Literal> fixedInputs();
 
-  abstract Map<String, LiteralType> fixedInputTypeMap();
+  abstract Map<String, LiteralType> fixedInputTypes();
 
-  abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
+  abstract Map<String, TestingRunnableTask<?, ?>> taskTestDoubles();
+
+  abstract Map<String, TestingRunnableLaunchPlan<?, ?>> launchPlanTestDoubles();
 
   abstract SdkWorkflow workflow();
 
-  abstract Map<String, WorkflowTemplate> workflowTemplateMap();
+  abstract Map<String, WorkflowTemplate> workflowTemplates();
 
   public static SdkTestingExecutor of(SdkWorkflow workflow) {
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -92,10 +97,11 @@ public abstract class SdkTestingExecutor {
 
     return SdkTestingExecutor.builder()
         .workflow(workflow)
-        .workflowTemplateMap(workflowTemplateMap)
-        .fixedInputMap(emptyMap())
-        .fixedInputTypeMap(emptyMap())
-        .fixedTaskMap(fixedTasks)
+        .workflowTemplates(workflowTemplateMap)
+        .fixedInputs(emptyMap())
+        .fixedInputTypes(emptyMap())
+        .taskTestDoubles(fixedTasks)
+        .launchPlanTestDoubles(emptyMap())
         .build();
   }
 
@@ -158,15 +164,16 @@ public abstract class SdkTestingExecutor {
   public Result execute() {
     WorkflowTemplate workflowTemplate = workflow().toIdlTemplate();
     checkInputsInFixedInputs(workflowTemplate);
-    checkFixedTransform(workflowTemplate);
+    checkTestDoublesForNodes(workflowTemplate);
 
     Map<String, Literal> outputLiteralMap =
-        LocalEngine.compileAndExecute(
-            workflowTemplate,
-            unmodifiableMap(fixedTaskMap()),
-            emptyMap(),
-            unmodifiableMap(workflowTemplateMap()),
-            fixedInputMap());
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(unmodifiableMap(taskTestDoubles()))
+                    .workflowTemplates(unmodifiableMap(workflowTemplates()))
+                    .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
+                    .build())
+            .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputs()));
 
     Map<String, LiteralType> outputLiteralTypeMap =
         workflowTemplate.interface_().outputs().entrySet().stream()
@@ -183,7 +190,7 @@ public abstract class SdkTestingExecutor {
             (inputName, inputVar) -> {
               LiteralType inputType = inputVar.literalType();
 
-              LiteralType fixedInputType = fixedInputTypeMap().get(inputName);
+              LiteralType fixedInputType = fixedInputTypes().get(inputName);
 
               checkArgument(
                   fixedInputType != null,
@@ -200,29 +207,50 @@ public abstract class SdkTestingExecutor {
             });
   }
 
-  private void checkFixedTransform(WorkflowTemplate template) {
+  private void checkTestDoublesForNodes(WorkflowTemplate template) {
     for (Node node : template.nodes()) {
-      TaskNode taskNode = node.taskNode();
-      if (taskNode != null) {
-        String taskName = taskNode.referenceId().name();
+      if (node.taskNode() != null) {
+        checkTestDoubleForTaskNode(node.taskNode());
+      } else if (node.workflowNode() != null) {
+        checkTestDoubleForWorkflowNode(node.workflowNode());
+      }
+    }
+  }
+
+  private void checkTestDoubleForTaskNode(TaskNode taskNode) {
+    String taskName = taskNode.referenceId().name();
+
+    checkArgument(
+        taskTestDoubles().containsKey(taskName),
+        "Can't execute remote task [%s], "
+            + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask "
+            + "to provide a test double",
+        taskName);
+  }
+
+  private void checkTestDoubleForWorkflowNode(WorkflowNode workflowNode) {
+    Reference reference = workflowNode.reference();
+    switch (reference.kind()) {
+      case LAUNCH_PLAN_REF:
+        String launchPlanName = reference.launchPlanRef().name();
+        TestingRunnableLaunchPlan<?, ?> launchPlan = launchPlanTestDoubles().get(launchPlanName);
 
         checkArgument(
-            fixedTaskMap().containsKey(taskName),
-            "Can't execute remote task [%s], "
-                + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
-            taskName);
-      }
+            launchPlan != null,
+            "Can't execute remote launch plan "
+                + "[%s], use SdkTestingExecutor#withLaunchPlanOutput or "
+                + "SdkTestingExecutor#withLaunchPlan to provide a test double",
+            launchPlanName);
+        return;
 
-      WorkflowNode workflowNode = node.workflowNode();
-      if (workflowNode != null) {
-        String subWorkflowName = workflowNode.reference().subWorkflowRef().name();
-        WorkflowTemplate subWorkflowTemplate = workflowTemplateMap().get(subWorkflowName);
+      case SUB_WORKFLOW_REF:
+        String subWorkflowName = reference.subWorkflowRef().name();
+        WorkflowTemplate subWorkflowTemplate = workflowTemplates().get(subWorkflowName);
 
         checkArgument(
             subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
 
-        checkFixedTransform(subWorkflowTemplate);
-      }
+        checkTestDoublesForNodes(subWorkflowTemplate);
     }
   }
 
@@ -290,11 +318,29 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.name(), task.inputs(), task.outputs());
 
-    // FIXME Careful reader would have noticed that here we ignore project, domain and version
-    // it's because LocalEngine doesn't support it yet. We only correctly function
-    // when task names are unique.
-
     return toBuilder().putFixedTask(task.name(), fixedTask.withFixedOutput(input, output)).build();
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withLaunchPlanOutput(
+      SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, InputT input, OutputT output) {
+    TestingRunnableLaunchPlan<InputT, OutputT> runnableLaunchPlan =
+        getRunnableLaunchPlanOrDefault(
+            launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
+
+    return toBuilder()
+        .putLaunchPlan(launchPlan.name(), runnableLaunchPlan.withFixedOutput(input, output))
+        .build();
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withLaunchPlan(
+      SdkRemoteLaunchPlan<InputT, OutputT> launchPlan, Function<InputT, OutputT> runFn) {
+    TestingRunnableLaunchPlan<InputT, OutputT> launchPlanTestDouble =
+        getRunnableLaunchPlanOrDefault(
+            launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
+
+    return toBuilder()
+        .putLaunchPlan(launchPlanTestDouble.getName(), launchPlanTestDouble.withRunFn(runFn))
+        .build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTask(
@@ -350,12 +396,26 @@ public abstract class SdkTestingExecutor {
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     @SuppressWarnings({"unchecked"})
     TestingRunnableTask<InputT, OutputT> fixedTask =
-        (TestingRunnableTask<InputT, OutputT>) fixedTaskMap().get(name);
+        (TestingRunnableTask<InputT, OutputT>) taskTestDoubles().get(name);
 
     if (fixedTask == null) {
       return TestingRunnableTask.create(name, inputType, outputType);
     } else {
       return fixedTask;
+    }
+  }
+
+  private <InputT, OutputT>
+      TestingRunnableLaunchPlan<InputT, OutputT> getRunnableLaunchPlanOrDefault(
+          String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+    @SuppressWarnings({"unchecked"})
+    TestingRunnableLaunchPlan<InputT, OutputT> launchPlantTestDouble =
+        (TestingRunnableLaunchPlan<InputT, OutputT>) launchPlanTestDoubles().get(name);
+
+    if (launchPlantTestDouble == null) {
+      return TestingRunnableLaunchPlan.create(name, inputType, outputType);
+    } else {
+      return launchPlantTestDouble;
     }
   }
 
@@ -367,47 +427,60 @@ public abstract class SdkTestingExecutor {
 
   @AutoValue.Builder
   abstract static class Builder {
-    abstract Builder fixedInputMap(Map<String, Literal> fixedInputMap);
+    abstract Builder fixedInputs(Map<String, Literal> fixedInputs);
 
-    abstract Builder fixedInputTypeMap(Map<String, LiteralType> fixedInputTypeMap);
+    abstract Builder fixedInputTypes(Map<String, LiteralType> fixedInputTypes);
 
-    abstract Builder fixedTaskMap(Map<String, TestingRunnableTask<?, ?>> fixedTaskMap);
+    abstract Builder taskTestDoubles(Map<String, TestingRunnableTask<?, ?>> taskTestDoubles);
 
     abstract Builder workflow(SdkWorkflow workflow);
 
-    abstract Builder workflowTemplateMap(Map<String, WorkflowTemplate> workflowTemplateMap);
+    abstract Builder launchPlanTestDoubles(
+        Map<String, TestingRunnableLaunchPlan<?, ?>> launchPlanTestDoubles);
 
-    abstract Map<String, Literal> fixedInputMap();
+    abstract Builder workflowTemplates(Map<String, WorkflowTemplate> workflowTemplates);
 
-    abstract Map<String, LiteralType> fixedInputTypeMap();
+    abstract Map<String, Literal> fixedInputs();
 
-    abstract Map<String, TestingRunnableTask<?, ?>> fixedTaskMap();
+    abstract Map<String, LiteralType> fixedInputTypes();
 
-    abstract Map<String, WorkflowTemplate> workflowTemplateMap();
+    abstract Map<String, TestingRunnableTask<?, ?>> taskTestDoubles();
+
+    abstract Map<String, WorkflowTemplate> workflowTemplates();
+
+    abstract Map<String, TestingRunnableLaunchPlan<?, ?>> launchPlanTestDoubles();
 
     Builder putFixedInput(String key, Literal value, LiteralType type) {
-      Map<String, Literal> newFixedInputMap = new HashMap<>(fixedInputMap());
-      newFixedInputMap.put(key, value);
+      Map<String, Literal> newFixedInputs = new HashMap<>(fixedInputs());
+      newFixedInputs.put(key, value);
 
-      Map<String, LiteralType> newFixedInputTypeMap = new HashMap<>(fixedInputTypeMap());
+      Map<String, LiteralType> newFixedInputTypeMap = new HashMap<>(fixedInputTypes());
       newFixedInputTypeMap.put(key, type);
 
-      return fixedInputMap(unmodifiableMap(newFixedInputMap))
-          .fixedInputTypeMap(unmodifiableMap(newFixedInputTypeMap));
+      return fixedInputs(unmodifiableMap(newFixedInputs))
+          .fixedInputTypes(unmodifiableMap(newFixedInputTypeMap));
     }
 
     Builder putFixedTask(String name, TestingRunnableTask<?, ?> fn) {
-      Map<String, TestingRunnableTask<?, ?>> newFixedTaskMap = new HashMap<>(fixedTaskMap());
-      newFixedTaskMap.put(name, fn);
+      Map<String, TestingRunnableTask<?, ?>> newTaskTestDoubles = new HashMap<>(taskTestDoubles());
+      newTaskTestDoubles.put(name, fn);
 
-      return fixedTaskMap(newFixedTaskMap);
+      return taskTestDoubles(newTaskTestDoubles);
     }
 
     Builder putWorkflowTemplate(String name, WorkflowTemplate template) {
-      Map<String, WorkflowTemplate> newWorkflowTemplateMap = new HashMap<>(workflowTemplateMap());
-      newWorkflowTemplateMap.put(name, template);
+      Map<String, WorkflowTemplate> newWorkflowTemplates = new HashMap<>(workflowTemplates());
+      newWorkflowTemplates.put(name, template);
 
-      return workflowTemplateMap(newWorkflowTemplateMap);
+      return workflowTemplates(newWorkflowTemplates);
+    }
+
+    Builder putLaunchPlan(String name, TestingRunnableLaunchPlan<?, ?> fn) {
+      Map<String, TestingRunnableLaunchPlan<?, ?>> newLaunchPlanTestDoubles =
+          new HashMap<>(launchPlanTestDoubles());
+      newLaunchPlanTestDoubles.put(name, fn);
+
+      return launchPlanTestDoubles(newLaunchPlanTestDoubles);
     }
 
     abstract SdkTestingExecutor build();

@@ -25,6 +25,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -165,7 +166,7 @@ public class SdkTestingExecutorTest {
         e.getMessage(),
         equalTo(
             "Can't execute remote task [remote_sum_task], use SdkTestingExecutor#withTaskOutput or "
-                + "SdkTestingExecutor#withTask"));
+                + "SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
@@ -193,7 +194,7 @@ public class SdkTestingExecutorTest {
         e.getMessage(),
         equalTo(
             "Can't find input RemoteSumInput{a=1, b=2} for remote task [remote_sum_task] across known "
-                + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask"));
+                + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
@@ -273,6 +274,159 @@ public class SdkTestingExecutorTest {
         equalTo("Output type { in=INTEGER } doesn't match expected type { out=INTEGER }"));
   }
 
+  @Test
+  public void testWithLaunchPlanOutput() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(workflow)
+            .withFixedInput("a", 3L)
+            .withFixedInput("b", 5L)
+            .withLaunchPlanOutput(
+                launchplanRef, SumLaunchPlanInput.create(3L, 5L), SumLaunchPlanOutput.create(8L))
+            .execute();
+
+    assertThat(result.getIntegerOutput("result"), equalTo(8L));
+  }
+
+  @Test
+  public void testWithLaunchPlanOutput_isMissing() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SdkTestingExecutor.of(workflow)
+                    .withFixedInput("a", 3L)
+                    .withFixedInput("b", 5L)
+                    .withLaunchPlanOutput(
+                        launchplanRef,
+                        // The stub values won't be matched, so exception iis throws
+                        SumLaunchPlanInput.create(100000L, 100000L),
+                        SumLaunchPlanOutput.create(8L))
+                    .execute());
+
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "Can't find input SumLaunchPlanInput{a=3, b=5} for remote launch plan "
+                + "[SumWorkflow] across known launch plan inputs, "
+                + "use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan"
+                + " to provide a test double"));
+  }
+
+  @Test
+  public void testWithLaunchPlan() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData c =
+                builder
+                    .apply(
+                        "launchplanref",
+                        launchplanRef
+                            .withInput("a", builder.inputOfInteger("a"))
+                            .withInput("b", builder.inputOfInteger("b")))
+                    .getOutput("c");
+
+            builder.output("result", c);
+          }
+        };
+
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(workflow)
+            .withFixedInput("a", 30L)
+            .withFixedInput("b", 5L)
+            .withLaunchPlan(launchplanRef, in -> SumLaunchPlanOutput.create(in.a() + in.b()))
+            .execute();
+
+    assertThat(result.getIntegerOutput("result"), equalTo(35L));
+  }
+
+  @Test
+  public void testWithLaunchPlan_missingRemoteTaskOutput() {
+    SdkWorkflow workflow =
+        new SdkWorkflow() {
+          @Override
+          public void expand(SdkWorkflowBuilder builder) {
+            builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
+          }
+        };
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SdkTestingExecutor.of(workflow)
+                    .withTaskOutput(
+                        RemoteSumTask.create(),
+                        RemoteSumInput.create(10L, 20L),
+                        RemoteSumOutput.create(30L))
+                    .execute());
+
+    assertThat(
+        e.getMessage(),
+        equalTo(
+            "Can't find input RemoteSumInput{a=1, b=2} for remote task [remote_sum_task] across known "
+                + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+  }
+
   public static class SimpleUberWorkflow extends SdkWorkflow {
 
     @Override
@@ -307,6 +461,26 @@ public class SdkTestingExecutorTest {
 
     public static SimpleSubWorkflowOutput create(long out) {
       return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(out);
+    }
+  }
+
+  @AutoValue
+  abstract static class SumLaunchPlanInput {
+    abstract long a();
+
+    abstract long b();
+
+    public static SumLaunchPlanInput create(long a, long b) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(a, b);
+    }
+  }
+
+  @AutoValue
+  abstract static class SumLaunchPlanOutput {
+    abstract long c();
+
+    public static SumLaunchPlanOutput create(long c) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(c);
     }
   }
 }

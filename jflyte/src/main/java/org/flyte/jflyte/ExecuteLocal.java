@@ -29,6 +29,7 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.localengine.ExecutionContext;
 import org.flyte.localengine.ExecutionListener;
 import org.flyte.localengine.LocalEngine;
 import org.flyte.localengine.NoopExecutionListener;
@@ -70,11 +71,12 @@ public class ExecuteLocal implements Callable<Integer> {
     Map<String, RunnableTask> runnableTasks = ExecuteLocalLoader.loadTasks(modules, env);
     Map<String, DynamicWorkflowTask> dynamicWorkflowTasks =
         emptyMap(); // TODO support dynamic tasks
-    Map<String, WorkflowTemplate> workflows = ExecuteLocalLoader.loadWorkflows(modules, env);
+    Map<String, WorkflowTemplate> workflowTemplates =
+        ExecuteLocalLoader.loadWorkflows(modules, env);
 
     WorkflowTemplate workflow =
         Preconditions.checkNotNull(
-            workflows.get(workflowName), "workflow not found [%s]", workflowName);
+            workflowTemplates.get(workflowName), "workflow not found [%s]", workflowName);
 
     String synopsis = getCustomSynopsis();
     List<String> inputArgsList =
@@ -87,8 +89,14 @@ public class ExecuteLocal implements Callable<Integer> {
       ExecutionListener listener = NoopExecutionListener.create();
 
       Map<String, Literal> outputs =
-          LocalEngine.compileAndExecute(
-              workflow, runnableTasks, dynamicWorkflowTasks, workflows, inputs, listener);
+          new LocalEngine(
+                  ExecutionContext.builder()
+                      .runnableTasks(runnableTasks)
+                      .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                      .workflowTemplates(workflowTemplates)
+                      .executionListener(listener)
+                      .build())
+              .compileAndExecute(workflow, inputs);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 
       return 0;

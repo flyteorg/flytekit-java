@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine;
 
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.localengine.TestingListener.ofCompleted;
 import static org.flyte.localengine.TestingListener.ofError;
@@ -63,13 +62,10 @@ class LocalEngineTest {
     TestingListener listener = new TestingListener();
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(
-            workflows.get(workflowName),
-            tasks,
-            emptyMap(),
-            emptyMap(),
-            ImmutableMap.of("fib0", fib0, "fib1", fib1),
-            listener);
+        new LocalEngine(
+                ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
+            .compileAndExecute(
+                workflows.get(workflowName), ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
     assertEquals(
@@ -107,7 +103,8 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
+            .compileAndExecute(workflow, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -125,7 +122,8 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of());
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
+            .compileAndExecute(workflow, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
     Literal i3 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)));
@@ -158,7 +156,8 @@ class LocalEngineTest {
             inputStructLiteral);
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(workflow, tasks, emptyMap(), emptyMap(), inputs);
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
+            .compileAndExecute(workflow, inputs);
 
     Literal expectedOutput =
         Literal.ofScalar(
@@ -185,8 +184,9 @@ class LocalEngineTest {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
       RetryableTask.ATTEMPTS.set(0L);
 
-      LocalEngine.compileAndExecute(
-          workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener);
+      new LocalEngine(
+              ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
+          .compileAndExecute(workflow, ImmutableMap.of());
 
       assertEquals(
           ImmutableList.<List<Object>>builder()
@@ -225,8 +225,12 @@ class LocalEngineTest {
           Assertions.assertThrows(
               RuntimeException.class,
               () ->
-                  LocalEngine.compileAndExecute(
-                      workflow, tasks, emptyMap(), emptyMap(), ImmutableMap.of(), listener));
+                  new LocalEngine(
+                          ExecutionContext.builder()
+                              .runnableTasks(tasks)
+                              .executionListener(listener)
+                              .build())
+                      .compileAndExecute(workflow, ImmutableMap.of()));
 
       assertEquals("oops", e.getMessage());
 
@@ -262,19 +266,20 @@ class LocalEngineTest {
     Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
 
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
 
     Map<String, Literal> outputs =
-        LocalEngine.compileAndExecute(
-            workflows.get(workflowName),
-            tasks,
-            emptyMap(),
-            workflows,
-            ImmutableMap.of("a", a, "b", b, "c", c),
-            listener);
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(tasks)
+                    .executionListener(listener)
+                    .workflowTemplates(workflowTemplates)
+                    .build())
+            .compileAndExecute(
+                workflowTemplates.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 
     assertEquals(ImmutableMap.of("result", result), outputs);
     assertEquals(

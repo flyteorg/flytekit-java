@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine;
 
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -141,7 +140,7 @@ class ExecutionNodeCompilerTest {
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> ExecutionNodeCompiler.compile(node, emptyMap(), emptyMap(), emptyMap()));
+            () -> new ExecutionNodeCompiler(ExecutionContext.builder().build()).compile(node));
 
     assertEquals("Couldn't find task [unknownTask]", exception.getMessage());
   }
@@ -188,11 +187,11 @@ class ExecutionNodeCompilerTest {
             .build();
 
     ExecutionNode execNode =
-        ExecutionNodeCompiler.compile(
-            node,
-            ImmutableMap.of("empty_runnable_task", new EmptyRunnableTask()),
-            emptyMap(),
-            emptyMap());
+        new ExecutionNodeCompiler(
+                ExecutionContext.builder()
+                    .runnableTasks(ImmutableMap.of("empty_runnable_task", new EmptyRunnableTask()))
+                    .build())
+            .compile(node);
 
     assertEquals(ImmutableList.of("node-1", "node-2", "node-3"), execNode.upstreamNodeIds());
   }
@@ -205,7 +204,7 @@ class ExecutionNodeCompilerTest {
     return ExecutionNode.builder()
         .nodeId(nodeId)
         .upstreamNodeIds(upstreamNodeIds)
-        .runnableTask(new EmptyRunnableTask())
+        .runnableNode(new EmptyRunnableTask())
         .bindings(ImmutableList.of())
         .attempts(1)
         .build();

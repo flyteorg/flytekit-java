@@ -16,7 +16,6 @@
  */
 package org.flyte.localengine;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -37,93 +36,27 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class LocalEngine {
+  private final ExecutionContext context;
 
-  @Deprecated
-  @InlineMe(
-      replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), "
-              + "inputs, NoopExecutionListener.create())",
-      imports = {
-        "org.flyte.localengine.LocalEngine",
-        "org.flyte.localengine.NoopExecutionListener"
-      },
-      staticImports = "java.util.Collections.emptyMap")
-  public static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, Literal> inputs) {
-    return compileAndExecute(
-        template,
-        runnableTasks,
-        dynamicWorkflowTasks,
-        emptyMap(),
-        inputs,
-        NoopExecutionListener.create());
+  public LocalEngine(ExecutionContext context) {
+    this.context = requireNonNull(context);
   }
 
-  public static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
-      Map<String, Literal> inputs) {
-    return compileAndExecute(
-        template,
-        runnableTasks,
-        dynamicWorkflowTasks,
-        workflows,
-        inputs,
-        NoopExecutionListener.create());
-  }
-
-  @Deprecated
-  @InlineMe(
-      replacement =
-          "LocalEngine.compileAndExecute(template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener)",
-      imports = "org.flyte.localengine.LocalEngine",
-      staticImports = "java.util.Collections.emptyMap")
-  public static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, Literal> inputs,
-      ExecutionListener listener) {
-    return compileAndExecute(
-        template, runnableTasks, dynamicWorkflowTasks, emptyMap(), inputs, listener);
-  }
-
-  public static Map<String, Literal> compileAndExecute(
-      WorkflowTemplate template,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
-      Map<String, Literal> inputs,
-      ExecutionListener listener) {
+  public Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template, Map<String, Literal> inputs) {
     List<ExecutionNode> executionNodes =
-        ExecutionNodeCompiler.compile(
-            template.nodes(), runnableTasks, dynamicWorkflowTasks, workflows);
+        new ExecutionNodeCompiler(context).compile(template.nodes());
 
-    return execute(
-        executionNodes,
-        runnableTasks,
-        dynamicWorkflowTasks,
-        workflows,
-        inputs,
-        template.outputs(),
-        listener);
+    return execute(executionNodes, inputs, template.outputs());
   }
 
-  static Map<String, Literal> execute(
+  private Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
       Map<String, Literal> workflowInputs,
-      List<Binding> bindings,
-      ExecutionListener listener) {
+      List<Binding> bindings) {
 
-    executionNodes.forEach(listener::pending);
+    ExecutionListener executionListener = context.executionListener();
+    executionNodes.forEach(executionListener::pending);
 
     Map<String, Map<String, Literal>> nodeOutputs = new HashMap<>();
     nodeOutputs.put(START_NODE_ID, workflowInputs);
@@ -131,21 +64,14 @@ public class LocalEngine {
     for (ExecutionNode executionNode : executionNodes) {
       Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
 
-      listener.starting(executionNode, inputs);
+      executionListener.starting(executionNode, inputs);
 
       Map<String, Literal> outputs;
       if (executionNode.subWorkflow() != null) {
-        outputs =
-            compileAndExecute(
-                executionNode.subWorkflow(),
-                runnableTasks,
-                dynamicWorkflowTasks,
-                workflows,
-                inputs,
-                listener);
+        outputs = compileAndExecute(executionNode.subWorkflow(), inputs);
       } else {
-        // this must be a task
-        outputs = runWithRetries(executionNode, inputs, listener);
+        // this must be a task or a local launch plan
+        outputs = runWithRetries(executionNode, inputs, executionListener);
       }
 
       Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
@@ -154,7 +80,7 @@ public class LocalEngine {
         throw new IllegalStateException("invariant failed");
       }
 
-      listener.completed(executionNode, inputs, outputs);
+      executionListener.completed(executionNode, inputs, outputs);
     }
 
     return getLiteralMap(nodeOutputs, bindings);
@@ -173,7 +99,7 @@ public class LocalEngine {
       try {
         attempt++;
 
-        return executionNode.runnableTask().run(inputs);
+        return executionNode.runnableNode().run(inputs);
       } catch (Throwable e) {
         if (!isRecoverable(e) || attempt >= attempts) {
           listener.error(executionNode, inputs, e);
@@ -233,5 +159,93 @@ public class LocalEngine {
     }
 
     throw new AssertionError("Unexpected BindingData.Kind: " + bindingData.kind());
+  }
+
+  // Deprecated static methods
+  @Deprecated
+  @InlineMe(
+      replacement =
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).build()).compileAndExecute(template, inputs)",
+      imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, Literal> inputs) {
+    return new LocalEngine(
+            ExecutionContext.builder()
+                .runnableTasks(runnableTasks)
+                .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                .build())
+        .compileAndExecute(template, inputs);
+  }
+
+  @Deprecated
+  @InlineMe(
+      replacement =
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).workflowTemplates(workflowTemplates).build())"
+              + ".compileAndExecute(template, inputs)",
+      imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflowTemplates,
+      Map<String, Literal> inputs) {
+    return new LocalEngine(
+            ExecutionContext.builder()
+                .runnableTasks(runnableTasks)
+                .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                .workflowTemplates(workflowTemplates)
+                .build())
+        .compileAndExecute(template, inputs);
+  }
+
+  @Deprecated
+  @InlineMe(
+      replacement =
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener).build())"
+              + ".compileAndExecute(template, inputs)",
+      imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, Literal> inputs,
+      ExecutionListener listener) {
+    return new LocalEngine(
+            ExecutionContext.builder()
+                .runnableTasks(runnableTasks)
+                .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                .executionListener(listener)
+                .build())
+        .compileAndExecute(template, inputs);
+  }
+
+  @Deprecated
+  @InlineMe(
+      replacement =
+          "new LocalEngine(ExecutionContext.builder().runnableTasks(runnableTasks)"
+              + ".dynamicWorkflowTasks(dynamicWorkflowTasks).executionListener(listener)"
+              + ".workflowTemplates(workflowTemplates).build()).compileAndExecute(template, inputs)",
+      imports = {"org.flyte.localengine.ExecutionContext", "org.flyte.localengine.LocalEngine"})
+  public static Map<String, Literal> compileAndExecute(
+      WorkflowTemplate template,
+      Map<String, RunnableTask> runnableTasks,
+      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
+      Map<String, WorkflowTemplate> workflowTemplates,
+      Map<String, Literal> inputs,
+      ExecutionListener listener) {
+    return new LocalEngine(
+            ExecutionContext.builder()
+                .runnableTasks(runnableTasks)
+                .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                .executionListener(listener)
+                .workflowTemplates(workflowTemplates)
+                .build())
+        .compileAndExecute(template, inputs);
   }
 }

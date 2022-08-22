@@ -46,6 +46,8 @@ import org.flyte.api.v1.WorkflowTemplate;
  *
  * <ul>
  *   <li>Task identifier is resolved to RunnableTask.
+ *   <li>SubWorkflows identifier is resolved to WorkflowTemplate.
+ *   <li>Launch plans identifier is resolved to RunnableLaunchPlan.
  *   <li>Upstream node ids are computed from bindings and original node ids.
  *   <li>All upstream nodes exist and there are no cycles.
  *   <li>Execution nodes are topologically sorted.
@@ -55,40 +57,26 @@ import org.flyte.api.v1.WorkflowTemplate;
  * </ul>
  */
 class ExecutionNodeCompiler {
+  private final ExecutionContext executionContext;
+
+  ExecutionNodeCompiler(ExecutionContext executionContext) {
+    this.executionContext = executionContext;
+  }
 
   /**
    * Given a list of flytekit-api nodes, validates them, and determines their sequential execution
    * order.
    *
    * @param nodes nodes
-   * @param runnableTasks runnable tasks
-   * @param dynamicWorkflowTasks dynamic workflow tasks
-   * @param workflows workflow templates
    * @return execution nodes
    */
-  static List<ExecutionNode> compile(
-      List<Node> nodes,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableLaunchPlan> runnableLaunchPlans) {
-    List<ExecutionNode> executableNodes =
-        nodes.stream()
-            .map(
-                node ->
-                    compile(
-                        node, runnableTasks, dynamicWorkflowTasks, workflows, runnableLaunchPlans))
-            .collect(toList());
+  List<ExecutionNode> compile(List<Node> nodes) {
+    List<ExecutionNode> executableNodes = nodes.stream().map(this::compile).collect(toList());
 
     return sort(executableNodes);
   }
 
-  static ExecutionNode compile(
-      Node node,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableLaunchPlan> runnableLaunchPlans) {
+  ExecutionNode compile(Node node) {
     List<String> upstreamNodeIds = new ArrayList<>();
     node.inputs().stream()
         .map(Binding::binding)
@@ -105,39 +93,32 @@ class ExecutionNodeCompiler {
     if (node.branchNode() != null) {
       throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
     } else if (node.workflowNode() != null) {
-      return compileWorkflowNode(node, workflows, runnableLaunchPlans, upstreamNodeIds);
+      return compileWorkflowNode(node, upstreamNodeIds);
     } else if (node.taskNode() != null) {
-      return compileTaskNode(node, runnableTasks, dynamicWorkflowTasks, upstreamNodeIds);
+      return compileTaskNode(node, upstreamNodeIds);
     }
 
     throw new IllegalArgumentException(
         String.format("Node [%s] must be a task, branch or workflow node", node.id()));
   }
 
-  private static ExecutionNode compileWorkflowNode(
-      Node node,
-      Map<String, WorkflowTemplate> workflows,
-      Map<String, RunnableLaunchPlan> runnableLaunchPlans,
-      List<String> upstreamNodeIds) {
+  private ExecutionNode compileWorkflowNode(Node node, List<String> upstreamNodeIds) {
     WorkflowNode.Reference reference = node.workflowNode().reference();
     switch (reference.kind()) {
       case SUB_WORKFLOW_REF:
-        return compileSubWorkflowRef(node, workflows, upstreamNodeIds, reference);
+        return compileSubWorkflowRef(node, upstreamNodeIds, reference);
       case LAUNCH_PLAN_REF:
-        return compileLaunchPlanRef(node, runnableLaunchPlans, upstreamNodeIds, reference);
+        return compileLaunchPlanRef(node, upstreamNodeIds, reference);
       default:
         throw new IllegalArgumentException(
             String.format("Unsupported Reference.Kind: [%s]", reference.kind()));
     }
   }
 
-  private static ExecutionNode compileSubWorkflowRef(
-      Node node,
-      Map<String, WorkflowTemplate> workflows,
-      List<String> upstreamNodeIds,
-      Reference reference) {
+  private ExecutionNode compileSubWorkflowRef(
+      Node node, List<String> upstreamNodeIds, Reference reference) {
     String workflowName = reference.subWorkflowRef().name();
-    WorkflowTemplate workflowTemplate = workflows.get(workflowName);
+    WorkflowTemplate workflowTemplate = executionContext.workflows().get(workflowName);
 
     Objects.requireNonNull(
         workflowTemplate, () -> String.format("Couldn't find workflow [%s]", workflowName));
@@ -151,14 +132,11 @@ class ExecutionNodeCompiler {
         .build();
   }
 
-  private static ExecutionNode compileLaunchPlanRef(
-      Node node,
-      Map<String, RunnableLaunchPlan> runnableLaunchPlans,
-      List<String> upstreamNodeIds,
-      Reference reference) {
+  private ExecutionNode compileLaunchPlanRef(
+      Node node, List<String> upstreamNodeIds, Reference reference) {
     String launchPlanName = reference.launchPlanRef().name();
     // For local executions we treat launch plan references as tasks
-    RunnableLaunchPlan launchPlan = runnableLaunchPlans.get(launchPlanName);
+    RunnableLaunchPlan launchPlan = executionContext.runnableLaunchPlans().get(launchPlanName);
 
     Objects.requireNonNull(
         launchPlan, () -> String.format("Couldn't find launchplan [%s]", launchPlanName));
@@ -171,20 +149,16 @@ class ExecutionNodeCompiler {
         .build();
   }
 
-  private static ExecutionNode compileTaskNode(
-      Node node,
-      Map<String, RunnableTask> runnableTasks,
-      Map<String, DynamicWorkflowTask> dynamicWorkflowTasks,
-      List<String> upstreamNodeIds) {
+  private ExecutionNode compileTaskNode(Node node, List<String> upstreamNodeIds) {
     String taskName = node.taskNode().referenceId().name();
 
-    DynamicWorkflowTask dynamicWorkflowTask = dynamicWorkflowTasks.get(taskName);
+    DynamicWorkflowTask dynamicWorkflowTask = executionContext.dynamicWorkflowTasks().get(taskName);
     if (dynamicWorkflowTask != null) {
       throw new IllegalArgumentException(
           "DynamicWorkflowTask isn't yet supported for local execution");
     }
 
-    RunnableTask runnableTask = runnableTasks.get(taskName);
+    RunnableTask runnableTask = executionContext.runnableTasks().get(taskName);
     Objects.requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
 
     int attempts = runnableTask.getRetries().retries() + 1;

@@ -45,6 +45,7 @@ import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
+import org.flyte.localengine.ExecutionContext;
 import org.flyte.localengine.LocalEngine;
 
 @AutoValue
@@ -166,11 +167,12 @@ public abstract class SdkTestingExecutor {
     checkTestDoublesForNodes(workflowTemplate);
 
     Map<String, Literal> outputLiteralMap =
-        LocalEngine.builder()
-            .runnableTasks(unmodifiableMap(taskTestDoubles()))
-            .workflows(unmodifiableMap(workflowTemplates()))
-            .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
-            .build()
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(unmodifiableMap(taskTestDoubles()))
+                    .workflows(unmodifiableMap(workflowTemplates()))
+                    .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
+                    .build())
             .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputs()));
 
     Map<String, LiteralType> outputLiteralTypeMap =

@@ -348,7 +348,10 @@ public class SdkTestingExecutorTest {
                     .withFixedInput("b", 5L)
                     .execute());
 
-    assertThat(ex.getMessage(), equalTo("Can't execute remote launch plan [SumWorkflow], use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "Can't execute remote launch plan [SumWorkflow], use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test

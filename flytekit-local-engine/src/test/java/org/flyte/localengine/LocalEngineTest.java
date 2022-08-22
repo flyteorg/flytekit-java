@@ -62,10 +62,8 @@ class LocalEngineTest {
     TestingListener listener = new TestingListener();
 
     Map<String, Literal> outputs =
-        LocalEngine.builder()
-            .runnableTasks(tasks)
-            .listener(listener)
-            .build()
+        new LocalEngine(
+                ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
             .compileAndExecute(
                 workflows.get(workflowName), ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
@@ -105,9 +103,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.builder()
-            .runnableTasks(tasks)
-            .build()
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
             .compileAndExecute(workflow, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
@@ -126,9 +122,7 @@ class LocalEngineTest {
     WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
-        LocalEngine.builder()
-            .runnableTasks(tasks)
-            .build()
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
             .compileAndExecute(workflow, ImmutableMap.of());
 
     // 3 = 1 + 2, 7 = 3 + 4
@@ -162,7 +156,8 @@ class LocalEngineTest {
             inputStructLiteral);
 
     Map<String, Literal> outputs =
-        LocalEngine.builder().runnableTasks(tasks).build().compileAndExecute(workflow, inputs);
+        new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
+            .compileAndExecute(workflow, inputs);
 
     Literal expectedOutput =
         Literal.ofScalar(
@@ -189,10 +184,8 @@ class LocalEngineTest {
       RetryableTask.ATTEMPTS_BEFORE_SUCCESS.set(5L);
       RetryableTask.ATTEMPTS.set(0L);
 
-      LocalEngine.builder()
-          .runnableTasks(tasks)
-          .listener(listener)
-          .build()
+      new LocalEngine(
+              ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
           .compileAndExecute(workflow, ImmutableMap.of());
 
       assertEquals(
@@ -232,10 +225,11 @@ class LocalEngineTest {
           Assertions.assertThrows(
               RuntimeException.class,
               () ->
-                  LocalEngine.builder()
-                      .runnableTasks(tasks)
-                      .listener(listener)
-                      .build()
+                  new LocalEngine(
+                          ExecutionContext.builder()
+                              .runnableTasks(tasks)
+                              .executionListener(listener)
+                              .build())
                       .compileAndExecute(workflow, ImmutableMap.of()));
 
       assertEquals("oops", e.getMessage());
@@ -278,11 +272,12 @@ class LocalEngineTest {
     TestingListener listener = new TestingListener();
 
     Map<String, Literal> outputs =
-        LocalEngine.builder()
-            .runnableTasks(tasks)
-            .listener(listener)
-            .workflows(workflows)
-            .build()
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(tasks)
+                    .executionListener(listener)
+                    .workflows(workflows)
+                    .build())
             .compileAndExecute(
                 workflows.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 

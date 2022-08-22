@@ -29,6 +29,7 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.localengine.ExecutionContext;
 import org.flyte.localengine.ExecutionListener;
 import org.flyte.localengine.LocalEngine;
 import org.flyte.localengine.NoopExecutionListener;
@@ -87,12 +88,13 @@ public class ExecuteLocal implements Callable<Integer> {
       ExecutionListener listener = NoopExecutionListener.create();
 
       Map<String, Literal> outputs =
-          LocalEngine.builder()
-              .runnableTasks(runnableTasks)
-              .dynamicWorkflowTasks(dynamicWorkflowTasks)
-              .workflows(workflows)
-              .listener(listener)
-              .build()
+          new LocalEngine(
+                  ExecutionContext.builder()
+                      .runnableTasks(runnableTasks)
+                      .dynamicWorkflowTasks(dynamicWorkflowTasks)
+                      .workflows(workflows)
+                      .executionListener(listener)
+                      .build())
               .compileAndExecute(workflow, inputs);
       LOG.info("Outputs: " + StringUtil.serializeLiteralMap(outputs));
 

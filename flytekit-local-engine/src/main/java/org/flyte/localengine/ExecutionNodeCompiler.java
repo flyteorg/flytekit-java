@@ -38,7 +38,6 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowNode;
-import org.flyte.api.v1.WorkflowNode.Reference;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /**
@@ -77,18 +76,7 @@ class ExecutionNodeCompiler {
   }
 
   ExecutionNode compile(Node node) {
-    List<String> upstreamNodeIds = new ArrayList<>();
-    node.inputs().stream()
-        .map(Binding::binding)
-        .flatMap(ExecutionNodeCompiler::unpackBindingData)
-        .filter(x -> x.kind() == BindingData.Kind.PROMISE)
-        .map(x -> x.promise().nodeId())
-        .forEach(upstreamNodeIds::add);
-
-    upstreamNodeIds.addAll(node.upstreamNodeIds());
-    if (upstreamNodeIds.isEmpty()) {
-      upstreamNodeIds.add(START_NODE_ID);
-    }
+    List<String> upstreamNodeIds = compileUpstreamNodeIds(node);
 
     if (node.branchNode() != null) {
       throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
@@ -102,13 +90,29 @@ class ExecutionNodeCompiler {
         String.format("Node [%s] must be a task, branch or workflow node", node.id()));
   }
 
+  private static List<String> compileUpstreamNodeIds(Node node) {
+    List<String> upstreamNodeIds = new ArrayList<>();
+    node.inputs().stream()
+        .map(Binding::binding)
+        .flatMap(ExecutionNodeCompiler::unpackBindingData)
+        .filter(x -> x.kind() == BindingData.Kind.PROMISE)
+        .map(x -> x.promise().nodeId())
+        .forEach(upstreamNodeIds::add);
+
+    upstreamNodeIds.addAll(node.upstreamNodeIds());
+    if (upstreamNodeIds.isEmpty()) {
+      upstreamNodeIds.add(START_NODE_ID);
+    }
+    return upstreamNodeIds;
+  }
+
   private ExecutionNode compileWorkflowNode(Node node, List<String> upstreamNodeIds) {
     WorkflowNode.Reference reference = node.workflowNode().reference();
     switch (reference.kind()) {
       case SUB_WORKFLOW_REF:
-        return compileSubWorkflowRef(node, upstreamNodeIds, reference);
+        return compileSubWorkflowRef(node, upstreamNodeIds, reference.subWorkflowRef().name());
       case LAUNCH_PLAN_REF:
-        return compileLaunchPlanRef(node, upstreamNodeIds, reference);
+        return compileLaunchPlanRef(node, upstreamNodeIds, reference.launchPlanRef().name());
       default:
         throw new IllegalArgumentException(
             String.format("Unsupported Reference.Kind: [%s]", reference.kind()));
@@ -116,8 +120,7 @@ class ExecutionNodeCompiler {
   }
 
   private ExecutionNode compileSubWorkflowRef(
-      Node node, List<String> upstreamNodeIds, Reference reference) {
-    String workflowName = reference.subWorkflowRef().name();
+      Node node, List<String> upstreamNodeIds, String workflowName) {
     WorkflowTemplate workflowTemplate = executionContext.workflows().get(workflowName);
 
     requireNonNull(
@@ -133,8 +136,7 @@ class ExecutionNodeCompiler {
   }
 
   private ExecutionNode compileLaunchPlanRef(
-      Node node, List<String> upstreamNodeIds, Reference reference) {
-    String launchPlanName = reference.launchPlanRef().name();
+      Node node, List<String> upstreamNodeIds, String launchPlanName) {
     // For local executions we treat launch plan references as tasks
     RunnableLaunchPlan launchPlan = executionContext.runnableLaunchPlans().get(launchPlanName);
 

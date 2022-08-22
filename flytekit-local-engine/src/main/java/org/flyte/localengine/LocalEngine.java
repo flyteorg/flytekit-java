@@ -39,7 +39,8 @@ public class LocalEngine {
   private final ExecutionContext context;
 
   public LocalEngine(ExecutionContext context) {
-    this.context = context;
+    this.context = requireNonNull(context);
+    ;
   }
 
   public Map<String, Literal> compileAndExecute(

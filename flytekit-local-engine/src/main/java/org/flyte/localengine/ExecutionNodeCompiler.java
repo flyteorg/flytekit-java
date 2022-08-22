@@ -18,6 +18,7 @@ package org.flyte.localengine;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
@@ -29,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
@@ -60,7 +60,7 @@ class ExecutionNodeCompiler {
   private final ExecutionContext executionContext;
 
   ExecutionNodeCompiler(ExecutionContext executionContext) {
-    this.executionContext = executionContext;
+    this.executionContext = requireNonNull(executionContext);
   }
 
   /**
@@ -120,7 +120,7 @@ class ExecutionNodeCompiler {
     String workflowName = reference.subWorkflowRef().name();
     WorkflowTemplate workflowTemplate = executionContext.workflows().get(workflowName);
 
-    Objects.requireNonNull(
+    requireNonNull(
         workflowTemplate, () -> String.format("Couldn't find workflow [%s]", workflowName));
 
     return ExecutionNode.builder()
@@ -138,7 +138,7 @@ class ExecutionNodeCompiler {
     // For local executions we treat launch plan references as tasks
     RunnableLaunchPlan launchPlan = executionContext.runnableLaunchPlans().get(launchPlanName);
 
-    Objects.requireNonNull(
+    requireNonNull(
         launchPlan, () -> String.format("Couldn't find launchplan [%s]", launchPlanName));
     return ExecutionNode.builder()
         .nodeId(node.id())
@@ -159,7 +159,7 @@ class ExecutionNodeCompiler {
     }
 
     RunnableTask runnableTask = executionContext.runnableTasks().get(taskName);
-    Objects.requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
+    requireNonNull(runnableTask, () -> String.format("Couldn't find task [%s]", taskName));
 
     int attempts = runnableTask.getRetries().retries() + 1;
 
@@ -220,7 +220,7 @@ class ExecutionNodeCompiler {
       for (String nodeId : nodeIds) {
         if (!nodeId.equals(START_NODE_ID)) {
           ExecutionNode node = lookup.get(nodeId);
-          Objects.requireNonNull(node, () -> String.format("node not found [%s]", nodeId));
+          requireNonNull(node, () -> String.format("node not found [%s]", nodeId));
           topologicallySorted.add(node);
         }
 

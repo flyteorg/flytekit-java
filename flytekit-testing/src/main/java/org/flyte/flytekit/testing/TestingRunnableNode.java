@@ -34,7 +34,7 @@ public abstract class TestingRunnableNode<
   protected final SdkType<InputT> inputType;
   protected final SdkType<OutputT> outputType;
 
-  // @Nullable
+  // @Nullable - signal nullable field but without adding the dependency
   protected final Function<InputT, OutputT> runFn;
 
   protected final Map<InputT, OutputT> fixedOutputs;
@@ -74,19 +74,16 @@ public abstract class TestingRunnableNode<
 
     if (fixedOutputs.containsKey(input)) {
       return outputType.toLiteralMap(fixedOutputs.get(input));
+    } else if (runFn != null) {
+      return outputType.toLiteralMap(runFn.apply(input));
     }
 
-    if (runFn == null) {
-      String message =
-          String.format(
-              "Can't find input %s for remote %s [%s] across known %s inputs, "
-                  + "use %s to provide a test double",
-              input, getTestingType(), getName(), getTestingType(), getTestingSuggestion());
-
-      throw new IllegalArgumentException(message);
-    }
-
-    return outputType.toLiteralMap(runFn.apply(input));
+    String message =
+        String.format(
+            "Can't find input %s for remote %s [%s] across known %s inputs, "
+                + "use %s to provide a test double",
+            input, getTestingType(), getName(), getTestingType(), getTestingSuggestion());
+    throw new IllegalArgumentException(message);
   }
 
   @Override

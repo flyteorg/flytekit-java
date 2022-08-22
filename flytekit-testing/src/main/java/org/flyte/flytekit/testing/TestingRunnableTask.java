@@ -38,7 +38,15 @@ class TestingRunnableTask<InputT, OutputT>
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       Map<InputT, OutputT> fixedOutputs) {
-    super(taskId, inputType, outputType, runFn, fixedOutputs, TestingRunnableTask::new);
+    super(
+        taskId,
+        inputType,
+        outputType,
+        runFn,
+        fixedOutputs,
+        TestingRunnableTask::new,
+        "task",
+        "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
@@ -68,15 +76,5 @@ class TestingRunnableTask<InputT, OutputT>
   public RetryStrategy getRetries() {
     // no retries in testing
     return RetryStrategy.builder().retries(1).build();
-  }
-
-  @Override
-  protected String getTestingType() {
-    return "task";
-  }
-
-  @Override
-  protected String getTestingSuggestion() {
-    return "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask";
   }
 }

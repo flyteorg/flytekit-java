@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit.testing;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,6 +41,8 @@ public abstract class TestingRunnableNode<
 
   protected final Map<InputT, OutputT> fixedOutputs;
   private final Creator<IdT, InputT, OutputT, T> creatorFn;
+  private final String type;
+  private final String testingSuggestion;
 
   interface Creator<
       IdT extends PartialIdentifier,
@@ -59,13 +63,17 @@ public abstract class TestingRunnableNode<
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       Map<InputT, OutputT> fixedOutputs,
-      Creator<IdT, InputT, OutputT, T> creatorFn) {
-    this.id = id;
-    this.inputType = inputType;
-    this.outputType = outputType;
-    this.runFn = runFn;
-    this.fixedOutputs = fixedOutputs;
-    this.creatorFn = creatorFn;
+      Creator<IdT, InputT, OutputT, T> creatorFn,
+      String type,
+      String testingSuggestion) {
+    this.id = requireNonNull(id, "id");
+    this.inputType = requireNonNull(inputType, "inputType");
+    this.outputType = requireNonNull(outputType, "outputType");
+    this.runFn = runFn; // Nullable
+    this.fixedOutputs = requireNonNull(fixedOutputs, "fixedOutputs");
+    this.creatorFn = requireNonNull(creatorFn, "creatorFn");
+    this.type = requireNonNull(type, "type");
+    this.testingSuggestion = requireNonNull(testingSuggestion, "testingSuggestion");
   }
 
   @Override
@@ -82,7 +90,7 @@ public abstract class TestingRunnableNode<
         String.format(
             "Can't find input %s for remote %s [%s] across known %s inputs, "
                 + "use %s to provide a test double",
-            input, getTestingType(), getName(), getTestingType(), getTestingSuggestion());
+            input, type, getName(), type, testingSuggestion);
     throw new IllegalArgumentException(message);
   }
 
@@ -101,8 +109,4 @@ public abstract class TestingRunnableNode<
   public T withRunFn(Function<InputT, OutputT> runFn) {
     return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs);
   }
-
-  protected abstract String getTestingType();
-
-  protected abstract String getTestingSuggestion();
 }

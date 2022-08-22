@@ -35,7 +35,15 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       Map<InputT, OutputT> fixedOutputs) {
-    super(launchPlanId, inputType, outputType, runFn, fixedOutputs, TestingRunnableLaunchPlan::new);
+    super(
+        launchPlanId,
+        inputType,
+        outputType,
+        runFn,
+        fixedOutputs,
+        TestingRunnableLaunchPlan::new,
+        "launch plan",
+        "SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan");
   }
 
   static <InputT, OutputT> TestingRunnableLaunchPlan<InputT, OutputT> create(
@@ -44,15 +52,5 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
         PartialLaunchPlanIdentifier.builder().name(name).build();
 
     return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap());
-  }
-
-  @Override
-  protected String getTestingType() {
-    return "launch plan";
-  }
-
-  @Override
-  protected String getTestingSuggestion() {
-    return "SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan";
   }
 }

@@ -38,6 +38,7 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
+import org.flyte.api.v1.WorkflowNode.Reference;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkRemoteTask;
@@ -162,7 +163,7 @@ public abstract class SdkTestingExecutor {
   public Result execute() {
     WorkflowTemplate workflowTemplate = workflow().toIdlTemplate();
     checkInputsInFixedInputs(workflowTemplate);
-    checkFixedTransform(workflowTemplate);
+    checkTestDoublesForNodes(workflowTemplate);
 
     Map<String, Literal> outputLiteralMap =
         LocalEngine.builder()
@@ -204,34 +205,50 @@ public abstract class SdkTestingExecutor {
             });
   }
 
-  private void checkFixedTransform(WorkflowTemplate template) {
+  private void checkTestDoublesForNodes(WorkflowTemplate template) {
     for (Node node : template.nodes()) {
-      TaskNode taskNode = node.taskNode();
-      if (taskNode != null) {
-        String taskName = taskNode.referenceId().name();
+      if (node.taskNode() != null) {
+        checkTestDoubleForTaskNode(node.taskNode());
+      } else if (node.workflowNode() != null) {
+        checkTestDoubleForWorkflowNode(node.workflowNode());
+      }
+    }
+  }
+
+  private void checkTestDoubleForTaskNode(TaskNode taskNode) {
+    String taskName = taskNode.referenceId().name();
+
+    checkArgument(
+        taskTestDoubles().containsKey(taskName),
+        "Can't execute remote task [%s], "
+            + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask "
+            + "to provide a test double",
+        taskName);
+  }
+
+  private void checkTestDoubleForWorkflowNode(WorkflowNode workflowNode) {
+    Reference reference = workflowNode.reference();
+    switch (reference.kind()) {
+      case LAUNCH_PLAN_REF:
+        String launchPlanName = reference.launchPlanRef().name();
+        TestingRunnableLaunchPlan<?, ?> launchPlan = launchPlanTestDoubles().get(launchPlanName);
 
         checkArgument(
-            taskTestDoubles().containsKey(taskName),
-            "Can't execute remote task [%s], "
-                + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
-            taskName);
-      }
+            launchPlan != null,
+            "Can't execute remote launch plan "
+                + "[%s], use SdkTestingExecutor#withLaunchPlanOutput or "
+                + "SdkTestingExecutor#withLaunchPlan to provide a test double",
+            launchPlanName);
+        return;
 
-      WorkflowNode workflowNode = node.workflowNode();
-      if (workflowNode != null) {
-        switch (workflowNode.reference().kind()) {
-          case LAUNCH_PLAN_REF:
-            return;
-          case SUB_WORKFLOW_REF:
-            String subWorkflowName = workflowNode.reference().subWorkflowRef().name();
-            WorkflowTemplate subWorkflowTemplate = workflowTemplates().get(subWorkflowName);
+      case SUB_WORKFLOW_REF:
+        String subWorkflowName = reference.subWorkflowRef().name();
+        WorkflowTemplate subWorkflowTemplate = workflowTemplates().get(subWorkflowName);
 
-            checkArgument(
-                subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
+        checkArgument(
+            subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
 
-            checkFixedTransform(subWorkflowTemplate);
-        }
-      }
+        checkTestDoublesForNodes(subWorkflowTemplate);
     }
   }
 

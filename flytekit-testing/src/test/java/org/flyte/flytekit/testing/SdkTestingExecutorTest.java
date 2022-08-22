@@ -166,7 +166,7 @@ public class SdkTestingExecutorTest {
         e.getMessage(),
         equalTo(
             "Can't execute remote task [remote_sum_task], use SdkTestingExecutor#withTaskOutput or "
-                + "SdkTestingExecutor#withTask"));
+                + "SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
@@ -339,16 +339,16 @@ public class SdkTestingExecutorTest {
           }
         };
 
-    NullPointerException ex =
+    IllegalArgumentException ex =
         assertThrows(
-            NullPointerException.class,
+            IllegalArgumentException.class,
             () ->
                 SdkTestingExecutor.of(workflow)
                     .withFixedInput("a", 3L)
                     .withFixedInput("b", 5L)
                     .execute());
 
-    assertThat(ex.getMessage(), equalTo("Couldn't find launchplan [SumWorkflow]"));
+    assertThat(ex.getMessage(), equalTo("Can't execute remote launch plan [SumWorkflow], use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test

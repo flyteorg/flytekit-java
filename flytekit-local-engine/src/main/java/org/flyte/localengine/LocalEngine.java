@@ -23,12 +23,16 @@ import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.Var;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BooleanExpression;
@@ -37,11 +41,10 @@ import org.flyte.api.v1.ConjunctionExpression;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.Literal.Kind;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Primitive.Kind;
 import org.flyte.api.v1.RunnableTask;
-import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class LocalEngine {
@@ -160,17 +163,149 @@ public class LocalEngine {
         return eq(left, right);
       case NEQ:
         return neq(left, right);
-//      case GT:
-//        return gt(left, right);
-//      case GTE:
-//        return gte(left, right);
-//      case LT:
-//        return lt(left, right);
-//      case LTE:
-//        return lte(left, right);
+      case GT:
+        return gt(left, right);
+      case GTE:
+        return gte(left, right);
+      case LT:
+        return lt(left, right);
+      case LTE:
+        return lte(left, right);
     }
 
     throw new AssertionError("Unexpected ComparisonExpression.Operator: " + comparison.operator());
+  }
+
+  private boolean gt(Primitive left, Primitive right) {
+    return compare(left, right, cmp -> cmp > 0);
+
+  }
+
+  private boolean gte(Primitive left, Primitive right) {
+    return compare(left, right, cmp -> cmp >= 0);
+  }
+
+  private boolean lt(Primitive left, Primitive right) {
+    return compare(left, right, cmp -> cmp < 0);
+
+  }
+
+  private boolean lte(Primitive left, Primitive right) {
+    return compare(left, right, cmp -> cmp <= 0);
+  }
+
+  private boolean compare(Primitive left, Primitive right, Predicate<Integer> cmp) {
+    return cmp.test(compare(left, right));
+  }
+
+  private int compare(Primitive left, Primitive right) {
+    switch (left.kind()) {
+      case INTEGER_VALUE:
+        return compareIntegers(left, right);
+      case FLOAT_VALUE:
+        return compareFloats(left, right);
+      case STRING_VALUE:
+        return compare(left, right, Kind.STRING_VALUE, this::asString);
+      case BOOLEAN_VALUE:
+        return compare(left, right, Kind.BOOLEAN_VALUE, this::asBoolean);
+      case DATETIME:
+        return compare(left, right, Kind.DATETIME, this::asDateTime);
+      case DURATION:
+        return compare(left, right, Kind.DURATION, this::asDuration);
+      default:
+        throw new AssertionError("Unexpected Primitive.Kind:" + left.kind());
+    }
+  }
+
+  private int compareIntegers(Primitive left,
+      Primitive right) {
+    long integerLeft = asInteger(left);
+    switch (right.kind()) {
+      case INTEGER_VALUE:
+        long integerRight = asInteger(left);
+        return Long.compare(integerLeft, integerRight);
+      case FLOAT_VALUE:
+        // type coercion
+        double floatRight = asFloat(left);
+        return Double.compare((double) integerLeft, floatRight);
+      default: // fall out
+    }
+    throwPrimitivesNotCompatible(left, right);
+    return 0; // unreachable
+  }
+
+  private int compareFloats(Primitive left,
+      Primitive right) {
+    double floatLeft = asFloat(left);
+    switch (right.kind()) {
+      case INTEGER_VALUE:
+        // type coercion
+        long integerRight = asInteger(left);
+        return Double.compare(floatLeft, (double) integerRight);
+      case FLOAT_VALUE:
+        double floatRight = asFloat(left);
+        return Double.compare(floatLeft, floatRight);
+      default: // fall out
+    }
+    throwPrimitivesNotCompatible(left, right);
+    return 0; // unreachable
+  }
+
+  private <T extends Comparable<T>> int compare(Primitive left, Primitive right,
+      Kind expectedKind, Function<Primitive, T> converter) {
+    if (!(left.kind() == right.kind() && left.kind() == expectedKind)) {
+      throwPrimitivesNotCompatible(left, right);
+    }
+    T valueLeft = converter.apply(left);
+    T valueRight = converter.apply(right);
+
+    return valueLeft.compareTo(valueRight);
+  }
+
+  private void throwPrimitivesNotCompatible(Primitive left, Primitive right) {
+    throw new IllegalArgumentException(String.format("Operands are not comparable: [%s] <-> [%s]", left, right));
+  }
+
+  private long asInteger(Primitive primitive) {
+    if (primitive.kind() != Kind.INTEGER_VALUE) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not an integer", primitive));
+    }
+    return primitive.integerValue();
+  }
+
+  private double asFloat(Primitive primitive) {
+    if (primitive.kind() != Kind.FLOAT_VALUE) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not a float", primitive));
+    }
+    return primitive.floatValue();
+  }
+
+  private String asString(Primitive primitive) {
+    if (primitive.kind() != Kind.STRING_VALUE) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not a string", primitive));
+    }
+    return primitive.stringValue();
+  }
+  
+  private boolean asBoolean(Primitive primitive) {
+    if (primitive.kind() != Kind.BOOLEAN_VALUE) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not a boolean", primitive));
+    }
+    return primitive.booleanValue();
+  }
+
+  private Instant asDateTime(Primitive primitive) {
+    if (primitive.kind() != Kind.DATETIME) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not a datetime", primitive));
+    }
+    return primitive.datetime();
+  }
+
+  private Duration asDuration(Primitive primitive) {
+    if (primitive.kind() != Kind.DURATION) {
+      throw new IllegalArgumentException(String.format("Primitive [%s] is not a duration", primitive));
+    }
+    return primitive.duration();
   }
 
   private boolean eq(Primitive left, Primitive right) {
@@ -197,32 +332,6 @@ public class LocalEngine {
         return literal.scalar().primitive();
     }
     return null;
-  }
-
-  private static Object resolve(Scalar scalar) {
-    if (scalar.kind() != Scalar.Kind.PRIMITIVE) {
-      throw new IllegalArgumentException("asass22ass"); //XXX
-    }
-
-    return resolve(scalar.primitive());
-  }
-
-  private static Object resolve(Primitive primitive) {
-    switch (primitive.kind()) {
-      case INTEGER_VALUE:
-        return primitive.integerValue();
-      case FLOAT_VALUE:
-        return primitive.floatValue();
-      case STRING_VALUE:
-        return primitive.stringValue();
-      case BOOLEAN_VALUE:
-        return primitive.booleanValue();
-      case DATETIME:
-        return primitive.datetime();
-      case DURATION:
-        return primitive.duration();
-    }
-    throw new AssertionError("Unexpected Primitive.Kind: " + primitive.kind());
   }
 
   Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {

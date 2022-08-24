@@ -43,8 +43,6 @@ import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.localengine.examples.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 class LocalEngineTest {
 

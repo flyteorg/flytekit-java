@@ -16,6 +16,7 @@
  */
 package org.flyte.localengine;
 
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.localengine.TestingListener.ofCompleted;
 import static org.flyte.localengine.TestingListener.ofError;
@@ -42,6 +43,8 @@ import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.localengine.examples.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class LocalEngineTest {
 
@@ -310,6 +313,39 @@ class LocalEngineTest {
                     "nested-workflow",
                     ImmutableMap.of("a", a, "b", b, "c", c),
                     ImmutableMap.of("result", result)))
+            .build(),
+        listener.actions);
+  }
+
+  @Test
+  void testBranchNodes() {
+    String workflowName = new CollatzConjectureStepWorkflow().getName();
+
+    Literal x = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal expectedResult = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(22L)));
+
+    Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    Map<String, Literal> outputs =
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(tasks)
+                    .executionListener(listener)
+                    .workflowTemplates(workflowTemplates)
+                    .build())
+            .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", x));
+
+    assertEquals(ImmutableMap.of("nextX", expectedResult), outputs);
+    assertEquals(
+        ImmutableList.<List<Object>>builder()
+            .add(ofPending("nested-workflow"))
+            .add(ofStarting("nested-workflow", emptyMap()))
+            .add(ofPending("outer-sum-a-b"))
+            .add(ofPending("outer-sum-ab-c"))
+            .add(ofStarting("outer-sum-a-b", emptyMap()))
             .build(),
         listener.actions);
   }

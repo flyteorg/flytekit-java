@@ -39,6 +39,9 @@ public abstract class ExecutionNode {
   @Nullable
   public abstract WorkflowTemplate subWorkflow();
 
+  @Nullable
+  public abstract ExecutionBranchNode branchNode();
+
   public abstract int attempts();
 
   static Builder builder() {
@@ -54,6 +57,8 @@ public abstract class ExecutionNode {
     abstract Builder bindings(List<Binding> bindings);
 
     abstract Builder runnableNode(RunnableNode runnableNode);
+
+    abstract Builder branchNode(ExecutionBranchNode branchNode);
 
     abstract Builder subWorkflow(WorkflowTemplate subWorkflow);
 

@@ -104,7 +104,7 @@ public class LocalEngine {
       Map<String, Map<String, Literal>> nodeOutputs) {
     for (ExecutionIfBlock ifBlock : branchNode.ifNodes()) {
       Map<String, Literal> outputs;
-      if ((outputs = executeConditionally(ifBlock, inputs, nodeOutputs))!= null) {
+      if ((outputs = executeConditionally(ifBlock, inputs, nodeOutputs)) != null) {
         return outputs;
       }
     }

@@ -167,7 +167,7 @@ class Evaluator {
       case FLOAT_VALUE:
         return floatEq(left, right);
       default:
-      return Objects.equals(left, right);
+        return Objects.equals(left, right);
     }
   }
 

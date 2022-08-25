@@ -163,21 +163,32 @@ class Evaluator {
   private boolean eq(Primitive left, Primitive right) {
     switch (left.kind()) {
       case INTEGER_VALUE:
-        if (right.kind() == Primitive.Kind.FLOAT_VALUE) {
-          long integerLeft = left.integerValue();
-          double floatRight = right.floatValue();
-          return Objects.equals((double) integerLeft, floatRight);
-        }
-        return Objects.equals(left, right);
+        return integerEq(left, right);
       case FLOAT_VALUE:
-        if (right.kind() == Primitive.Kind.INTEGER_VALUE) {
-          double floatLeft = left.floatValue();
-          long integerRight = right.integerValue();
-          return Objects.equals(floatLeft, (double) integerRight);
-        }
+        return floatEq(left, right);
       default:
-        return Objects.equals(left, right);
+      return Objects.equals(left, right);
     }
+  }
+
+  private static boolean integerEq(Primitive left, Primitive right) {
+    assert left.kind() == Primitive.Kind.INTEGER_VALUE;
+    if (right.kind() == Primitive.Kind.FLOAT_VALUE) {
+      long integerLeft = left.integerValue();
+      double floatRight = right.floatValue();
+      return ((double) integerLeft) == floatRight;
+    }
+    return Objects.equals(left, right);
+  }
+
+  private static boolean floatEq(Primitive left, Primitive right) {
+    assert left.kind() == Primitive.Kind.FLOAT_VALUE;
+    if (right.kind() == Primitive.Kind.INTEGER_VALUE) {
+      double floatLeft = left.floatValue();
+      long integerRight = right.integerValue();
+      return floatLeft == (double) integerRight;
+    }
+    return Objects.equals(left, right);
   }
 
   private boolean neq(Primitive left, Primitive right) {

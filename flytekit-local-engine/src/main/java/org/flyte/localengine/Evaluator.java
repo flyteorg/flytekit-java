@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.flyte.api.v1.Scalar.Kind;
 
 class Evaluator {
      boolean evaluate(BooleanExpression condition, Map<String, Literal> inputs) {
@@ -218,14 +219,15 @@ class Evaluator {
       case VAR:
         Literal literal = inputs.get(operand.var());
         if (literal == null) {
-          throw new IllegalArgumentException("asassass"); //XXX
-        } else if (literal.scalar() == null) {
-          throw new IllegalArgumentException("asassass"); //XXX
-        } else if (literal.scalar().primitive() == null) {
-          throw new IllegalArgumentException("asassass"); //XXX
+          throw new IllegalArgumentException(
+              String.format("Variable [%s] not in inputs: %s", operand.var(), inputs));
+        } else if (literal.kind() != Literal.Kind.SCALAR || literal.scalar().kind() != Kind.PRIMITIVE) {
+          throw new IllegalArgumentException(
+              String.format("Variable [%s] not a primitive: %s", operand.var(), literal));
         }
         return literal.scalar().primitive();
     }
-    return null;
+
+    throw new AssertionError("Unexpected Operand.Kind: " + operand.kind());
   }
 }

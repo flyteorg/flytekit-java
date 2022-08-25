@@ -1,23 +1,28 @@
 package org.flyte.localengine;
 
-import org.flyte.api.v1.BooleanExpression;
-import org.flyte.api.v1.ComparisonExpression;
-import org.flyte.api.v1.ComparisonExpression.Operator;
-
-import org.flyte.api.v1.Operand;
-import org.flyte.api.v1.Primitive;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.ComparisonExpression.Operator;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Operand;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Struct;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EvaluatorTest {
     private static final Instant PRESENT = Instant.now();
@@ -27,6 +32,12 @@ class EvaluatorTest {
     private static final Duration SMALL = Duration.ofMillis(1);
     private static final Duration MEDIUM = Duration.ofSeconds(1);
     private static final Duration LARGE = Duration.ofMinutes(1);
+    private Evaluator evaluator;
+
+    @BeforeEach
+    void setUp() {
+        evaluator = new Evaluator();
+    }
 
     @ParameterizedTest
     @MethodSource("evaluateComparisonProvider")
@@ -40,9 +51,76 @@ class EvaluatorTest {
                                 .rightValue(Operand.ofPrimitive(right))
                                 .operator(op)
                                 .build()),
-                Collections.emptyMap());
+                emptyMap());
 
         assertEquals(expected, result);
+    }
+
+    @ParameterizedTest
+    @MethodSource("testEvaluateComparisonsWithIncompatiblePrimitivesProvider")
+    void testEvaluateComparisonsWithIncompatiblePrimitives(Operator op, Primitive left, Primitive right) {
+        Evaluator evaluator = new Evaluator();
+        String expectedErrMsg = String.format("Operands are not comparable: [%s] <-> [%s]", left,
+            right);
+
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> evaluator.evaluate(
+                BooleanExpression.ofComparison(
+                    ComparisonExpression.builder()
+                        .leftValue(Operand.ofPrimitive(left))
+                        .rightValue(Operand.ofPrimitive(right))
+                        .operator(op)
+                        .build()),
+                emptyMap()));
+
+        assertEquals(expectedErrMsg, ex.getMessage());
+    }
+
+    @Test
+    void testEvaluateLookUpsVarInInputs() {
+        boolean result = evaluator.evaluate(
+            BooleanExpression.ofComparison(
+                ComparisonExpression.builder()
+                    .leftValue(Operand.ofPrimitive(ip(42)))
+                    .rightValue(Operand.ofVar("x"))
+                    .operator(Operator.GT)
+                    .build()),
+            singletonMap("x", Literal.ofScalar(Scalar.ofPrimitive(ip(5)))));
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testEvaluateThrowsExceptionWhenVarNotInInputs() {
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> evaluator.evaluate(
+                BooleanExpression.ofComparison(
+                    ComparisonExpression.builder()
+                        .leftValue(Operand.ofPrimitive(ip(42)))
+                        .rightValue(Operand.ofVar("x"))
+                        .operator(Operator.GT)
+                        .build()),
+                emptyMap()));
+
+        assertEquals("Variable [x] not in inputs: {}", ex.getMessage());
+    }
+
+    @Test
+    void testEvaluateThrowsExceptionWhenVarIsNotPrimitive() {
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> evaluator.evaluate(
+                BooleanExpression.ofComparison(
+                    ComparisonExpression.builder()
+                        .leftValue(Operand.ofPrimitive(ip(42)))
+                        .rightValue(Operand.ofVar("x"))
+                        .operator(Operator.GT)
+                        .build()),
+                singletonMap("x", Literal.ofScalar(Scalar.ofGeneric(Struct.of(emptyMap()))))));
+
+        assertEquals("Variable [x] not a primitive: Literal{scalar=Scalar{generic=Struct{fields={}}}}", ex.getMessage());
     }
 
     public static Stream<Arguments> evaluateComparisonProvider() {
@@ -156,6 +234,40 @@ class EvaluatorTest {
                 Arguments.of(Operator.LTE, dup(MEDIUM), dup(SMALL), false),
                 Arguments.of(Operator.LTE, dup(SMALL), dup(MEDIUM), true),
                 Arguments.of(Operator.LTE, dup(SMALL), dup(SMALL), true)
+        );
+    }
+
+    public static Stream<Arguments> testEvaluateComparisonsWithIncompatiblePrimitivesProvider() {
+        return Stream.of(
+            Arguments.of(Operator.GT, ip(1), sp("a")),
+            Arguments.of(Operator.GTE, ip(1), bp(false)),
+            Arguments.of(Operator.LT, ip(1), dtp(PAST)),
+            Arguments.of(Operator.LTE, ip(1), dup(SMALL)),
+
+            Arguments.of(Operator.GT, fp(1), sp("a")),
+            Arguments.of(Operator.GTE, fp(1), bp(false)),
+            Arguments.of(Operator.LT, fp(1), dtp(PAST)),
+            Arguments.of(Operator.LTE, fp(1), dup(SMALL)),
+
+            Arguments.of(Operator.GT, sp("a"), ip(1)),
+            Arguments.of(Operator.GTE, sp("a"), bp(false)),
+            Arguments.of(Operator.LT, sp("a"), dtp(PAST)),
+            Arguments.of(Operator.LTE, sp("a"), dup(SMALL)),
+
+            Arguments.of(Operator.GTE, bp(false), ip(1)),
+            Arguments.of(Operator.GT, bp(false), sp("a")),
+            Arguments.of(Operator.LT, bp(false), dtp(PAST)),
+            Arguments.of(Operator.LTE, bp(false), dup(SMALL)),
+
+            Arguments.of(Operator.LT, dtp(PAST), ip(1)),
+            Arguments.of(Operator.GT, dtp(PAST), sp("a")),
+            Arguments.of(Operator.GTE, dtp(PAST), bp(false)),
+            Arguments.of(Operator.LTE, dtp(PAST), dup(SMALL)),
+
+            Arguments.of(Operator.LTE, dup(SMALL), ip(1)),
+            Arguments.of(Operator.GT, dup(SMALL), sp("a")),
+            Arguments.of(Operator.GTE, dup(SMALL), bp(false)),
+            Arguments.of(Operator.LT, dup(SMALL), dtp(PAST))
         );
     }
 

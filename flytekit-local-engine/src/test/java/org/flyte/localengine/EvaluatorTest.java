@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.BooleanExpression;
 import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.ComparisonExpression.Operator;
+import org.flyte.api.v1.ConjunctionExpression;
+import org.flyte.api.v1.ConjunctionExpression.LogicalOperator;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.Primitive;
@@ -78,7 +80,7 @@ class EvaluatorTest {
     }
 
     @Test
-    void testEvaluateLookUpsVarInInputs() {
+    void testEvaluateConjunctions() {
         boolean result = evaluator.evaluate(
             BooleanExpression.ofComparison(
                 ComparisonExpression.builder()
@@ -121,6 +123,31 @@ class EvaluatorTest {
                 singletonMap("x", Literal.ofScalar(Scalar.ofGeneric(Struct.of(emptyMap()))))));
 
         assertEquals("Variable [x] not a primitive: Literal{scalar=Scalar{generic=Struct{fields={}}}}", ex.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource("testEvaluateConjunctionsProvider")
+    void testEvaluateConjunctions(LogicalOperator op, boolean left, boolean right, boolean expected) {
+        boolean result = evaluator.evaluate(
+            BooleanExpression.ofConjunction(
+                ConjunctionExpression.create(
+                    op,
+                    BooleanExpression.ofComparison(
+                        ComparisonExpression.builder()
+                            .leftValue(Operand.ofPrimitive(bp(true)))
+                            .rightValue(Operand.ofPrimitive(bp(left)))
+                            .operator(Operator.EQ)
+                            .build()),
+                    BooleanExpression.ofComparison(
+                        ComparisonExpression.builder()
+                            .leftValue(Operand.ofPrimitive(bp(true)))
+                            .rightValue(Operand.ofPrimitive(bp(right)))
+                            .operator(Operator.EQ)
+                            .build()
+                        ))),
+            emptyMap());
+
+        assertEquals(expected, result);
     }
 
     public static Stream<Arguments> evaluateComparisonProvider() {
@@ -236,7 +263,6 @@ class EvaluatorTest {
                 Arguments.of(Operator.LTE, dup(SMALL), dup(SMALL), true)
         );
     }
-
     public static Stream<Arguments> testEvaluateComparisonsWithIncompatiblePrimitivesProvider() {
         return Stream.of(
             Arguments.of(Operator.GT, ip(1), sp("a")),
@@ -268,6 +294,20 @@ class EvaluatorTest {
             Arguments.of(Operator.GT, dup(SMALL), sp("a")),
             Arguments.of(Operator.GTE, dup(SMALL), bp(false)),
             Arguments.of(Operator.LT, dup(SMALL), dtp(PAST))
+        );
+    }
+
+    public static Stream<Arguments> testEvaluateConjunctionsProvider() {
+        return Stream.of(
+            Arguments.of(LogicalOperator.OR, false, false, false),
+            Arguments.of(LogicalOperator.OR, true, false, true),
+            Arguments.of(LogicalOperator.OR, false, true, true),
+            Arguments.of(LogicalOperator.OR, true, true, true),
+
+            Arguments.of(LogicalOperator.AND, false, false, false),
+            Arguments.of(LogicalOperator.AND, true, false, false),
+            Arguments.of(LogicalOperator.AND, false, true, false),
+            Arguments.of(LogicalOperator.AND, true, true, true)
         );
     }
 

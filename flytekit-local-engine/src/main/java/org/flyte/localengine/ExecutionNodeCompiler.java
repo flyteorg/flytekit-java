@@ -111,12 +111,14 @@ class ExecutionNodeCompiler {
     assert node.branchNode() != null;
     IfElseBlock ifElseBlock = node.branchNode().ifElse();
 
-    List<ExecutionIfBlock> ifBlocks = Stream.concat(Stream.of(ifElseBlock.case_()),
-            ifElseBlock.other().stream())
-        .map(ifBlock -> ExecutionIfBlock.create(ifBlock.condition(), compile(ifBlock.thenNode())))
-        .collect(toList());
+    List<ExecutionIfBlock> ifBlocks =
+        Stream.concat(Stream.of(ifElseBlock.case_()), ifElseBlock.other().stream())
+            .map(
+                ifBlock ->
+                    ExecutionIfBlock.create(ifBlock.condition(), compile(ifBlock.thenNode())))
+            .collect(toList());
     ExecutionNode elseNode = compileIfNotNull(ifElseBlock.elseNode());
-    //XXX support node error
+    // XXX support node error
 
     ExecutionBranchNode branchNode = ExecutionBranchNode.create(ifBlocks, elseNode);
 

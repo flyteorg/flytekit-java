@@ -41,11 +41,9 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
             .apply(
                 "decide",
                 when(
-                    "was_even",
-                    SdkConditions.eq(ofBoolean(true), isOdd),
-                    new Divide()
-                        .withInput("num", x)
-                        .withInput("den", ofInteger(2L)))
+                        "was_even",
+                        SdkConditions.eq(ofBoolean(true), isOdd),
+                        new Divide().withInput("num", x).withInput("den", ofInteger(2L)))
                     .otherwise("was_odd", new ThreeXPlusOne().withInput("x", x)))
             .getOutput("res");
 

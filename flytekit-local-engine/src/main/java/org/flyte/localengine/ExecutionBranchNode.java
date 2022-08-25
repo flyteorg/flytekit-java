@@ -28,10 +28,11 @@ import javax.annotation.Nullable;
 @AutoValue
 abstract class ExecutionBranchNode {
   abstract List<ExecutionIfBlock> ifNodes();
+
   @Nullable
   abstract ExecutionNode elseNode();
 
-  //XXX support node error
+  // XXX support node error
 
   public static ExecutionBranchNode create(List<ExecutionIfBlock> ifNodes, ExecutionNode elseNode) {
     return new AutoValue_ExecutionBranchNode(ifNodes, elseNode);

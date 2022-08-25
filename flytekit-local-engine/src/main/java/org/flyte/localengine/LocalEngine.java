@@ -23,13 +23,11 @@ import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.Var;
-
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.flyte.api.v1.*;
 
 public class LocalEngine {
@@ -46,6 +44,7 @@ public class LocalEngine {
 
     return execute(executionNodes, inputs, template.outputs());
   }
+
   public boolean isRecoverable(Throwable e) {
     if (e instanceof ContainerError) {
       ContainerError containerError = (ContainerError) e;
@@ -100,7 +99,9 @@ public class LocalEngine {
     executionListener.completed(executionNode, inputs, outputs);
   }
 
-  private Map<String, Literal> executeConditionally(ExecutionBranchNode branchNode, Map<String, Literal> inputs,
+  private Map<String, Literal> executeConditionally(
+      ExecutionBranchNode branchNode,
+      Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
     for (ExecutionIfBlock ifBlock : branchNode.ifNodes()) {
       Optional<Map<String, Literal>> outputs;
@@ -114,9 +115,11 @@ public class LocalEngine {
     return nodeOutputs.get(branchNode.elseNode().nodeId());
   }
 
-  private Optional<Map<String, Literal>> executeConditionally(ExecutionIfBlock ifBlock, Map<String, Literal> inputs,
+  private Optional<Map<String, Literal>> executeConditionally(
+      ExecutionIfBlock ifBlock,
+      Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
-    Evaluator evaluator = new Evaluator(); //TODO find a better place
+    Evaluator evaluator = new Evaluator(); // TODO find a better place
     if (!evaluator.evaluate(ifBlock.condition(), inputs)) {
       return Optional.empty();
     }
@@ -126,7 +129,7 @@ public class LocalEngine {
     return Optional.of(nodeOutputs.get(ifBlock.thenNode().nodeId()));
   }
 
-    Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {
+  Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {
     ExecutionListener listener = context.executionListener();
     int attempts = executionNode.attempts();
     @Var int attempt = 0;
@@ -151,7 +154,7 @@ public class LocalEngine {
     }
   }
 
-    // TODO we need to take interface into account to do type casting
+  // TODO we need to take interface into account to do type casting
   static Map<String, Literal> getLiteralMap(
       Map<String, Map<String, Literal>> nodeOutputs, List<Binding> bindings) {
     return bindings.stream()

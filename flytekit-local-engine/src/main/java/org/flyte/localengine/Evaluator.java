@@ -147,45 +147,40 @@ class Evaluator {
   }
 
     private  long asInteger(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.INTEGER_VALUE) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not an integer", primitive));
-    }
-    return primitive.integerValue();
+      verifyPrimitiveType(primitive, Primitive.Kind.INTEGER_VALUE);
+      return primitive.integerValue();
   }
 
-    private  double asFloat(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.FLOAT_VALUE) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not a float", primitive));
-    }
+  private  double asFloat(Primitive primitive) {
+    verifyPrimitiveType(primitive, Primitive.Kind.FLOAT_VALUE);
     return primitive.floatValue();
   }
 
     private  String asString(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.STRING_VALUE) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not a string", primitive));
-    }
+      verifyPrimitiveType(primitive, Primitive.Kind.STRING_VALUE);
     return primitive.stringValue();
   }
 
     private boolean asBoolean(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.BOOLEAN_VALUE) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not a boolean", primitive));
-    }
+      verifyPrimitiveType(primitive, Primitive.Kind.BOOLEAN_VALUE);
     return primitive.booleanValue();
   }
 
     private  Instant asDateTime(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.DATETIME) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not a datetime", primitive));
-    }
+      verifyPrimitiveType(primitive, Primitive.Kind.DATETIME);
     return primitive.datetime();
   }
 
     private  Duration asDuration(Primitive primitive) {
-    if (primitive.kind() != Primitive.Kind.DURATION) {
-      throw new IllegalArgumentException(String.format("Primitive [%s] is not a duration", primitive));
-    }
+      verifyPrimitiveType(primitive, Primitive.Kind.DURATION);
     return primitive.duration();
+  }
+
+  private static void verifyPrimitiveType(Primitive primitive, Primitive.Kind expectedKind) {
+    if (primitive.kind() != expectedKind) {
+      throw new IllegalArgumentException(String.format("Primitive type mismatch, expected: %s but was [%s]",
+          expectedKind, primitive));
+    }
   }
 
     private  boolean eq(Primitive left, Primitive right) {

@@ -95,7 +95,7 @@
     <sl4j.version>1.7.36</sl4j.version>
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
-    <error_prone.version>2.14.0</error_prone.version>
+    <error_prone.version>2.15.0</error_prone.version>
     <!-- Using the error-prone-javac is required when running on JDK 8 -->
     <error_prone.javac.version>9+181-r4173-1</error_prone.javac.version>
     <junit.version>5.6.2</junit.version>
@@ -417,7 +417,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <xml>
               <includes>
@@ -497,7 +497,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -639,7 +639,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

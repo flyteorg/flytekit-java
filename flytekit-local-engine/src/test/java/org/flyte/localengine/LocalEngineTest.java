@@ -16,7 +16,7 @@
  */
 package org.flyte.localengine;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.localengine.TestingListener.ofCompleted;
 import static org.flyte.localengine.TestingListener.ofError;
@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Registrar;
@@ -40,9 +41,19 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
-import org.flyte.localengine.examples.*;
+import org.flyte.localengine.examples.CollatzConjectureStepWorkflow;
+import org.flyte.localengine.examples.FibonacciWorkflow;
+import org.flyte.localengine.examples.ListWorkflow;
+import org.flyte.localengine.examples.MapWorkflow;
+import org.flyte.localengine.examples.NestedSubWorkflow;
+import org.flyte.localengine.examples.RetryableTask;
+import org.flyte.localengine.examples.RetryableWorkflow;
+import org.flyte.localengine.examples.StructWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class LocalEngineTest {
 
@@ -315,12 +326,14 @@ class LocalEngineTest {
         listener.actions);
   }
 
-  @Test
-  void testBranchNodes() {
+  @ParameterizedTest
+  @MethodSource("testBranchNodesProvider")
+  void testBranchNodes(long x, long expected, List<List<Object>> expectedEvents) {
     String workflowName = new CollatzConjectureStepWorkflow().getName();
 
-    Literal x = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
-    Literal expectedResult = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(22L)));
+    Literal xLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(x)));
+    Literal expectedLiteral =
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(expected)));
 
     Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
     Map<String, RunnableTask> tasks = loadTasks();
@@ -334,18 +347,70 @@ class LocalEngineTest {
                     .executionListener(listener)
                     .workflowTemplates(workflowTemplates)
                     .build())
-            .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", x));
+            .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
-    assertEquals(ImmutableMap.of("nextX", expectedResult), outputs);
-    assertEquals(
-        ImmutableList.<List<Object>>builder()
-            .add(ofPending("nested-workflow"))
-            .add(ofStarting("nested-workflow", emptyMap()))
-            .add(ofPending("outer-sum-a-b"))
-            .add(ofPending("outer-sum-ab-c"))
-            .add(ofStarting("outer-sum-a-b", emptyMap()))
-            .build(),
-        listener.actions);
+    assertEquals(ImmutableMap.of("nextX", expectedLiteral), outputs);
+    for (int i = 0; i < expectedEvents.size(); i++) {
+      assertEquals(expectedEvents.get(i), listener.actions.get(i), "" + i);
+    }
+  }
+
+  public static Stream<Arguments> testBranchNodesProvider() {
+    Literal oddX = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
+    Literal odd3XPlus1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(22L)));
+    Literal evenX = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(6L)));
+    Literal evenXDividedBy2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
+    Literal literal2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L)));
+    Literal literalFalse = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(false)));
+    Literal literalTrue = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(true)));
+
+    return Stream.of(
+        Arguments.of(
+            7L,
+            22L,
+            ImmutableList.<List<Object>>builder()
+                .add(ofPending("is_odd"))
+                .add(ofPending("decide"))
+                .add(ofStarting("is_odd", singletonMap("x", oddX)))
+                .add(
+                    ofCompleted(
+                        "is_odd", singletonMap("x", oddX), singletonMap("res", literalFalse)))
+                .add(ofStarting("decide", singletonMap("$0", literalFalse)))
+                .add(ofPending("was_odd"))
+                .add(ofStarting("was_odd", singletonMap("x", oddX)))
+                .add(
+                    ofCompleted(
+                        "was_odd", singletonMap("x", oddX), singletonMap("res", odd3XPlus1)))
+                .add(
+                    ofCompleted(
+                        "decide",
+                        singletonMap("$0", literalFalse),
+                        singletonMap("res", odd3XPlus1)))
+                .build()),
+        Arguments.of(
+            6L,
+            3L,
+            ImmutableList.<List<Object>>builder()
+                .add(ofPending("is_odd"))
+                .add(ofPending("decide"))
+                .add(ofStarting("is_odd", singletonMap("x", evenX)))
+                .add(
+                    ofCompleted(
+                        "is_odd", singletonMap("x", evenX), singletonMap("res", literalTrue)))
+                .add(ofStarting("decide", singletonMap("$0", literalTrue)))
+                .add(ofPending("was_even"))
+                .add(ofStarting("was_even", ImmutableMap.of("num", evenX, "den", literal2)))
+                .add(
+                    ofCompleted(
+                        "was_even",
+                        ImmutableMap.of("num", evenX, "den", literal2),
+                        singletonMap("res", evenXDividedBy2)))
+                .add(
+                    ofCompleted(
+                        "decide",
+                        singletonMap("$0", literalTrue),
+                        singletonMap("res", evenXDividedBy2)))
+                .build()));
   }
 
   private static Map<String, WorkflowTemplate> loadWorkflows() {

@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
+import static org.flyte.localengine.BooleanExpressionEvaluator.evaluate;
 
 import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.Var;
@@ -118,8 +119,7 @@ public class LocalEngine {
       ExecutionIfBlock ifBlock,
       Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
-    Evaluator evaluator = new Evaluator(); // TODO find a better place
-    if (!evaluator.evaluate(ifBlock.condition(), inputs)) {
+    if (!evaluate(ifBlock.condition(), inputs)) {
       return null; // TODO - Check if null makes sense or throw exception
     }
 

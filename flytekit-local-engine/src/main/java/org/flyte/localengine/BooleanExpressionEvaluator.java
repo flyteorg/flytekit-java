@@ -23,8 +23,13 @@ import java.util.function.Predicate;
 import org.flyte.api.v1.*;
 import org.flyte.api.v1.Scalar.Kind;
 
-class Evaluator {
-  boolean evaluate(BooleanExpression condition, Map<String, Literal> inputs) {
+class BooleanExpressionEvaluator {
+
+  private BooleanExpressionEvaluator() {
+    // Prevent instantiation
+  }
+
+  static boolean evaluate(BooleanExpression condition, Map<String, Literal> inputs) {
     switch (condition.kind()) {
       case CONJUNCTION:
         return evaluate(condition.conjunction(), inputs);
@@ -34,7 +39,7 @@ class Evaluator {
     throw new AssertionError("Unexpected BooleanExpression.Kind: " + condition.kind());
   }
 
-  private boolean evaluate(ConjunctionExpression conjunction, Map<String, Literal> inputs) {
+  private static boolean evaluate(ConjunctionExpression conjunction, Map<String, Literal> inputs) {
     boolean leftValue = evaluate(conjunction.leftExpression(), inputs);
     boolean rightValue = evaluate(conjunction.rightExpression(), inputs);
 
@@ -49,7 +54,7 @@ class Evaluator {
         "Unexpected ConjunctionExpression.LogicalOperator: " + conjunction.operator());
   }
 
-  private boolean evaluate(ComparisonExpression comparison, Map<String, Literal> inputs) {
+  private static boolean evaluate(ComparisonExpression comparison, Map<String, Literal> inputs) {
     Primitive left = resolve(comparison.leftValue(), inputs);
     Primitive right = resolve(comparison.rightValue(), inputs);
     switch (comparison.operator()) {
@@ -70,27 +75,27 @@ class Evaluator {
     throw new AssertionError("Unexpected ComparisonExpression.Operator: " + comparison.operator());
   }
 
-  private boolean gt(Primitive left, Primitive right) {
+  private static boolean gt(Primitive left, Primitive right) {
     return compare(left, right, cmp -> cmp > 0);
   }
 
-  private boolean gte(Primitive left, Primitive right) {
+  private static boolean gte(Primitive left, Primitive right) {
     return compare(left, right, cmp -> cmp >= 0);
   }
 
-  private boolean lt(Primitive left, Primitive right) {
+  private static boolean lt(Primitive left, Primitive right) {
     return compare(left, right, cmp -> cmp < 0);
   }
 
-  private boolean lte(Primitive left, Primitive right) {
+  private static boolean lte(Primitive left, Primitive right) {
     return compare(left, right, cmp -> cmp <= 0);
   }
 
-  private boolean compare(Primitive left, Primitive right, Predicate<Integer> cmp) {
+  private static boolean compare(Primitive left, Primitive right, Predicate<Integer> cmp) {
     return cmp.test(compare(left, right));
   }
 
-  private int compare(Primitive left, Primitive right) {
+  private static int compare(Primitive left, Primitive right) {
     switch (left.kind()) {
       case INTEGER_VALUE:
         return compareIntegers(left, right);
@@ -109,7 +114,7 @@ class Evaluator {
     }
   }
 
-  private int compareIntegers(Primitive left, Primitive right) {
+  private static int compareIntegers(Primitive left, Primitive right) {
     long integerLeft = left.integerValue();
     switch (right.kind()) {
       case INTEGER_VALUE:
@@ -125,7 +130,7 @@ class Evaluator {
     return 0; // unreachable
   }
 
-  private int compareFloats(Primitive left, Primitive right) {
+  private static int compareFloats(Primitive left, Primitive right) {
     double floatLeft = left.floatValue();
     switch (right.kind()) {
       case INTEGER_VALUE:
@@ -141,7 +146,7 @@ class Evaluator {
     return 0; // unreachable
   }
 
-  private <T extends Comparable<T>> int compare(
+  private static <T extends Comparable<T>> int compare(
       Primitive left,
       Primitive right,
       Primitive.Kind expectedKind,
@@ -155,12 +160,12 @@ class Evaluator {
     return valueLeft.compareTo(valueRight);
   }
 
-  private void throwPrimitivesNotCompatible(Primitive left, Primitive right) {
+  private static void throwPrimitivesNotCompatible(Primitive left, Primitive right) {
     throw new IllegalArgumentException(
         String.format("Operands are not comparable: [%s] <-> [%s]", left, right));
   }
 
-  private boolean eq(Primitive left, Primitive right) {
+  private static boolean eq(Primitive left, Primitive right) {
     switch (left.kind()) {
       case INTEGER_VALUE:
         return integerEq(left, right);
@@ -191,11 +196,11 @@ class Evaluator {
     return Objects.equals(left, right);
   }
 
-  private boolean neq(Primitive left, Primitive right) {
+  private static boolean neq(Primitive left, Primitive right) {
     return !eq(left, right);
   }
 
-  private Primitive resolve(Operand operand, Map<String, Literal> inputs) {
+  private static Primitive resolve(Operand operand, Map<String, Literal> inputs) {
     switch (operand.kind()) {
       case PRIMITIVE:
         return operand.primitive();

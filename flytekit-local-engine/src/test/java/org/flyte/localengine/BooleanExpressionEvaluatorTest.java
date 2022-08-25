@@ -18,6 +18,7 @@ package org.flyte.localengine;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static org.flyte.localengine.BooleanExpressionEvaluator.evaluate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,13 +37,12 @@ import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class EvaluatorTest {
+class BooleanExpressionEvaluatorTest {
   private static final Instant PRESENT = Instant.now();
   private static final Instant PAST = PRESENT.minus(100, ChronoUnit.MINUTES);
   private static final Instant FUTURE = PRESENT.plus(100, ChronoUnit.MINUTES);
@@ -50,20 +50,12 @@ class EvaluatorTest {
   private static final Duration SMALL = Duration.ofMillis(1);
   private static final Duration MEDIUM = Duration.ofSeconds(1);
   private static final Duration LARGE = Duration.ofMinutes(1);
-  private Evaluator evaluator;
-
-  @BeforeEach
-  void setUp() {
-    evaluator = new Evaluator();
-  }
 
   @ParameterizedTest
   @MethodSource("evaluateComparisonProvider")
   void testEvaluateComparisons(Operator op, Primitive left, Primitive right, boolean expected) {
-    Evaluator evaluator = new Evaluator();
-
     boolean result =
-        evaluator.evaluate(
+        evaluate(
             BooleanExpression.ofComparison(
                 ComparisonExpression.builder()
                     .leftValue(Operand.ofPrimitive(left))
@@ -86,7 +78,7 @@ class EvaluatorTest {
         assertThrows(
             IllegalArgumentException.class,
             () ->
-                evaluator.evaluate(
+                evaluate(
                     BooleanExpression.ofComparison(
                         ComparisonExpression.builder()
                             .leftValue(Operand.ofPrimitive(left))
@@ -101,7 +93,7 @@ class EvaluatorTest {
   @Test
   void testEvaluateComparisonsWithVar() {
     boolean result =
-        evaluator.evaluate(
+        evaluate(
             BooleanExpression.ofComparison(
                 ComparisonExpression.builder()
                     .leftValue(Operand.ofPrimitive(ip(42)))
@@ -119,7 +111,7 @@ class EvaluatorTest {
         assertThrows(
             IllegalArgumentException.class,
             () ->
-                evaluator.evaluate(
+                evaluate(
                     BooleanExpression.ofComparison(
                         ComparisonExpression.builder()
                             .leftValue(Operand.ofPrimitive(ip(42)))
@@ -137,7 +129,7 @@ class EvaluatorTest {
         assertThrows(
             IllegalArgumentException.class,
             () ->
-                evaluator.evaluate(
+                evaluate(
                     BooleanExpression.ofComparison(
                         ComparisonExpression.builder()
                             .leftValue(Operand.ofPrimitive(ip(42)))
@@ -155,7 +147,7 @@ class EvaluatorTest {
   @MethodSource("testEvaluateConjunctionsProvider")
   void testEvaluateConjunctions(LogicalOperator op, boolean left, boolean right, boolean expected) {
     boolean result =
-        evaluator.evaluate(
+        evaluate(
             BooleanExpression.ofConjunction(
                 ConjunctionExpression.create(
                     op,

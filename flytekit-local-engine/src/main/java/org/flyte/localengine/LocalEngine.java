@@ -27,7 +27,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.flyte.api.v1.*;
 
 public class LocalEngine {
@@ -104,9 +103,9 @@ public class LocalEngine {
       Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
     for (ExecutionIfBlock ifBlock : branchNode.ifNodes()) {
-      Optional<Map<String, Literal>> outputs;
-      if ((outputs = executeConditionally(ifBlock, inputs, nodeOutputs)).isPresent()) {
-        return outputs.get();
+      Map<String, Literal> outputs;
+      if ((outputs = executeConditionally(ifBlock, inputs, nodeOutputs))!= null) {
+        return outputs;
       }
     }
 
@@ -115,18 +114,18 @@ public class LocalEngine {
     return nodeOutputs.get(branchNode.elseNode().nodeId());
   }
 
-  private Optional<Map<String, Literal>> executeConditionally(
+  private Map<String, Literal> executeConditionally(
       ExecutionIfBlock ifBlock,
       Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
     Evaluator evaluator = new Evaluator(); // TODO find a better place
     if (!evaluator.evaluate(ifBlock.condition(), inputs)) {
-      return Optional.empty();
+      return null; // TODO - Check if null makes sense or throw exception
     }
 
     context.executionListener().pending(ifBlock.thenNode());
     execute(ifBlock.thenNode(), nodeOutputs);
-    return Optional.of(nodeOutputs.get(ifBlock.thenNode().nodeId()));
+    return nodeOutputs.get(ifBlock.thenNode().nodeId());
   }
 
   Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {

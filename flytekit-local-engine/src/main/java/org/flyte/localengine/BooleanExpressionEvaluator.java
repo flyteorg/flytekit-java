@@ -61,41 +61,80 @@ class BooleanExpressionEvaluator {
       case EQ:
         return eq(left, right);
       case NEQ:
-        return neq(left, right);
+        return !eq(left, right);
       case GT:
-        return gt(left, right);
+        return compare(left, right) > 0;
       case GTE:
-        return gte(left, right);
+        return compare(left, right) >= 0;
       case LT:
-        return lt(left, right);
+        return compare(left, right) < 0;
       case LTE:
-        return lte(left, right);
+        return compare(left, right) <= 0;
     }
 
     throw new AssertionError("Unexpected ComparisonExpression.Operator: " + comparison.operator());
   }
 
-  private static boolean gt(Primitive left, Primitive right) {
-    return compare(left, right, cmp -> cmp > 0);
+  /**
+   * Compares two primitives for equality but taking type coercion of integers to float into account.
+   * Type coercion means that comparing 1 == 1.0 would return true as the left hand side 1 will be
+   * implicitly converted to 1.0 before being compared with the right hand side 1.0.
+   * @param left left hand side of the equality comparison.
+   * @param right right hand side of the equality comparison.
+   * @return true if {@code left} and {@code right} represent the same primitive when type coercion of
+   * integers into float is taken into account, false otherwise.
+   */
+  private static boolean eq(Primitive left, Primitive right) {
+    switch (left.kind()) {
+      case INTEGER_VALUE:
+        return integerEq(left, right);
+      case FLOAT_VALUE:
+        return floatEq(left, right);
+      default:
+        return Objects.equals(left, right);
+    }
   }
 
-  private static boolean gte(Primitive left, Primitive right) {
-    return compare(left, right, cmp -> cmp >= 0);
+  private static boolean integerEq(Primitive left, Primitive right) {
+    assert left.kind() == Primitive.Kind.INTEGER_VALUE;
+    if (right.kind() == Primitive.Kind.FLOAT_VALUE) {
+      long integerLeft = left.integerValue();
+      double floatRight = right.floatValue();
+      return ((double) integerLeft) == floatRight;
+    }
+    return Objects.equals(left, right);
   }
 
-  private static boolean lt(Primitive left, Primitive right) {
-    return compare(left, right, cmp -> cmp < 0);
+  private static boolean floatEq(Primitive left, Primitive right) {
+    assert left.kind() == Primitive.Kind.FLOAT_VALUE;
+    if (right.kind() == Primitive.Kind.INTEGER_VALUE) {
+      double floatLeft = left.floatValue();
+      long integerRight = right.integerValue();
+      return floatLeft == (double) integerRight;
+    }
+    return Objects.equals(left, right);
   }
 
-  private static boolean lte(Primitive left, Primitive right) {
-    return compare(left, right, cmp -> cmp <= 0);
-  }
-
-  private static boolean compare(Primitive left, Primitive right, Predicate<Integer> cmp) {
-    return cmp.test(compare(left, right));
-  }
-
-  private static int compare(Primitive left, Primitive right) {
+  /**
+   * Compares its two comparable arguments for order. Returns a negative integer, zero, or a
+   * positive integer as the first argument is less than, equal to, or greater than the second.
+   * The primitives are compared as follows:
+   * <dl>
+   *   <dt>integers, floats</dt>
+   *   <dd>numerically</dd>
+   *   <dt>string</dt>
+   *   <dd>lexicographically</dd>
+   *   <dt>boolean</dt>
+   *   <dd>false are considered less than true</dd>
+   *   <dt>datetime</dt>
+   *   <dd>based on the time-line position of the date-times</dd>
+   *   <dt>duration</dt>
+   *   <dd>based on the total length of the duration</dd>
+   * </dl>
+   * @throws IllegalArgumentException if the two arguments are not comparable with each other.
+   * In general both must have the same type but integers can be type coerced into floats.
+   */
+   private static int compare(Primitive left, Primitive right) {
     switch (left.kind()) {
       case INTEGER_VALUE:
         return compareIntegers(left, right);
@@ -163,41 +202,6 @@ class BooleanExpressionEvaluator {
   private static void throwPrimitivesNotCompatible(Primitive left, Primitive right) {
     throw new IllegalArgumentException(
         String.format("Operands are not comparable: [%s] <-> [%s]", left, right));
-  }
-
-  private static boolean eq(Primitive left, Primitive right) {
-    switch (left.kind()) {
-      case INTEGER_VALUE:
-        return integerEq(left, right);
-      case FLOAT_VALUE:
-        return floatEq(left, right);
-      default:
-        return Objects.equals(left, right);
-    }
-  }
-
-  private static boolean integerEq(Primitive left, Primitive right) {
-    assert left.kind() == Primitive.Kind.INTEGER_VALUE;
-    if (right.kind() == Primitive.Kind.FLOAT_VALUE) {
-      long integerLeft = left.integerValue();
-      double floatRight = right.floatValue();
-      return ((double) integerLeft) == floatRight;
-    }
-    return Objects.equals(left, right);
-  }
-
-  private static boolean floatEq(Primitive left, Primitive right) {
-    assert left.kind() == Primitive.Kind.FLOAT_VALUE;
-    if (right.kind() == Primitive.Kind.INTEGER_VALUE) {
-      double floatLeft = left.floatValue();
-      long integerRight = right.integerValue();
-      return floatLeft == (double) integerRight;
-    }
-    return Objects.equals(left, right);
-  }
-
-  private static boolean neq(Primitive left, Primitive right) {
-    return !eq(left, right);
   }
 
   private static Primitive resolve(Operand operand, Map<String, Literal> inputs) {

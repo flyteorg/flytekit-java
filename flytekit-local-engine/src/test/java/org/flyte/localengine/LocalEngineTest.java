@@ -24,6 +24,7 @@ import static org.flyte.localengine.TestingListener.ofPending;
 import static org.flyte.localengine.TestingListener.ofRetrying;
 import static org.flyte.localengine.TestingListener.ofStarting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.flyte.localengine.examples.NestedSubWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
 import org.flyte.localengine.examples.StructWorkflow;
+import org.flyte.localengine.examples.TestCaseExhaustivenessWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -350,9 +352,95 @@ class LocalEngineTest {
             .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
     assertEquals(ImmutableMap.of("nextX", expectedLiteral), outputs);
+    assertEquals(expectedEvents, listener.actions);
+  }
+
+  @ParameterizedTest
+  @MethodSource("testBranchNodesCasesProvider")
+  void testBranchNodesCases(long x, List<List<Object>> expectedEvents) {
+    String workflowName = new TestCaseExhaustivenessWorkflow().getName();
+
+    Literal xLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(x)));
+
+    Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    Map<String, Literal> outputs =
+        new LocalEngine(
+                ExecutionContext.builder()
+                    .runnableTasks(tasks)
+                    .executionListener(listener)
+                    .workflowTemplates(workflowTemplates)
+                    .build())
+            .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
+
+    assertEquals(ImmutableMap.of("nextX", xLiteral), outputs);
     for (int i = 0; i < expectedEvents.size(); i++) {
-      assertEquals(expectedEvents.get(i), listener.actions.get(i), "" + i);
+      List<Object> expected = expectedEvents.get(i);
+      List<Object> actual = listener.actions.get(i);
+
+      assertEquals(expected, actual, "" + i);
     }
+    assertEquals(expectedEvents, listener.actions);
+  }
+
+  @Test
+  void testBranchNodesMatchedNoCases() {
+    String workflowName = new TestCaseExhaustivenessWorkflow().getName();
+
+    Literal xLiteral = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9999)));
+
+    Map<String, WorkflowTemplate> workflowTemplates = loadWorkflows();
+    Map<String, RunnableTask> tasks = loadTasks();
+
+    TestingListener listener = new TestingListener();
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                new LocalEngine(
+                        ExecutionContext.builder()
+                            .runnableTasks(tasks)
+                            .executionListener(listener)
+                            .workflowTemplates(workflowTemplates)
+                            .build())
+                    .compileAndExecute(
+                        workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral)));
+
+    assertEquals("No cases matched for branch node [decide]", ex.getMessage());
+  }
+
+  public static Stream<Arguments> testBranchNodesCasesProvider() {
+    Literal one = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
+    Literal two = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L)));
+    return Stream.of(
+        Arguments.of(
+            1L,
+            ImmutableList.<List<Object>>builder()
+                .add(ofPending("decide"))
+                .add(ofStarting("decide", ImmutableMap.of("$0", one, "$1", one)))
+                .add(ofPending("eq_1"))
+                .add(ofStarting("eq_1", ImmutableMap.of("x", one)))
+                .add(ofCompleted("eq_1", singletonMap("x", one), singletonMap("x", one)))
+                .add(
+                    ofCompleted(
+                        "decide", ImmutableMap.of("$0", one, "$1", one), singletonMap("x", one)))
+                .build()),
+        Arguments.of(
+            2L,
+            ImmutableList.<List<Object>>builder()
+                .add(ofPending("decide"))
+                .add(ofStarting("decide", ImmutableMap.of("$0", two, "$1", two)))
+                .add(ofPending("eq_2"))
+                .add(ofStarting("eq_2", singletonMap("x", two)))
+                .add(ofCompleted("eq_2", singletonMap("x", two), singletonMap("x", two)))
+                .add(
+                    ofCompleted(
+                        "decide", ImmutableMap.of("$0", two, "$1", two), singletonMap("x", two)))
+                .build()));
   }
 
   public static Stream<Arguments> testBranchNodesProvider() {

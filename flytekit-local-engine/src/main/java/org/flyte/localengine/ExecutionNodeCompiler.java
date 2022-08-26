@@ -120,7 +120,12 @@ class ExecutionNodeCompiler {
     ExecutionNode elseNode = compileIfNotNull(ifElseBlock.elseNode());
     // XXX support node error
 
-    ExecutionBranchNode branchNode = ExecutionBranchNode.create(ifBlocks, elseNode);
+    ExecutionBranchNode branchNode =
+        ExecutionBranchNode.builder()
+            .ifNodes(ifBlocks)
+            .elseNode(elseNode)
+            .error(ifElseBlock.error())
+            .build();
 
     return ExecutionNode.builder()
         .nodeId(node.id())

@@ -28,7 +28,13 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.flyte.api.v1.*;
+import org.flyte.api.v1.Binding;
+import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.ContainerError;
+import org.flyte.api.v1.DynamicWorkflowTask;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.RunnableTask;
+import org.flyte.api.v1.WorkflowTemplate;
 
 public class LocalEngine {
   private final ExecutionContext context;
@@ -110,9 +116,15 @@ public class LocalEngine {
       }
     }
 
-    context.executionListener().pending(branchNode.elseNode());
-    execute(branchNode.elseNode(), nodeOutputs);
-    return nodeOutputs.get(branchNode.elseNode().nodeId());
+    if (branchNode.elseNode() != null) {
+      context.executionListener().pending(branchNode.elseNode());
+      execute(branchNode.elseNode(), nodeOutputs);
+      return nodeOutputs.get(branchNode.elseNode().nodeId());
+    }
+
+    assert branchNode.error() != null;
+    throw new IllegalArgumentException(
+        String.format("No cases matched for branch node [%s]", branchNode.error().failedNodeId()));
   }
 
   private Map<String, Literal> executeConditionally(

@@ -19,6 +19,7 @@ package org.flyte.localengine;
 import com.google.auto.value.AutoValue;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.NodeError;
 
 /**
  * BranchNode is a special node that alter the flow of the workflow graph. It allows the control
@@ -32,9 +33,30 @@ abstract class ExecutionBranchNode {
   @Nullable
   abstract ExecutionNode elseNode();
 
-  // XXX support node error
+  @Nullable
+  abstract NodeError error();
 
-  public static ExecutionBranchNode create(List<ExecutionIfBlock> ifNodes, ExecutionNode elseNode) {
-    return new AutoValue_ExecutionBranchNode(ifNodes, elseNode);
+  public static Builder builder() {
+    return new AutoValue_ExecutionBranchNode.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    public abstract Builder ifNodes(List<ExecutionIfBlock> ifNodes);
+
+    public abstract Builder elseNode(ExecutionNode elseNode);
+
+    public abstract Builder error(NodeError error);
+
+    abstract ExecutionBranchNode autoBuild();
+
+    public final ExecutionBranchNode build() {
+      ExecutionBranchNode node = autoBuild();
+      if (node.elseNode() == null && node.error() == null) {
+        throw new IllegalStateException("Both elseNode and errorNode cannot be nulls");
+      }
+      return node;
+    }
   }
 }

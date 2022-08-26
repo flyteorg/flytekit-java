@@ -22,6 +22,7 @@ import static java.util.Collections.unmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Var;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +104,7 @@ public class SdkBranchNode extends SdkNode {
       this.builder = builder;
     }
 
+    @CanIgnoreReturnValue
     Builder addCase(SdkConditionCase case_) {
       SdkNode sdkNode =
           case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
@@ -133,6 +135,7 @@ public class SdkBranchNode extends SdkNode {
       return this;
     }
 
+    @CanIgnoreReturnValue
     Builder addOtherwise(String name, SdkTransform otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");

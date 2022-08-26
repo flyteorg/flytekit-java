@@ -155,7 +155,7 @@ public class LocalEngine {
     }
   }
 
-  public boolean isRecoverable(Throwable e) {
+  private static boolean isRecoverable(Throwable e) {
     if (e instanceof ContainerError) {
       ContainerError containerError = (ContainerError) e;
 

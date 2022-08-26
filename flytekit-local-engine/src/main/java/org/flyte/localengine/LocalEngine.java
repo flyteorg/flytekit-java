@@ -79,7 +79,7 @@ public class LocalEngine {
     return getLiteralMap(nodeOutputs, workflowOutputs);
   }
 
-  private void execute(ExecutionNode executionNode, Map<String, Map<String, Literal>> nodeOutputs) {
+  private Map<String, Literal> execute(ExecutionNode executionNode, Map<String, Map<String, Literal>> nodeOutputs) {
     ExecutionListener executionListener = context.executionListener();
     Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
 
@@ -103,6 +103,7 @@ public class LocalEngine {
     }
 
     executionListener.completed(executionNode, inputs, outputs);
+    return outputs;
   }
 
   private Map<String, Literal> executeConditionally(
@@ -118,8 +119,7 @@ public class LocalEngine {
 
     if (branchNode.elseNode() != null) {
       context.executionListener().pending(branchNode.elseNode());
-      execute(branchNode.elseNode(), nodeOutputs);
-      return nodeOutputs.get(branchNode.elseNode().nodeId());
+      return execute(branchNode.elseNode(), nodeOutputs);
     }
 
     assert branchNode.error() != null;
@@ -136,8 +136,7 @@ public class LocalEngine {
     }
 
     context.executionListener().pending(ifBlock.thenNode());
-    execute(ifBlock.thenNode(), nodeOutputs);
-    return nodeOutputs.get(ifBlock.thenNode().nodeId());
+    return execute(ifBlock.thenNode(), nodeOutputs);
   }
 
   Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {

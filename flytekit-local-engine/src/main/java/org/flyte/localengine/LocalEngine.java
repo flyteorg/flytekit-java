@@ -69,7 +69,8 @@ public class LocalEngine {
     return getLiteralMap(nodeOutputs, workflowOutputs);
   }
 
-  private Map<String, Literal> execute(ExecutionNode executionNode, Map<String, Map<String, Literal>> nodeOutputs) {
+  private Map<String, Literal> execute(
+      ExecutionNode executionNode, Map<String, Map<String, Literal>> nodeOutputs) {
     ExecutionListener executionListener = context.executionListener();
     Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
 

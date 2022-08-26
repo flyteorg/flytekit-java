@@ -19,7 +19,6 @@ package org.flyte.localengine;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import org.flyte.api.v1.*;
 import org.flyte.api.v1.Scalar.Kind;
 
@@ -76,13 +75,14 @@ class BooleanExpressionEvaluator {
   }
 
   /**
-   * Compares two primitives for equality but taking type coercion of integers to float into account.
-   * Type coercion means that comparing 1 == 1.0 would return true as the left hand side 1 will be
-   * implicitly converted to 1.0 before being compared with the right hand side 1.0.
+   * Compares two primitives for equality but taking type coercion of integers to float into
+   * account. Type coercion means that comparing 1 == 1.0 would return true as the left hand side 1
+   * will be implicitly converted to 1.0 before being compared with the right hand side 1.0.
+   *
    * @param left left hand side of the equality comparison.
    * @param right right hand side of the equality comparison.
-   * @return true if {@code left} and {@code right} represent the same primitive when type coercion of
-   * integers into float is taken into account, false otherwise.
+   * @return true if {@code left} and {@code right} represent the same primitive when type coercion
+   *     of integers into float is taken into account, false otherwise.
    */
   private static boolean eq(Primitive left, Primitive right) {
     switch (left.kind()) {
@@ -117,24 +117,26 @@ class BooleanExpressionEvaluator {
 
   /**
    * Compares its two comparable arguments for order. Returns a negative integer, zero, or a
-   * positive integer as the first argument is less than, equal to, or greater than the second.
-   * The primitives are compared as follows:
+   * positive integer as the first argument is less than, equal to, or greater than the second. The
+   * primitives are compared as follows:
+   *
    * <dl>
-   *   <dt>integers, floats</dt>
-   *   <dd>numerically</dd>
-   *   <dt>string</dt>
-   *   <dd>lexicographically</dd>
-   *   <dt>boolean</dt>
-   *   <dd>false are considered less than true</dd>
-   *   <dt>datetime</dt>
-   *   <dd>based on the time-line position of the date-times</dd>
-   *   <dt>duration</dt>
-   *   <dd>based on the total length of the duration</dd>
+   *   <dt>integers, floats
+   *   <dd>numerically
+   *   <dt>string
+   *   <dd>lexicographically
+   *   <dt>boolean
+   *   <dd>false are considered less than true
+   *   <dt>datetime
+   *   <dd>based on the time-line position of the date-times
+   *   <dt>duration
+   *   <dd>based on the total length of the duration
    * </dl>
-   * @throws IllegalArgumentException if the two arguments are not comparable with each other.
-   * In general both must have the same type but integers can be type coerced into floats.
+   *
+   * @throws IllegalArgumentException if the two arguments are not comparable with each other. In
+   *     general both must have the same type but integers can be type coerced into floats.
    */
-   private static int compare(Primitive left, Primitive right) {
+  private static int compare(Primitive left, Primitive right) {
     switch (left.kind()) {
       case INTEGER_VALUE:
         return compareIntegers(left, right);

@@ -123,7 +123,7 @@ public class LocalEngine {
       Map<String, Literal> inputs,
       Map<String, Map<String, Literal>> nodeOutputs) {
     if (!evaluate(ifBlock.condition(), inputs)) {
-      return null; // TODO - Check if null makes sense or throw exception
+      return null;
     }
 
     context.executionListener().pending(ifBlock.thenNode());

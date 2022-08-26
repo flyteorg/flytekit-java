@@ -19,8 +19,13 @@ package org.flyte.localengine;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import org.flyte.api.v1.*;
-import org.flyte.api.v1.Scalar.Kind;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.ConjunctionExpression;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.Operand;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Scalar;
 
 class BooleanExpressionEvaluator {
 
@@ -216,7 +221,7 @@ class BooleanExpressionEvaluator {
           throw new IllegalArgumentException(
               String.format("Variable [%s] not in inputs: %s", operand.var(), inputs));
         } else if (literal.kind() != Literal.Kind.SCALAR
-            || literal.scalar().kind() != Kind.PRIMITIVE) {
+            || literal.scalar().kind() != Scalar.Kind.PRIMITIVE) {
           throw new IllegalArgumentException(
               String.format("Variable [%s] not a primitive: %s", operand.var(), literal));
         }

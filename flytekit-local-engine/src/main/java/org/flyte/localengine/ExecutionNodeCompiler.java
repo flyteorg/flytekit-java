@@ -118,7 +118,6 @@ class ExecutionNodeCompiler {
                     ExecutionIfBlock.create(ifBlock.condition(), compile(ifBlock.thenNode())))
             .collect(toList());
     ExecutionNode elseNode = compileIfNotNull(ifElseBlock.elseNode());
-    // XXX support node error
 
     ExecutionBranchNode branchNode =
         ExecutionBranchNode.builder()

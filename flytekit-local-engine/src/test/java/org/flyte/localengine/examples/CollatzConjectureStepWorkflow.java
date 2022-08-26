@@ -26,7 +26,7 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-// 3X+1
+// if x is even, then x/2 else 3x+1
 @AutoService(SdkWorkflow.class)
 public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 

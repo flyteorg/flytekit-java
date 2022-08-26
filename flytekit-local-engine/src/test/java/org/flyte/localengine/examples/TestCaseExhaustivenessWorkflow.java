@@ -29,7 +29,6 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-// 3X+1
 @AutoService(SdkWorkflow.class)
 public class TestCaseExhaustivenessWorkflow extends SdkWorkflow {
 

@@ -51,16 +51,6 @@ public class LocalEngine {
     return execute(executionNodes, inputs, template.outputs());
   }
 
-  public boolean isRecoverable(Throwable e) {
-    if (e instanceof ContainerError) {
-      ContainerError containerError = (ContainerError) e;
-
-      return containerError.getKind() != ContainerError.Kind.NON_RECOVERABLE;
-    }
-
-    return true;
-  }
-
   private Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
       Map<String, Literal> workflowInputs,
@@ -162,6 +152,16 @@ public class LocalEngine {
         }
       }
     }
+  }
+
+  public boolean isRecoverable(Throwable e) {
+    if (e instanceof ContainerError) {
+      ContainerError containerError = (ContainerError) e;
+
+      return containerError.getKind() != ContainerError.Kind.NON_RECOVERABLE;
+    }
+
+    return true;
   }
 
   // TODO we need to take interface into account to do type casting

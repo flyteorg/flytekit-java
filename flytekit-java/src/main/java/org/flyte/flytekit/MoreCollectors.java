@@ -31,7 +31,7 @@ class MoreCollectors {
     return collectingAndThen(toList(), Collections::unmodifiableList);
   }
 
-  static <T, K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toUnmodifiableMap() {
+  static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toUnmodifiableMap() {
     return collectingAndThen(
         toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap);
   }

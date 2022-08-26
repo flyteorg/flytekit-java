@@ -20,6 +20,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,7 @@ public class ImmutableList {
 
     private final List<T> items = new ArrayList<>();
 
+    @CanIgnoreReturnValue
     public Builder<T> add(T item) {
       items.add(item);
       return this;

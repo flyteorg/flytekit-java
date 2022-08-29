@@ -18,6 +18,9 @@ package org.flyte.localengine;
 
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.flytekit.SdkBindingData.ofInteger;
+import static org.flyte.flytekit.SdkConditions.eq;
+import static org.flyte.flytekit.SdkConditions.when;
 import static org.flyte.localengine.TestingListener.ofCompleted;
 import static org.flyte.localengine.TestingListener.ofError;
 import static org.flyte.localengine.TestingListener.ofPending;
@@ -26,6 +29,8 @@ import static org.flyte.localengine.TestingListener.ofStarting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,12 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
+import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTransform;
+import org.flyte.flytekit.SdkWorkflow;
+import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.localengine.examples.CollatzConjectureStepWorkflow;
 import org.flyte.localengine.examples.FibonacciWorkflow;
 import org.flyte.localengine.examples.ListWorkflow;
@@ -50,7 +61,6 @@ import org.flyte.localengine.examples.NestedSubWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
 import org.flyte.localengine.examples.StructWorkflow;
-import org.flyte.localengine.examples.TestCaseExhaustivenessWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -549,5 +559,58 @@ class LocalEngineTest {
     }
 
     return items;
+  }
+
+  @AutoService(SdkWorkflow.class)
+  public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow {
+
+    @Override
+    public void expand(SdkWorkflowBuilder builder) {
+      SdkBindingData x = builder.inputOfInteger("x");
+      SdkBindingData nextX =
+          builder
+              .apply(
+                  "decide",
+                  when("eq_1", eq(ofInteger(1L), x), NoOp.of(x))
+                      .when("eq_2", eq(ofInteger(2L), x), NoOp.of(x)))
+              .getOutput("x");
+
+      builder.output("nextX", nextX);
+    }
+
+    @AutoService(SdkRunnableTask.class)
+    public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput> {
+
+      public NoOp() {
+        super(JacksonSdkType.of(NoOpInput.class), JacksonSdkType.of(NoOpOutput.class));
+      }
+
+      @Override
+      public NoOpOutput run(NoOpInput input) {
+        return NoOpOutput.create(input.x());
+      }
+
+      static SdkTransform of(SdkBindingData x) {
+        return new NoOp().withInput("x", x);
+      }
+    }
+
+    @AutoValue
+    public abstract static class NoOpInput {
+      abstract long x();
+
+      public static NoOpInput create(long x) {
+        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpInput(x);
+      }
+    }
+
+    @AutoValue
+    public abstract static class NoOpOutput {
+      abstract long x();
+
+      public static NoOpOutput create(long x) {
+        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpOutput(x);
+      }
+    }
   }
 }

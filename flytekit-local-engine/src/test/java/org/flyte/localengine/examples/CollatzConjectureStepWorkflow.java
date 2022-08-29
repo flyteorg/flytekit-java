@@ -57,12 +57,12 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   public static class IsEvenTask extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output> {
 
     public IsEvenTask() {
-      super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
+      super(JacksonSdkType.of(IsEvenTask.Input.class), JacksonSdkType.of(IsEvenTask.Output.class));
     }
 
     @Override
-    public Output run(Input input) {
-      return Output.create(input.x() % 2 == 0);
+    public IsEvenTask.Output run(IsEvenTask.Input input) {
+      return IsEvenTask.Output.create(input.x() % 2 == 0);
     }
 
     @AutoValue
@@ -71,7 +71,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
       public abstract Long x();
 
       public static Input create(Long x) {
-        return new AutoValue_IsEvenTask_Input(x);
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Input(x);
       }
     }
 
@@ -81,7 +81,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
       public abstract boolean res();
 
       public static Output create(boolean res) {
-        return new AutoValue_IsEvenTask_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Output(res);
       }
     }
   }
@@ -90,12 +90,12 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output> {
 
     public Divide() {
-      super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
+      super(JacksonSdkType.of(Divide.Input.class), JacksonSdkType.of(Divide.Output.class));
     }
 
     @Override
-    public Output run(Input input) {
-      return Output.create(input.num() / input.den());
+    public Divide.Output run(Divide.Input input) {
+      return Divide.Output.create(input.num() / input.den());
     }
 
     @AutoValue
@@ -104,8 +104,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 
       public abstract long den();
 
-      public static Input create(Long num, Long den) {
-        return new AutoValue_Divide_Input(num, den);
+      public static Input create(long num, long den) {
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Input(num, den);
       }
     }
 
@@ -115,7 +115,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
       public abstract long res();
 
       public static Output create(long res) {
-        return new AutoValue_Divide_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Output(res);
       }
     }
   }
@@ -126,13 +126,13 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 
     public ThreeXPlusOne() {
       super(
-          JacksonSdkType.of(Input.class),
-          JacksonSdkType.of(Output.class));
+          JacksonSdkType.of(ThreeXPlusOne.Input.class),
+          JacksonSdkType.of(ThreeXPlusOne.Output.class));
     }
 
     @Override
-    public Output run(Input input) {
-      return Output.create(3 * input.x() + 1);
+    public ThreeXPlusOne.Output run(ThreeXPlusOne.Input input) {
+      return ThreeXPlusOne.Output.create(3 * input.x() + 1);
     }
 
     @AutoValue
@@ -140,7 +140,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
       public abstract long x();
 
       public static Input create(long x) {
-        return new AutoValue_ThreeXPlusOne_Input(x);
+        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Input(x);
       }
     }
 
@@ -150,7 +150,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
       public abstract long res();
 
       public static Output create(long res) {
-        return new AutoValue_ThreeXPlusOne_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Output(res);
       }
     }
   }

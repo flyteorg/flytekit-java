@@ -22,9 +22,12 @@ import static org.flyte.flytekit.SdkConditions.eq;
 import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 // if x is even, then x/2 else 3x+1
 @AutoService(SdkWorkflow.class)
@@ -48,5 +51,107 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
             .getOutput("res");
 
     builder.output("nextX", nextX);
+  }
+
+  @AutoService(SdkRunnableTask.class)
+  public static class IsEvenTask extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output> {
+
+    public IsEvenTask() {
+      super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
+    }
+
+    @Override
+    public Output run(Input input) {
+      return Output.create(input.x() % 2 == 0);
+    }
+
+    @AutoValue
+    public abstract static class Input {
+
+      public abstract Long x();
+
+      public static Input create(Long x) {
+        return new AutoValue_IsEvenTask_Input(x);
+      }
+    }
+
+    @AutoValue
+    public abstract static class Output {
+
+      public abstract boolean res();
+
+      public static Output create(boolean res) {
+        return new AutoValue_IsEvenTask_Output(res);
+      }
+    }
+  }
+
+  @AutoService(SdkRunnableTask.class)
+  public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output> {
+
+    public Divide() {
+      super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
+    }
+
+    @Override
+    public Output run(Input input) {
+      return Output.create(input.num() / input.den());
+    }
+
+    @AutoValue
+    public abstract static class Input {
+      public abstract long num();
+
+      public abstract long den();
+
+      public static Input create(Long num, Long den) {
+        return new AutoValue_Divide_Input(num, den);
+      }
+    }
+
+    @AutoValue
+    public abstract static class Output {
+
+      public abstract long res();
+
+      public static Output create(long res) {
+        return new AutoValue_Divide_Output(res);
+      }
+    }
+  }
+
+  // 3x+1
+  @AutoService(SdkRunnableTask.class)
+  public static class ThreeXPlusOne extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output> {
+
+    public ThreeXPlusOne() {
+      super(
+          JacksonSdkType.of(Input.class),
+          JacksonSdkType.of(Output.class));
+    }
+
+    @Override
+    public Output run(Input input) {
+      return Output.create(3 * input.x() + 1);
+    }
+
+    @AutoValue
+    public abstract static class Input {
+      public abstract long x();
+
+      public static Input create(long x) {
+        return new AutoValue_ThreeXPlusOne_Input(x);
+      }
+    }
+
+    @AutoValue
+    public abstract static class Output {
+
+      public abstract long res();
+
+      public static Output create(long res) {
+        return new AutoValue_ThreeXPlusOne_Output(res);
+      }
+    }
   }
 }

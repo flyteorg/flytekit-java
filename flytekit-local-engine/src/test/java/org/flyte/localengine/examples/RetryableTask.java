@@ -24,6 +24,7 @@ import org.flyte.flytekit.SdkTypes;
 /** Used to test retries. Shares global counter that only works in testing mode. */
 @AutoService(SdkRunnableTask.class)
 public class RetryableTask extends SdkRunnableTask<Void, Void> {
+  private static final long serialVersionUID = -4698187378116857395L;
 
   public static final AtomicLong ATTEMPTS_BEFORE_SUCCESS = new AtomicLong();
   public static final AtomicLong ATTEMPTS = new AtomicLong();

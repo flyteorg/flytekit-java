@@ -24,6 +24,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
+  private static final long serialVersionUID = 4810131589121130850L;
 
   public MapTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));

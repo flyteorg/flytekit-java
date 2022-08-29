@@ -580,6 +580,7 @@ class LocalEngineTest {
 
     @AutoService(SdkRunnableTask.class)
     public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput> {
+      private static final long serialVersionUID = 327687642904919547L;
 
       public NoOp() {
         super(JacksonSdkType.of(NoOpInput.class), JacksonSdkType.of(NoOpOutput.class));

@@ -54,6 +54,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 
   @AutoService(SdkRunnableTask.class)
   public static class IsEvenTask extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output> {
+    private static final long serialVersionUID = -1606085903949620311L;
 
     public IsEvenTask() {
       super(JacksonSdkType.of(IsEvenTask.Input.class), JacksonSdkType.of(IsEvenTask.Output.class));
@@ -87,6 +88,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 
   @AutoService(SdkRunnableTask.class)
   public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output> {
+    private static final long serialVersionUID = -526903889896397227L;
 
     public Divide() {
       super(JacksonSdkType.of(Divide.Input.class), JacksonSdkType.of(Divide.Output.class));
@@ -123,6 +125,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   @AutoService(SdkRunnableTask.class)
   public static class ThreeXPlusOne
       extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output> {
+    private static final long serialVersionUID = 932934331328064751L;
 
     public ThreeXPlusOne() {
       super(

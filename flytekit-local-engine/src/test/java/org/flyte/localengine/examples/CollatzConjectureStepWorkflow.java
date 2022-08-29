@@ -121,7 +121,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
 
   // 3x+1
   @AutoService(SdkRunnableTask.class)
-  public static class ThreeXPlusOne extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output> {
+  public static class ThreeXPlusOne
+      extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output> {
 
     public ThreeXPlusOne() {
       super(

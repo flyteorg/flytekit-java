@@ -55,8 +55,7 @@ abstract class ExecutionBranchNode {
       ExecutionBranchNode node = autoBuild();
 
       if (node.ifNodes().isEmpty()) {
-        throw new IllegalStateException(
-            "There must be at least one if-then node");
+        throw new IllegalStateException("There must be at least one if-then node");
       }
 
       if ((node.elseNode() == null) == (node.error() == null)) {

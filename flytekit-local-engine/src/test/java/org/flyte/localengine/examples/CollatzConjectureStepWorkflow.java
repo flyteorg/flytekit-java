@@ -16,9 +16,8 @@
  */
 package org.flyte.localengine.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofInteger;
-import static org.flyte.flytekit.SdkConditions.eq;
+import static org.flyte.flytekit.SdkConditions.isTrue;
 import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
@@ -45,7 +44,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
                 "decide",
                 when(
                         "was_even",
-                        eq(ofBoolean(true), isOdd),
+                        isTrue(isOdd),
                         new Divide().withInput("num", x).withInput("den", ofInteger(2L)))
                     .otherwise("was_odd", new ThreeXPlusOne().withInput("x", x)))
             .getOutput("res");

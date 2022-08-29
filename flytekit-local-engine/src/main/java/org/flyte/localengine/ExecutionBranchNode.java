@@ -53,8 +53,15 @@ abstract class ExecutionBranchNode {
 
     public final ExecutionBranchNode build() {
       ExecutionBranchNode node = autoBuild();
-      if (node.elseNode() == null && node.error() == null) {
-        throw new IllegalStateException("Both elseNode and errorNode cannot be nulls");
+
+      if (node.ifNodes().isEmpty()) {
+        throw new IllegalStateException(
+            "There must be at least one if-then node");
+      }
+
+      if ((node.elseNode() == null) == (node.error() == null)) {
+        throw new IllegalStateException(
+            "Must specify either elseNode or errorNode, both cannot be null nor but cannot be specified");
       }
       return node;
     }

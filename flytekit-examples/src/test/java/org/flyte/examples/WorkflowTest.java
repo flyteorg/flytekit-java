@@ -23,8 +23,6 @@ import org.flyte.examples.SumTask.SumOutput;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.flytekit.testing.SdkTestingExecutor;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 public class WorkflowTest {
 
@@ -88,14 +86,13 @@ public class WorkflowTest {
     assertEquals(15L, result.getIntegerOutput("total"));
   }
 
-  @ParameterizedTest
-  @CsvSource({"'','Welcome, World!'", "Joe,'Welcome, Joe!'"})
-  void testWorkflowsWithBranchConditions(String name, String expected) {
+  @Test
+  void testWorkflowsWithBranchConditions() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new ConditionalGreetingWorkflow())
-            .withFixedInput("name", name)
+            .withFixedInput("name", "Joe")
             .execute();
 
-    assertEquals(expected, result.getStringOutput("greeting"));
+    assertEquals("Welcome, Joe!", result.getStringOutput("greeting"));
   }
 }

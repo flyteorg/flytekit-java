@@ -101,7 +101,6 @@ class BooleanExpressionEvaluator {
   }
 
   private static boolean integerEq(Primitive left, Primitive right) {
-    assert left.kind() == Primitive.Kind.INTEGER_VALUE;
     if (right.kind() == Primitive.Kind.FLOAT_VALUE) {
       long integerLeft = left.integerValue();
       double floatRight = right.floatValue();
@@ -111,7 +110,6 @@ class BooleanExpressionEvaluator {
   }
 
   private static boolean floatEq(Primitive left, Primitive right) {
-    assert left.kind() == Primitive.Kind.FLOAT_VALUE;
     if (right.kind() == Primitive.Kind.INTEGER_VALUE) {
       double floatLeft = left.floatValue();
       long integerRight = right.integerValue();

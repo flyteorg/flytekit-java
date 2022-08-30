@@ -23,6 +23,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Output> {
+  private static final long serialVersionUID = -3990613929313621336L;
 
   public StructTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));

@@ -59,4 +59,16 @@ public class SdkConditions {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.LTE));
   }
+
+  public static SdkBooleanExpression isTrue(SdkBindingData data) {
+    return ofComparison(
+        SdkComparisonExpression.create(
+            data, SdkBindingData.ofBoolean(true), ComparisonExpression.Operator.EQ));
+  }
+
+  public static SdkBooleanExpression isFalse(SdkBindingData data) {
+    return ofComparison(
+        SdkComparisonExpression.create(
+            data, SdkBindingData.ofBoolean(false), ComparisonExpression.Operator.EQ));
+  }
 }

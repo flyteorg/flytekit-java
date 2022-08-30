@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.DynamicWorkflowTask;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowNode;
@@ -79,7 +80,7 @@ class ExecutionNodeCompiler {
     List<String> upstreamNodeIds = compileUpstreamNodeIds(node);
 
     if (node.branchNode() != null) {
-      throw new IllegalArgumentException("BranchNode isn't yet supported for local execution");
+      return compileBranchNode(node, upstreamNodeIds);
     } else if (node.workflowNode() != null) {
       return compileWorkflowNode(node, upstreamNodeIds);
     } else if (node.taskNode() != null) {
@@ -106,7 +107,40 @@ class ExecutionNodeCompiler {
     return upstreamNodeIds;
   }
 
+  private ExecutionNode compileBranchNode(Node node, List<String> upstreamNodeIds) {
+    assert node.branchNode() != null;
+    IfElseBlock ifElseBlock = node.branchNode().ifElse();
+
+    List<ExecutionIfBlock> ifBlocks =
+        Stream.concat(Stream.of(ifElseBlock.case_()), ifElseBlock.other().stream())
+            .map(
+                ifBlock ->
+                    ExecutionIfBlock.create(ifBlock.condition(), compile(ifBlock.thenNode())))
+            .collect(toList());
+    ExecutionNode elseNode = compileIfNotNull(ifElseBlock.elseNode());
+
+    ExecutionBranchNode branchNode =
+        ExecutionBranchNode.builder()
+            .ifNodes(ifBlocks)
+            .elseNode(elseNode)
+            .error(ifElseBlock.error())
+            .build();
+
+    return ExecutionNode.builder()
+        .nodeId(node.id())
+        .bindings(node.inputs())
+        .branchNode(branchNode)
+        .upstreamNodeIds(upstreamNodeIds)
+        .attempts(1)
+        .build();
+  }
+
+  private ExecutionNode compileIfNotNull(Node node) {
+    return (node == null) ? null : compile(node);
+  }
+
   private ExecutionNode compileWorkflowNode(Node node, List<String> upstreamNodeIds) {
+    assert node.workflowNode() != null;
     WorkflowNode.Reference reference = node.workflowNode().reference();
     switch (reference.kind()) {
       case SUB_WORKFLOW_REF:
@@ -152,6 +186,7 @@ class ExecutionNodeCompiler {
   }
 
   private ExecutionNode compileTaskNode(Node node, List<String> upstreamNodeIds) {
+    assert node.taskNode() != null;
     String taskName = node.taskNode().referenceId().name();
 
     DynamicWorkflowTask dynamicWorkflowTask = executionContext.dynamicWorkflowTasks().get(taskName);

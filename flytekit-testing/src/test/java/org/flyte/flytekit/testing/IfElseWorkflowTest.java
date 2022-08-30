@@ -22,7 +22,6 @@ import static org.flyte.flytekit.SdkConditions.lt;
 import static org.flyte.flytekit.SdkConditions.when;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
@@ -33,6 +32,8 @@ import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
+import org.flyte.flytekit.testing.IfElseWorkflowTest.ConstStringTask.Output;
+import org.flyte.flytekit.testing.SdkTestingExecutor.Result;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -41,35 +42,32 @@ public class IfElseWorkflowTest {
 
   @ParameterizedTest
   @MethodSource("testCases")
-  public void test(int a, int b, int c, int d) {
+  public void test(int a, int b, int c, int d, String expected) {
     // We don't support unit testing of branches nodes so we must be content just
     // catching the exception
-    IllegalArgumentException ex =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SdkTestingExecutor.of(new BranchNodeWorkflow())
-                    .withFixedInput("a", a)
-                    .withFixedInput("b", b)
-                    .withFixedInput("c", c)
-                    .withFixedInput("d", d)
-                    .execute());
+    Result output =
+        SdkTestingExecutor.of(new BranchNodeWorkflow())
+            .withFixedInput("a", a)
+            .withFixedInput("b", b)
+            .withFixedInput("c", c)
+            .withFixedInput("d", d)
+            .withTask(new ConstStringTask(), in -> Output.create(in.value()))
+            .execute();
 
-    assertThat(ex.getMessage(), equalTo("BranchNode isn't yet supported for local execution"));
+    assertThat(output.getStringOutput("value"), equalTo(expected));
   }
 
   public static Stream<Arguments> testCases() {
     return Stream.of(
-        Arguments.of(1, 2, 3, 4), // "a < b && c < d"),
-        Arguments.of(1, 2, 3, 3), // "a < b && c == d"),
-        Arguments.of(1, 2, 4, 3), // "a < b && c > d"),
-        Arguments.of(1, 1, 3, 4), // "a == b && c < d"),
-        Arguments.of(1, 1, 3, 3), // "a == b && c == d"),
-        Arguments.of(1, 1, 4, 3), // "a == b && c > d"),
-        Arguments.of(2, 1, 3, 4), // "a > b && c < d"),
-        Arguments.of(2, 1, 3, 3), // "a > b && c == d"),
-        Arguments.of(2, 1, 4, 3) // "a > b && c > d")
-        );
+        Arguments.of(1, 2, 3, 4, "a < b && c < d"),
+        Arguments.of(1, 2, 3, 3, "a < b && c == d"),
+        Arguments.of(1, 2, 4, 3, "a < b && c > d"),
+        Arguments.of(1, 1, 3, 4, "a == b && c < d"),
+        Arguments.of(1, 1, 3, 3, "a == b && c == d"),
+        Arguments.of(1, 1, 4, 3, "a == b && c > d"),
+        Arguments.of(2, 1, 3, 4, "a > b && c < d"),
+        Arguments.of(2, 1, 3, 3, "a > b && c == d"),
+        Arguments.of(2, 1, 4, 3, "a > b && c > d"));
   }
 
   static class BranchNodeWorkflow extends SdkWorkflow {

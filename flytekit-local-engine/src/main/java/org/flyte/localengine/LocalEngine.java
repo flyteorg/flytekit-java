@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
+import static org.flyte.localengine.BooleanExpressionEvaluator.evaluate;
 
 import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.Var;
@@ -53,7 +54,7 @@ public class LocalEngine {
   private Map<String, Literal> execute(
       List<ExecutionNode> executionNodes,
       Map<String, Literal> workflowInputs,
-      List<Binding> bindings) {
+      List<Binding> workflowOutputs) {
 
     ExecutionListener executionListener = context.executionListener();
     executionNodes.forEach(executionListener::pending);
@@ -62,32 +63,75 @@ public class LocalEngine {
     nodeOutputs.put(START_NODE_ID, workflowInputs);
 
     for (ExecutionNode executionNode : executionNodes) {
-      Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
-
-      executionListener.starting(executionNode, inputs);
-
-      Map<String, Literal> outputs;
-      if (executionNode.subWorkflow() != null) {
-        outputs = compileAndExecute(executionNode.subWorkflow(), inputs);
-      } else {
-        // this must be a task or a local launch plan
-        outputs = runWithRetries(executionNode, inputs, executionListener);
-      }
-
-      Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
-
-      if (previous != null) {
-        throw new IllegalStateException("invariant failed");
-      }
-
-      executionListener.completed(executionNode, inputs, outputs);
+      execute(executionNode, nodeOutputs);
     }
 
-    return getLiteralMap(nodeOutputs, bindings);
+    return getLiteralMap(nodeOutputs, workflowOutputs);
   }
 
-  static Map<String, Literal> runWithRetries(
-      ExecutionNode executionNode, Map<String, Literal> inputs, ExecutionListener listener) {
+  private Map<String, Literal> execute(
+      ExecutionNode executionNode, Map<String, Map<String, Literal>> nodeOutputs) {
+    ExecutionListener executionListener = context.executionListener();
+    Map<String, Literal> inputs = getLiteralMap(nodeOutputs, executionNode.bindings());
+
+    executionListener.starting(executionNode, inputs);
+
+    Map<String, Literal> outputs;
+    if (executionNode.subWorkflow() != null) {
+      outputs = compileAndExecute(executionNode.subWorkflow(), inputs);
+    } else if (executionNode.runnableNode() != null) {
+      outputs = runWithRetries(executionNode, inputs);
+    } else if (executionNode.branchNode() != null) {
+      outputs = executeConditionally(executionNode.branchNode(), inputs, nodeOutputs);
+    } else {
+      throw new IllegalArgumentException("Unrecognized execution node; " + executionNode);
+    }
+
+    Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
+
+    if (previous != null) {
+      throw new IllegalStateException("invariant failed");
+    }
+
+    executionListener.completed(executionNode, inputs, outputs);
+    return outputs;
+  }
+
+  private Map<String, Literal> executeConditionally(
+      ExecutionBranchNode branchNode,
+      Map<String, Literal> inputs,
+      Map<String, Map<String, Literal>> nodeOutputs) {
+    for (ExecutionIfBlock ifBlock : branchNode.ifNodes()) {
+      Map<String, Literal> outputs;
+      if ((outputs = executeConditionally(ifBlock, inputs, nodeOutputs)) != null) {
+        return outputs;
+      }
+    }
+
+    if (branchNode.elseNode() != null) {
+      context.executionListener().pending(branchNode.elseNode());
+      return execute(branchNode.elseNode(), nodeOutputs);
+    }
+
+    assert branchNode.error() != null;
+    throw new IllegalArgumentException(
+        String.format("No cases matched for branch node [%s]", branchNode.error().failedNodeId()));
+  }
+
+  private Map<String, Literal> executeConditionally(
+      ExecutionIfBlock ifBlock,
+      Map<String, Literal> inputs,
+      Map<String, Map<String, Literal>> nodeOutputs) {
+    if (!evaluate(ifBlock.condition(), inputs)) {
+      return null;
+    }
+
+    context.executionListener().pending(ifBlock.thenNode());
+    return execute(ifBlock.thenNode(), nodeOutputs);
+  }
+
+  Map<String, Literal> runWithRetries(ExecutionNode executionNode, Map<String, Literal> inputs) {
+    ExecutionListener listener = context.executionListener();
     int attempts = executionNode.attempts();
     @Var int attempt = 0;
 

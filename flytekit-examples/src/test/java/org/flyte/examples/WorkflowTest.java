@@ -85,4 +85,14 @@ public class WorkflowTest {
 
     assertEquals(15L, result.getIntegerOutput("total"));
   }
+
+  @Test
+  void testWorkflowsWithBranchConditions() {
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(new ConditionalGreetingWorkflow())
+            .withFixedInput("name", "Joe")
+            .execute();
+
+    assertEquals("Welcome, Joe!", result.getStringOutput("greeting"));
+  }
 }

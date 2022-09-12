@@ -16,12 +16,14 @@
  */
 package org.flyte.utils;
 
+import com.github.dockerjava.api.DockerClient;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.DockerClientFactory;
@@ -45,11 +47,11 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
     // Flyte sandbox uses Docker in Docker, we have to copy jflyte container into inner Docker
     // otherwise, flytepropeller can't use the right version for pod execution
 
-    try (InputStream imageInputStream =
-        DockerClientFactory.instance().client().saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
+    DockerClient client = DockerClientFactory.instance().client();
+    try (InputStream imageInputStream = client.saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
 
       try (OutputStream outputStream =
-          new FileOutputStream("../jflyte-build/target/docker/jflyte.tar.gz")) {
+          Files.newOutputStream(Paths.get("../jflyte-build/target/docker/jflyte.tar.gz"))) {
         IOUtils.copy(imageInputStream, outputStream);
       }
 

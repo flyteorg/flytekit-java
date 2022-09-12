@@ -16,23 +16,25 @@
  */
 package org.flyte.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.shaded.com.google.common.io.Files;
 
 class JFlyteContainer extends GenericContainer<JFlyteContainer> {
   static final String IMAGE_NAME;
 
   static {
     try {
-      File imageNameFile = new File("../jflyte-build/target/docker/image-name");
-      IMAGE_NAME = Files.readFirstLine(imageNameFile, StandardCharsets.UTF_8);
+      ObjectMapper objectMapper = new ObjectMapper();
+      File imageNameFile = new File("../jflyte/target/jib-image.json");
+      JsonNode jsonNode = objectMapper.readTree(imageNameFile);
+      IMAGE_NAME = jsonNode.get("image").asText() + "@" + jsonNode.get("imageDigest").asText();
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to get image name", e);
     }

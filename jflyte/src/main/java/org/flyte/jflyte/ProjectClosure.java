@@ -524,6 +524,10 @@ abstract class ProjectClosure {
         .retries(task.getRetries())
         .type("container")
         .custom(Struct.of(emptyMap()))
+        // TODO: consider if cache makes sense for a dynamic task then implement
+        //      it or change this comment to explicitly say no cache for dynamic tasks
+        .discoverable(false)
+        .cacheSerializable(false)
         .build();
   }
 

@@ -25,8 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -42,7 +42,7 @@ public class JavaExamplesIT {
   }
 
   @Test
-  @Ignore
+  @Disabled
   // FIXME doesn't work, seems like a bug in flyteadmin:
   // Invalid value: "srxnub62yu-orgflyteexamplesSumTask-0": a lowercase RFC 1123 subdomain must
   // consist of lower case

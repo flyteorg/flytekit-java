@@ -19,10 +19,12 @@ package org.flyte.integrationtests.structs;
 import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofString;
 
+import com.google.auto.service.AutoService;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
+@AutoService(SdkWorkflow.class)
 public class MockPipelineWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {

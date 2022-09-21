@@ -248,9 +248,17 @@ abstract class ProjectClosure {
 
     // 2. rewrite workflows and launch plans
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenWorkflowTemplates =
-        mapValues(workflowTemplates, rewrite::apply);
+        mapValues(
+            workflowTemplates,
+            rewrite::apply,
+            "Couldn't rewrite Workflow identifier: [%s]",
+            id -> new Object[] {id.name()});
     Map<LaunchPlanIdentifier, LaunchPlan> rewrittenLaunchPlans =
-        mapValues(launchPlans, rewrite::apply);
+        mapValues(
+            launchPlans,
+            rewrite::apply,
+            "Couldn't rewrite Launch Plan identifier: [%s]",
+            id -> new Object[] {id.name()});
 
     checkCycles(rewrittenWorkflowTemplates);
 

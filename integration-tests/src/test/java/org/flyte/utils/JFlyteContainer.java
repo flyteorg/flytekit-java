@@ -34,7 +34,7 @@ class JFlyteContainer extends GenericContainer<JFlyteContainer> {
       ObjectMapper objectMapper = new ObjectMapper();
       File imageNameFile = new File("../jflyte/target/jib-image.json");
       JsonNode jsonNode = objectMapper.readTree(imageNameFile);
-      IMAGE_NAME = jsonNode.get("image").asText() + "@" + jsonNode.get("imageDigest").asText();
+      IMAGE_NAME = jsonNode.get("image").asText() + ':' + jsonNode.get("tags").get(0).asText();
     } catch (IOException e) {
       throw new UncheckedIOException("Failed to get image name", e);
     }

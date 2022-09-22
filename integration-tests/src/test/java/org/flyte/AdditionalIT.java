@@ -16,6 +16,7 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -28,8 +29,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class AdditionalIT {
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
-
   @BeforeAll
   public static void beforeAll() {
     CLIENT.registerWorkflows("integration-tests/target/lib");

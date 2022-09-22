@@ -16,20 +16,18 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.flyte.utils.Literal.ofIntegerMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import org.flyte.utils.FlyteSandboxClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JavaExamplesIT {
-
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 
   @BeforeAll

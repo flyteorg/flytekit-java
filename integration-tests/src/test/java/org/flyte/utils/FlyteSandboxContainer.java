@@ -35,7 +35,7 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
   public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.1.0";
 
-  public static final FlyteSandboxContainer INSTANCE = new FlyteSandboxContainer();
+  public static final FlyteSandboxContainer INSTANCE = new FlyteSandboxContainer().withReuse(true);
 
   static {
     startContainer();

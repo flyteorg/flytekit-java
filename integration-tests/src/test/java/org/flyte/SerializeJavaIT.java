@@ -16,6 +16,7 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 public class SerializeJavaIT {
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
   @TempDir File tempDir;
 

@@ -173,7 +173,11 @@ public class FlyteSandboxClient {
     Long exitCode = jflyte.getCurrentContainerInfo().getState().getExitCodeLong();
 
     if (!Objects.equals(exitCode, 0L)) {
-      throw new RuntimeException("Container terminated with non-zero exit code: " + exitCode + " error: " + jflyte.getCurrentContainerInfo().getState().getError());
+      throw new RuntimeException(
+          "Container terminated with non-zero exit code: "
+              + exitCode
+              + " error: "
+              + jflyte.getCurrentContainerInfo().getState().getError());
     }
   }
 }

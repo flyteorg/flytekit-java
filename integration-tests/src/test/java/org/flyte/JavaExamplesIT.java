@@ -32,7 +32,6 @@ public class JavaExamplesIT {
   private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 
-
   @BeforeAll
   public static void beforeAll() {
     CLIENT.registerWorkflows(CLASSPATH);
@@ -76,5 +75,4 @@ public class JavaExamplesIT {
 
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("output", 8L))));
   }
-
 }

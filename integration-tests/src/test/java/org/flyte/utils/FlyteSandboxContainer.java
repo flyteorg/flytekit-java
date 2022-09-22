@@ -54,7 +54,9 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
         IOUtils.copy(imageInputStream, outputStream);
       }
 
-      ExecResult execResult = INSTANCE.execInContainer("docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
+      ExecResult execResult =
+          INSTANCE.execInContainer(
+              "docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
 
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(execResult.getStderr() + " " + execResult.getStdout());

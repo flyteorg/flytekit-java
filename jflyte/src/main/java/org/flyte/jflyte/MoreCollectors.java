@@ -16,11 +16,13 @@
  */
 package org.flyte.jflyte;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -44,5 +46,20 @@ class MoreCollectors {
   static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fn) {
     return map.entrySet().stream()
         .collect(toUnmodifiableMap(Map.Entry::getKey, x -> fn.apply(x.getValue())));
+  }
+
+  static <K, V1, V2> Map<K, V2> mapValues(
+      Map<K, V1> map, Function<V1, V2> fn, String keyTemplate, Function<K, Object[]> templateVars) {
+    Map<K, V2> newValues = new LinkedHashMap<>(map.size());
+    map.forEach(
+        (k, v1) -> {
+          try {
+            V2 v2 = fn.apply(v1);
+            newValues.put(k, v2);
+          } catch (RuntimeException e) {
+            throw new RuntimeException(String.format(keyTemplate, templateVars.apply(k)), e);
+          }
+        });
+    return unmodifiableMap(newValues);
   }
 }

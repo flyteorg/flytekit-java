@@ -16,12 +16,14 @@
  */
 package org.flyte.utils;
 
+import com.github.dockerjava.api.DockerClient;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.DockerClientFactory;
@@ -31,7 +33,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContainer> {
 
-  public static final String IMAGE_NAME = "cr.flyte.org/flyteorg/flyte-sandbox:dind";
+  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.1.0";
 
   public static final FlyteSandboxContainer INSTANCE = new FlyteSandboxContainer();
 
@@ -45,17 +47,16 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
     // Flyte sandbox uses Docker in Docker, we have to copy jflyte container into inner Docker
     // otherwise, flytepropeller can't use the right version for pod execution
 
-    try (InputStream imageInputStream =
-        DockerClientFactory.instance().client().saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
+    DockerClient client = DockerClientFactory.instance().client();
+    try (InputStream imageInputStream = client.saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
 
-      try (OutputStream outputStream =
-          new FileOutputStream("../jflyte-build/target/docker/jflyte.tar.gz")) {
+      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar.gz"))) {
         IOUtils.copy(imageInputStream, outputStream);
       }
 
       ExecResult execResult =
           INSTANCE.execInContainer(
-              "docker", "load", "-i", "jflyte-build/target/docker/jflyte.tar.gz");
+              "docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
 
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(execResult.getStderr() + " " + execResult.getStdout());

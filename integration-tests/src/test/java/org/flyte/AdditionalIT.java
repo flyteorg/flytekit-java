@@ -27,7 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
-public class SdkWorkflowIT {
+public class AdditionalIT {
   private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
 
   @BeforeAll
@@ -59,5 +59,19 @@ public class SdkWorkflowIT {
                     "d", d)));
 
     assertThat(output, equalTo(Literal.ofStringMap(ImmutableMap.of("value", expected))));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "table-exists,true",
+    "non-existent,false",
+  })
+  public void testStructs(String name, boolean expected) {
+    Literals.LiteralMap output =
+        CLIENT.createExecution(
+            "org.flyte.integrationtests.structs.MockPipelineWorkflow",
+            Literal.ofStringMap(ImmutableMap.of("tableName", name)));
+
+    assertThat(output, equalTo(Literal.ofBooleanMap(ImmutableMap.of("exists", expected))));
   }
 }

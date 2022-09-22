@@ -37,15 +37,30 @@ public class Literal {
     return builder.build();
   }
 
+  public static Literals.LiteralMap ofBooleanMap(Map<String, Boolean> map) {
+    Literals.LiteralMap.Builder builder = Literals.LiteralMap.newBuilder();
+
+    map.forEach((key, value) -> builder.putLiterals(key, ofBoolean(value)));
+
+    return builder.build();
+  }
+
   public static Literals.Literal ofInteger(long value) {
     Literals.Primitive primitive = Literals.Primitive.newBuilder().setInteger(value).build();
-    Literals.Scalar scalar = Literals.Scalar.newBuilder().setPrimitive(primitive).build();
-
-    return Literals.Literal.newBuilder().setScalar(scalar).build();
+    return asLiteral(primitive);
   }
 
   public static Literals.Literal ofString(String value) {
     Literals.Primitive primitive = Literals.Primitive.newBuilder().setStringValue(value).build();
+    return asLiteral(primitive);
+  }
+
+  public static Literals.Literal ofBoolean(boolean value) {
+    Literals.Primitive primitive = Literals.Primitive.newBuilder().setBoolean(value).build();
+    return asLiteral(primitive);
+  }
+
+  private static Literals.Literal asLiteral(Literals.Primitive primitive) {
     Literals.Scalar scalar = Literals.Scalar.newBuilder().setPrimitive(primitive).build();
 
     return Literals.Literal.newBuilder().setScalar(scalar).build();

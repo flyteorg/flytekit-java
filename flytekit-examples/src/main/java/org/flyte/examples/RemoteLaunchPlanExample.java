@@ -16,7 +16,6 @@
  */
 package org.flyte.examples;
 
-import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
@@ -25,7 +24,11 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkWorkflow.class)
+// Normally the AutoService annotation would be uncommented, but the integration
+// test would try to register this workflow, and it would expect the referenced
+// launchplan to be registered already.
+// The order that we register objects in jflyte is: task, workflows and launchplans
+// @AutoService(SdkWorkflow.class)
 public class RemoteLaunchPlanExample extends SdkWorkflow {
 
   @Override

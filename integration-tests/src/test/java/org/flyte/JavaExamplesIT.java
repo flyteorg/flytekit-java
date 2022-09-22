@@ -21,14 +21,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import java.io.File;
-import java.io.IOException;
-import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JavaExamplesIT {
@@ -42,7 +38,7 @@ public class JavaExamplesIT {
   }
 
   @Test
-  @Ignore
+  @Disabled
   // FIXME doesn't work, seems like a bug in flyteadmin:
   // Invalid value: "srxnub62yu-orgflyteexamplesSumTask-0": a lowercase RFC 1123 subdomain must
   // consist of lower case
@@ -78,25 +74,5 @@ public class JavaExamplesIT {
             "org.flyte.examples.DynamicFibonacciWorkflow", ofIntegerMap(ImmutableMap.of("n", 6L)));
 
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("output", 8L))));
-  }
-
-  @Test
-  public void testSerializeWorkflows() throws IOException {
-    File parent = new File("target/integration-tests");
-    TemporaryFolder folder = new TemporaryFolder(parent);
-
-    try {
-      folder.create();
-
-      CLIENT.serializeWorkflows(CLASSPATH, folder.getRoot().getAbsolutePath());
-
-      boolean hasFibonacciWorkflow =
-          Stream.of(folder.getRoot().list())
-              .anyMatch(x -> x.endsWith("_org.flyte.examples.FibonacciWorkflow_2.pb"));
-
-      assertThat(hasFibonacciWorkflow, equalTo(true));
-    } finally {
-      folder.delete();
-    }
   }
 }

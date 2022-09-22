@@ -38,23 +38,23 @@ public class BranchNodeWorkflow extends SdkWorkflow {
 
     SdkCondition condition =
         when(
-                "a == b",
+                "a-equal-b",
                 eq(a, b),
-                when("c == d", eq(c, d), ConstStringTask.of("a == b && c == d"))
-                    .when("c > d", gt(c, d), ConstStringTask.of("a == b && c > d"))
-                    .when("c < d", lt(c, d), ConstStringTask.of("a == b && c < d")))
+                when("c-equal-d", eq(c, d), ConstStringTask.of("a == b && c == d"))
+                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a == b && c > d"))
+                    .when("c-less-d", lt(c, d), ConstStringTask.of("a == b && c < d")))
             .when(
-                "a < b",
+                "a-less-b",
                 lt(a, b),
-                when("c == d", eq(c, d), ConstStringTask.of("a < b && c == d"))
-                    .when("c > d", gt(c, d), ConstStringTask.of("a < b && c > d"))
-                    .when("c < d", lt(c, d), ConstStringTask.of("a < b && c < d")))
+                when("c-equal-d", eq(c, d), ConstStringTask.of("a < b && c == d"))
+                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a < b && c > d"))
+                    .when("c-less-d", lt(c, d), ConstStringTask.of("a < b && c < d")))
             .when(
-                "a > b",
+                "a-greater-b",
                 gt(a, b),
-                when("c == d", eq(c, d), ConstStringTask.of("a > b && c == d"))
-                    .when("c > d", gt(c, d), ConstStringTask.of("a > b && c > d"))
-                    .when("c < d", lt(c, d), ConstStringTask.of("a > b && c < d")));
+                when("c-equal-d", eq(c, d), ConstStringTask.of("a > b && c == d"))
+                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a > b && c > d"))
+                    .when("c-less-d", lt(c, d), ConstStringTask.of("a > b && c < d")));
 
     SdkBindingData value = builder.apply("condition", condition).getOutput("value");
 

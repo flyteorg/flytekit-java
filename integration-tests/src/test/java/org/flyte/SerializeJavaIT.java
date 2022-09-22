@@ -4,9 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +16,7 @@ public class SerializeJavaIT {
   @TempDir File tempDir;
 
   @Test
+  @Disabled
   public void testSerializeWorkflows() {
     try {
       CLIENT.serializeWorkflows(CLASSPATH, tempDir.getAbsolutePath());

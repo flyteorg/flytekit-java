@@ -21,20 +21,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JavaExamplesIT {
 
   private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
+
 
   @BeforeAll
   public static void beforeAll() {
@@ -80,18 +77,4 @@ public class JavaExamplesIT {
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("output", 8L))));
   }
 
-  @Test
-  public void testSerializeWorkflows(@TempDir Path tempDir) throws IOException {
-    try {
-      CLIENT.serializeWorkflows(CLASSPATH, tempDir.toFile().getAbsolutePath());
-
-      boolean hasFibonacciWorkflow =
-          Stream.of(tempDir.toFile().list())
-              .anyMatch(x -> x.endsWith("_org.flyte.examples.FibonacciWorkflow_2.pb"));
-
-      assertThat(hasFibonacciWorkflow, equalTo(true));
-    } catch (Exception e) {
-      throw new RuntimeException();
-    }
-  }
 }

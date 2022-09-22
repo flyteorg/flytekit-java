@@ -21,14 +21,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.flyte.utils.FlyteSandboxClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class JavaExamplesIT {
@@ -81,22 +81,17 @@ public class JavaExamplesIT {
   }
 
   @Test
-  public void testSerializeWorkflows() throws IOException {
-    File parent = new File("target/integration-tests");
-    TemporaryFolder folder = new TemporaryFolder(parent);
-
+  public void testSerializeWorkflows(@TempDir Path tempDir) throws IOException {
     try {
-      folder.create();
-
-      CLIENT.serializeWorkflows(CLASSPATH, folder.getRoot().getAbsolutePath());
+      CLIENT.serializeWorkflows(CLASSPATH, tempDir.toFile().getAbsolutePath());
 
       boolean hasFibonacciWorkflow =
-          Stream.of(folder.getRoot().list())
+          Stream.of(tempDir.toFile().list())
               .anyMatch(x -> x.endsWith("_org.flyte.examples.FibonacciWorkflow_2.pb"));
 
       assertThat(hasFibonacciWorkflow, equalTo(true));
-    } finally {
-      folder.delete();
+    } catch (Exception e) {
+      throw new RuntimeException();
     }
   }
 }

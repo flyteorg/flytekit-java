@@ -33,7 +33,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContainer> {
 
-  public static final String IMAGE_NAME = "cr.flyte.org/flyteorg/flyte-sandbox:dind";
+  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.1.0";
 
   public static final FlyteSandboxContainer INSTANCE = new FlyteSandboxContainer();
 
@@ -50,14 +50,11 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
     DockerClient client = DockerClientFactory.instance().client();
     try (InputStream imageInputStream = client.saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
 
-      try (OutputStream outputStream =
-          Files.newOutputStream(Paths.get("../jflyte-build/target/docker/jflyte.tar.gz"))) {
+      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar.gz"))) {
         IOUtils.copy(imageInputStream, outputStream);
       }
 
-      ExecResult execResult =
-          INSTANCE.execInContainer(
-              "docker", "load", "-i", "jflyte-build/target/docker/jflyte.tar.gz");
+      ExecResult execResult = INSTANCE.execInContainer("docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
 
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(execResult.getStderr() + " " + execResult.getStdout());

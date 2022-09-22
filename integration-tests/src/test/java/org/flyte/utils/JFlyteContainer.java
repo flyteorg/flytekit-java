@@ -28,8 +28,21 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 class JFlyteContainer extends GenericContainer<JFlyteContainer> {
   static final String IMAGE_NAME;
+  static final Map<String, String> envVars =
+      ImmutableMap.<String, String>builder()
+          .put("FLYTE_PLATFORM_URL", "flyte:30081")
+          .put("FLYTE_PLATFORM_INSECURE", "True")
+          .put("FLYTE_AWS_ENDPOINT", "http://flyte:30084")
+          .put("FLYTE_AWS_ACCESS_KEY_ID", "minio")
+          .put("FLYTE_AWS_SECRET_ACCESS_KEY", "miniostorage")
+          .put("FLYTE_STAGING_LOCATION", "s3://my-s3-bucket")
+          .build();
 
   static {
+    // jflyte/target/jib-image.json
+    // example of contents
+    // {"image":"ghcr.io/flyteorg/flytekit-java","imageId":"sha256:....","imageDigest":"sha256:...","tags":["0.3.19-SNAPSHOT","latest"],"imagePushed":false}
+
     try {
       ObjectMapper objectMapper = new ObjectMapper();
       File imageNameFile = new File("../jflyte/target/jib-image.json");
@@ -45,7 +58,7 @@ class JFlyteContainer extends GenericContainer<JFlyteContainer> {
 
     String workingDir = new File("../.").getAbsolutePath();
 
-    withEnv(getFlyteEnv());
+    withEnv(envVars);
     withWorkingDirectory(workingDir);
     withFileSystemBind(workingDir, workingDir);
     withCommand(cmd);
@@ -54,16 +67,5 @@ class JFlyteContainer extends GenericContainer<JFlyteContainer> {
     withNetwork(FlyteSandboxNetwork.INSTANCE);
 
     withLogConsumer(new Slf4jLogConsumer(logger()));
-  }
-
-  private Map<String, String> getFlyteEnv() {
-    return ImmutableMap.<String, String>builder()
-        .put("FLYTE_PLATFORM_URL", "flyte:30081")
-        .put("FLYTE_PLATFORM_INSECURE", "True")
-        .put("FLYTE_AWS_ENDPOINT", "http://flyte:30084")
-        .put("FLYTE_AWS_ACCESS_KEY_ID", "minio")
-        .put("FLYTE_AWS_SECRET_ACCESS_KEY", "miniostorage")
-        .put("FLYTE_STAGING_LOCATION", "s3://my-s3-bucket")
-        .build();
   }
 }

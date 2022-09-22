@@ -111,7 +111,11 @@ public class FlyteSandboxClient {
                 .build());
 
     if (execution.getClosure().getPhase() != Execution.WorkflowExecution.Phase.SUCCEEDED) {
-      throw new RuntimeException("Workflow didn't succeed: " + execution.getClosure().getPhase());
+      throw new RuntimeException(
+          "Workflow didn't succeed. [Phase="
+              + execution.getClosure().getPhase()
+              + "] [Error: "
+              + execution.getClosure().getError().getMessage());
     }
 
     ExecutionOuterClass.WorkflowExecutionGetDataResponse executionData =
@@ -144,14 +148,18 @@ public class FlyteSandboxClient {
   }
 
   public void registerWorkflows(String classpath) {
-    jflyte(
-        "jflyte",
-        "register",
-        "workflows",
-        "-p=" + PROJECT,
-        "-d=" + DOMAIN,
-        "-v=" + version,
-        "-cp=" + classpath);
+    try {
+      jflyte(
+          "jflyte",
+          "register",
+          "workflows",
+          "-p=" + PROJECT,
+          "-d=" + DOMAIN,
+          "-v=" + version,
+          "-cp=" + classpath);
+    } catch (Exception e) {
+      throw new RuntimeException("Could not register workflows from: " + classpath, e);
+    }
   }
 
   public void serializeWorkflows(String classpath, String folder) {

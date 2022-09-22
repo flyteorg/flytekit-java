@@ -189,6 +189,8 @@
             <environment>
               <FLYTE_INTERNAL_MODULE_DIR>/jflyte/modules</FLYTE_INTERNAL_MODULE_DIR>
               <FLYTE_INTERNAL_IMAGE>${docker.image}:${docker.tag}</FLYTE_INTERNAL_IMAGE>
+              <FLYTE_PLATFORM_URL>flyte:30081</FLYTE_PLATFORM_URL>
+              <FLYTE_PLATFORM_INSECURE>True</FLYTE_PLATFORM_INSECURE>
             </environment>
             <jvmFlags>
               <jvmFlag>-Dorg.slf4j.simpleLogger.defaultLogLevel=INFO</jvmFlag>

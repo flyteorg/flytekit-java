@@ -35,7 +35,11 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
   public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.1.0";
 
-  public static final FlyteSandboxContainer INSTANCE = new FlyteSandboxContainer().withReuse(true);
+  public static final FlyteSandboxContainer INSTANCE =
+      new FlyteSandboxContainer()
+          // Note to the developer: to enable test container reuse, please do the following
+          // echo testcontainers.reuse.enable=true > ~/.testcontainers.properties
+          .withReuse(true);
 
   static {
     startContainer();

@@ -16,20 +16,20 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import org.flyte.utils.FlyteSandboxClient;
 import org.flyte.utils.Literal;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AdditionalIT {
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
-
   @BeforeAll
   public static void beforeAll() {
     CLIENT.registerWorkflows("integration-tests/target/lib");

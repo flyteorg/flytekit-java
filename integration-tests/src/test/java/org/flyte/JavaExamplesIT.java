@@ -16,20 +16,19 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.flyte.utils.Literal.ofIntegerMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import org.flyte.utils.FlyteSandboxClient;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavaExamplesIT {
-
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 
   @BeforeAll
@@ -38,10 +37,6 @@ public class JavaExamplesIT {
   }
 
   @Test
-  @Disabled
-  // FIXME doesn't work, seems like a bug in flyteadmin:
-  // Invalid value: "srxnub62yu-orgflyteexamplesSumTask-0": a lowercase RFC 1123 subdomain must
-  // consist of lower case
   public void testSumTask() {
     Literals.LiteralMap output =
         CLIENT.createTaskExecution(

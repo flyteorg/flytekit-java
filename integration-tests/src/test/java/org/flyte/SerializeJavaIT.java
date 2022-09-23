@@ -16,26 +16,35 @@
  */
 package org.flyte;
 
+import static org.flyte.FlyteContainer.CLIENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.flyte.utils.FlyteSandboxClient;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SerializeJavaIT {
-  private static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
   private static final String CLASSPATH = "flytekit-examples/target/lib";
-  @TempDir File tempDir;
+
+  @TempDir Path managed;
 
   @Test
-  @Disabled
   public void testSerializeWorkflows() {
     try {
-      CLIENT.serializeWorkflows(CLASSPATH, tempDir.getAbsolutePath());
+      File current = new File("target/protos");
+      File tempDir = managed.resolve(current.getAbsolutePath()).toFile();
+      boolean created = tempDir.mkdir();
+      if (!created) {
+        throw new IOException("Unable to create path");
+      }
+
+      CLIENT.serializeWorkflows(CLASSPATH, tempDir.getPath());
 
       boolean hasFibonacciWorkflow =
           Stream.of(tempDir.list())

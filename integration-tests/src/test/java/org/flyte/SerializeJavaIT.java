@@ -24,8 +24,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SerializeJavaIT {
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 
@@ -35,9 +37,8 @@ public class SerializeJavaIT {
   public void testSerializeWorkflows() {
     try {
       File current = new File("target/protos");
-      current.mkdir();
-
       File tempDir = managed.resolve(current.getAbsolutePath()).toFile();
+      boolean mkdir = tempDir.mkdir();
 
       CLIENT.serializeWorkflows(CLASSPATH, tempDir.getPath());
 

@@ -25,8 +25,10 @@ import flyteidl.core.Literals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavaExamplesIT {
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 

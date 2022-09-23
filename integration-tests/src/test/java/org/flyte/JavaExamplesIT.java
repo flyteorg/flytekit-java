@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -38,10 +37,6 @@ public class JavaExamplesIT {
   }
 
   @Test
-  @Disabled
-  // FIXME doesn't work, seems like a bug in flyteadmin:
-  // Invalid value: "srxnub62yu-orgflyteexamplesSumTask-0": a lowercase RFC 1123 subdomain must
-  // consist of lower case
   public void testSumTask() {
     Literals.LiteralMap output =
         CLIENT.createTaskExecution(

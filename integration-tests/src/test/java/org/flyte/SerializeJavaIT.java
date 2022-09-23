@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,10 @@ public class SerializeJavaIT {
     try {
       File current = new File("target/protos");
       File tempDir = managed.resolve(current.getAbsolutePath()).toFile();
-      boolean mkdir = tempDir.mkdir();
+      boolean created = tempDir.mkdir();
+      if (!created) {
+        throw new IOException("Unable to create path");
+      }
 
       CLIENT.serializeWorkflows(CLASSPATH, tempDir.getPath());
 

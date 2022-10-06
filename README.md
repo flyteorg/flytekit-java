@@ -101,3 +101,7 @@ libraryDependencies ++= Seq(
 Run `mvn spotless:apply` before committing. 
 
 Also use `git commit --signoff "Commit message"` to comply with DCO. 
+
+## Releasing
+
+Go to [Actions](https://github.com/flyteorg/flytekit-java/actions) and click "Run workflow"

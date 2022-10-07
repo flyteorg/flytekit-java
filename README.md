@@ -104,4 +104,4 @@ Also use `git commit --signoff "Commit message"` to comply with DCO.
 
 ## Releasing
 
-Go to [Actions: Create flytekit java release](https://github.com/flyteorg/flytekit-java/actions/workflows/release.yaml) and click "Run workflow"
+Go to [Actions: Create flytekit-java release](https://github.com/flyteorg/flytekit-java/actions/workflows/release.yaml) and click "Run workflow"

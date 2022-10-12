@@ -91,7 +91,7 @@
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
     <picocli.version>4.6.3</picocli.version>
-    <protobuf.version>3.21.2</protobuf.version>
+    <protobuf.version>3.21.7</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>

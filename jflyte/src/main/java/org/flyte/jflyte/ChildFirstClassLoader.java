@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * {@link URLClassLoader} that loads classes into child class loader, instead of parent.
@@ -41,6 +44,9 @@ class ChildFirstClassLoader extends URLClassLoader {
   // it's base shared between all plugins and user code
   private static final String[] PARENT_FIRST_PACKAGE_PREFIXES =
       new String[] {"org.flyte.api.v1.", "org.flyte.jflyte.api."};
+
+  private static final Set<String> CHILD_ONLY_RESOURCES =
+      Stream.of("org/slf4j/impl/StaticLoggerBinder.class").collect(Collectors.toSet());
 
   @SuppressWarnings("JdkObsolete")
   private static class CustomEnumeration implements Enumeration<URL> {
@@ -113,10 +119,12 @@ class ChildFirstClassLoader extends URLClassLoader {
       allResources.add(childResources.nextElement());
     }
 
-    Enumeration<URL> parentResources = getParent().getResources(name);
+    if (!CHILD_ONLY_RESOURCES.contains(name)) {
+      Enumeration<URL> parentResources = getParent().getResources(name);
 
-    while (parentResources.hasMoreElements()) {
-      allResources.add(parentResources.nextElement());
+      while (parentResources.hasMoreElements()) {
+        allResources.add(parentResources.nextElement());
+      }
     }
 
     return new CustomEnumeration(allResources.iterator());

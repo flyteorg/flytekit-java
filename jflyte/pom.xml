@@ -168,6 +168,13 @@
       <artifactId>memoryfilesystem</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- ensure there is at least one slf4j implementation in test classpath so that we can test
+         org/slf4j/impl/StaticLoggerBinder.class is only discovered in child class loader -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

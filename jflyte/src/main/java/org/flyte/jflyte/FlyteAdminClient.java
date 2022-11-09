@@ -239,7 +239,7 @@ class FlyteAdminClient implements AutoCloseable {
       // create operation is idempotent, so it's fine to retry
       T response = retries.retry(retryable);
 
-      verifyNotNull(response, "{} {}: Unexpected null response", label, id);
+      verifyNotNull(response, "%s %s: Unexpected null response", label, id);
     } catch (StatusRuntimeException e) {
       // flyteadmin uses ALREADY_EXISTS only if payload is identical, except for executions
       if (e.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {

@@ -31,7 +31,7 @@ jobs:
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: mvn --batch-mode verify
+        run: mvn --batch-mode -T 1C verify
 
       - name: Log in to Docker Hub
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -51,7 +51,7 @@ jobs:
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          mvn --batch-mode deploy -Ddockerfile.push
+          mvn --batch-mode -T 1C deploy -Ddockerfile.push
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

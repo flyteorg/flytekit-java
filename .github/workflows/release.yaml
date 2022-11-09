@@ -49,9 +49,9 @@ jobs:
           gpg --list-secret-keys --keyid-format LONG
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
-          mvn --batch-mode release:prepare -DgenerateBackupPoms=false
+          mvn --batch-mode -T 1C release:prepare -DgenerateBackupPoms=false
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          mvn --batch-mode release:perform -Ddockerfile.push -Prelease
+          mvn --batch-mode -T 1C release:perform -Ddockerfile.push -Prelease
 
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

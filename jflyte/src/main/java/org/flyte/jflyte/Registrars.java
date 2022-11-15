@@ -35,12 +35,12 @@ class Registrars {
       Class<T> registrarClass, Map<String, String> env) {
     ServiceLoader<T> loader = ServiceLoader.load(registrarClass);
 
-    LOG.debug("Discovering " + registrarClass.getSimpleName());
+    LOG.info("Discovering " + registrarClass.getSimpleName());
 
     Map<K, V> items = new HashMap<>();
 
     for (T registrar : loader) {
-      LOG.debug("Discovered [{}]", registrar.getClass().getName());
+      LOG.info("Discovered [{}]", registrar.getClass().getName());
 
       for (Map.Entry<K, V> entry : registrar.load(env).entrySet()) {
         V previous = items.put(entry.getKey(), entry.getValue());

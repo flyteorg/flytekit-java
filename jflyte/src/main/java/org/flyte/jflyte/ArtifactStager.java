@@ -103,7 +103,7 @@ class ArtifactStager {
   }
 
   void stageArtifact(Artifact artifact, ByteSource content) {
-    LOG.debug("Staging [{}] to [{}]", artifact.name(), artifact.location());
+    LOG.info("Staging [{}] to [{}]", artifact.name(), artifact.location());
 
     Manifest manifest = fileSystem.getManifest(artifact.location());
     if (manifest == null) {

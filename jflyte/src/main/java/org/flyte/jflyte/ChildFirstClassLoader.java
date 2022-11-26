@@ -46,7 +46,7 @@ class ChildFirstClassLoader extends URLClassLoader {
       new String[] {"org.flyte.api.v1.", "org.flyte.jflyte.api."};
 
   private static final Set<String> CHILD_ONLY_RESOURCE_PREFIXES =
-      Stream.of("org/slf4j/impl/StaticLoggerBinder.class", "META-INF/services")
+      Stream.of("org/slf4j/impl/StaticLoggerBinder.class", "META-INF/services/")
           .collect(Collectors.toSet());
 
   @SuppressWarnings("JdkObsolete")

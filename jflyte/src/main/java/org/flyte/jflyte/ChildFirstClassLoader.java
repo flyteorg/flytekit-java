@@ -45,8 +45,9 @@ class ChildFirstClassLoader extends URLClassLoader {
   private static final String[] PARENT_FIRST_PACKAGE_PREFIXES =
       new String[] {"org.flyte.api.v1.", "org.flyte.jflyte.api."};
 
-  private static final Set<String> CHILD_ONLY_RESOURCES =
-      Stream.of("org/slf4j/impl/StaticLoggerBinder.class").collect(Collectors.toSet());
+  private static final Set<String> CHILD_ONLY_RESOURCE_PREFIXES =
+      Stream.of("org/slf4j/impl/StaticLoggerBinder.class", "META-INF/services")
+          .collect(Collectors.toSet());
 
   @SuppressWarnings("JdkObsolete")
   private static class CustomEnumeration implements Enumeration<URL> {
@@ -106,7 +107,10 @@ class ChildFirstClassLoader extends URLClassLoader {
       return resource;
     }
 
-    return getParent().getResource(name);
+    if (delegateResourceToParent(name)) {
+      return getParent().getResource(name);
+    }
+    return null;
   }
 
   @Override
@@ -119,7 +123,7 @@ class ChildFirstClassLoader extends URLClassLoader {
       allResources.add(childResources.nextElement());
     }
 
-    if (!CHILD_ONLY_RESOURCES.contains(name)) {
+    if (delegateResourceToParent(name)) {
       Enumeration<URL> parentResources = getParent().getResources(name);
 
       while (parentResources.hasMoreElements()) {
@@ -128,5 +132,14 @@ class ChildFirstClassLoader extends URLClassLoader {
     }
 
     return new CustomEnumeration(allResources.iterator());
+  }
+
+  private static boolean delegateResourceToParent(String name) {
+    for (String resourcePrefix : CHILD_ONLY_RESOURCE_PREFIXES) {
+      if (name.startsWith(resourcePrefix)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

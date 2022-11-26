@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -63,6 +64,7 @@ public class JavaExamplesIT {
   }
 
   @Test
+  @Disabled
   public void testDynamicFibonacciWorkflow() {
     Literals.LiteralMap output =
         CLIENT.createExecution(

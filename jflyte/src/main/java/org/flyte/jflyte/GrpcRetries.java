@@ -19,8 +19,12 @@ package org.flyte.jflyte;
 import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
 import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +32,10 @@ import org.slf4j.LoggerFactory;
 @AutoValue
 abstract class GrpcRetries {
   private static final Logger LOG = LoggerFactory.getLogger(GrpcRetries.class);
+
+  private static final Set<Code> RETRYABLE_CODES =
+      Stream.of(Code.UNAVAILABLE, Code.DEADLINE_EXCEEDED, Code.INTERNAL)
+          .collect(Collectors.toSet());
 
   public abstract int maxRetries();
 
@@ -56,12 +64,11 @@ abstract class GrpcRetries {
       } catch (StatusRuntimeException e) {
         Status.Code code = e.getStatus().getCode();
 
-        boolean isRetryable =
-            code == Status.Code.UNAVAILABLE || code == Status.Code.DEADLINE_EXCEEDED;
+        boolean isRetryable = isRetryable(code);
 
         if (attempt < maxRetries() && isRetryable) {
           long delay =
-              Math.min(maxDelayMilliseconds(), (1 << attempt) * initialDelayMilliseconds());
+              Math.min(maxDelayMilliseconds(), (1L << attempt) * initialDelayMilliseconds());
           LOG.warn("Retrying in " + delay + " ms", e);
 
           try {
@@ -76,6 +83,10 @@ abstract class GrpcRetries {
         }
       }
     } while (true);
+  }
+
+  private static boolean isRetryable(Code code) {
+    return RETRYABLE_CODES.contains(code);
   }
 
   static GrpcRetries create() {

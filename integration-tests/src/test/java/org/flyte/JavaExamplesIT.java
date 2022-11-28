@@ -63,6 +63,7 @@ public class JavaExamplesIT {
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("fib5", 5L))));
   }
 
+  @Disabled
   @Test
   @Disabled
   public void testDynamicFibonacciWorkflow() {

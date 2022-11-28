@@ -106,5 +106,5 @@ Also use `git commit --signoff "Commit message"` to comply with DCO.
 
 * Go to [Actions: Create flytekit-java release](https://github.com/flyteorg/flytekit-java/actions/workflows/release.yaml) and click "Run workflow"
 * Wait until the workflow finishes; in the meanwhile prepare a release note
-* Making sure the new release is visible in [Maven central](https://search.maven.org/search?q=a:flytekit-java)
+* Making sure the new release is visible in [Maven central](https://search.maven.org/artifact/org.flyte/flytekit-java)
 * Publish the release note associating with the latest tag created by the release workflow

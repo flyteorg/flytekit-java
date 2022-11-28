@@ -65,7 +65,6 @@ public class JavaExamplesIT {
 
   @Disabled
   @Test
-  @Disabled
   public void testDynamicFibonacciWorkflow() {
     Literals.LiteralMap output =
         CLIENT.createExecution(

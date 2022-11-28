@@ -64,7 +64,8 @@ public class ExecuteLocalArgsParser {
     CommandLine.Model.OptionSpec.Builder builder =
         CommandLine.Model.OptionSpec.builder("--" + name)
             .converters(getLiteralTypeConverter(name, variable))
-            .required(defaultValue == null);
+            .required(defaultValue == null)
+            .type(Literal.class);
 
     if (defaultValue != null) {
       builder.defaultValue(defaultValue);

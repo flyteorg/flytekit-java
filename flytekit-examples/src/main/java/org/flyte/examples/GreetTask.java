@@ -17,17 +17,17 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
-import org.flyte.flytekit.jackson.JacksonSdkType;
+import org.flyte.flytekit.SdkTypes;
 
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 @AutoService(SdkRunnableTask.class)
-public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output> {
+public class GreetTask extends SdkRunnableTask<String, String> {
   public GreetTask() {
-    super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
+    super(
+        SdkTypes.ofPrimitive("name", String.class), SdkTypes.ofPrimitive("greeting", String.class));
   }
 
   /**
@@ -41,41 +41,14 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
   }
 
   /**
-   * Generate an immutable value class that represents {@link GreetTask}'s input, which is a String.
-   */
-  @AutoValue
-  public abstract static class Input {
-    public abstract String name();
-  }
-
-  /**
-   * Generate an immutable value class that represents {@link GreetTask}'s output, which is a
-   * String.
-   */
-  @AutoValue
-  public abstract static class Output {
-    public abstract String greeting();
-
-    /**
-     * Wraps the constructor of the generated output value class.
-     *
-     * @param greeting the String literal output of {@link GreetTask}
-     * @return output of GreetTask
-     */
-    public static Output create(String greeting) {
-      return new AutoValue_GreetTask_Output(greeting);
-    }
-  }
-
-  /**
-   * Defines task behavior. This task takes a name as the input, wraps it in a welcome message, and
-   * outputs the message.
+   * Defines task behavior. This task takes a name as the input, compose a welcome message, and
+   * returns it.
    *
-   * @param input the name of the person to be greeted
+   * @param name the name of the person to be greeted
    * @return the welcome message
    */
   @Override
-  public Output run(Input input) {
-    return Output.create(String.format("Welcome, %s!", input.name()));
+  public String run(String name) {
+    return String.format("Welcome, %s!", name);
   }
 }

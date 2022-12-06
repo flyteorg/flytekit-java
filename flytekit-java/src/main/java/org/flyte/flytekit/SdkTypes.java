@@ -33,6 +33,9 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SchemaType;
+import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Variable;
 
 /** A utility class for creating {@link SdkType} objects for different types. */
@@ -127,7 +130,8 @@ public class SdkTypes {
         || l.scalar().kind() != Scalar.Kind.PRIMITIVE
         || l.scalar().primitive().kind() != kind) {
       throw new IllegalArgumentException(
-          String.format("Type missmatch, expected %s to be a primitive %s but got: %s", name, kind, l));
+          String.format(
+              "Type missmatch, expected %s to be a primitive %s but got: %s", name, kind, l));
     }
     return function.apply(l.scalar().primitive());
   }
@@ -154,6 +158,173 @@ public class SdkTypes {
     return varName;
   }
 
+  public static <T> SdkType<T> ofStruct(String varName, SdkType<T> structType) {
+    return new SdkLiteralType<>(ensureValidVarName(varName), structTypeDef(structType));
+  }
+
+  public static <T> SdkType<List<T>> ofCollection(String varName, SdkType<T> structType) {
+    return new SdkCollectionType<>(ensureValidVarName(varName), structTypeDef(structType));
+  }
+
+  public static <T> SdkType<Map<String, T>> ofMap(String varName, SdkType<T> structType) {
+    return new SdkMapType<>(ensureValidVarName(varName), structTypeDef(structType));
+  }
+
+  private static <T> TypeToLiteralTypeDef<T> structTypeDef(SdkType<T> structType) {
+    return new TypeToLiteralTypeDef<>(
+        (n, v) -> Literal.ofScalar(Scalar.ofGeneric(toStruct(structType, v))),
+        (n, l) -> {
+          if (l.kind() != Literal.Kind.SCALAR || l.scalar().kind() != Scalar.Kind.GENERIC) {
+            throw new IllegalArgumentException("Type missmatch, expecting a struct but got: " + l);
+          }
+          return fromStruct(structType, l.scalar().generic());
+        },
+        LiteralType.ofSchemaType(getSchemaType(structType)));
+  }
+
+  private static <T> Struct toStruct(SdkType<T> structType, T v) {
+    Map<String, Variable> variableMap = structType.getVariableMap();
+    Map<String, Literal> literalMap = structType.toLiteralMap(v);
+    Map<String, Struct.Value> fields =
+        variableMap.entrySet().stream()
+            .map(
+                e -> {
+                  String fieldName = e.getKey();
+                  Variable field = e.getValue();
+                  return new MapEntry<>(
+                      fieldName, toValue(fieldName, field, literalMap.get(fieldName)));
+                })
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return Struct.of(fields);
+  }
+
+  private static <T> T fromStruct(SdkType<T> structType, Struct struct) {
+    Map<String, Variable> variableMap = structType.getVariableMap();
+    Map<String, Struct.Value> fields = struct.fields();
+    checkFields(variableMap, fields);
+
+    Map<String, Literal> literalMap =
+        variableMap.entrySet().stream()
+            .map(
+                e -> {
+                  String fieldName = e.getKey();
+                  Variable field = e.getValue();
+                  return new MapEntry<>(
+                      fieldName, toLiteral(fieldName, field, fields.get(fieldName)));
+                })
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return structType.fromLiteralMap(literalMap);
+  }
+
+  private static void checkFields(
+      Map<String, Variable> variableMap, Map<String, Struct.Value> fields) {
+    List<String> missingFields =
+        variableMap.keySet().stream().filter(fn -> !fields.containsKey(fn)).collect(toList());
+    if (!missingFields.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot deserialize struct into type: missing fields in struct " + missingFields);
+    }
+    List<String> extraFields =
+        fields.keySet().stream().filter(fn -> !variableMap.containsKey(fn)).collect(toList());
+    if (!extraFields.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot deserialize struct into type: extra fields in struct " + extraFields);
+    }
+  }
+
+  private static Literal toLiteral(String fieldName, Variable field, Struct.Value value) {
+    LiteralType fieldType = field.literalType();
+    checkSupportedStructType(fieldName, fieldType);
+
+    switch (fieldType.simpleType()) {
+      case INTEGER:
+        return Literals.ofInteger((long) value.numberValue());
+      case FLOAT:
+        return Literals.ofFloat(value.numberValue());
+      case STRING:
+        return Literals.ofString(value.stringValue());
+      case BOOLEAN:
+        return Literals.ofBoolean(value.boolValue());
+      case DATETIME:
+        return Literals.ofDatetime(Instant.parse(value.stringValue()));
+      case DURATION:
+        return Literals.ofDuration(Duration.parse(value.stringValue()));
+      case STRUCT:
+        // fallthrough
+    }
+    throw new AssertionError(
+        "we shouldn't reach here as we should already thrown exception for unsupported types");
+  }
+
+  private static SchemaType getSchemaType(SdkType<?> structType) {
+    Map<String, Variable> variableMap = structType.getVariableMap();
+    List<SchemaType.Column> columns =
+        variableMap.entrySet().stream()
+            .map(e -> toColumn(e.getKey(), e.getValue()))
+            .collect(toList());
+    return SchemaType.builder().columns(columns).build();
+  }
+
+  private static Struct.Value toValue(String fieldName, Variable field, Literal literal) {
+    LiteralType fieldType = field.literalType();
+    checkSupportedStructType(fieldName, fieldType);
+
+    switch (fieldType.simpleType()) {
+      case INTEGER:
+        return Struct.Value.ofNumberValue(literal.scalar().primitive().integerValue());
+      case FLOAT:
+        return Struct.Value.ofNumberValue(literal.scalar().primitive().floatValue());
+      case STRING:
+        return Struct.Value.ofStringValue(literal.scalar().primitive().stringValue());
+      case BOOLEAN:
+        return Struct.Value.ofBoolValue(literal.scalar().primitive().booleanValue());
+      case DATETIME:
+        return Struct.Value.ofStringValue(literal.scalar().primitive().datetime().toString());
+      case DURATION:
+        return Struct.Value.ofStringValue(literal.scalar().primitive().duration().toString());
+      case STRUCT:
+        // fallthrough
+    }
+    throw new AssertionError(
+        "we shouldn't reach here as we should already thrown exception for unsupported types");
+  }
+
+  private static SchemaType.Column toColumn(String fieldName, Variable field) {
+    return SchemaType.Column.builder().name(fieldName).type(toColumnType(fieldName, field)).build();
+  }
+
+  private static SchemaType.ColumnType toColumnType(String fieldName, Variable field) {
+    LiteralType fieldType = field.literalType();
+    checkSupportedStructType(fieldName, fieldType);
+
+    switch (fieldType.simpleType()) {
+      case INTEGER:
+        return SchemaType.ColumnType.INTEGER;
+      case FLOAT:
+        return SchemaType.ColumnType.FLOAT;
+      case STRING:
+        return SchemaType.ColumnType.STRING;
+      case BOOLEAN:
+        return SchemaType.ColumnType.BOOLEAN;
+      case DATETIME:
+        return SchemaType.ColumnType.DATETIME;
+      case DURATION:
+        return SchemaType.ColumnType.DURATION;
+      case STRUCT:
+        // fallthrough
+    }
+    throw new AssertionError(
+        "we shouldn't reach here as we should already thrown exception for unsupported types");
+  }
+
+  private static void checkSupportedStructType(String fieldName, LiteralType fieldType) {
+    if (fieldType.getKind() != LiteralType.Kind.SIMPLE_TYPE
+        || fieldType.simpleType() == SimpleType.STRUCT) {
+      String errMsg =
+          String.format("[%s] of type [%s] is not supported as Struct field", fieldName, fieldType);
+      throw new IllegalArgumentException(errMsg);
+    }
+  }
 
   private static <T> TypeToLiteralTypeDef<T> getDef(Class<T> clazz) {
     if (!TYPE_MAP.containsKey(clazz)) {
@@ -293,7 +464,7 @@ public class SdkTypes {
     }
   }
 
-  //TODO: Remove this class when compiling with Java 11 and we can use Map.entry()
+  // TODO: Remove this class when compiling with Java 11 and we can use Map.entry()
   // using new AbstractMap.SimpleEntry directly is too verbose
   private static class MapEntry<T> extends AbstractMap.SimpleEntry<String, T> {
 

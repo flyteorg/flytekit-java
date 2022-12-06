@@ -18,21 +18,29 @@ package org.flyte.flytekit;
 
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SchemaType;
+import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -150,6 +158,128 @@ class SdkTypesTest {
             varMapForMap(LiteralTypes.DURATION)));
   }
 
+  @Test()
+  void testOfStruct() {
+    CustomStructSdkType sdkType = new CustomStructSdkType();
+    CustomStruct customStruct =
+        CustomStruct.create(123, 4.56, "789", true, INSTANT, Duration.ofMinutes(3));
+
+    Map<String, Struct.Value> strucLiteralMapFields = new HashMap<>();
+    strucLiteralMapFields.put("i", Struct.Value.ofNumberValue(123));
+    strucLiteralMapFields.put("f", Struct.Value.ofNumberValue(4.56));
+    strucLiteralMapFields.put("s", Struct.Value.ofStringValue("789"));
+    strucLiteralMapFields.put("b", Struct.Value.ofBoolValue(true));
+    strucLiteralMapFields.put("dt", Struct.Value.ofStringValue(INSTANT.toString()));
+    strucLiteralMapFields.put("d", Struct.Value.ofStringValue(Duration.ofMinutes(3).toString()));
+    Map<String, Literal> structLiteralMap =
+        singletonMap(
+            PARAM_NAME, Literal.ofScalar(Scalar.ofGeneric(Struct.of(strucLiteralMapFields))));
+
+    List<SchemaType.Column> columns = new ArrayList<>();
+    columns.add(column("i", SchemaType.ColumnType.INTEGER));
+    columns.add(column("f", SchemaType.ColumnType.FLOAT));
+    columns.add(column("s", SchemaType.ColumnType.STRING));
+    columns.add(column("b", SchemaType.ColumnType.BOOLEAN));
+    columns.add(column("dt", SchemaType.ColumnType.DATETIME));
+    columns.add(column("d", SchemaType.ColumnType.DURATION));
+    Map<String, Variable> structVariableMap =
+        singletonMap(
+            PARAM_NAME,
+            variable(LiteralType.ofSchemaType(SchemaType.builder().columns(columns).build())));
+
+    SdkType<CustomStruct> structType = SdkTypes.ofStruct(PARAM_NAME, sdkType);
+
+    assertEquals(customStruct, structType.fromLiteralMap(structLiteralMap));
+    assertEquals(structLiteralMap, structType.toLiteralMap(customStruct));
+    assertEquals(structVariableMap, structType.getVariableMap());
+  }
+
+  @Test()
+  void testOfStructCollection() {
+    CustomStructSdkType sdkType = new CustomStructSdkType();
+    CustomStruct customStruct =
+        CustomStruct.create(123, 4.56, "789", true, INSTANT, Duration.ofMinutes(3));
+
+    Map<String, Struct.Value> strucLiteralMapFields = new HashMap<>();
+    strucLiteralMapFields.put("i", Struct.Value.ofNumberValue(123));
+    strucLiteralMapFields.put("f", Struct.Value.ofNumberValue(4.56));
+    strucLiteralMapFields.put("s", Struct.Value.ofStringValue("789"));
+    strucLiteralMapFields.put("b", Struct.Value.ofBoolValue(true));
+    strucLiteralMapFields.put("dt", Struct.Value.ofStringValue(INSTANT.toString()));
+    strucLiteralMapFields.put("d", Struct.Value.ofStringValue(Duration.ofMinutes(3).toString()));
+    Map<String, Literal> structLiteralMap =
+        singletonMap(
+            PARAM_NAME,
+            Literal.ofCollection(
+                singletonList(
+                    Literal.ofScalar(Scalar.ofGeneric(Struct.of(strucLiteralMapFields))))));
+
+    List<SchemaType.Column> columns = new ArrayList<>();
+    columns.add(column("i", SchemaType.ColumnType.INTEGER));
+    columns.add(column("f", SchemaType.ColumnType.FLOAT));
+    columns.add(column("s", SchemaType.ColumnType.STRING));
+    columns.add(column("b", SchemaType.ColumnType.BOOLEAN));
+    columns.add(column("dt", SchemaType.ColumnType.DATETIME));
+    columns.add(column("d", SchemaType.ColumnType.DURATION));
+    Map<String, Variable> structVariableMap =
+        singletonMap(
+            PARAM_NAME,
+            variable(
+                LiteralType.ofCollectionType(
+                    LiteralType.ofSchemaType(SchemaType.builder().columns(columns).build()))));
+
+    SdkType<List<CustomStruct>> structType = SdkTypes.ofCollection(PARAM_NAME, sdkType);
+
+    assertEquals(singletonList(customStruct), structType.fromLiteralMap(structLiteralMap));
+    assertEquals(structLiteralMap, structType.toLiteralMap(singletonList(customStruct)));
+    assertEquals(structVariableMap, structType.getVariableMap());
+  }
+
+  @Test()
+  void testOfStructMap() {
+    CustomStructSdkType sdkType = new CustomStructSdkType();
+    CustomStruct customStruct =
+        CustomStruct.create(123, 4.56, "789", true, INSTANT, Duration.ofMinutes(3));
+
+    Map<String, Struct.Value> strucLiteralMapFields = new HashMap<>();
+    strucLiteralMapFields.put("i", Struct.Value.ofNumberValue(123));
+    strucLiteralMapFields.put("f", Struct.Value.ofNumberValue(4.56));
+    strucLiteralMapFields.put("s", Struct.Value.ofStringValue("789"));
+    strucLiteralMapFields.put("b", Struct.Value.ofBoolValue(true));
+    strucLiteralMapFields.put("dt", Struct.Value.ofStringValue(INSTANT.toString()));
+    strucLiteralMapFields.put("d", Struct.Value.ofStringValue(Duration.ofMinutes(3).toString()));
+    Map<String, Literal> structLiteralMap =
+        singletonMap(
+            PARAM_NAME,
+            Literal.ofMap(
+                singletonMap(
+                    "foo", Literal.ofScalar(Scalar.ofGeneric(Struct.of(strucLiteralMapFields))))));
+
+    List<SchemaType.Column> columns = new ArrayList<>();
+    columns.add(column("i", SchemaType.ColumnType.INTEGER));
+    columns.add(column("f", SchemaType.ColumnType.FLOAT));
+    columns.add(column("s", SchemaType.ColumnType.STRING));
+    columns.add(column("b", SchemaType.ColumnType.BOOLEAN));
+    columns.add(column("dt", SchemaType.ColumnType.DATETIME));
+    columns.add(column("d", SchemaType.ColumnType.DURATION));
+    Map<String, Variable> structVariableMap =
+        singletonMap(
+            PARAM_NAME,
+            variable(
+                LiteralType.ofMapValueType(
+                    LiteralType.ofSchemaType(SchemaType.builder().columns(columns).build()))));
+
+    SdkType<Map<String, CustomStruct>> structType = SdkTypes.ofMap(PARAM_NAME, sdkType);
+
+    assertEquals(singletonMap("foo", customStruct), structType.fromLiteralMap(structLiteralMap));
+    assertEquals(structLiteralMap, structType.toLiteralMap(singletonMap("foo", customStruct)));
+    assertEquals(structVariableMap, structType.getVariableMap());
+  }
+
+  private static SchemaType.Column column(String name, SchemaType.ColumnType columnType) {
+    return SchemaType.Column.builder().name(name).type(columnType).build();
+  }
+
   @Test
   void testOfPrimitiveWithUnsupportedClass() {
     Exception ex =
@@ -199,20 +329,79 @@ class SdkTypesTest {
   }
 
   private static Map<String, Variable> varMap(LiteralType literalType) {
-    return singletonMap(PARAM_NAME, Variable.builder().literalType(literalType).build());
+    return singletonMap(PARAM_NAME, variable(literalType));
   }
 
   private static Map<String, Variable> varMapForCollection(LiteralType literalType) {
-    return singletonMap(
-        PARAM_NAME,
-        Variable.builder().literalType(LiteralType.ofCollectionType(literalType)).build());
+    return singletonMap(PARAM_NAME, variable(LiteralType.ofCollectionType(literalType)));
   }
 
   private static Map<String, Variable> varMapForMap(LiteralType literalType) {
-    return singletonMap(
-        PARAM_NAME,
-        Variable.builder().literalType(LiteralType.ofMapValueType(literalType)).build());
+    return singletonMap(PARAM_NAME, variable(LiteralType.ofMapValueType(literalType)));
   }
 
-  static class UnSupportedLiteralClass {}
+  private static Variable variable(LiteralType literalType) {
+    return Variable.builder().literalType(literalType).build();
+  }
+
+  private static class UnSupportedLiteralClass {}
+
+  @AutoValue
+  abstract static class CustomStruct {
+    abstract long i();
+
+    abstract double f();
+
+    abstract String s();
+
+    abstract boolean b();
+
+    abstract Instant dt();
+
+    abstract Duration d();
+
+    public static CustomStruct create(
+        long i, double f, String s, boolean b, Instant dt, Duration d) {
+      return new AutoValue_SdkTypesTest_CustomStruct(i, f, s, b, dt, d);
+    }
+  }
+
+  // Creating a custom SdkType for CustomStruct to avoid cyclic dependency with JacksonSdkType
+  private static class CustomStructSdkType extends SdkType<CustomStruct> {
+
+    @Override
+    public Map<String, Literal> toLiteralMap(CustomStruct value) {
+      Map<String, Literal> literals = new LinkedHashMap<>(); // keep insertion order for debugging
+      literals.put("i", Literals.ofInteger(value.i()));
+      literals.put("f", Literals.ofFloat(value.f()));
+      literals.put("s", Literals.ofString(value.s()));
+      literals.put("b", Literals.ofBoolean(value.b()));
+      literals.put("dt", Literals.ofDatetime(value.dt()));
+      literals.put("d", Literals.ofDuration(value.d()));
+      return literals;
+    }
+
+    @Override
+    public CustomStruct fromLiteralMap(Map<String, Literal> value) {
+      return CustomStruct.create(
+          value.get("i").scalar().primitive().integerValue(),
+          value.get("f").scalar().primitive().floatValue(),
+          value.get("s").scalar().primitive().stringValue(),
+          value.get("b").scalar().primitive().booleanValue(),
+          value.get("dt").scalar().primitive().datetime(),
+          value.get("d").scalar().primitive().duration());
+    }
+
+    @Override
+    public Map<String, Variable> getVariableMap() {
+      Map<String, Variable> variables = new LinkedHashMap<>(); // keep insertion order for debugging
+      variables.put("i", variable(LiteralTypes.INTEGER));
+      variables.put("f", variable(LiteralTypes.FLOAT));
+      variables.put("s", variable(LiteralTypes.STRING));
+      variables.put("b", variable(LiteralTypes.BOOLEAN));
+      variables.put("dt", variable(LiteralTypes.DATETIME));
+      variables.put("d", variable(LiteralTypes.DURATION));
+      return variables;
+    }
+  }
 }

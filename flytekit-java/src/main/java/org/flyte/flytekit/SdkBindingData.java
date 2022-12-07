@@ -150,6 +150,10 @@ public abstract class SdkBindingData {
     return ofBindingCollection(elements, SdkBindingData::ofDatetime, LiteralTypes.DATETIME);
   }
 
+  public static SdkBindingData ofStructCollection(List<SdkStruct> elements) {
+    return ofBindingCollection(elements, SdkBindingData::ofStruct, LiteralTypes.STRUCT);
+  }
+
   public static SdkBindingData ofDurationCollection(List<Duration> elements) {
     return ofBindingCollection(elements, SdkBindingData::ofDuration, LiteralTypes.DURATION);
   }

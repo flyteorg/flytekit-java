@@ -271,7 +271,7 @@ public class SdkTypes {
 
     switch (fieldType.simpleType()) {
       case INTEGER:
-        return Struct.Value.ofNumberValue(literal.scalar().primitive().integerValue());
+        return Struct.Value.ofNumberValue((double) literal.scalar().primitive().integerValue());
       case FLOAT:
         return Struct.Value.ofNumberValue(literal.scalar().primitive().floatValue());
       case STRING:

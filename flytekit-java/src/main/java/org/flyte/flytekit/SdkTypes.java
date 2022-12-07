@@ -467,6 +467,7 @@ public class SdkTypes {
   // TODO: Remove this class when compiling with Java 11 and we can use Map.entry()
   // using new AbstractMap.SimpleEntry directly is too verbose
   private static class MapEntry<T> extends AbstractMap.SimpleEntry<String, T> {
+    private static final long serialVersionUID = -6119015712388978761L;
 
     private MapEntry(String key, T value) {
       super(key, value);

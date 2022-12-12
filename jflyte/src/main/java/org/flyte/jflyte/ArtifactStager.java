@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -96,17 +97,17 @@ class ArtifactStager {
 
     List<Artifact> artifacts = new ArrayList<>();
 
-    List<CompletableFuture<Artifact>> futures =
+    List<CompletionStage<Artifact>> stages =
         files.stream().map(this::getArtifactForFile).collect(Collectors.toList());
-    for (int i = 0; i < futures.size(); ++i) {
+    for (int i = 0; i < stages.size(); ++i) {
       try {
-        artifacts.add(futures.get(i).get());
+        artifacts.add(stages.get(i).toCompletableFuture().get());
       } catch (InterruptedException | ExecutionException e) {
         if (e instanceof InterruptedException) {
           Thread.currentThread().interrupt();
         }
-        for (int j = i; j < futures.size(); ++j) {
-          futures.get(j).cancel(true);
+        for (int j = i; j < stages.size(); ++j) {
+          stages.get(j).toCompletableFuture().cancel(true);
         }
 
         throw new RuntimeException(e);
@@ -123,7 +124,7 @@ class ArtifactStager {
     return file;
   }
 
-  private CompletableFuture<Artifact> getArtifactForFile(File file) {
+  private CompletionStage<Artifact> getArtifactForFile(File file) {
     return CompletableFuture.supplyAsync(
         () -> {
           Artifact artifact = getArtifactForFile(file, stagingLocation);

@@ -20,7 +20,7 @@
 
   <groupId>org.flyte</groupId>
   <artifactId>flytekit-parent</artifactId>
-  <version>0.3.25-SNAPSHOT</version>
+  <version>0.3.26-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 

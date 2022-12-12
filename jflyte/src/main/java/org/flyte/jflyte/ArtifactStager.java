@@ -33,13 +33,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import org.flyte.jflyte.api.FileSystem;
@@ -94,27 +92,10 @@ class ArtifactStager {
   List<Artifact> stageFiles(List<String> filePaths) {
     List<File> files =
         filePaths.stream().map(ArtifactStager::toFileAndVerify).collect(Collectors.toList());
-
-    List<Artifact> artifacts = new ArrayList<>();
-
     List<CompletionStage<Artifact>> stages =
         files.stream().map(this::getArtifactForFile).collect(Collectors.toList());
-    for (int i = 0; i < stages.size(); ++i) {
-      try {
-        artifacts.add(stages.get(i).toCompletableFuture().get());
-      } catch (InterruptedException | ExecutionException e) {
-        if (e instanceof InterruptedException) {
-          Thread.currentThread().interrupt();
-        }
-        for (int j = i; j < stages.size(); ++j) {
-          stages.get(j).toCompletableFuture().cancel(true);
-        }
 
-        throw new RuntimeException(e);
-      }
-    }
-
-    return artifacts;
+    return CompletableFutures.getAll(stages);
   }
 
   private static File toFileAndVerify(String filePath) {

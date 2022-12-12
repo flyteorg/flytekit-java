@@ -37,6 +37,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 import org.flyte.jflyte.api.FileSystem;
 import org.flyte.jflyte.api.Manifest;
 import org.slf4j.Logger;
@@ -58,13 +62,16 @@ class ArtifactStager {
 
   private final String stagingLocation;
   private final FileSystem fileSystem;
+  private final ExecutorService executorService;
 
-  ArtifactStager(String stagingLocation, FileSystem fileSystem) {
+  ArtifactStager(String stagingLocation, FileSystem fileSystem, ExecutorService executorService) {
     this.stagingLocation = stagingLocation;
     this.fileSystem = fileSystem;
+    this.executorService = executorService;
   }
 
-  static ArtifactStager create(Config config, Collection<ClassLoader> modules) {
+  static ArtifactStager create(
+      Config config, Collection<ClassLoader> modules, ExecutorService executorService) {
     try {
       String stagingLocation = config.stagingLocation();
 
@@ -77,36 +84,60 @@ class ArtifactStager {
       Map<String, FileSystem> fileSystems = FileSystemLoader.loadFileSystems(modules);
       FileSystem stagingFileSystem = FileSystemLoader.getFileSystem(fileSystems, stagingUri);
 
-      return new ArtifactStager(stagingLocation, stagingFileSystem);
+      return new ArtifactStager(stagingLocation, stagingFileSystem, executorService);
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Failed to parse stagingLocation", e);
     }
   }
 
-  List<Artifact> stageFiles(List<String> files) {
+  List<Artifact> stageFiles(List<String> filePaths) {
+    List<File> files =
+        filePaths.stream().map(ArtifactStager::toFileAndVerify).collect(Collectors.toList());
+
     List<Artifact> artifacts = new ArrayList<>();
 
-    // TODO use multiple threads for better throughput
-    for (String filePath : files) {
-      File file = new File(filePath);
+    List<CompletableFuture<Artifact>> futures =
+        files.stream().map(this::getArtifactForFile).collect(Collectors.toList());
+    for (int i = 0; i < futures.size(); ++i) {
+      try {
+        artifacts.add(futures.get(i).get());
+      } catch (InterruptedException | ExecutionException e) {
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
+        for (int j = i; j < futures.size(); ++j) {
+          futures.get(j).cancel(true);
+        }
 
-      verify(file.exists(), "file doesn't exist [%s]", filePath);
-      verify(!file.isDirectory(), "directories aren't supported [%s]", filePath);
-
-      Artifact artifact = getArtifactForFile(file, stagingLocation);
-      stageArtifact(artifact, Files.asByteSource(file));
-
-      artifacts.add(artifact);
+        throw new RuntimeException(e);
+      }
     }
 
     return artifacts;
   }
 
-  void stageArtifact(Artifact artifact, ByteSource content) {
-    LOG.info("Staging [{}] to [{}]", artifact.name(), artifact.location());
+  private static File toFileAndVerify(String filePath) {
+    File file = new File(filePath);
+    verify(file.exists(), "file doesn't exist [%s]", filePath);
+    verify(!file.isDirectory(), "directories aren't supported [%s]", filePath);
+    return file;
+  }
 
+  private CompletableFuture<Artifact> getArtifactForFile(File file) {
+    return CompletableFuture.supplyAsync(
+        () -> {
+          Artifact artifact = getArtifactForFile(file, stagingLocation);
+          stageArtifact(artifact, Files.asByteSource(file));
+          return artifact;
+        },
+        executorService);
+  }
+
+  void stageArtifact(Artifact artifact, ByteSource content) {
     Manifest manifest = fileSystem.getManifest(artifact.location());
     if (manifest == null) {
+      LOG.info("Staging [{}] to [{}]", artifact.name(), artifact.location());
+
       // TODO writer API should accept crc32c as an option to pass it to underlying implementation
       // that is going to double-check it once blob is uploaded
 
@@ -116,6 +147,7 @@ class ArtifactStager {
         throw new UncheckedIOException(e);
       }
     } else {
+      LOG.info("[{}] already staged to [{}]", artifact.name(), artifact.location());
       // TODO check that crc32c matches
     }
   }

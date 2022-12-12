@@ -42,16 +42,3 @@ class GreetTask
   override def run(input: GreetTaskInput): GreetTaskOutput =
     GreetTaskOutput(s"Welcome, ${input.name}!")
 }
-
-object GreetTask {
-
-  /** Binds input data to this task
-    *
-    * @param name
-    *   the input name
-    * @return
-    *   a transformed instance of this class with input data
-    */
-  def apply(name: SdkBindingData): SdkTransform =
-    new GreetTask().withInput("name", name)
-}

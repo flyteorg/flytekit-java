@@ -42,16 +42,3 @@ class AddQuestionTask
   override def run(input: AddQuestionTaskInput): AddQuestionTaskOutput =
     AddQuestionTaskOutput(s"${input.greeting} How are you?")
 }
-
-object AddQuestionTask {
-
-  /** Binds input data to this task
-    *
-    * @param greeting
-    *   the input greeting message
-    * @return
-    *   a transformed instance of this class with input data
-    */
-  def apply(greeting: SdkBindingData): SdkTransform =
-    new AddQuestionTask().withInput("greeting", greeting)
-}

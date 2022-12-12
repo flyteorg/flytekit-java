@@ -20,6 +20,7 @@ import static org.flyte.jflyte.TokenSourceFactoryLoader.getTokenSource;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.flyte.jflyte.api.TokenSource;
@@ -73,7 +74,8 @@ public class RegisterWorkflows implements Callable<Integer> {
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
-      Supplier<ArtifactStager> stagerSupplier = () -> ArtifactStager.create(config, modules);
+      Supplier<ArtifactStager> stagerSupplier =
+          () -> ArtifactStager.create(config, modules, new ForkJoinPool());
 
       ExecutionConfig executionConfig =
           ExecutionConfig.builder()

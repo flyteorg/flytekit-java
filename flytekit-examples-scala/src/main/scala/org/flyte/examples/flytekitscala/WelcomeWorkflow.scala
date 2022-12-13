@@ -50,7 +50,7 @@ class WelcomeWorkflow extends SdkWorkflow {
     val name = builder.inputOfString("name", "The name for the welcome message")
 
     // uses the workflow input as the task input of the GreetTask
-    val greeting = builder.apply("greet",  new GreetTask().withInput("name", name)).getOutput("greeting")
+    val greeting = builder.apply("greet", new GreetTask().withInput("name", name)).getOutput("greeting")
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     val greetingWithQuestion = builder

@@ -82,7 +82,14 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
     }
 
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputs().getVariableMap(), typedOutputClass);
+        builder,
+        nodeId,
+        taskId,
+        upstreamNodeIds,
+        metadata,
+        inputs,
+        outputs().getVariableMap(),
+        typedOutputClass);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

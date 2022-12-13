@@ -17,12 +17,9 @@
 package org.flyte.flytekit;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Supplier;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
@@ -104,6 +101,7 @@ public abstract class SdkNode<T extends TypedOutput> {
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
-    return builder.applyInternal(id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), typedOutputClass);
+    return builder.applyInternal(
+        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), typedOutputClass);
   }
 }

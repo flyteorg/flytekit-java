@@ -65,7 +65,14 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
     }
 
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType.getVariableMap(), typedOutputClass);
+        builder,
+        nodeId,
+        taskId,
+        upstreamNodeIds,
+        metadata,
+        inputs,
+        outputType.getVariableMap(),
+        typedOutputClass);
   }
 
   public abstract void run(SdkWorkflowBuilder builder, InputT input);

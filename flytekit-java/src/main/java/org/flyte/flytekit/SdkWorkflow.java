@@ -69,7 +69,14 @@ public abstract class SdkWorkflow extends SdkTransform {
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
     return new SdkWorkflowNode<>(
-        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, typedOutputClass);
+        builder,
+        nodeId,
+        upstreamNodeIds,
+        metadata,
+        workflowNode,
+        inputs,
+        outputs,
+        typedOutputClass);
   }
 
   public WorkflowTemplate toIdlTemplate() {

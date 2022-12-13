@@ -53,15 +53,22 @@ public class SdkWorkflowBuilder {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Class<T> typedOutputClass) {
+  public <T extends TypedOutput> SdkNode<T> apply(
+      String nodeId, SdkTransform transform, Class<T> typedOutputClass) {
     return apply(nodeId, transform, emptyMap(), typedOutputClass);
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs, Class<T> typedOutputClass) {
-    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, typedOutputClass);
+  public <T extends TypedOutput> SdkNode<T> apply(
+      String nodeId,
+      SdkTransform transform,
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
+    return applyInternal(
+        nodeId, transform, emptyList(), /*metadata=*/ null, inputs, typedOutputClass);
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
+  public <T extends TypedOutput> SdkNode<T> apply(
+      String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
     return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, null);
   }
 
@@ -83,7 +90,8 @@ public class SdkWorkflowBuilder {
       throw new CompilerException(error);
     }
 
-    SdkNode<T> sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs, typedOutputClass);
+    SdkNode<T> sdkNode =
+        transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs, typedOutputClass);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;

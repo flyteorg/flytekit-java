@@ -118,7 +118,14 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
     }
 
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType.getVariableMap(), typedOutputClass);
+        builder,
+        nodeId,
+        taskId,
+        upstreamNodeIds,
+        metadata,
+        inputs,
+        outputType.getVariableMap(),
+        typedOutputClass);
   }
 
   public abstract OutputT run(InputT input);

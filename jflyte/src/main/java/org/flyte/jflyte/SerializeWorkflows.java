@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -69,7 +70,8 @@ public class SerializeWorkflows implements Callable<Integer> {
 
     try (FlyteAdminClient adminClient =
         FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), tokenSource)) {
-      Supplier<ArtifactStager> stagerSupplier = () -> ArtifactStager.create(config, modules);
+      Supplier<ArtifactStager> stagerSupplier =
+          () -> ArtifactStager.create(config, modules, new ForkJoinPool());
       ExecutionConfig executionConfig =
           ExecutionConfig.builder()
               .domain(DOMAIN_PLACEHOLDER)

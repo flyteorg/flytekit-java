@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -62,6 +63,7 @@ public class JavaExamplesIT {
     assertThat(output, equalTo(ofIntegerMap(ImmutableMap.of("fib5", 5L))));
   }
 
+  @Disabled
   @Test
   public void testDynamicFibonacciWorkflow() {
     Literals.LiteralMap output =

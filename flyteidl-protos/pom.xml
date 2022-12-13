@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.3.24-SNAPSHOT</version>
+    <version>0.3.26-SNAPSHOT</version>
   </parent>
 
   <artifactId>flyteidl-protos</artifactId>
@@ -41,6 +41,10 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-common-protos</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
     </dependency>
   </dependencies>
   <build>

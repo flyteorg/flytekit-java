@@ -23,9 +23,9 @@ abstract class SdkIfBlock {
 
   abstract SdkBooleanExpression condition();
 
-  abstract SdkNode thenNode();
+  abstract SdkNode<?> thenNode();
 
-  static SdkIfBlock create(SdkBooleanExpression condition, SdkNode thenNode) {
+  static SdkIfBlock create(SdkBooleanExpression condition, SdkNode<?> thenNode) {
     return new AutoValue_SdkIfBlock(condition, thenNode);
   }
 }

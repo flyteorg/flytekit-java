@@ -102,12 +102,13 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
   }
 
   @Override
-  public SdkNode apply(
+  public <TypedOutputT extends TypedOutput> SdkNode<TypedOutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<TypedOutputT> typedOutputClass) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
     List<CompilerError> errors =
         Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
@@ -116,8 +117,8 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
       throw new CompilerException(errors);
     }
 
-    return new SdkTaskNode(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType.getVariableMap());
+    return new SdkTaskNode<>(
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType.getVariableMap(), typedOutputClass);
   }
 
   public abstract OutputT run(InputT input);

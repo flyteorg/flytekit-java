@@ -27,14 +27,14 @@ import org.flyte.localengine.ImmutableList;
 public class ListWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkNode sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
-    SdkNode sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
+    SdkNode<?> sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
+    SdkNode<?> sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
 
     SdkBindingData list =
         SdkBindingData.ofBindingCollection(
             ImmutableList.of(sum1.getOutput("c"), sum2.getOutput("c")));
 
-    SdkNode list1 = builder.apply("list-1", new ListTask().withInput("list", list));
+    SdkNode<?> list1 = builder.apply("list-1", new ListTask().withInput("list", list));
 
     builder.output("list", list1.getOutput("list"));
   }

@@ -213,7 +213,7 @@ class SdkWorkflowBuilderTest {
     SdkBindingData a = builder.inputOfInteger("a");
     SdkBindingData b = builder.inputOfInteger("b");
 
-    SdkNode node1 = builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
+    SdkNode<?> node1 = builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
 
     CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
 
@@ -292,9 +292,9 @@ class SdkWorkflowBuilderTest {
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<?> el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode el3 =
+    SdkNode<?> el3 =
         builder.apply(
             "el3", transform.withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
 
@@ -305,8 +305,8 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_apply() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
-    SdkNode node2 = node1.apply("node2", new PrintHello());
+    SdkNode<?> node1 = builder.apply("node1", new PrintHello());
+    SdkNode<?> node2 = node1.apply("node2", new PrintHello());
 
     assertEquals(singletonList("node1"), node2.toIdl().upstreamNodeIds());
   }
@@ -315,7 +315,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
+    SdkNode<?> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -329,7 +329,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicateWithNode() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
+    SdkNode<?> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -349,9 +349,9 @@ class SdkWorkflowBuilderTest {
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<?> el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode el3 =
+    SdkNode<?> el3 =
         builder.apply(
             "el3",
             transform
@@ -374,7 +374,7 @@ class SdkWorkflowBuilderTest {
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<?> el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
     IllegalArgumentException ex =
         assertThrows(
@@ -477,7 +477,7 @@ class SdkWorkflowBuilderTest {
       SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData two = literalOfInteger(2L);
 
-      SdkNode out =
+      SdkNode<?> out =
           builder.apply(
               "square",
               SdkConditions.when(
@@ -512,7 +512,7 @@ class SdkWorkflowBuilderTest {
       SdkBindingData a = builder.inputOfInteger("a");
       SdkBindingData b = builder.inputOfInteger("b");
 
-      SdkNode multiply =
+      SdkNode<?> multiply =
           builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
       builder.output("c", multiply.getOutput("c"));

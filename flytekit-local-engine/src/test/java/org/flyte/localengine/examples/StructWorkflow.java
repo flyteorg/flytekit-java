@@ -28,7 +28,7 @@ public class StructWorkflow extends SdkWorkflow {
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData someString = builder.inputOfString("someString");
     SdkBindingData someStruct = builder.inputOfStruct("someStruct");
-    SdkNode structNode =
+    SdkNode<?> structNode =
         builder.apply(
             "node-struct-1",
             new StructTask()

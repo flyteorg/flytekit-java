@@ -28,7 +28,7 @@ public class DynamicFibonacciWorkflow extends SdkWorkflow {
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData n = builder.inputOfInteger("n");
 
-    SdkNode fibonacci =
+    SdkNode<?> fibonacci =
         builder.apply("fibonacci", new DynamicFibonacciWorkflowTask().withInput("n", n));
 
     builder.output("output", fibonacci.getOutput("output"));

@@ -124,21 +124,21 @@ public class FibonacciWorkflowTest {
       SdkBindingData fib0 = builder.inputOfInteger("fib0");
       SdkBindingData fib1 = builder.inputOfInteger("fib1");
 
-      SdkNode fib2 =
+      SdkNode<?> fib2 =
           builder.apply("fib-2", new SumTask().withInput("a", fib0).withInput("b", fib1));
 
-      SdkNode fib3 =
+      SdkNode<?> fib3 =
           builder.apply(
               "fib-3", new SumTask().withInput("a", fib1).withInput("b", fib2.getOutput("c")));
 
-      SdkNode fib4 =
+      SdkNode<?> fib4 =
           builder.apply(
               "fib-4",
               new SumTask()
                   .withInput("a", fib2.getOutput("c"))
                   .withInput("b", fib3.getOutput("c")));
 
-      SdkNode fib5 =
+      SdkNode<?> fib5 =
           builder.apply(
               "fib-5",
               new SumTask()
@@ -170,22 +170,22 @@ public class FibonacciWorkflowTest {
       SdkBindingData fib0 = builder.inputOfInteger("fib0");
       SdkBindingData fib1 = builder.inputOfInteger("fib1");
 
-      SdkNode fib2 =
+      SdkNode<?> fib2 =
           builder.apply("fib-2", RemoteSumTask.create().withInput("a", fib0).withInput("b", fib1));
 
-      SdkNode fib3 =
+      SdkNode<?> fib3 =
           builder.apply(
               "fib-3",
               RemoteSumTask.create().withInput("a", fib1).withInput("b", fib2.getOutput("c")));
 
-      SdkNode fib4 =
+      SdkNode<?> fib4 =
           builder.apply(
               "fib-4",
               RemoteSumTask.create()
                   .withInput("a", fib2.getOutput("c"))
                   .withInput("b", fib3.getOutput("c")));
 
-      SdkNode fib5 =
+      SdkNode<?> fib5 =
           builder.apply(
               "fib-5",
               RemoteSumTask.create()

@@ -40,7 +40,10 @@ public abstract class CompilerError implements Serializable {
     PARAMETER_NOT_BOUND,
 
     /** An Id existed twice. */
-    DUPLICATE_NODE_ID
+    DUPLICATE_NODE_ID,
+
+    /** An Id existed twice. */
+    USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
   }
 
   /**

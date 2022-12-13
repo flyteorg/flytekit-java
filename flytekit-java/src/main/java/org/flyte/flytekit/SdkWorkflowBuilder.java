@@ -33,7 +33,7 @@ import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
-  private final Map<String, SdkNode> nodes;
+  private final Map<String, SdkNode<?>> nodes;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, SdkBindingData> outputs;
   private final Map<String, String> inputDescriptions;
@@ -49,20 +49,29 @@ public class SdkWorkflowBuilder {
     this.outputDescriptions = new HashMap<>();
   }
 
-  public SdkNode apply(String nodeId, SdkTransform transform) {
+  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform) {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
-    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs);
+  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Class<T> typedOutputClass) {
+    return apply(nodeId, transform, emptyMap(), typedOutputClass);
   }
 
-  protected SdkNode applyInternal(
+  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs, Class<T> typedOutputClass) {
+    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, typedOutputClass);
+  }
+
+  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
+    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, null);
+  }
+
+  protected <T extends TypedOutput> SdkNode<T> applyInternal(
       String nodeId,
       SdkTransform transform,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
 
     if (nodes.containsKey(nodeId)) {
       CompilerError error =
@@ -74,7 +83,7 @@ public class SdkWorkflowBuilder {
       throw new CompilerException(error);
     }
 
-    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
+    SdkNode<T> sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs, typedOutputClass);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;
@@ -169,7 +178,7 @@ public class SdkWorkflowBuilder {
     return bindingData;
   }
 
-  public Map<String, SdkNode> getNodes() {
+  public Map<String, SdkNode<?>> getNodes() {
     return unmodifiableMap(new LinkedHashMap<>(nodes));
   }
 

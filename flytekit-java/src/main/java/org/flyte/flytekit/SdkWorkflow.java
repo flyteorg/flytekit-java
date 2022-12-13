@@ -34,12 +34,13 @@ public abstract class SdkWorkflow extends SdkTransform {
   public abstract void expand(SdkWorkflowBuilder builder);
 
   @Override
-  public SdkNode apply(
+  public <T extends TypedOutput> SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
 
     PartialWorkflowIdentifier workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
@@ -67,8 +68,8 @@ public abstract class SdkWorkflow extends SdkTransform {
                     e ->
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
-    return new SdkWorkflowNode(
-        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs);
+    return new SdkWorkflowNode<>(
+        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, typedOutputClass);
   }
 
   public WorkflowTemplate toIdlTemplate() {

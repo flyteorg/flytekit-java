@@ -114,7 +114,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
       SdkBindingData a = builder.inputOfInteger("a");
       SdkBindingData b = builder.inputOfString("b");
 
-      SdkNode node1 =
+      SdkNode<?> node1 =
           builder.apply(
               "some-node-id", new TestSdkRemoteLaunchPlan().withInput("a", a).withInput("b", b));
 

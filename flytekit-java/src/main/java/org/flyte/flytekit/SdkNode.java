@@ -16,18 +16,60 @@
  */
 package org.flyte.flytekit;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Supplier;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
-public abstract class SdkNode {
+public abstract class SdkNode<T extends TypedOutput> {
 
   protected final SdkWorkflowBuilder builder;
+  T typedOutput;
 
   protected SdkNode(SdkWorkflowBuilder builder) {
+    this(builder, null);
+  }
+
+  protected SdkNode(SdkWorkflowBuilder builder, Class<? extends T> typedOutputClass) {
     this.builder = builder;
+
+    if (typedOutputClass != null) {
+      try {
+        Constructor<? extends T> ctor = typedOutputClass.getConstructor(Map.class);
+        this.typedOutput = ctor.newInstance(getOutputs());
+      } catch (Exception ex) {
+        String message = String.format("error %s", getNodeId());
+        CompilerError error =
+            CompilerError.create(
+                CompilerError.Kind.USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
+                /* nodeId= */ getNodeId(),
+                /* message= */ message);
+
+        throw new CompilerException(error);
+      }
+    } else {
+      this.typedOutput = null;
+    }
+  }
+
+  public T getTypedOutput() {
+    if (typedOutput == null) {
+      String message = String.format("error %s", getNodeId());
+      CompilerError error =
+          CompilerError.create(
+              CompilerError.Kind.USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
+              /* nodeId= */ getNodeId(),
+              /* message= */ message);
+
+      throw new CompilerException(error);
+    }
+
+    return typedOutput;
   }
 
   public abstract Map<String, SdkBindingData> getOutputs();
@@ -53,11 +95,15 @@ public abstract class SdkNode {
 
   public abstract Node toIdl();
 
-  public SdkNode apply(String id, SdkTransform transform) {
+  public SdkNode<T> apply(String id, SdkTransform transform) {
+    return apply(id, transform, null);
+  }
+
+  public SdkNode<T> apply(String id, SdkTransform transform, Class<T> typedOutputClass) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
-    return builder.applyInternal(id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs());
+    return builder.applyInternal(id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), typedOutputClass);
   }
 }

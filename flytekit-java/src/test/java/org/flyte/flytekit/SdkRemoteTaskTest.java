@@ -45,13 +45,14 @@ class SdkRemoteTaskTest {
     inputs.put("b", SdkBindingData.ofString("2"));
     SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> remoteTask = new TestSdkRemoteTask();
 
-    SdkNode node =
+    SdkNode<?> node =
         remoteTask.apply(
             mock(SdkWorkflowBuilder.class),
             "lookup-endsong",
             singletonList("upstream-1"),
             /*metadata=*/ null,
-            inputs);
+            inputs,
+            /*typedOutputClass=*/ null);
 
     assertAll(
         () -> assertThat(node.getNodeId(), is("lookup-endsong")),

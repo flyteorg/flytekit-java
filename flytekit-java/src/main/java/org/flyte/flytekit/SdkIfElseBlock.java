@@ -28,7 +28,7 @@ abstract class SdkIfElseBlock {
   abstract List<SdkIfBlock> other();
 
   @Nullable
-  abstract SdkNode elseNode();
+  abstract SdkNode<?> elseNode();
 
   static Builder builder() {
     return new AutoValue_SdkIfElseBlock.Builder();
@@ -40,7 +40,7 @@ abstract class SdkIfElseBlock {
 
     public abstract Builder other(List<SdkIfBlock> other);
 
-    public abstract Builder elseNode(SdkNode elseNode);
+    public abstract Builder elseNode(SdkNode<?> elseNode);
 
     public abstract SdkIfElseBlock build();
   }

@@ -79,7 +79,7 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
-  public SdkTransform withUpstreamNode(SdkNode node) {
+  public SdkTransform withUpstreamNode(SdkNode<?> node) {
     if (extraUpstreamNodeIds.contains(node.getNodeId())) {
       throw new IllegalArgumentException(
           String.format("Duplicate upstream node id [%s]", node.getNodeId()));
@@ -115,12 +115,13 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
-  public SdkNode apply(
+  public <T extends TypedOutput> SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
     Map<String, SdkBindingData> allInputs = new HashMap<>(fixedInputs);
 
     inputs.forEach(
@@ -154,7 +155,8 @@ class SdkPartialTransform extends SdkTransform {
         nodeId,
         unmodifiableList(allUpstreamNodeIds),
         mergedMetadata,
-        unmodifiableMap(allInputs));
+        unmodifiableMap(allInputs),
+        typedOutputClass);
   }
 
   private static void checkForDuplicateMetadata(

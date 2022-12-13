@@ -36,7 +36,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 
-public class SdkBranchNode extends SdkNode {
+public class SdkBranchNode<T extends TypedOutput> extends SdkNode<T> {
   private final String nodeId;
   private final SdkIfElseBlock ifElse;
   private final Map<String, LiteralType> outputTypes;
@@ -47,8 +47,9 @@ public class SdkBranchNode extends SdkNode {
       String nodeId,
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
-      Map<String, LiteralType> outputTypes) {
-    super(builder);
+      Map<String, LiteralType> outputTypes,
+      Class<T> typedOutputClass) {
+    super(builder, typedOutputClass);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
@@ -91,23 +92,26 @@ public class SdkBranchNode extends SdkNode {
         .build();
   }
 
-  static class Builder {
+  static class Builder<T extends TypedOutput> {
     private final SdkWorkflowBuilder builder;
+
+    private Class<T> typedOutputClass;
 
     private final Map<String, Map<String, SdkBindingData>> caseOutputs = new LinkedHashMap<>();
     private final List<SdkIfBlock> ifBlocks = new ArrayList<>();
 
-    private SdkNode elseNode;
+    private SdkNode<T> elseNode;
     private Map<String, LiteralType> outputTypes;
 
-    Builder(SdkWorkflowBuilder builder) {
+    Builder(SdkWorkflowBuilder builder, Class<T> typedOutputClass) {
       this.builder = builder;
+      this.typedOutputClass = typedOutputClass;
     }
 
     @CanIgnoreReturnValue
-    Builder addCase(SdkConditionCase case_) {
-      SdkNode sdkNode =
-          case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
+    Builder<T> addCase(SdkConditionCase case_) {
+      SdkNode<T> sdkNode =
+          case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap(), typedOutputClass);
       Map<String, SdkBindingData> thatOutputs = sdkNode.getOutputs();
       Map<String, LiteralType> thatOutputTypes =
           thatOutputs.entrySet().stream()
@@ -136,7 +140,7 @@ public class SdkBranchNode extends SdkNode {
     }
 
     @CanIgnoreReturnValue
-    Builder addOtherwise(String name, SdkTransform otherwise) {
+    Builder<T> addOtherwise(String name, SdkTransform otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }
@@ -145,13 +149,13 @@ public class SdkBranchNode extends SdkNode {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", name));
       }
 
-      elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap());
+      elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap(), typedOutputClass);
       caseOutputs.put(name, elseNode.getOutputs());
 
       return this;
     }
 
-    SdkBranchNode build(String nodeId, List<String> upstreamNodeIds) {
+    SdkBranchNode<T> build(String nodeId, List<String> upstreamNodeIds) {
       if (ifBlocks.isEmpty()) {
         throw new IllegalArgumentException("addCase should be called at least once");
       }
@@ -163,7 +167,7 @@ public class SdkBranchNode extends SdkNode {
               .elseNode(elseNode)
               .build();
 
-      return new SdkBranchNode(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
+      return new SdkBranchNode<>(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, typedOutputClass);
     }
   }
 }

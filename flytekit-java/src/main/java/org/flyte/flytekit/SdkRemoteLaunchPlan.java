@@ -59,12 +59,13 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
   }
 
   @Override
-  public SdkNode apply(
+  public <T extends TypedOutput> SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
     PartialLaunchPlanIdentifier workflowId =
         PartialLaunchPlanIdentifier.builder()
             .name(name())
@@ -87,7 +88,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
                         SdkBindingData.ofOutputReference(
                             nodeId, entry.getKey(), entry.getValue().literalType())));
 
-    return new SdkWorkflowNode(
+    return new SdkWorkflowNode<>(
         builder,
         nodeId,
         upstreamNodeIds,
@@ -96,7 +97,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
         inputs,
-        outputs);
+        outputs,
+        typedOutputClass);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

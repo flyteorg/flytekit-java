@@ -27,8 +27,8 @@ import org.flyte.localengine.ImmutableMap;
 public class MapWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkNode sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
-    SdkNode sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
+    SdkNode<?> sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
+    SdkNode<?> sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
 
     SdkBindingData map =
         SdkBindingData.ofBindingMap(
@@ -36,7 +36,7 @@ public class MapWorkflow extends SdkWorkflow {
                 "e", sum1.getOutput("c"),
                 "f", sum2.getOutput("c")));
 
-    SdkNode map1 = builder.apply("map-1", new MapTask().withInput("map", map));
+    SdkNode<?> map1 = builder.apply("map-1", new MapTask().withInput("map", map));
 
     builder.output("map", map1.getOutput("map"));
   }

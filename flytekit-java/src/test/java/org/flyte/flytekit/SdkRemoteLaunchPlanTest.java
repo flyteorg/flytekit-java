@@ -45,13 +45,14 @@ public class SdkRemoteLaunchPlanTest {
     SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 
-    SdkNode node =
+    SdkNode<?> node =
         remoteLaunchPlan.apply(
             mock(SdkWorkflowBuilder.class),
             "some-node-id",
             singletonList("upstream-1"),
             /*metadata=*/ null,
-            inputs);
+            inputs,
+            /*typedOutputClass=*/ null);
 
     assertAll(
         () -> assertThat(node.getNodeId(), is("some-node-id")),

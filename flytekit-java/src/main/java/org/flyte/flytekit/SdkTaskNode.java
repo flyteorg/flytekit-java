@@ -19,8 +19,10 @@ package org.flyte.flytekit;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
@@ -29,7 +31,7 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 
 /** Represent a {@link org.flyte.flytekit.SdkRunnableTask} in a workflow DAG. */
-public class SdkTaskNode extends SdkNode {
+public class SdkTaskNode<T extends TypedOutput> extends SdkNode<T> {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
   private final List<String> upstreamNodeIds;
@@ -44,8 +46,9 @@ public class SdkTaskNode extends SdkNode {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs,
-      Map<String, Variable> outputs) {
-    super(builder);
+      Map<String, Variable> outputs,
+      Class<T> typedOutputClass) {
+    super(builder, typedOutputClass);
 
     this.nodeId = nodeId;
     this.taskId = taskId;

@@ -61,12 +61,13 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
   }
 
   @Override
-  public SdkNode apply(
+  public <T extends TypedOutput> SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
     PartialTaskIdentifier taskId =
         PartialTaskIdentifier.builder()
             .name(name())
@@ -80,8 +81,8 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform {
       throw new CompilerException(errors);
     }
 
-    return new SdkTaskNode(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputs().getVariableMap());
+    return new SdkTaskNode<>(
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputs().getVariableMap(), typedOutputClass);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

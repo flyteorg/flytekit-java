@@ -28,12 +28,13 @@ import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
 public abstract class SdkTransform {
-  public abstract SdkNode apply(
+  public abstract <TypedOutputT extends TypedOutput> SdkNode<TypedOutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs);
+      Map<String, SdkBindingData> inputs,
+      Class<TypedOutputT> typedOutputClass);
 
   public SdkTransform withInput(String name, String value) {
     return withInput(name, SdkBindingData.ofString(value));
@@ -67,7 +68,7 @@ public abstract class SdkTransform {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }
 
-  public SdkTransform withUpstreamNode(SdkNode node) {
+  public SdkTransform withUpstreamNode(SdkNode<?> node) {
     return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
   }
 

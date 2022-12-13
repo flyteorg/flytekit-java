@@ -48,12 +48,13 @@ public class SdkCondition extends SdkTransform {
   }
 
   @Override
-  public SdkBranchNode apply(
+  public <T extends TypedOutput> SdkBranchNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData> inputs,
+      Class<T> typedOutputClass) {
     if (metadata != null) {
       throw new IllegalArgumentException("invariant failed: metadata must be null");
     }
@@ -61,7 +62,7 @@ public class SdkCondition extends SdkTransform {
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }
 
-    SdkBranchNode.Builder nodeBuilder = new SdkBranchNode.Builder(builder);
+    SdkBranchNode.Builder<T> nodeBuilder = new SdkBranchNode.Builder<>(builder, typedOutputClass);
 
     for (SdkConditionCase case_ : cases) {
       nodeBuilder.addCase(case_);

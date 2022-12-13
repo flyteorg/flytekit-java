@@ -54,7 +54,7 @@ class WelcomeWorkflow extends SdkWorkflow {
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     val greetingWithQuestion = builder
-      .apply("add-question",  new AddQuestionTask().withInput("greeting", greeting))
+      .apply("add-question", new AddQuestionTask().withInput("greeting", greeting))
       .getOutput("greeting")
 
     // uses the task output of the AddQuestionTask as the output of the workflow

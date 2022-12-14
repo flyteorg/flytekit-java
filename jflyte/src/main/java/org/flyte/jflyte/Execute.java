@@ -22,6 +22,8 @@ import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import org.flyte.api.v1.ContainerError;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
@@ -38,6 +40,10 @@ import picocli.CommandLine.Option;
 @Command(name = "execute")
 public class Execute implements Callable<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(Execute.class);
+
+  // A container task usually has limited CPU resource allocated, so using CPU core to derive
+  // parallelism does not make much sense
+  private static final int LOAD_PARALLELISM = 32;
 
   @Option(
       names = {"--task"},
@@ -79,7 +85,14 @@ public class Execute implements Callable<Integer> {
       ProtoReader protoReader = new ProtoReader(inputFs);
 
       TaskTemplate taskTemplate = protoReader.getTaskTemplate(taskTemplatePath);
-      ClassLoader packageClassLoader = PackageLoader.load(fileSystems, taskTemplate);
+
+      ExecutorService executorService = new ForkJoinPool(LOAD_PARALLELISM);
+      ClassLoader packageClassLoader;
+      try {
+        packageClassLoader = PackageLoader.load(fileSystems, taskTemplate, executorService);
+      } finally {
+        executorService.shutdownNow();
+      }
 
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,

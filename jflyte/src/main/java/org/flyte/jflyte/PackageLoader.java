@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.TaskTemplate;
@@ -39,20 +38,13 @@ import org.slf4j.LoggerFactory;
 class PackageLoader {
   private static final Logger LOG = LoggerFactory.getLogger(PackageLoader.class);
 
-  // A container task usually has limited CPU resource allocated, so using CPU core to derive
-  // parallelism does not make much sense
-  private static final int LOAD_PARALLELISM = 32;
-
-  static ClassLoader load(Map<String, FileSystem> fileSystems, TaskTemplate taskTemplate) {
+  static ClassLoader load(
+      Map<String, FileSystem> fileSystems,
+      TaskTemplate taskTemplate,
+      ExecutorService executorService) {
     JFlyteCustom custom = JFlyteCustom.deserializeFromStruct(taskTemplate.custom());
 
-    ExecutorService executorService = new ForkJoinPool(LOAD_PARALLELISM);
-
-    try {
-      return loadPackage(fileSystems, custom.artifacts(), executorService);
-    } finally {
-      executorService.shutdownNow();
-    }
+    return loadPackage(fileSystems, custom.artifacts(), executorService);
   }
 
   private static ClassLoader loadPackage(

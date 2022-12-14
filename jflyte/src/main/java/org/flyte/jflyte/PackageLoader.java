@@ -22,12 +22,14 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
@@ -56,6 +58,7 @@ class PackageLoader {
     try {
       List<CompletionStage<Void>> stages =
           artifacts.stream()
+              .filter(distinct())
               .map(artifact -> handleArtifact(fileSystems, artifact, tmp, executorService))
               .collect(Collectors.toList());
       CompletableFutures.getAll(stages);
@@ -74,6 +77,11 @@ class PackageLoader {
     }
   }
 
+  private static Predicate<Artifact> distinct() {
+    Map<String, Boolean> seen = new HashMap<>();
+    return artifact -> seen.putIfAbsent(artifact.name(), Boolean.TRUE) == null;
+  }
+
   private static CompletableFuture<Void> handleArtifact(
       Map<String, FileSystem> fileSystems,
       Artifact artifact,
@@ -86,13 +94,6 @@ class PackageLoader {
   private static void handleArtifact(
       Map<String, FileSystem> fileSystems, Artifact artifact, Path tmp) {
     Path path = tmp.resolve(artifact.name());
-
-    if (path.toFile().exists()) {
-      // file already exists, but we have checksums, so we should be ok
-      LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
-      return;
-    }
-
     FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
     try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {

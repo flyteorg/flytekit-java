@@ -37,6 +37,10 @@ import org.slf4j.LoggerFactory;
 class PackageLoader {
   private static final Logger LOG = LoggerFactory.getLogger(PackageLoader.class);
 
+  // A container task usually has limited CPU resource allocated, so using CPU core to derive
+  // parallelism does not make much sense
+  private static final int LOAD_PARALLELISM = 32;
+
   static ClassLoader load(Map<String, FileSystem> fileSystems, TaskTemplate taskTemplate) {
     JFlyteCustom custom = JFlyteCustom.deserializeFromStruct(taskTemplate.custom());
 
@@ -47,7 +51,7 @@ class PackageLoader {
       Map<String, FileSystem> fileSystems, List<Artifact> artifacts) {
     Path tmp = createTempDirectory();
 
-    ExecutorService executorService = new ForkJoinPool(16);
+    ExecutorService executorService = new ForkJoinPool(LOAD_PARALLELISM);
 
     try {
       List<CompletionStage<Void>> stages =
@@ -81,17 +85,17 @@ class PackageLoader {
 
   private static void handleArtifact(
       Map<String, FileSystem> fileSystems, Artifact artifact, Path tmp) {
+    Path path = tmp.resolve(artifact.name());
+
+    if (path.toFile().exists()) {
+      // file already exists, but we have checksums, so we should be ok
+      LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
+      return;
+    }
+
     FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
     try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
-      Path path = tmp.resolve(artifact.name());
-
-      if (path.toFile().exists()) {
-        // file already exists, but we have checksums, so we should be ok
-        LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
-        return;
-      }
-
       LOG.info("Copied {} to {}", artifact.location(), path);
 
       Files.copy(Channels.newInputStream(reader), path);

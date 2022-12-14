@@ -46,25 +46,27 @@ class PackageLoader {
   static ClassLoader load(Map<String, FileSystem> fileSystems, TaskTemplate taskTemplate) {
     JFlyteCustom custom = JFlyteCustom.deserializeFromStruct(taskTemplate.custom());
 
-    return loadPackage(fileSystems, custom.artifacts());
-  }
-
-  private static ClassLoader loadPackage(
-      Map<String, FileSystem> fileSystems, List<Artifact> artifacts) {
-    Path tmp = createTempDirectory();
-
     ExecutorService executorService = new ForkJoinPool(LOAD_PARALLELISM);
 
     try {
-      List<CompletionStage<Void>> stages =
-          artifacts.stream()
-              .filter(distinct())
-              .map(artifact -> handleArtifact(fileSystems, artifact, tmp, executorService))
-              .collect(Collectors.toList());
-      CompletableFutures.getAll(stages);
+      return loadPackage(fileSystems, custom.artifacts(), executorService);
     } finally {
       executorService.shutdownNow();
     }
+  }
+
+  private static ClassLoader loadPackage(
+      Map<String, FileSystem> fileSystems,
+      List<Artifact> artifacts,
+      ExecutorService executorService) {
+    Path tmp = createTempDirectory();
+
+    List<CompletionStage<Void>> stages =
+        artifacts.stream()
+            .filter(distinct())
+            .map(artifact -> handleArtifact(fileSystems, artifact, tmp, executorService))
+            .collect(Collectors.toList());
+    CompletableFutures.getAll(stages);
 
     return ClassLoaders.forDirectory(tmp.toFile());
   }

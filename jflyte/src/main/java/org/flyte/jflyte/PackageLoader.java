@@ -24,6 +24,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
 import org.slf4j.Logger;
@@ -40,30 +45,56 @@ class PackageLoader {
 
   private static ClassLoader loadPackage(
       Map<String, FileSystem> fileSystems, List<Artifact> artifacts) {
+    Path tmp = createTempDirectory();
+
+    ExecutorService executorService = new ForkJoinPool(16);
+
     try {
-      Path tmp = Files.createTempDirectory("tasks");
+      List<CompletionStage<Void>> stages =
+          artifacts.stream()
+              .map(artifact -> handleArtifact(fileSystems, artifact, tmp, executorService))
+              .collect(Collectors.toList());
+      CompletableFutures.getAll(stages);
+    } finally {
+      executorService.shutdownNow();
+    }
 
-      // TODO do in parallel
+    return ClassLoaders.forDirectory(tmp.toFile());
+  }
 
-      for (Artifact artifact : artifacts) {
-        FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
+  private static Path createTempDirectory() {
+    try {
+      return Files.createTempDirectory("tasks");
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
 
-        try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
-          Path path = tmp.resolve(artifact.name());
+  private static CompletableFuture<Void> handleArtifact(
+      Map<String, FileSystem> fileSystems,
+      Artifact artifact,
+      Path tmp,
+      ExecutorService executorService) {
+    return CompletableFuture.runAsync(
+        () -> handleArtifact(fileSystems, artifact, tmp), executorService);
+  }
 
-          if (path.toFile().exists()) {
-            // file already exists, but we have checksums, so we should be ok
-            LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
-            continue;
-          }
+  private static void handleArtifact(
+      Map<String, FileSystem> fileSystems, Artifact artifact, Path tmp) {
+    FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
-          LOG.info("Copied {} to {}", artifact.location(), path);
+    try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
+      Path path = tmp.resolve(artifact.name());
 
-          Files.copy(Channels.newInputStream(reader), path);
-        }
+      if (path.toFile().exists()) {
+        // file already exists, but we have checksums, so we should be ok
+        LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
+        return;
       }
 
-      return ClassLoaders.forDirectory(tmp.toFile());
+      LOG.info("Copied {} to {}", artifact.location(), path);
+
+      Files.copy(Channels.newInputStream(reader), path);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

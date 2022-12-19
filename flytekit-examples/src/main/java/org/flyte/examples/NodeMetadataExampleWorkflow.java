@@ -18,12 +18,13 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import java.time.Duration;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow {
+public class NodeMetadataExampleWorkflow extends SdkWorkflow<NopNamedOutput> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {

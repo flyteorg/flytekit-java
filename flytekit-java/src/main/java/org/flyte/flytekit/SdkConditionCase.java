@@ -19,14 +19,15 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-abstract class SdkConditionCase {
+abstract class SdkConditionCase<NamedOutputT extends NamedOutput> {
   abstract String name();
 
   abstract SdkBooleanExpression condition();
 
-  abstract SdkTransform then();
+  abstract SdkTransform<NamedOutputT> then();
 
-  static SdkConditionCase create(String name, SdkBooleanExpression condition, SdkTransform then) {
+  static <NamedOutputT extends NamedOutput> SdkConditionCase<NamedOutputT> create(
+      String name, SdkBooleanExpression condition, SdkTransform<NamedOutputT> then) {
     return new AutoValue_SdkConditionCase(name, condition, then);
   }
 }

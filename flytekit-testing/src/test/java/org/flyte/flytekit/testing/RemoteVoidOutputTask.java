@@ -17,13 +17,14 @@
 package org.flyte.flytekit.testing;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 public class RemoteVoidOutputTask {
 
-  public static SdkRemoteTask<Input, Void> create() {
+  public static SdkRemoteTask<Input, Void, NopNamedOutput> create() {
     return SdkRemoteTask.create(
         /* domain= */ null,
         /* project= */ "project",

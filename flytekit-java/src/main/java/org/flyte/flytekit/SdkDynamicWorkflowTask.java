@@ -21,7 +21,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
-public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransform {
+public abstract class SdkDynamicWorkflowTask<InputT, OutputT, NamedOutputT extends NamedOutput>
+    extends SdkTransform<NamedOutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
@@ -49,13 +50,12 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
   }
 
   @Override
-  public <T extends TypedOutput> SdkNode<T> apply(
+  public SdkNode<NamedOutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
-      Class<T> typedOutputClass) {
+      Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
     List<CompilerError> errors =
         Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
@@ -72,7 +72,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
         metadata,
         inputs,
         outputType.getVariableMap(),
-        typedOutputClass);
+        getNamedOutputClass());
   }
 
   public abstract void run(SdkWorkflowBuilder builder, InputT input);

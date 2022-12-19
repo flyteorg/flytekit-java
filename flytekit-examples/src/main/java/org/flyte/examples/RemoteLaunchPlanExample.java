@@ -17,6 +17,7 @@
 package org.flyte.examples;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
@@ -29,7 +30,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 // launchplan to be registered already.
 // The order that we register objects in jflyte is: task, workflows and launchplans
 // @AutoService(SdkWorkflow.class)
-public class RemoteLaunchPlanExample extends SdkWorkflow {
+public class RemoteLaunchPlanExample extends SdkWorkflow<NopNamedOutput> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
@@ -38,7 +39,7 @@ public class RemoteLaunchPlanExample extends SdkWorkflow {
     builder.apply("remote-launch-plan", create().withInput("fib0", fib0).withInput("fib1", fib1));
   }
 
-  public static SdkRemoteLaunchPlan<Input, Void> create() {
+  public static SdkRemoteLaunchPlan<Input, Void, NopNamedOutput> create() {
     return SdkRemoteLaunchPlan.create(
         /* domain= */ "development",
         /* project= */ "flytesnacks",

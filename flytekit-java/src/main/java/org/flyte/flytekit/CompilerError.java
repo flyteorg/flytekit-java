@@ -42,8 +42,11 @@ public abstract class CompilerError implements Serializable {
     /** An Id existed twice. */
     DUPLICATE_NODE_ID,
 
-    /** An Id existed twice. */
-    USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
+    /** Try to use a typed output without specific a typed output class. */
+    USED_NAMED_OUTPUT_WITHOUT_SPECIFIC_CLASS,
+
+    /** Some error occurs during the typed output reflection. */
+    TYPED_OUTPUT_CLASS_REFLECTION_ERROR,
   }
 
   /**

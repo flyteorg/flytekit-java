@@ -22,6 +22,7 @@ import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
@@ -30,7 +31,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 // if x is even, then x/2 else 3x+1
 @AutoService(SdkWorkflow.class)
-public class CollatzConjectureStepWorkflow extends SdkWorkflow {
+public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopNamedOutput> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
@@ -53,7 +54,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   }
 
   @AutoService(SdkRunnableTask.class)
-  public static class IsEvenTask extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output> {
+  public static class IsEvenTask
+      extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output, NopNamedOutput> {
     private static final long serialVersionUID = -1606085903949620311L;
 
     public IsEvenTask() {
@@ -87,7 +89,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   }
 
   @AutoService(SdkRunnableTask.class)
-  public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output> {
+  public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output, NopNamedOutput> {
     private static final long serialVersionUID = -526903889896397227L;
 
     public Divide() {
@@ -124,7 +126,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow {
   // 3x+1
   @AutoService(SdkRunnableTask.class)
   public static class ThreeXPlusOne
-      extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output> {
+      extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output, NopNamedOutput> {
     private static final long serialVersionUID = 932934331328064751L;
 
     public ThreeXPlusOne() {

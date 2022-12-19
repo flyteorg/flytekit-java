@@ -18,10 +18,14 @@ package org.flyte.flytekit;
 
 import java.util.Map;
 
-public class TypedOutput {
-  protected Map<String, SdkBindingData> outputs;
+public class NamedOutput {
+  private final Map<String, SdkBindingData> outputs;
 
-  public TypedOutput(Map<String, SdkBindingData> outputs) {
+  public NamedOutput(Map<String, SdkBindingData> outputs) {
     this.outputs = outputs;
+  }
+
+  protected Map<String, SdkBindingData> getOutputs() {
+    return outputs;
   }
 }

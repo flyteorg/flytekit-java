@@ -18,11 +18,12 @@ package org.flyte.flytekit.testing;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
+public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopNamedOutput> {
   private static final long serialVersionUID = 0L;
 
   public SumTask() {

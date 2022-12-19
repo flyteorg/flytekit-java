@@ -25,7 +25,7 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowNode;
 
-public class SdkWorkflowNode<T extends TypedOutput> extends SdkNode<T> {
+public class SdkWorkflowNode<T extends NamedOutput> extends SdkNode<T> {
   private final String nodeId;
   private final List<String> upstreamNodeIds;
   private final SdkNodeMetadata metadata;
@@ -41,8 +41,8 @@ public class SdkWorkflowNode<T extends TypedOutput> extends SdkNode<T> {
       WorkflowNode workflowNode,
       Map<String, SdkBindingData> inputs,
       Map<String, SdkBindingData> outputs,
-      Class<T> typedOutputClass) {
-    super(builder, typedOutputClass);
+      Class<T> namedOutputClass) {
+    super(builder, namedOutputClass);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;

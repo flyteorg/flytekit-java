@@ -42,8 +42,8 @@ public class SdkRemoteLaunchPlanTest {
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
     inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> remoteLaunchPlan =
-        new TestSdkRemoteLaunchPlan();
+    SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopNamedOutput>
+        remoteLaunchPlan = new TestSdkRemoteLaunchPlan();
 
     SdkNode<?> node =
         remoteLaunchPlan.apply(
@@ -51,8 +51,7 @@ public class SdkRemoteLaunchPlanTest {
             "some-node-id",
             singletonList("upstream-1"),
             /*metadata=*/ null,
-            inputs,
-            /*typedOutputClass=*/ null);
+            inputs);
 
     assertAll(
         () -> assertThat(node.getNodeId(), is("some-node-id")),
@@ -101,7 +100,7 @@ public class SdkRemoteLaunchPlanTest {
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteLaunchPlan
-      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> {
 
     @Override
     public String domain() {

@@ -16,7 +16,12 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
+import org.flyte.flytekit.{
+  NopNamedOutput,
+  SdkBindingData,
+  SdkRunnableTask,
+  SdkTransform
+}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class AddQuestionTaskInput(greeting: String)
@@ -26,7 +31,11 @@ case class AddQuestionTaskOutput(greeting: String)
   * you?", and outputs the result.
   */
 class AddQuestionTask
-    extends SdkRunnableTask(
+    extends SdkRunnableTask[
+      AddQuestionTaskInput,
+      AddQuestionTaskOutput,
+      NopNamedOutput
+    ](
       SdkScalaType[AddQuestionTaskInput],
       SdkScalaType[AddQuestionTaskOutput]
     ) {
@@ -52,6 +61,6 @@ object AddQuestionTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(greeting: SdkBindingData): SdkTransform =
+  def apply(greeting: SdkBindingData): SdkTransform[NopNamedOutput] =
     new AddQuestionTask().withInput("greeting", greeting)
 }

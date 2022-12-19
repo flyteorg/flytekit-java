@@ -124,7 +124,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteLaunchPlan
-      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> {
 
     @Override
     public String domain() {

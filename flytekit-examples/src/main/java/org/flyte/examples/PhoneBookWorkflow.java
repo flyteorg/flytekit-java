@@ -21,12 +21,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class PhoneBookWorkflow extends SdkWorkflow {
+public class PhoneBookWorkflow extends SdkWorkflow<NopNamedOutput> {
 
   private static final List<String> NAMES = Arrays.asList("frodo", "bilbo");
   private static final Map<String, String> PHONE_BOOK = new HashMap<>();

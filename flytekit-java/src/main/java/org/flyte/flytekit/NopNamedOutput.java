@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Flyte Authors.
+ * Copyright 2021 Flyte Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.examples.flytekitscala
+package org.flyte.flytekit;
 
-import org.flyte.flytekit.{NopNamedOutput, SdkWorkflow, SdkWorkflowBuilder}
+import java.util.Map;
 
-class DynamicFibonacciWorkflow extends SdkWorkflow[NopNamedOutput] {
+public class NopNamedOutput extends NamedOutput {
 
-  override def expand(builder: SdkWorkflowBuilder): Unit = {
-    val n = builder.inputOfInteger("n")
-    val fibonacci = builder.apply(
-      "fibonacci",
-      new DynamicFibonacciWorkflowTask().withInput("n", n)
-    )
-    builder.output("output", fibonacci.getOutput("output"))
+  public NopNamedOutput(Map<String, SdkBindingData> outputs) {
+    super(outputs);
   }
-
 }

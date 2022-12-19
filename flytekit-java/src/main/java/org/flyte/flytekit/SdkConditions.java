@@ -24,10 +24,11 @@ import org.flyte.api.v1.ComparisonExpression;
 public class SdkConditions {
   private SdkConditions() {}
 
-  public static SdkCondition when(String name, SdkBooleanExpression condition, SdkTransform then) {
-    SdkConditionCase case_ = SdkConditionCase.create(name, condition, then);
+  public static <NamedOutputT extends NamedOutput> SdkCondition<NamedOutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<NamedOutputT> then) {
+    SdkConditionCase<NamedOutputT> case_ = SdkConditionCase.create(name, condition, then);
 
-    return new SdkCondition(singletonList(case_), null, null);
+    return new SdkCondition<>(singletonList(case_), null, null);
   }
 
   public static SdkBooleanExpression eq(SdkBindingData left, SdkBindingData right) {

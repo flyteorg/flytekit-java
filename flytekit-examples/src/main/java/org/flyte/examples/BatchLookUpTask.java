@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -30,8 +31,13 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
  */
 @AutoService(SdkRunnableTask.class)
 public class BatchLookUpTask
-    extends SdkRunnableTask<BatchLookUpTask.Input, BatchLookUpTask.Output> {
+    extends SdkRunnableTask<BatchLookUpTask.Input, BatchLookUpTask.Output, NopNamedOutput> {
   private static final long serialVersionUID = -5702649537830812613L;
+
+  @Override
+  public Class<NopNamedOutput> getNamedOutputClass() {
+    return NopNamedOutput.class;
+  }
 
   public BatchLookUpTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));

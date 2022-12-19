@@ -49,36 +49,36 @@ public class SdkWorkflowBuilder {
     this.outputDescriptions = new HashMap<>();
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(String nodeId, SdkTransform transform) {
+  public <T extends NamedOutput> SdkNode<T> apply(String nodeId, SdkTransform<T> transform) {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(
-      String nodeId, SdkTransform transform, Class<T> typedOutputClass) {
-    return apply(nodeId, transform, emptyMap(), typedOutputClass);
+  public <T extends NamedOutput> SdkNode<T> apply(
+      String nodeId, SdkTransform<T> transform, Class<T> namedOutputClass) {
+    return apply(nodeId, transform, emptyMap(), namedOutputClass);
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(
+  public <T extends NamedOutput> SdkNode<T> apply(
       String nodeId,
-      SdkTransform transform,
+      SdkTransform<T> transform,
       Map<String, SdkBindingData> inputs,
-      Class<T> typedOutputClass) {
+      Class<T> namedOutputClass) {
     return applyInternal(
-        nodeId, transform, emptyList(), /*metadata=*/ null, inputs, typedOutputClass);
+        nodeId, transform, emptyList(), /*metadata=*/ null, inputs, namedOutputClass);
   }
 
-  public <T extends TypedOutput> SdkNode<T> apply(
-      String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
+  public <T extends NamedOutput> SdkNode<T> apply(
+      String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData> inputs) {
     return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, null);
   }
 
-  protected <T extends TypedOutput> SdkNode<T> applyInternal(
+  protected <T extends NamedOutput> SdkNode<T> applyInternal(
       String nodeId,
-      SdkTransform transform,
+      SdkTransform<T> transform,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs,
-      Class<T> typedOutputClass) {
+      Class<T> namedOutputClass) {
 
     if (nodes.containsKey(nodeId)) {
       CompilerError error =
@@ -90,8 +90,7 @@ public class SdkWorkflowBuilder {
       throw new CompilerException(error);
     }
 
-    SdkNode<T> sdkNode =
-        transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs, typedOutputClass);
+    SdkNode<T> sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;

@@ -27,59 +27,62 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
-public abstract class SdkTransform {
-  public abstract <TypedOutputT extends TypedOutput> SdkNode<TypedOutputT> apply(
+public abstract class SdkTransform<T extends NamedOutput> {
+  public abstract SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
-      Class<TypedOutputT> typedOutputClass);
+      Map<String, SdkBindingData> inputs);
 
-  public SdkTransform withInput(String name, String value) {
+  public Class<T> getNamedOutputClass() {
+    return (Class<T>) NopNamedOutput.class;
+  }
+
+  public SdkTransform<T> withInput(String name, String value) {
     return withInput(name, SdkBindingData.ofString(value));
   }
 
-  public SdkTransform withInput(String name, long value) {
+  public SdkTransform<T> withInput(String name, long value) {
     return withInput(name, SdkBindingData.ofInteger(value));
   }
 
-  public SdkTransform withInput(String name, Instant value) {
+  public SdkTransform<T> withInput(String name, Instant value) {
     return withInput(name, SdkBindingData.ofDatetime(value));
   }
 
-  public SdkTransform withInput(String name, Duration value) {
+  public SdkTransform<T> withInput(String name, Duration value) {
     return withInput(name, SdkBindingData.ofDuration(value));
   }
 
-  public SdkTransform withInput(String name, boolean value) {
+  public SdkTransform<T> withInput(String name, boolean value) {
     return withInput(name, SdkBindingData.ofBoolean(value));
   }
 
-  public SdkTransform withInput(String name, double value) {
+  public SdkTransform<T> withInput(String name, double value) {
     return withInput(name, SdkBindingData.ofFloat(value));
   }
 
-  public SdkTransform withInput(String name, SdkStruct value) {
+  public SdkTransform<T> withInput(String name, SdkStruct value) {
     return withInput(name, SdkBindingData.ofStruct(value));
   }
 
-  public SdkTransform withInput(String name, SdkBindingData value) {
+  public SdkTransform<T> withInput(String name, SdkBindingData value) {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }
 
-  public SdkTransform withUpstreamNode(SdkNode<?> node) {
+  public <K extends NamedOutput> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
     return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
   }
 
-  public SdkTransform withNameOverride(String name) {
+  public SdkTransform<T> withNameOverride(String name) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().name(name).build();
     return SdkPartialTransform.of(this, metadata);
   }
 
-  public SdkTransform withTimeoutOverride(Duration timeout) {
+  public SdkTransform<T> withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();

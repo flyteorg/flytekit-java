@@ -17,6 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
+  NopNamedOutput,
   SdkBindingData,
   SdkDynamicWorkflowTask,
   SdkWorkflowBuilder
@@ -29,7 +30,11 @@ case class DynamicFibonacciWorkflowTaskInput(n: Long)
 case class DynamicFibonacciWorkflowTaskOutput(output: Long)
 
 class DynamicFibonacciWorkflowTask
-    extends SdkDynamicWorkflowTask(
+    extends SdkDynamicWorkflowTask[
+      DynamicFibonacciWorkflowTaskInput,
+      DynamicFibonacciWorkflowTaskOutput,
+      NopNamedOutput
+    ](
       SdkScalaType[DynamicFibonacciWorkflowTaskInput],
       SdkScalaType[DynamicFibonacciWorkflowTaskOutput]
     ) {

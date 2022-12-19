@@ -23,8 +23,8 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Building block for tasks that execute Java code. */
-public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
-    implements Serializable {
+public abstract class SdkRunnableTask<InputT, OutputT, NamedOutputT extends NamedOutput>
+    extends SdkTransform<NamedOutputT> implements Serializable {
 
   private static final long serialVersionUID = 42L;
 
@@ -102,13 +102,12 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
   }
 
   @Override
-  public <TypedOutputT extends TypedOutput> SdkNode<TypedOutputT> apply(
+  public SdkNode<NamedOutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
-      Class<TypedOutputT> typedOutputClass) {
+      Map<String, SdkBindingData> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
     List<CompilerError> errors =
         Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
@@ -125,7 +124,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform
         metadata,
         inputs,
         outputType.getVariableMap(),
-        typedOutputClass);
+        getNamedOutputClass());
   }
 
   public abstract OutputT run(InputT input);

@@ -26,8 +26,8 @@ import java.util.ServiceLoader;
 @AutoService(SdkWorkflowRegistry.class)
 public class DefaultSdkWorkflowRegistry extends SdkWorkflowRegistry {
   @Override
-  public List<SdkWorkflow> getWorkflows() {
-    List<SdkWorkflow> workflows = new ArrayList<>();
+  public List<SdkWorkflow<? extends NamedOutput>> getWorkflows() {
+    List<SdkWorkflow<NamedOutput>> workflows = new ArrayList<>();
     ServiceLoader.load(SdkWorkflow.class).forEach(workflows::add);
 
     return unmodifiableList(workflows);

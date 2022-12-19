@@ -27,11 +27,11 @@ public class SdkWorkflowRegistryTest {
 
   @Test
   public void testLoadAll() {
-    SdkWorkflow workflow1 = new TestWorkflow();
-    SdkWorkflow workflow2 = new TestWorkflow();
-    SdkWorkflow workflow3 = new TestWorkflow();
+    SdkWorkflow<NopNamedOutput> workflow1 = new TestWorkflow();
+    SdkWorkflow<NopNamedOutput> workflow2 = new TestWorkflow();
+    SdkWorkflow<NopNamedOutput> workflow3 = new TestWorkflow();
 
-    List<SdkWorkflow> workflows =
+    List<SdkWorkflow<? extends NamedOutput>> workflows =
         SdkWorkflowRegistry.loadAll(
             Arrays.asList(
                 new SimpleSdkWorkflowRegistry(Arrays.asList(workflow1)),
@@ -41,19 +41,19 @@ public class SdkWorkflowRegistryTest {
   }
 
   static class SimpleSdkWorkflowRegistry extends SdkWorkflowRegistry {
-    private final List<SdkWorkflow> workflows;
+    private final List<SdkWorkflow<? extends NamedOutput>> workflows;
 
-    public SimpleSdkWorkflowRegistry(List<SdkWorkflow> workflows) {
+    public SimpleSdkWorkflowRegistry(List<SdkWorkflow<? extends NamedOutput>> workflows) {
       this.workflows = workflows;
     }
 
     @Override
-    public List<SdkWorkflow> getWorkflows() {
+    public List<SdkWorkflow<? extends NamedOutput>> getWorkflows() {
       return workflows;
     }
   }
 
-  private static class TestWorkflow extends SdkWorkflow {
+  private static class TestWorkflow extends SdkWorkflow<NopNamedOutput> {
     @Override
     public void expand(SdkWorkflowBuilder builder) {}
   }

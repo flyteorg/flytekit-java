@@ -47,6 +47,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
@@ -579,7 +580,7 @@ class LocalEngineTest {
     }
 
     @AutoService(SdkRunnableTask.class)
-    public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput> {
+    public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput, NopNamedOutput> {
       private static final long serialVersionUID = 327687642904919547L;
 
       public NoOp() {

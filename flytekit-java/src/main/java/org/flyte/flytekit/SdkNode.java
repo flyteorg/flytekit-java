@@ -17,56 +17,62 @@
 package org.flyte.flytekit;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
-public abstract class SdkNode<T extends TypedOutput> {
+public abstract class SdkNode<NamedOutputT extends NamedOutput> {
 
   protected final SdkWorkflowBuilder builder;
-  T typedOutput;
+
+  private final Class<NamedOutputT> namedOutputClass;
+
+  private NamedOutputT namedOutput;
 
   protected SdkNode(SdkWorkflowBuilder builder) {
     this(builder, null);
   }
 
-  protected SdkNode(SdkWorkflowBuilder builder, Class<? extends T> typedOutputClass) {
+  protected SdkNode(SdkWorkflowBuilder builder, Class<NamedOutputT> namedOutputClass) {
     this.builder = builder;
+    this.namedOutputClass = namedOutputClass;
+  }
 
-    if (typedOutputClass != null) {
-      try {
-        Constructor<? extends T> ctor = typedOutputClass.getConstructor(Map.class);
-        this.typedOutput = ctor.newInstance(getOutputs());
-      } catch (Exception ex) {
-        String message = String.format("error %s", getNodeId());
+  public NamedOutputT getNamedOutput() {
+    if (namedOutput == null) {
+      if (namedOutputClass == null) {
+        String message =
+            String.format(
+                "Try to use a named output without specific a typed output class from node: %s",
+                getNodeId());
         CompilerError error =
             CompilerError.create(
-                CompilerError.Kind.USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
+                CompilerError.Kind.USED_NAMED_OUTPUT_WITHOUT_SPECIFIC_CLASS,
                 /* nodeId= */ getNodeId(),
                 /* message= */ message);
 
         throw new CompilerException(error);
+      } else {
+        initializeNamedOutput();
       }
-    } else {
-      this.typedOutput = null;
     }
+
+    return namedOutput;
   }
 
-  public T getTypedOutput() {
-    if (typedOutput == null) {
-      String message = String.format("error %s", getNodeId());
-      CompilerError error =
-          CompilerError.create(
-              CompilerError.Kind.USED_TYPED_OUTPUT_WITHOUT_SUPPLIER,
-              /* nodeId= */ getNodeId(),
-              /* message= */ message);
-
-      throw new CompilerException(error);
+  private void initializeNamedOutput() {
+    try {
+      Constructor<? extends NamedOutputT> ctor = namedOutputClass.getConstructor(Map.class);
+      this.namedOutput = ctor.newInstance(getOutputs());
+    } catch (IllegalAccessException
+        | InstantiationException
+        | NoSuchMethodException
+        | InvocationTargetException ex) {
+      ex.printStackTrace();
     }
-
-    return typedOutput;
   }
 
   public abstract Map<String, SdkBindingData> getOutputs();
@@ -92,16 +98,16 @@ public abstract class SdkNode<T extends TypedOutput> {
 
   public abstract Node toIdl();
 
-  public SdkNode<T> apply(String id, SdkTransform transform) {
+  public SdkNode<NamedOutputT> apply(String id, SdkTransform<NamedOutputT> transform) {
     return apply(id, transform, null);
   }
 
-  public SdkNode<T> apply(String id, SdkTransform transform, Class<T> typedOutputClass) {
+  public SdkNode<NamedOutputT> apply(String id, SdkTransform<NamedOutputT> transform, Class<NamedOutputT> namedOutputClass) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
     return builder.applyInternal(
-        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), typedOutputClass);
+        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), namedOutputClass);
   }
 }

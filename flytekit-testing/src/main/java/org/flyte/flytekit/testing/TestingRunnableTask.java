@@ -24,13 +24,14 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TypedInterface;
+import org.flyte.flytekit.NamedOutput;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 
 /** {@link RunnableTask} that can fix output for specific input. */
-class TestingRunnableTask<InputT, OutputT>
+class TestingRunnableTask<InputT, OutputT, NamedOutputT extends NamedOutput>
     extends TestingRunnableNode<
-        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT>>
+        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT, NamedOutputT>>
     implements RunnableTask {
   private TestingRunnableTask(
       PartialTaskIdentifier taskId,
@@ -49,16 +50,18 @@ class TestingRunnableTask<InputT, OutputT>
         "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
   }
 
-  static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
-      SdkRunnableTask<InputT, OutputT> task) {
+  static <InputT, OutputT, NamedOutputT extends NamedOutput>
+      TestingRunnableTask<InputT, OutputT, NamedOutputT> create(
+          SdkRunnableTask<InputT, OutputT, NamedOutputT> task) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
         taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap());
   }
 
-  static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
-      String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+  static <InputT, OutputT, NamedOutputT extends NamedOutput>
+      TestingRunnableTask<InputT, OutputT, NamedOutputT> create(
+          String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 
     return new TestingRunnableTask<>(taskId, inputType, outputType, /* runFn= */ null, emptyMap());

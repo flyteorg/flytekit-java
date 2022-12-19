@@ -44,11 +44,11 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     LOG.setLevel(Level.ALL);
   }
 
-  private static class ContainerTaskImpl<InputT, OutputT, TypedOutputT extends TypedOutput>
+  private static class ContainerTaskImpl<InputT, OutputT, NamedOutputT extends NamedOutput>
       implements ContainerTask {
-    private final SdkContainerTask<InputT, OutputT> sdkTask;
+    private final SdkContainerTask<InputT, OutputT, NamedOutputT> sdkTask;
 
-    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT> sdkTask) {
+    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT, NamedOutputT> sdkTask) {
       this.sdkTask = sdkTask;
     }
 
@@ -134,7 +134,7 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     Map<TaskIdentifier, ContainerTask> tasks = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
 
-    for (SdkContainerTask<?, ?> sdkTask : loader) {
+    for (SdkContainerTask<?, ?, ?> sdkTask : loader) {
       String name = sdkTask.getName();
       TaskIdentifier taskId =
           TaskIdentifier.builder()

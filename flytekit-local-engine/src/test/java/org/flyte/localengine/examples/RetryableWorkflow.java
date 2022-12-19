@@ -17,11 +17,12 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
+import org.flyte.flytekit.NopNamedOutput;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class RetryableWorkflow extends SdkWorkflow {
+public class RetryableWorkflow extends SdkWorkflow<NopNamedOutput> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     builder.apply("node-1", new RetryableTask());

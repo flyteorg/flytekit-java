@@ -21,40 +21,43 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition extends SdkTransform {
-  private final List<SdkConditionCase> cases;
+public class SdkCondition<NamedOutputT extends NamedOutput> extends SdkTransform<NamedOutputT> {
+  private final List<SdkConditionCase<NamedOutputT>> cases;
   private final String otherwiseName;
-  private final SdkTransform otherwise;
+  private final SdkTransform<NamedOutputT> otherwise;
 
-  SdkCondition(List<SdkConditionCase> cases, String otherwiseName, SdkTransform otherwise) {
+  SdkCondition(
+      List<SdkConditionCase<NamedOutputT>> cases,
+      String otherwiseName,
+      SdkTransform<NamedOutputT> otherwise) {
     this.cases = cases;
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
   }
 
-  public SdkCondition when(String name, SdkBooleanExpression condition, SdkTransform then) {
-    List<SdkConditionCase> newCases = new ArrayList<>(cases);
+  public SdkCondition<NamedOutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<NamedOutputT> then) {
+    List<SdkConditionCase<NamedOutputT>> newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
-    return new SdkCondition(newCases, this.otherwiseName, this.otherwise);
+    return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition otherwise(String name, SdkTransform otherwise) {
+  public SdkCondition<NamedOutputT> otherwise(String name, SdkTransform<NamedOutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
 
-    return new SdkCondition(this.cases, name, otherwise);
+    return new SdkCondition<>(this.cases, name, otherwise);
   }
 
   @Override
-  public <T extends TypedOutput> SdkBranchNode<T> apply(
+  public SdkNode<NamedOutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
-      Class<T> typedOutputClass) {
+      Map<String, SdkBindingData> inputs) {
     if (metadata != null) {
       throw new IllegalArgumentException("invariant failed: metadata must be null");
     }
@@ -62,7 +65,7 @@ public class SdkCondition extends SdkTransform {
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }
 
-    SdkBranchNode.Builder<T> nodeBuilder = new SdkBranchNode.Builder<>(builder, typedOutputClass);
+    SdkBranchNode.Builder<NamedOutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
 
     for (SdkConditionCase case_ : cases) {
       nodeBuilder.addCase(case_);

@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -229,6 +230,10 @@ public class SdkWorkflowBuilder {
 
   private static String toNodeName(String name) {
     String lastPart = name.substring(name.lastIndexOf('.') + 1);
-    return PATTERN.matcher(lastPart).replaceAll("$1-$2").toLowerCase().replaceAll("\\$", "-");
+    return PATTERN
+        .matcher(lastPart)
+        .replaceAll("$1-$2")
+        .toLowerCase(Locale.ROOT)
+        .replaceAll("\\$", "-");
   }
 }

@@ -98,7 +98,7 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
-  public SdkTransform withNameOverride(String name, boolean failOnDuplicate) {
+  SdkTransform withNameOverride(String name, boolean failOnDuplicate) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().name(name).build();

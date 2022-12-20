@@ -58,6 +58,6 @@ public abstract class SdkNode {
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
-    return builder.applyInternal(id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs());
+    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputs());
   }
 }

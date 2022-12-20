@@ -27,17 +27,24 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
+
+  private static final Pattern PATTERN = Pattern.compile("([a-z])([A-Z]+)");
+
   private final Map<String, SdkNode> nodes;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, SdkBindingData> outputs;
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
+  private final AtomicInteger nodeIdSuffix;
 
   public SdkWorkflowBuilder() {
     // Using LinkedHashMap to preserve declaration order
@@ -47,6 +54,8 @@ public class SdkWorkflowBuilder {
 
     this.inputDescriptions = new HashMap<>();
     this.outputDescriptions = new HashMap<>();
+
+    this.nodeIdSuffix = new AtomicInteger();
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
@@ -54,27 +63,43 @@ public class SdkWorkflowBuilder {
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform, Map<String, SdkBindingData> inputs) {
-    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs);
+    return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
-  protected SdkNode applyInternal(
-      String nodeId,
+  public SdkNode apply(SdkTransform transform) {
+    return apply(/*nodeId=*/ null, transform, emptyMap());
+  }
+
+  public SdkNode apply(SdkTransform transform, Map<String, SdkBindingData> inputs) {
+    return applyInternal(/*nodeId=*/ null, transform, emptyList(), inputs);
+  }
+
+  SdkNode applyInternal(
+      @Nullable String nodeId,
       SdkTransform transform,
       List<String> upstreamNodeIds,
-      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs) {
 
-    if (nodes.containsKey(nodeId)) {
+    String actualNodeId =
+        Objects.requireNonNullElseGet(nodeId, () -> "n" + nodeIdSuffix.getAndIncrement());
+
+    if (nodes.containsKey(actualNodeId)) {
       CompilerError error =
           CompilerError.create(
               CompilerError.Kind.DUPLICATE_NODE_ID,
-              nodeId,
+              actualNodeId,
               "Trying to insert two nodes with the same id.");
 
       throw new CompilerException(error);
     }
 
-    SdkNode sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
+    String fallbackNodeName =
+        Objects.requireNonNullElseGet(nodeId, () -> toNodeName(transform.getName()));
+
+    SdkNode sdkNode =
+        transform
+            .withNameOverride(fallbackNodeName, false)
+            .apply(this, actualNodeId, upstreamNodeIds, null, inputs);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;
@@ -200,5 +225,10 @@ public class SdkWorkflowBuilder {
 
   public WorkflowTemplate toIdlTemplate() {
     return WorkflowTemplateIdl.ofBuilder(this);
+  }
+
+  private static String toNodeName(String name) {
+    String lastPart = name.substring(name.lastIndexOf('.') + 1);
+    return PATTERN.matcher(lastPart).replaceAll("$1-$2").toLowerCase().replaceAll("\\$", "-");
   }
 }

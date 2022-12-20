@@ -57,14 +57,18 @@ import org.junit.jupiter.params.provider.MethodSource;
 class SdkWorkflowBuilderTest {
 
   @Test
-  void testTimes2WorkflowIdl() {
+  void testTimes4WorkflowIdl() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    new Times2Workflow().expand(builder);
+    new Times4Workflow().expand(builder);
 
-    Node expectedNode =
+    Node node0 =
         Node.builder()
-            .id("square")
+            .id("n0")
+            .metadata(
+                NodeMetadata.builder()
+                    .name("sdk-workflow-builder-test-multiplication-task")
+                    .build())
             .taskNode(
                 TaskNode.builder()
                     .referenceId(
@@ -90,13 +94,42 @@ class SdkWorkflowBuilderTest {
                         .build()))
             .upstreamNodeIds(emptyList())
             .build();
+    Node node1 =
+        Node.builder()
+            .id("n1")
+            .metadata(
+                NodeMetadata.builder()
+                    .name("sdk-workflow-builder-test-multiplication-task")
+                    .build())
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .name("org.flyte.flytekit.SdkWorkflowBuilderTest$MultiplicationTask")
+                            .build())
+                    .build())
+            .inputs(
+                asList(
+                    Binding.builder()
+                        .var_("a")
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder().var("c").nodeId("n0").build()))
+                        .build(),
+                    Binding.builder()
+                        .var_("b")
+                        .binding(
+                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
+                        .build()))
+            .upstreamNodeIds(emptyList())
+            .build();
 
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
-            .outputs(expectedOutputs())
-            .nodes(singletonList(expectedNode))
+            .outputs(expectedOutputs("n1"))
+            .nodes(List.of(node0, node1))
             .build();
 
     assertEquals(expected, builder.toIdlTemplate());
@@ -176,7 +209,7 @@ class SdkWorkflowBuilderTest {
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
-            .outputs(expectedOutputs())
+            .outputs(expectedOutputs("square"))
             .nodes(singletonList(expectedNode))
             .build();
 
@@ -445,28 +478,32 @@ class SdkWorkflowBuilderTest {
         .build();
   }
 
-  private List<Binding> expectedOutputs() {
+  private List<Binding> expectedOutputs(String nodeId) {
     return singletonList(
         Binding.builder()
             .var_("out")
             .binding(
                 BindingData.ofOutputReference(
-                    OutputReference.builder().var("c").nodeId("square").build()))
+                    OutputReference.builder().var("c").nodeId(nodeId).build()))
             .build());
   }
 
-  private static class Times2Workflow extends SdkWorkflow {
+  private static class Times4Workflow extends SdkWorkflow {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData two = literalOfInteger(2L);
-      SdkBindingData out =
+      SdkBindingData out1 =
           builder
-              .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .getOutput("c");
+      SdkBindingData out2 =
+          builder
+              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two))
               .getOutput("c");
 
-      builder.output("out", out);
+      builder.output("out", out2);
     }
   }
 

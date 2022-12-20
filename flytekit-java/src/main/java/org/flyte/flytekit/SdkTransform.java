@@ -72,6 +72,10 @@ public abstract class SdkTransform {
   }
 
   public SdkTransform withNameOverride(String name) {
+    return withNameOverride(name, true);
+  }
+
+  public SdkTransform withNameOverride(String name, boolean failOnDuplicate) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().name(name).build();
@@ -83,5 +87,9 @@ public abstract class SdkTransform {
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();
     return SdkPartialTransform.of(this, metadata);
+  }
+
+  public String getName() {
+    return getClass().getName();
   }
 }

@@ -33,7 +33,7 @@ public class WelcomeWorkflow extends SdkWorkflow<NopNamedOutput> {
 
     // uses the workflow input as the task input of the GreetTask
     SdkBindingData greeting =
-        builder.apply("greet", GreetTask.of(name)).getNamedOutput().greeting();
+        builder.apply("greet", GreetTask.of(name)).getNamedOutput().g.greeting();
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     SdkBindingData greetingWithQuestion =

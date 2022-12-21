@@ -69,6 +69,7 @@ public class SdkWorkflowBuilder {
 
   public <T extends NamedOutput> SdkNode<T> apply(
       String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData> inputs) {
+    SdkBindingData.ofString("")
     return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, null);
   }
 

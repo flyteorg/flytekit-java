@@ -58,13 +58,13 @@ class SdkWorkflowBuilderTest {
 
   @Test
   void testTimes4WorkflowIdl() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder("");
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder("foo-");
 
     new Times4Workflow().expand(builder);
 
     Node node0 =
         Node.builder()
-            .id("n0")
+            .id("foo-n0")
             .metadata(
                 NodeMetadata.builder()
                     .name("sdk-workflow-builder-test-multiplication-task")
@@ -96,7 +96,7 @@ class SdkWorkflowBuilderTest {
             .build();
     Node node1 =
         Node.builder()
-            .id("n1")
+            .id("foo-n1")
             .metadata(
                 NodeMetadata.builder()
                     .name("sdk-workflow-builder-test-multiplication-task")
@@ -114,7 +114,7 @@ class SdkWorkflowBuilderTest {
                         .var_("a")
                         .binding(
                             BindingData.ofOutputReference(
-                                OutputReference.builder().var("c").nodeId("n0").build()))
+                                OutputReference.builder().var("c").nodeId("foo-n0").build()))
                         .build(),
                     Binding.builder()
                         .var_("b")
@@ -128,7 +128,7 @@ class SdkWorkflowBuilderTest {
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
-            .outputs(expectedOutputs("n1"))
+            .outputs(expectedOutputs("foo-n1"))
             .nodes(List.of(node0, node1))
             .build();
 

@@ -17,6 +17,8 @@
 package org.flyte.jflyte;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -30,7 +32,7 @@ class ChildFirstClassLoaderTest {
   @Test
   void testGetResourcesFromChildAndParent() throws Exception {
     try (URLClassLoader classLoader =
-        new ChildFirstClassLoader(new URL[] {getClass().getResource("/")})) {
+        new ChildFirstClassLoader(new URL[] {urlVisibleToBothChildAndParent()})) {
       List<URL> resources = Collections.list(classLoader.getResources(thisClassAsResourceName()));
 
       assertEquals(2, resources.size());
@@ -40,12 +42,41 @@ class ChildFirstClassLoaderTest {
   @Test
   void testGetResourcesOnlyFromChild() throws IOException {
     try (URLClassLoader classLoader =
-        new ChildFirstClassLoader(
-            new URL[] {getClass().getResource("/" + thisPackageAsResourceName() + "/")})) {
+        new ChildFirstClassLoader(new URL[] {urlVisibleToBothChildAndParent()})) {
       List<URL> resources =
-          Collections.list(classLoader.getResources("org/slf4j/impl/StaticLoggerBinder.class"));
+          Collections.list(classLoader.getResources("META-INF/services/org.flyte.jflyte.Foo"));
 
       assertEquals(1, resources.size());
+    }
+  }
+
+  @Test
+  void testGetResourceFromParent() throws Exception {
+    try (URLClassLoader classLoader =
+        new ChildFirstClassLoader(new URL[] {urlVisibleToChildOnly()})) {
+      URL resource = classLoader.getResource(thisClassAsResourceName());
+
+      assertNotNull(resource);
+    }
+  }
+
+  @Test
+  void testGetResourceFromChild() throws IOException {
+    try (URLClassLoader classLoader =
+        new ChildFirstClassLoader(new URL[] {urlVisibleToChildOnly()})) {
+      URL resource = classLoader.getResource("org/slf4j/impl/StaticLoggerBinder.class");
+
+      assertNotNull(resource);
+    }
+  }
+
+  @Test
+  void testGetResourceNotFound() throws IOException {
+    try (URLClassLoader classLoader =
+        new ChildFirstClassLoader(new URL[] {urlVisibleToChildOnly()})) {
+      URL resource = classLoader.getResource("META-INF/services/org.flyte.jflyte.Foo");
+
+      assertNull(resource);
     }
   }
 
@@ -55,5 +86,13 @@ class ChildFirstClassLoaderTest {
 
   private String thisPackageAsResourceName() {
     return getClass().getPackage().getName().replace(".", "/");
+  }
+
+  private URL urlVisibleToBothChildAndParent() {
+    return getClass().getResource("/");
+  }
+
+  private URL urlVisibleToChildOnly() {
+    return getClass().getResource("/" + thisPackageAsResourceName() + "/");
   }
 }

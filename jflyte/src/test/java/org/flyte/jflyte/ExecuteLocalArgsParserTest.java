@@ -228,7 +228,7 @@ public class ExecuteLocalArgsParserTest {
             CommandLine.ParameterException.class,
             () -> parseInputs(ImmutableMap.of("arg", createVar(SimpleType.STRING)), new String[0]));
 
-    assertEquals("Missing required option: '--arg'", exception.getMessage());
+    assertEquals("Missing required option: '--arg=PARAM'", exception.getMessage());
   }
 
   @Test

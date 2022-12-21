@@ -20,9 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class GrpcRetriesTest {
 
@@ -50,8 +53,11 @@ public class GrpcRetriesTest {
     assertEquals(Status.DEADLINE_EXCEEDED, e.getStatus());
   }
 
-  @Test
-  void testSuccessfulRetry() {
+  @ParameterizedTest
+  @EnumSource(
+      value = Code.class,
+      names = {"DEADLINE_EXCEEDED", "UNAVAILABLE", "INTERNAL"})
+  void testSuccessfulRetry(Code code) {
     AtomicLong attempts = new AtomicLong();
     GrpcRetries retries =
         GrpcRetries.create(
@@ -64,7 +70,7 @@ public class GrpcRetriesTest {
         retries.retry(
             () -> {
               if (attempts.incrementAndGet() <= 5L) {
-                throw new StatusRuntimeException(Status.DEADLINE_EXCEEDED);
+                throw new StatusRuntimeException(code.toStatus());
               } else {
                 return 10;
               }
@@ -93,10 +99,10 @@ public class GrpcRetriesTest {
                 retries.retry(
                     () -> {
                       attempts.incrementAndGet();
-                      throw new StatusRuntimeException(Status.INTERNAL);
+                      throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
                     }));
 
-    assertEquals(Status.INTERNAL, e.getStatus());
+    assertEquals(Status.INVALID_ARGUMENT, e.getStatus());
     assertEquals(1, attempts.get());
   }
 

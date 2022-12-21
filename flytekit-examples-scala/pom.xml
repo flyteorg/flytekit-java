@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.3.24-SNAPSHOT</version>
+    <version>0.3.28-SNAPSHOT</version>
   </parent>
 
   <artifactId>flytekit-examples-scala</artifactId>

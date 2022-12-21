@@ -58,7 +58,7 @@ class SdkWorkflowBuilderTest {
 
   @Test
   void testTimes4WorkflowIdl() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder("");
 
     new Times4Workflow().expand(builder);
 

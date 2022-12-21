@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -45,9 +46,14 @@ public class SdkWorkflowBuilder {
   private final Map<String, SdkBindingData> outputs;
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
+  private final String nodeIdPrefix;
   private final AtomicInteger nodeIdSuffix;
 
   public SdkWorkflowBuilder() {
+    this("w" + ThreadLocalRandom.current().nextInt(1000, 10000) + "-");
+  }
+
+  public SdkWorkflowBuilder(String nodeIdPrefix) {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -56,6 +62,7 @@ public class SdkWorkflowBuilder {
     this.inputDescriptions = new HashMap<>();
     this.outputDescriptions = new HashMap<>();
 
+    this.nodeIdPrefix = nodeIdPrefix;
     this.nodeIdSuffix = new AtomicInteger();
   }
 
@@ -82,7 +89,8 @@ public class SdkWorkflowBuilder {
       Map<String, SdkBindingData> inputs) {
 
     String actualNodeId =
-        Objects.requireNonNullElseGet(nodeId, () -> "n" + nodeIdSuffix.getAndIncrement());
+        Objects.requireNonNullElseGet(
+            nodeId, () -> nodeIdPrefix + "n" + nodeIdSuffix.getAndIncrement());
 
     if (nodes.containsKey(actualNodeId)) {
       CompilerError error =

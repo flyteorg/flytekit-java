@@ -47,12 +47,12 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
     LOG.setLevel(Level.ALL);
   }
 
-  private static class DynamicWorkflowTaskImpl<InputT, OutputT, NamedOutputT extends NamedOutput>
+  private static class DynamicWorkflowTaskImpl<InputT, OutputT, OutputTransformerT extends OutputTransformer>
       implements DynamicWorkflowTask {
-    private final SdkDynamicWorkflowTask<InputT, OutputT, NamedOutputT> sdkDynamicWorkflow;
+    private final SdkDynamicWorkflowTask<InputT, OutputT, OutputTransformerT> sdkDynamicWorkflow;
 
     private DynamicWorkflowTaskImpl(
-        SdkDynamicWorkflowTask<InputT, OutputT, NamedOutputT> sdkDynamicWorkflow) {
+        SdkDynamicWorkflowTask<InputT, OutputT, OutputTransformerT> sdkDynamicWorkflow) {
       this.sdkDynamicWorkflow = sdkDynamicWorkflow;
     }
 

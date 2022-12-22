@@ -16,9 +16,9 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopNamedOutput, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{NopOutputTransformer, SdkWorkflow, SdkWorkflowBuilder}
 
-class DynamicFibonacciWorkflow extends SdkWorkflow[NopNamedOutput] {
+class DynamicFibonacciWorkflow extends SdkWorkflow[NopOutputTransformer] {
 
   override def expand(builder: SdkWorkflowBuilder): Unit = {
     val n = builder.inputOfInteger("n")

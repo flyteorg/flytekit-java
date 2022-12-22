@@ -207,13 +207,13 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testVariableNameNotFound_output(SdkTransform<NopNamedOutput> transform) {
+  void testVariableNameNotFound_output(SdkTransform<NopOutputTransformer> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfInteger("a");
     SdkBindingData b = builder.inputOfInteger("b");
 
-    SdkNode<NopNamedOutput> node1 =
+    SdkNode<NopOutputTransformer> node1 =
         builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
 
     CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
@@ -226,7 +226,7 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testVariableNameNotFound_input(SdkTransform<NopNamedOutput> transform) {
+  void testVariableNameNotFound_input(SdkTransform<NopOutputTransformer> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData a = builder.inputOfInteger("a");
@@ -287,16 +287,16 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testUpstreamNode_withUpstreamNode(SdkTransform<NopNamedOutput> transform) {
+  void testUpstreamNode_withUpstreamNode(SdkTransform<NopOutputTransformer> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode<NopNamedOutput> el2 =
+    SdkNode<NopOutputTransformer> el2 =
         builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode<NopNamedOutput> el3 =
+    SdkNode<NopOutputTransformer> el3 =
         builder.apply(
             "el3", transform.withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
 
@@ -307,8 +307,8 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_apply() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode<NopNamedOutput> node1 = builder.apply("node1", new PrintHello());
-    SdkNode<NopNamedOutput> node2 = node1.apply("node2", new PrintHello());
+    SdkNode<NopOutputTransformer> node1 = builder.apply("node1", new PrintHello());
+    SdkNode<NopOutputTransformer> node2 = node1.apply("node2", new PrintHello());
 
     assertEquals(singletonList("node1"), node2.toIdl().upstreamNodeIds());
   }
@@ -317,7 +317,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode<NopNamedOutput> node1 = builder.apply("node1", new PrintHello());
+    SdkNode<NopOutputTransformer> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -331,7 +331,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicateWithNode() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode<NopNamedOutput> node1 = builder.apply("node1", new PrintHello());
+    SdkNode<NopOutputTransformer> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -345,13 +345,13 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testNodeMetadataOverrides(SdkTransform<NopNamedOutput> transform) {
+  void testNodeMetadataOverrides(SdkTransform<NopOutputTransformer> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode<NopNamedOutput> el2 =
+    SdkNode<NopOutputTransformer> el2 =
         builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
     SdkNode<?> el3 =
@@ -371,13 +371,13 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testNodeMetadataOverrides_duplicate(SdkTransform<NopNamedOutput> transform) {
+  void testNodeMetadataOverrides_duplicate(SdkTransform<NopOutputTransformer> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     SdkBindingData el0 = builder.inputOfInteger("el0");
     SdkBindingData el1 = builder.inputOfInteger("el1");
 
-    SdkNode<NopNamedOutput> el2 =
+    SdkNode<NopOutputTransformer> el2 =
         builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
     IllegalArgumentException ex =
@@ -429,7 +429,7 @@ class SdkWorkflowBuilderTest {
         builder.inputOfStruct("input7"));
   }
 
-  static List<SdkTransform<NopNamedOutput>> createTransform() {
+  static List<SdkTransform<NopOutputTransformer>> createTransform() {
     return asList(new MultiplicationTask(), new MultiplicationWorkflow());
   }
 
@@ -459,7 +459,7 @@ class SdkWorkflowBuilderTest {
             .build());
   }
 
-  private static class Times2Workflow extends SdkWorkflow<NopNamedOutput> {
+  private static class Times2Workflow extends SdkWorkflow<NopOutputTransformer> {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -474,7 +474,7 @@ class SdkWorkflowBuilderTest {
     }
   }
 
-  private static class ConditionalWorkflow extends SdkWorkflow<NopNamedOutput> {
+  private static class ConditionalWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -494,7 +494,7 @@ class SdkWorkflowBuilderTest {
   }
 
   static class MultiplicationTask
-      extends SdkRunnableTask<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> {
+      extends SdkRunnableTask<Map<String, Literal>, Map<String, Literal>, NopOutputTransformer> {
     private static final long serialVersionUID = -1971936360636181781L;
 
     MultiplicationTask() {
@@ -509,7 +509,7 @@ class SdkWorkflowBuilderTest {
     }
   }
 
-  static class MultiplicationWorkflow extends SdkWorkflow<NopNamedOutput> {
+  static class MultiplicationWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -523,7 +523,7 @@ class SdkWorkflowBuilderTest {
     }
   }
 
-  static class PrintHello extends SdkRunnableTask<Void, Void, NopNamedOutput> {
+  static class PrintHello extends SdkRunnableTask<Void, Void, NopOutputTransformer> {
     private static final long serialVersionUID = -1971936360636181781L;
 
     PrintHello() {

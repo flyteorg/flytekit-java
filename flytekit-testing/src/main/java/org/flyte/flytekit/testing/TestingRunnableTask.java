@@ -24,14 +24,14 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TypedInterface;
-import org.flyte.flytekit.NamedOutput;
+import org.flyte.flytekit.OutputTransformer;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 
 /** {@link RunnableTask} that can fix output for specific input. */
-class TestingRunnableTask<InputT, OutputT, NamedOutputT extends NamedOutput>
+class TestingRunnableTask<InputT, OutputT, OutputTransformerT extends OutputTransformer>
     extends TestingRunnableNode<
-        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT, NamedOutputT>>
+        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT, OutputTransformerT>>
     implements RunnableTask {
   private TestingRunnableTask(
       PartialTaskIdentifier taskId,
@@ -50,17 +50,17 @@ class TestingRunnableTask<InputT, OutputT, NamedOutputT extends NamedOutput>
         "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
   }
 
-  static <InputT, OutputT, NamedOutputT extends NamedOutput>
-      TestingRunnableTask<InputT, OutputT, NamedOutputT> create(
-          SdkRunnableTask<InputT, OutputT, NamedOutputT> task) {
+  static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      TestingRunnableTask<InputT, OutputT, OutputTransformerT> create(
+          SdkRunnableTask<InputT, OutputT, OutputTransformerT> task) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
         taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap());
   }
 
-  static <InputT, OutputT, NamedOutputT extends NamedOutput>
-      TestingRunnableTask<InputT, OutputT, NamedOutputT> create(
+  static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      TestingRunnableTask<InputT, OutputT, OutputTransformerT> create(
           String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 

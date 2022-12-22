@@ -106,7 +106,7 @@ public class SdkContainerTaskRegistrarTest {
   }
 
   @AutoService(SdkContainerTask.class)
-  public static class TestTask extends SdkContainerTask<Void, Void, NopNamedOutput> {
+  public static class TestTask extends SdkContainerTask<Void, Void, NopOutputTransformer> {
 
     private static final long serialVersionUID = 2751205856616541247L;
 
@@ -144,7 +144,7 @@ public class SdkContainerTaskRegistrarTest {
   }
 
   @AutoService(SdkContainerTask.class)
-  public static class OtherTestTask extends SdkContainerTask<Void, Void, NopNamedOutput> {
+  public static class OtherTestTask extends SdkContainerTask<Void, Void, NopOutputTransformer> {
 
     private static final long serialVersionUID = -7757282344498000982L;
 

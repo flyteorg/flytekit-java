@@ -21,29 +21,29 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition<NamedOutputT extends NamedOutput> extends SdkTransform<NamedOutputT> {
-  private final List<SdkConditionCase<NamedOutputT>> cases;
+public class SdkCondition<OutputTransformerT extends OutputTransformer> extends SdkTransform<OutputTransformerT> {
+  private final List<SdkConditionCase<OutputTransformerT>> cases;
   private final String otherwiseName;
-  private final SdkTransform<NamedOutputT> otherwise;
+  private final SdkTransform<OutputTransformerT> otherwise;
 
   SdkCondition(
-      List<SdkConditionCase<NamedOutputT>> cases,
+      List<SdkConditionCase<OutputTransformerT>> cases,
       String otherwiseName,
-      SdkTransform<NamedOutputT> otherwise) {
+      SdkTransform<OutputTransformerT> otherwise) {
     this.cases = cases;
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
   }
 
-  public SdkCondition<NamedOutputT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<NamedOutputT> then) {
-    List<SdkConditionCase<NamedOutputT>> newCases = new ArrayList<>(cases);
+  public SdkCondition<OutputTransformerT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<OutputTransformerT> then) {
+    List<SdkConditionCase<OutputTransformerT>> newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition<NamedOutputT> otherwise(String name, SdkTransform<NamedOutputT> otherwise) {
+  public SdkCondition<OutputTransformerT> otherwise(String name, SdkTransform<OutputTransformerT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
@@ -52,7 +52,7 @@ public class SdkCondition<NamedOutputT extends NamedOutput> extends SdkTransform
   }
 
   @Override
-  public SdkNode<NamedOutputT> apply(
+  public SdkNode<OutputTransformerT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
@@ -65,7 +65,7 @@ public class SdkCondition<NamedOutputT extends NamedOutput> extends SdkTransform
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }
 
-    SdkBranchNode.Builder<NamedOutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
+    SdkBranchNode.Builder<OutputTransformerT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
 
     for (SdkConditionCase case_ : cases) {
       nodeBuilder.addCase(case_);

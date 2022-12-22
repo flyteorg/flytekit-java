@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkRunnableTask;
@@ -71,7 +71,7 @@ public class IfElseWorkflowTest {
         Arguments.of(2, 1, 4, 3, "a > b && c > d"));
   }
 
-  static class BranchNodeWorkflow extends SdkWorkflow<NopNamedOutput> {
+  static class BranchNodeWorkflow extends SdkWorkflow<NopOutputTransformer> {
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData a = builder.inputOfInteger("a");
@@ -79,7 +79,7 @@ public class IfElseWorkflowTest {
       SdkBindingData c = builder.inputOfInteger("c");
       SdkBindingData d = builder.inputOfInteger("d");
 
-      SdkCondition<NopNamedOutput> condition =
+      SdkCondition<NopOutputTransformer> condition =
           when(
                   "a == b",
                   eq(a, b),
@@ -106,7 +106,7 @@ public class IfElseWorkflowTest {
   }
 
   static class ConstStringTask
-      extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output, NopNamedOutput> {
+      extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output, NopOutputTransformer> {
     private static final long serialVersionUID = 5553122612313564203L;
 
     @AutoValue
@@ -127,7 +127,7 @@ public class IfElseWorkflowTest {
       super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
     }
 
-    public static SdkTransform<NopNamedOutput> of(String value) {
+    public static SdkTransform<NopOutputTransformer> of(String value) {
       return new ConstStringTask().withInput("value", SdkBindingData.ofString(value));
     }
 

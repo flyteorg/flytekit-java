@@ -17,7 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
-  NopNamedOutput,
+  NopOutputTransformer,
   SdkBindingData,
   SdkRunnableTask,
   SdkTransform
@@ -31,7 +31,7 @@ case class GreetTaskOutput(greeting: String)
   * greeting message.
   */
 class GreetTask
-    extends SdkRunnableTask[GreetTaskInput, GreetTaskOutput, NopNamedOutput](
+    extends SdkRunnableTask[GreetTaskInput, GreetTaskOutput, NopOutputTransformer](
       SdkScalaType[GreetTaskInput],
       SdkScalaType[GreetTaskOutput]
     ) {
@@ -57,6 +57,6 @@ object GreetTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(name: SdkBindingData): SdkTransform[NopNamedOutput] =
+  def apply(name: SdkBindingData): SdkTransform[NopOutputTransformer] =
     new GreetTask().withInput("name", name)
 }

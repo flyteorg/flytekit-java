@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkWorkflow;
@@ -38,7 +38,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testPrimitiveTypes() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -71,7 +71,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testGetOutput_doesntExist() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -90,7 +90,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testGetOutput_illegalType() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -111,7 +111,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_missing() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -131,7 +131,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_illegalType() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -151,7 +151,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTask() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -172,7 +172,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTaskOutput() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -200,7 +200,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_nullOutput() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -277,7 +277,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlanOutput() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopNamedOutput> launchplanRef =
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
         SdkRemoteLaunchPlan.create(
             "development",
             "flyte-warehouse",
@@ -285,7 +285,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -315,7 +315,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlanOutput_isMissing() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopNamedOutput> launchplanRef =
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
         SdkRemoteLaunchPlan.create(
             "development",
             "flyte-warehouse",
@@ -323,7 +323,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -365,7 +365,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlan() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopNamedOutput> launchplanRef =
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
         SdkRemoteLaunchPlan.create(
             "development",
             "flyte-warehouse",
@@ -373,7 +373,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -402,7 +402,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlan_missingRemoteTaskOutput() {
-    SdkWorkflow<NopNamedOutput> workflow =
+    SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
@@ -428,7 +428,7 @@ public class SdkTestingExecutorTest {
                 + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
-  public static class SimpleUberWorkflow extends SdkWorkflow<NopNamedOutput> {
+  public static class SimpleUberWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -439,7 +439,7 @@ public class SdkTestingExecutorTest {
     }
   }
 
-  public static class SimpleSubWorkflow extends SdkWorkflow<NopNamedOutput> {
+  public static class SimpleSubWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {

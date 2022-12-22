@@ -17,7 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
-  NopNamedOutput,
+  NopOutputTransformer,
   SdkBindingData,
   SdkRunnableTask,
   SdkTransform
@@ -34,7 +34,7 @@ class AddQuestionTask
     extends SdkRunnableTask[
       AddQuestionTaskInput,
       AddQuestionTaskOutput,
-      NopNamedOutput
+      NopOutputTransformer
     ](
       SdkScalaType[AddQuestionTaskInput],
       SdkScalaType[AddQuestionTaskOutput]
@@ -61,6 +61,6 @@ object AddQuestionTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(greeting: SdkBindingData): SdkTransform[NopNamedOutput] =
+  def apply(greeting: SdkBindingData): SdkTransform[NopOutputTransformer] =
     new AddQuestionTask().withInput("greeting", greeting)
 }

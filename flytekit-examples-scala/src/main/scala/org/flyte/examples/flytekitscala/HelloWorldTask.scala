@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopNamedOutput, SdkBindingData, SdkRunnableTask}
+import org.flyte.flytekit.{NopOutputTransformer, SdkBindingData, SdkRunnableTask}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class HelloWorldTaskInput(message: String) {
@@ -26,7 +26,7 @@ case class HelloWorldTaskInput(message: String) {
 
 
 class HelloWorldTask
-    extends SdkRunnableTask[HelloWorldTaskInput, Unit, NopNamedOutput](
+    extends SdkRunnableTask[HelloWorldTaskInput, Unit, NopOutputTransformer](
       SdkScalaType[HelloWorldTaskInput],
       SdkScalaType.unit
     ) {

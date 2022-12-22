@@ -20,14 +20,14 @@ import static org.flyte.flytekit.SdkBindingData.ofString;
 import static org.flyte.flytekit.SdkConditions.eq;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkConditions;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class ConditionalGreetingWorkflow extends SdkWorkflow<NopNamedOutput> {
+public class ConditionalGreetingWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData name = builder.inputOfString("name");

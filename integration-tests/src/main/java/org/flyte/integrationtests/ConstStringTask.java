@@ -18,7 +18,7 @@ package org.flyte.integrationtests;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
@@ -26,7 +26,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class ConstStringTask
-    extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output, NopNamedOutput> {
+    extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output, NopOutputTransformer> {
   private static final long serialVersionUID = 42L;
 
   @AutoValue

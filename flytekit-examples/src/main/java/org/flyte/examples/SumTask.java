@@ -18,19 +18,19 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopNamedOutput> {
+public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopOutputTransformer> {
   public SumTask() {
     super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
   }
 
-  public static SdkTransform<NopNamedOutput> of(SdkBindingData a, SdkBindingData b) {
+  public static SdkTransform<NopOutputTransformer> of(SdkBindingData a, SdkBindingData b) {
     return new SumTask().withInput("a", a).withInput("b", b);
   }
 

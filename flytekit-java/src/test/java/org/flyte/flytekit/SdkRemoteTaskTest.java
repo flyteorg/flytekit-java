@@ -43,10 +43,10 @@ class SdkRemoteTaskTest {
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
     inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> remoteTask =
+    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>, NopOutputTransformer> remoteTask =
         new TestSdkRemoteTask();
 
-    SdkNode<NopNamedOutput> node =
+    SdkNode<NopOutputTransformer> node =
         remoteTask.apply(
             mock(SdkWorkflowBuilder.class),
             "lookup-endsong",
@@ -100,7 +100,7 @@ class SdkRemoteTaskTest {
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteTask
-      extends SdkRemoteTask<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> {
+      extends SdkRemoteTask<Map<String, Literal>, Map<String, Literal>, NopOutputTransformer> {
 
     @Override
     public String domain() {

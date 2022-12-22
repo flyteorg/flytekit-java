@@ -19,21 +19,21 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
-import org.flyte.examples.GreetTask.GreetNamedOutput;
+import org.flyte.examples.GreetTask.GreetOutputTransformer;
+import org.flyte.flytekit.OutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
-import org.flyte.flytekit.NamedOutput;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 @AutoService(SdkRunnableTask.class)
 public class GreetTask
-    extends SdkRunnableTask<GreetTask.Input, GreetTask.Output, GreetNamedOutput> {
+    extends SdkRunnableTask<GreetTask.Input, GreetTask.Output, GreetOutputTransformer> {
 
   @Override
-  public Class<GreetNamedOutput> getNamedOutputClass() {
-    return GreetNamedOutput.class;
+  public Class<GreetOutputTransformer> getOutputTransformerClass() {
+    return GreetOutputTransformer.class;
   }
 
   public GreetTask() {
@@ -46,7 +46,7 @@ public class GreetTask
    * @param name the input name
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform<GreetNamedOutput> of(SdkBindingData name) {
+  public static SdkTransform<GreetOutputTransformer> of(SdkBindingData name) {
     return new GreetTask().withInput("name", name);
   }
 
@@ -79,9 +79,9 @@ public class GreetTask
     }
   }
 
-  public static class GreetNamedOutput extends NamedOutput {
+  public static class GreetOutputTransformer extends OutputTransformer {
 
-    public GreetNamedOutput(Map<String, SdkBindingData> outputs) {
+    public GreetOutputTransformer(Map<String, SdkBindingData> outputs) {
       super(outputs);
     }
 

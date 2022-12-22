@@ -24,14 +24,14 @@ import java.util.ServiceLoader;
 
 public abstract class SdkWorkflowRegistry {
 
-  public abstract List<SdkWorkflow<? extends NamedOutput>> getWorkflows();
+  public abstract List<SdkWorkflow<? extends OutputTransformer>> getWorkflows();
 
-  public static List<SdkWorkflow<? extends NamedOutput>> loadAll() {
+  public static List<SdkWorkflow<? extends OutputTransformer>> loadAll() {
     return loadAll(ServiceLoader.load(SdkWorkflowRegistry.class));
   }
 
-  static List<SdkWorkflow<? extends NamedOutput>> loadAll(Iterable<SdkWorkflowRegistry> loader) {
-    List<SdkWorkflow<? extends NamedOutput>> workflows = new ArrayList<>();
+  static List<SdkWorkflow<? extends OutputTransformer>> loadAll(Iterable<SdkWorkflowRegistry> loader) {
+    List<SdkWorkflow<? extends OutputTransformer>> workflows = new ArrayList<>();
 
     for (SdkWorkflowRegistry registry : loader) {
       workflows.addAll(registry.getWorkflows());

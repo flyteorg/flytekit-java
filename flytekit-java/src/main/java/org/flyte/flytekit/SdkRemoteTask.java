@@ -24,8 +24,8 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Reference to a task deployed in flyte, a remote Task. */
 @AutoValue
-public abstract class SdkRemoteTask<InputT, OutputT, NamedOutputT extends NamedOutput>
-    extends SdkTransform<NamedOutputT> {
+public abstract class SdkRemoteTask<InputT, OutputT, OutputTransformerT extends OutputTransformer>
+    extends SdkTransform<OutputTransformerT> {
 
   @Nullable
   public abstract String domain();
@@ -46,14 +46,14 @@ public abstract class SdkRemoteTask<InputT, OutputT, NamedOutputT extends NamedO
 
   public abstract SdkType<OutputT> outputs();
 
-  public static <InputT, OutputT, NamedOutputT extends NamedOutput>
-      SdkRemoteTask<InputT, OutputT, NamedOutputT> create(
+  public static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkRemoteTask<InputT, OutputT, OutputTransformerT> create(
           String domain,
           String project,
           String name,
           SdkType<InputT> inputs,
           SdkType<OutputT> outputs) {
-    return SdkRemoteTask.<InputT, OutputT, NamedOutputT>builder()
+    return SdkRemoteTask.<InputT, OutputT, OutputTransformerT>builder()
         .domain(domain)
         .project(project)
         .name(name)
@@ -63,7 +63,7 @@ public abstract class SdkRemoteTask<InputT, OutputT, NamedOutputT extends NamedO
   }
 
   @Override
-  public SdkNode<NamedOutputT> apply(
+  public SdkNode<OutputTransformerT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
@@ -90,27 +90,27 @@ public abstract class SdkRemoteTask<InputT, OutputT, NamedOutputT extends NamedO
         metadata,
         inputs,
         outputs().getVariableMap(),
-        getNamedOutputClass());
+        getOutputTransformerClass());
   }
 
-  public static <InputT, OutputT, NamedOutputT extends NamedOutput>
-      Builder<InputT, OutputT, NamedOutputT> builder() {
+  public static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      Builder<InputT, OutputT, OutputTransformerT> builder() {
     return new AutoValue_SdkRemoteTask.Builder<>();
   }
 
   @AutoValue.Builder
-  public abstract static class Builder<InputT, OutputT, NamedOutputT extends NamedOutput> {
+  public abstract static class Builder<InputT, OutputT, OutputTransformerT extends OutputTransformer> {
 
-    public abstract Builder<InputT, OutputT, NamedOutputT> domain(String domain);
+    public abstract Builder<InputT, OutputT, OutputTransformerT> domain(String domain);
 
-    public abstract Builder<InputT, OutputT, NamedOutputT> project(String project);
+    public abstract Builder<InputT, OutputT, OutputTransformerT> project(String project);
 
-    public abstract Builder<InputT, OutputT, NamedOutputT> name(String name);
+    public abstract Builder<InputT, OutputT, OutputTransformerT> name(String name);
 
-    public abstract Builder<InputT, OutputT, NamedOutputT> inputs(SdkType<InputT> inputs);
+    public abstract Builder<InputT, OutputT, OutputTransformerT> inputs(SdkType<InputT> inputs);
 
-    public abstract Builder<InputT, OutputT, NamedOutputT> outputs(SdkType<OutputT> outputs);
+    public abstract Builder<InputT, OutputT, OutputTransformerT> outputs(SdkType<OutputT> outputs);
 
-    public abstract SdkRemoteTask<InputT, OutputT, NamedOutputT> build();
+    public abstract SdkRemoteTask<InputT, OutputT, OutputTransformerT> build();
   }
 }

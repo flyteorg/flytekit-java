@@ -18,7 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
@@ -28,18 +28,18 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 /** Receives message as an input, and prints it. */
 @AutoService(SdkRunnableTask.class)
 public class PrintMessageTask
-    extends SdkRunnableTask<PrintMessageTask.Input, Void, NopNamedOutput> {
+    extends SdkRunnableTask<PrintMessageTask.Input, Void, NopOutputTransformer> {
 
   @Override
-  public Class<NopNamedOutput> getNamedOutputClass() {
-    return NopNamedOutput.class;
+  public Class<NopOutputTransformer> getOutputTransformerClass() {
+    return NopOutputTransformer.class;
   }
 
   public PrintMessageTask() {
     super(JacksonSdkType.of(Input.class), SdkTypes.nulls());
   }
 
-  public static SdkTransform<NopNamedOutput> of(SdkBindingData message) {
+  public static SdkTransform<NopOutputTransformer> of(SdkBindingData message) {
     return new PrintMessageTask().withInput("message", message);
   }
 

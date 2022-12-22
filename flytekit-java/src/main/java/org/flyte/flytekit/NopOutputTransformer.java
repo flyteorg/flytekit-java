@@ -18,14 +18,9 @@ package org.flyte.flytekit;
 
 import java.util.Map;
 
-public class NamedOutput {
-  private final Map<String, SdkBindingData> outputs;
+public class NopOutputTransformer extends OutputTransformer {
 
-  public NamedOutput(Map<String, SdkBindingData> outputs) {
-    this.outputs = outputs;
-  }
-
-  protected Map<String, SdkBindingData> getOutputs() {
-    return outputs;
+  public NopOutputTransformer(Map<String, SdkBindingData> outputs) {
+    super(outputs);
   }
 }

@@ -16,9 +16,9 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopNamedOutput, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{NopOutputTransformer, SdkWorkflow, SdkWorkflowBuilder}
 
-class FibonacciWorkflow extends SdkWorkflow[NopNamedOutput] {
+class FibonacciWorkflow extends SdkWorkflow[NopOutputTransformer] {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")

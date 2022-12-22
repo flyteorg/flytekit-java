@@ -18,13 +18,13 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class SubWorkflow extends SdkWorkflow<NopNamedOutput> {
+public class SubWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {

@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopNamedOutput, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{NopOutputTransformer, SdkWorkflow, SdkWorkflowBuilder}
 
 /** Example workflow that takes a name and outputs a welcome message
   * |  start of workflow  |
@@ -43,7 +43,7 @@ import org.flyte.flytekit.{NopNamedOutput, SdkWorkflow, SdkWorkflowBuilder}
   * |:-------------------------|
   * | output: greeting(string) |
   */
-class WelcomeWorkflow extends SdkWorkflow[NopNamedOutput] {
+class WelcomeWorkflow extends SdkWorkflow[NopOutputTransformer] {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     // defines the input of the workflow

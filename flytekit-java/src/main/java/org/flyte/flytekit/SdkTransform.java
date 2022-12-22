@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
-public abstract class SdkTransform<T extends NamedOutput> {
+public abstract class SdkTransform<T extends OutputTransformer> {
   public abstract SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
@@ -35,8 +35,8 @@ public abstract class SdkTransform<T extends NamedOutput> {
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs);
 
-  public Class<T> getNamedOutputClass() {
-    return (Class<T>) NopNamedOutput.class;
+  public Class<T> getOutputTransformerClass() {
+    return (Class<T>) NopOutputTransformer.class;
   }
 
   public SdkTransform<T> withInput(String name, String value) {
@@ -71,7 +71,7 @@ public abstract class SdkTransform<T extends NamedOutput> {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }
 
-  public <K extends NamedOutput> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
+  public <K extends OutputTransformer> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
     return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
   }
 

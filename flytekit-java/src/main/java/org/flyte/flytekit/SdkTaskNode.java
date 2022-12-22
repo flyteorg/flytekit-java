@@ -29,7 +29,7 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 
 /** Represent a {@link org.flyte.flytekit.SdkRunnableTask} in a workflow DAG. */
-public class SdkTaskNode<T extends NamedOutput> extends SdkNode<T> {
+public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
   private final List<String> upstreamNodeIds;
@@ -45,8 +45,8 @@ public class SdkTaskNode<T extends NamedOutput> extends SdkNode<T> {
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs,
       Map<String, Variable> outputs,
-      Class<T> namedOutputClass) {
-    super(builder, namedOutputClass);
+      Class<T> outputTransformerClass) {
+    super(builder, outputTransformerClass);
 
     this.nodeId = nodeId;
     this.taskId = taskId;

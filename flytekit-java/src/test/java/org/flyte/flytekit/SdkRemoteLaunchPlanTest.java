@@ -42,7 +42,7 @@ public class SdkRemoteLaunchPlanTest {
     Map<String, SdkBindingData> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
     inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopNamedOutput>
+    SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopOutputTransformer>
         remoteLaunchPlan = new TestSdkRemoteLaunchPlan();
 
     SdkNode<?> node =
@@ -100,7 +100,7 @@ public class SdkRemoteLaunchPlanTest {
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteLaunchPlan
-      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopNamedOutput> {
+      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>, NopOutputTransformer> {
 
     @Override
     public String domain() {

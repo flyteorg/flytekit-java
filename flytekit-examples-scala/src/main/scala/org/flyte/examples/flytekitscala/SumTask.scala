@@ -17,7 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
-  NopNamedOutput,
+  NopOutputTransformer,
   SdkBindingData,
   SdkRunnableTask,
   SdkTransform
@@ -28,7 +28,7 @@ case class SumTaskInput(a: Long, b: Long)
 case class SumTaskOutput(c: Long)
 
 class SumTask
-    extends SdkRunnableTask[SumTaskInput, SumTaskOutput, NopNamedOutput](
+    extends SdkRunnableTask[SumTaskInput, SumTaskOutput, NopOutputTransformer](
       SdkScalaType[SumTaskInput],
       SdkScalaType[SumTaskOutput]
     ) {
@@ -48,6 +48,6 @@ object SumTask {
   def apply(
       a: SdkBindingData,
       b: SdkBindingData
-  ): SdkTransform[NopNamedOutput] =
+  ): SdkTransform[NopOutputTransformer] =
     new SumTask().withInput("a", a).withInput("b", b)
 }

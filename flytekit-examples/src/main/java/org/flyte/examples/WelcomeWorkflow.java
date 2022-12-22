@@ -17,14 +17,14 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 /** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
-public class WelcomeWorkflow extends SdkWorkflow<NopNamedOutput> {
+public class WelcomeWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
@@ -33,7 +33,7 @@ public class WelcomeWorkflow extends SdkWorkflow<NopNamedOutput> {
 
     // uses the workflow input as the task input of the GreetTask
     SdkBindingData greeting =
-        builder.apply("greet", GreetTask.of(name)).getNamedOutput().g.greeting();
+        builder.apply("greet", GreetTask.of(name)).getOutputTransformer().g.greeting();
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     SdkBindingData greetingWithQuestion =

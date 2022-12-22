@@ -17,14 +17,14 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class StructWorkflow extends SdkWorkflow<NopNamedOutput> {
+public class StructWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData someString = builder.inputOfString("someString");

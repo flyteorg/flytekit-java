@@ -41,11 +41,11 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     LOG.setLevel(Level.ALL);
   }
 
-  private static class RunnableTaskImpl<InputT, OutputT, NamedOutputT extends NamedOutput>
+  private static class RunnableTaskImpl<InputT, OutputT, OutputTransformerT extends OutputTransformer>
       implements RunnableTask {
-    private final SdkRunnableTask<InputT, OutputT, NamedOutputT> sdkTask;
+    private final SdkRunnableTask<InputT, OutputT, OutputTransformerT> sdkTask;
 
-    private RunnableTaskImpl(SdkRunnableTask<InputT, OutputT, NamedOutputT> sdkTask) {
+    private RunnableTaskImpl(SdkRunnableTask<InputT, OutputT, OutputTransformerT> sdkTask) {
       this.sdkTask = sdkTask;
     }
 

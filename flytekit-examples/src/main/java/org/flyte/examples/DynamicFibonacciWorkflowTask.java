@@ -19,7 +19,7 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkDynamicWorkflowTask;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -28,7 +28,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkDynamicWorkflowTask.class)
 public class DynamicFibonacciWorkflowTask
     extends SdkDynamicWorkflowTask<
-        DynamicFibonacciWorkflowTask.Input, DynamicFibonacciWorkflowTask.Output, NopNamedOutput> {
+        DynamicFibonacciWorkflowTask.Input, DynamicFibonacciWorkflowTask.Output, NopOutputTransformer> {
   public DynamicFibonacciWorkflowTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }

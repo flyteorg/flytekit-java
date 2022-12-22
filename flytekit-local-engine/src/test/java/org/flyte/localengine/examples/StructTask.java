@@ -18,13 +18,13 @@ package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class StructTask
-    extends SdkRunnableTask<StructTask.Input, StructTask.Output, NopNamedOutput> {
+    extends SdkRunnableTask<StructTask.Input, StructTask.Output, NopOutputTransformer> {
   private static final long serialVersionUID = -3990613929313621336L;
 
   public StructTask() {

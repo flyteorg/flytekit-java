@@ -44,11 +44,11 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     LOG.setLevel(Level.ALL);
   }
 
-  private static class ContainerTaskImpl<InputT, OutputT, NamedOutputT extends NamedOutput>
+  private static class ContainerTaskImpl<InputT, OutputT, OutputTransformerT extends OutputTransformer>
       implements ContainerTask {
-    private final SdkContainerTask<InputT, OutputT, NamedOutputT> sdkTask;
+    private final SdkContainerTask<InputT, OutputT, OutputTransformerT> sdkTask;
 
-    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT, NamedOutputT> sdkTask) {
+    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT, OutputTransformerT> sdkTask) {
       this.sdkTask = sdkTask;
     }
 

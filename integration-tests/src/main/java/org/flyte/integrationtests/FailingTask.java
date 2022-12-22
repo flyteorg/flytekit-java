@@ -17,12 +17,12 @@
 package org.flyte.integrationtests;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopNamedOutput;
+import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 
 @AutoService(SdkRunnableTask.class)
-public class FailingTask extends SdkRunnableTask<Void, Void, NopNamedOutput> {
+public class FailingTask extends SdkRunnableTask<Void, Void, NopOutputTransformer> {
   private static final long serialVersionUID = 42L;
 
   public static FailingTask of() {

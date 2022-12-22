@@ -49,37 +49,37 @@ public class SdkWorkflowBuilder {
     this.outputDescriptions = new HashMap<>();
   }
 
-  public <T extends NamedOutput> SdkNode<T> apply(String nodeId, SdkTransform<T> transform) {
+  public <T extends OutputTransformer> SdkNode<T> apply(String nodeId, SdkTransform<T> transform) {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public <T extends NamedOutput> SdkNode<T> apply(
-      String nodeId, SdkTransform<T> transform, Class<T> namedOutputClass) {
-    return apply(nodeId, transform, emptyMap(), namedOutputClass);
+  public <T extends OutputTransformer> SdkNode<T> apply(
+      String nodeId, SdkTransform<T> transform, Class<T> outputTransformerClass) {
+    return apply(nodeId, transform, emptyMap(), outputTransformerClass);
   }
 
-  public <T extends NamedOutput> SdkNode<T> apply(
+  public <T extends OutputTransformer> SdkNode<T> apply(
       String nodeId,
       SdkTransform<T> transform,
       Map<String, SdkBindingData> inputs,
-      Class<T> namedOutputClass) {
+      Class<T> outputTransformerClass) {
     return applyInternal(
-        nodeId, transform, emptyList(), /*metadata=*/ null, inputs, namedOutputClass);
+        nodeId, transform, emptyList(), /*metadata=*/ null, inputs, outputTransformerClass);
   }
 
-  public <T extends NamedOutput> SdkNode<T> apply(
+  public <T extends OutputTransformer> SdkNode<T> apply(
       String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData> inputs) {
     SdkBindingData.ofString("")
     return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs, null);
   }
 
-  protected <T extends NamedOutput> SdkNode<T> applyInternal(
+  protected <T extends OutputTransformer> SdkNode<T> applyInternal(
       String nodeId,
       SdkTransform<T> transform,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData> inputs,
-      Class<T> namedOutputClass) {
+      Class<T> outputTransformerClass) {
 
     if (nodes.containsKey(nodeId)) {
       CompilerError error =

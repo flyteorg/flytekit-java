@@ -24,49 +24,49 @@ import java.util.Map;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
-public abstract class SdkNode<NamedOutputT extends NamedOutput> {
+public abstract class SdkNode<OutputTransformerT extends OutputTransformer> {
 
   protected final SdkWorkflowBuilder builder;
 
-  private final Class<NamedOutputT> namedOutputClass;
+  private final Class<OutputTransformerT> outputTransformerClass;
 
-  private NamedOutputT namedOutput;
+  private OutputTransformerT outputTransformer;
 
   protected SdkNode(SdkWorkflowBuilder builder) {
     this(builder, null);
   }
 
-  protected SdkNode(SdkWorkflowBuilder builder, Class<NamedOutputT> namedOutputClass) {
+  protected SdkNode(SdkWorkflowBuilder builder, Class<OutputTransformerT> outputTransformerClass) {
     this.builder = builder;
-    this.namedOutputClass = namedOutputClass;
+    this.outputTransformerClass = outputTransformerClass;
   }
 
-  public NamedOutputT getNamedOutput() {
-    if (namedOutput == null) {
-      if (namedOutputClass == null) {
+  public OutputTransformerT getOutputTransformer() {
+    if (outputTransformer == null) {
+      if (outputTransformerClass == null) {
         String message =
             String.format(
-                "Try to use a named output without specific a typed output class from node: %s",
+                "Try to use a output transformer without specific a output transformer class from node: %s",
                 getNodeId());
         CompilerError error =
             CompilerError.create(
-                CompilerError.Kind.USED_NAMED_OUTPUT_WITHOUT_SPECIFIC_CLASS,
+                CompilerError.Kind.USED_OUTPUT_TRANSFORMER_WITHOUT_SPECIFIC_CLASS,
                 /* nodeId= */ getNodeId(),
                 /* message= */ message);
 
         throw new CompilerException(error);
       } else {
-        initializeNamedOutput();
+        initializeOutputTransformer();
       }
     }
 
-    return namedOutput;
+    return outputTransformer;
   }
 
-  private void initializeNamedOutput() {
+  private void initializeOutputTransformer() {
     try {
-      Constructor<? extends NamedOutputT> ctor = namedOutputClass.getConstructor(Map.class);
-      this.namedOutput = ctor.newInstance(getOutputs());
+      Constructor<? extends OutputTransformerT> ctor = outputTransformerClass.getConstructor(Map.class);
+      this.outputTransformer = ctor.newInstance(getOutputs());
     } catch (IllegalAccessException
         | InstantiationException
         | NoSuchMethodException
@@ -98,16 +98,16 @@ public abstract class SdkNode<NamedOutputT extends NamedOutput> {
 
   public abstract Node toIdl();
 
-  public SdkNode<NamedOutputT> apply(String id, SdkTransform<NamedOutputT> transform) {
+  public SdkNode<OutputTransformerT> apply(String id, SdkTransform<OutputTransformerT> transform) {
     return apply(id, transform, null);
   }
 
-  public SdkNode<NamedOutputT> apply(String id, SdkTransform<NamedOutputT> transform, Class<NamedOutputT> namedOutputClass) {
+  public SdkNode<OutputTransformerT> apply(String id, SdkTransform<OutputTransformerT> transform, Class<OutputTransformerT> outputTransformerClass) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
         getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
     return builder.applyInternal(
-        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), namedOutputClass);
+        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), outputTransformerClass);
   }
 }

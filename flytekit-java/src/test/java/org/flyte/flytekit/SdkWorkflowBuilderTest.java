@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.List;
@@ -456,6 +457,11 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input7", LiteralTypes.STRUCT),
         builder.inputOfStruct("input7"));
+  }
+
+  @Test
+  void testRandomSuffix() {
+    assertTrue(SdkWorkflowBuilder.randomPrefix().matches("w[a-z]{4}-"));
   }
 
   static List<SdkTransform> createTransform() {

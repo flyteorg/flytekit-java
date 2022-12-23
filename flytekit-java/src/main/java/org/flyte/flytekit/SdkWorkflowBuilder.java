@@ -50,10 +50,11 @@ public class SdkWorkflowBuilder {
   private final AtomicInteger nodeIdSuffix;
 
   public SdkWorkflowBuilder() {
-    this("w" + ThreadLocalRandom.current().nextInt(1000, 10000) + "-");
+    this(randomPrefix());
   }
 
-  public SdkWorkflowBuilder(String nodeIdPrefix) {
+  // VisibleForTesting
+  SdkWorkflowBuilder(String nodeIdPrefix) {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -243,5 +244,15 @@ public class SdkWorkflowBuilder {
         .replaceAll("$1-$2")
         .toLowerCase(Locale.ROOT)
         .replaceAll("\\$", "-");
+  }
+
+  // VisibleForTesting
+  static String randomPrefix() {
+    return "w"
+        + ThreadLocalRandom.current()
+            .ints('a', 'z' + 1)
+            .limit(4)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .append('-');
   }
 }

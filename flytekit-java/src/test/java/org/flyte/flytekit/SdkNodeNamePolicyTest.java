@@ -30,16 +30,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class NodeNamePolicyTest {
+class SdkNodeNamePolicyTest {
 
   @Test
   void nextNodeIdShouldConformToFormat() {
-    assertThat(new NodeNamePolicy().nextNodeId(), matchesRegex("w[a-z]{4}-n\\d+"));
+    assertThat(new SdkNodeNamePolicy().nextNodeId(), matchesRegex("w[a-z]{4}-n\\d+"));
   }
 
   @Test
   void nextNodeIdShouldReturnUniqueIds() {
-    NodeNamePolicy policy = new NodeNamePolicy();
+    SdkNodeNamePolicy policy = new SdkNodeNamePolicy();
 
     var ids = IntStream.range(0, 100).mapToObj(__ -> policy.nextNodeId()).collect(toList());
     var uniqueIds = Set.copyOf(ids);
@@ -49,7 +49,7 @@ class NodeNamePolicyTest {
 
   @Test
   void nextNodeIdShouldReturnSamePrefixForSamePolicy() {
-    NodeNamePolicy policy = new NodeNamePolicy();
+    SdkNodeNamePolicy policy = new SdkNodeNamePolicy();
 
     var ids = IntStream.range(0, 100).mapToObj(__ -> policy.nextNodeId()).collect(toList());
 
@@ -62,8 +62,8 @@ class NodeNamePolicyTest {
   void nextNodeIdShouldReturnUniquePrefixForDistinctPolicies() {
     var prefixes =
         IntStream.range(0, 100)
-            .mapToObj(__ -> new NodeNamePolicy())
-            .map(NodeNamePolicy::nextNodeId)
+            .mapToObj(__ -> new SdkNodeNamePolicy())
+            .map(SdkNodeNamePolicy::nextNodeId)
             .map(id -> id.substring(0, id.indexOf('-')))
             .collect(toList());
     var uniquePrefixes = Set.copyOf(prefixes);
@@ -80,7 +80,7 @@ class NodeNamePolicyTest {
     "com.example.FooBar,foo-bar"
   })
   void toNodeName(String taskName, String expectedNodeName) {
-    NodeNamePolicy policy = new NodeNamePolicy();
+    SdkNodeNamePolicy policy = new SdkNodeNamePolicy();
 
     assertThat(policy.toNodeName(taskName), equalTo(expectedNodeName));
   }

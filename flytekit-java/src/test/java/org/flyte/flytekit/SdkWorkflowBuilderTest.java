@@ -62,14 +62,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SdkWorkflowBuilderTest {
 
-  @Mock NodeNamePolicy nodeNamePolicy;
+  @Mock SdkNodeNamePolicy sdkNodeNamePolicy;
 
   @Test
   void testTimes4WorkflowIdl() {
-    when(nodeNamePolicy.nextNodeId()).thenReturn("foo-n0", "foo-n1");
-    when(nodeNamePolicy.toNodeName(any())).thenReturn("multiplication-task");
+    when(sdkNodeNamePolicy.nextNodeId()).thenReturn("foo-n0", "foo-n1");
+    when(sdkNodeNamePolicy.toNodeName(any())).thenReturn("multiplication-task");
 
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder(nodeNamePolicy);
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder(sdkNodeNamePolicy);
 
     new Times4Workflow().expand(builder);
 

@@ -40,14 +40,14 @@ public class SdkWorkflowBuilder {
   private final Map<String, SdkBindingData> outputs;
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
-  private final NodeNamePolicy nodeNamePolicy;
+  private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
   public SdkWorkflowBuilder() {
-    this(new NodeNamePolicy());
+    this(new SdkNodeNamePolicy());
   }
 
   // VisibleForTesting
-  SdkWorkflowBuilder(NodeNamePolicy nodeNamePolicy) {
+  SdkWorkflowBuilder(SdkNodeNamePolicy sdkNodeNamePolicy) {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -56,7 +56,7 @@ public class SdkWorkflowBuilder {
     this.inputDescriptions = new HashMap<>();
     this.outputDescriptions = new HashMap<>();
 
-    this.nodeNamePolicy = nodeNamePolicy;
+    this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
@@ -81,7 +81,7 @@ public class SdkWorkflowBuilder {
       List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs) {
 
-    String actualNodeId = Objects.requireNonNullElseGet(nodeId, nodeNamePolicy::nextNodeId);
+    String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);
 
     if (nodes.containsKey(actualNodeId)) {
       CompilerError error =
@@ -94,7 +94,8 @@ public class SdkWorkflowBuilder {
     }
 
     String fallbackNodeName =
-        Objects.requireNonNullElseGet(nodeId, () -> nodeNamePolicy.toNodeName(transform.getName()));
+        Objects.requireNonNullElseGet(
+            nodeId, () -> sdkNodeNamePolicy.toNodeName(transform.getName()));
 
     SdkNode sdkNode =
         transform

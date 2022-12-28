@@ -25,7 +25,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.List;
@@ -52,24 +53,30 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class SdkWorkflowBuilderTest {
+
+  @Mock NodeNamePolicy nodeNamePolicy;
 
   @Test
   void testTimes4WorkflowIdl() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder("foo-");
+    when(nodeNamePolicy.nextNodeId()).thenReturn("foo-n0", "foo-n1");
+    when(nodeNamePolicy.toNodeName(any())).thenReturn("multiplication-task");
+
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder(nodeNamePolicy);
 
     new Times4Workflow().expand(builder);
 
     Node node0 =
         Node.builder()
             .id("foo-n0")
-            .metadata(
-                NodeMetadata.builder()
-                    .name("sdk-workflow-builder-test-multiplication-task")
-                    .build())
+            .metadata(NodeMetadata.builder().name("multiplication-task").build())
             .taskNode(
                 TaskNode.builder()
                     .referenceId(
@@ -98,10 +105,7 @@ class SdkWorkflowBuilderTest {
     Node node1 =
         Node.builder()
             .id("foo-n1")
-            .metadata(
-                NodeMetadata.builder()
-                    .name("sdk-workflow-builder-test-multiplication-task")
-                    .build())
+            .metadata(NodeMetadata.builder().name("multiplication-task").build())
             .taskNode(
                 TaskNode.builder()
                     .referenceId(
@@ -457,11 +461,6 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input7", LiteralTypes.STRUCT),
         builder.inputOfStruct("input7"));
-  }
-
-  @Test
-  void testRandomSuffix() {
-    assertTrue(SdkWorkflowBuilder.randomPrefix().matches("w[a-z]{4}-"));
   }
 
   static List<SdkTransform> createTransform() {

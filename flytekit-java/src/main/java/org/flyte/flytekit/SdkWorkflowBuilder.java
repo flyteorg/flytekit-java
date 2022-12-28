@@ -26,12 +26,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
@@ -39,22 +35,19 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 public class SdkWorkflowBuilder {
 
-  private static final Pattern PATTERN = Pattern.compile("([a-z])([A-Z]+)");
-
   private final Map<String, SdkNode> nodes;
   private final Map<String, SdkBindingData> inputs;
   private final Map<String, SdkBindingData> outputs;
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
-  private final String nodeIdPrefix;
-  private final AtomicInteger nodeIdSuffix;
+  private final NodeNamePolicy nodeNamePolicy;
 
   public SdkWorkflowBuilder() {
-    this(randomPrefix());
+    this(new NodeNamePolicy());
   }
 
   // VisibleForTesting
-  SdkWorkflowBuilder(String nodeIdPrefix) {
+  SdkWorkflowBuilder(NodeNamePolicy nodeNamePolicy) {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -63,8 +56,7 @@ public class SdkWorkflowBuilder {
     this.inputDescriptions = new HashMap<>();
     this.outputDescriptions = new HashMap<>();
 
-    this.nodeIdPrefix = nodeIdPrefix;
-    this.nodeIdSuffix = new AtomicInteger();
+    this.nodeNamePolicy = nodeNamePolicy;
   }
 
   public SdkNode apply(String nodeId, SdkTransform transform) {
@@ -89,9 +81,7 @@ public class SdkWorkflowBuilder {
       List<String> upstreamNodeIds,
       Map<String, SdkBindingData> inputs) {
 
-    String actualNodeId =
-        Objects.requireNonNullElseGet(
-            nodeId, () -> nodeIdPrefix + "n" + nodeIdSuffix.getAndIncrement());
+    String actualNodeId = Objects.requireNonNullElseGet(nodeId, nodeNamePolicy::nextNodeId);
 
     if (nodes.containsKey(actualNodeId)) {
       CompilerError error =
@@ -104,7 +94,7 @@ public class SdkWorkflowBuilder {
     }
 
     String fallbackNodeName =
-        Objects.requireNonNullElseGet(nodeId, () -> toNodeName(transform.getName()));
+        Objects.requireNonNullElseGet(nodeId, () -> nodeNamePolicy.toNodeName(transform.getName()));
 
     SdkNode sdkNode =
         transform
@@ -235,24 +225,5 @@ public class SdkWorkflowBuilder {
 
   public WorkflowTemplate toIdlTemplate() {
     return WorkflowTemplateIdl.ofBuilder(this);
-  }
-
-  private static String toNodeName(String name) {
-    String lastPart = name.substring(name.lastIndexOf('.') + 1);
-    return PATTERN
-        .matcher(lastPart)
-        .replaceAll("$1-$2")
-        .toLowerCase(Locale.ROOT)
-        .replaceAll("\\$", "-");
-  }
-
-  // VisibleForTesting
-  static String randomPrefix() {
-    return "w"
-        + ThreadLocalRandom.current()
-            .ints('a', 'z' + 1)
-            .limit(4)
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-            .append('-');
   }
 }

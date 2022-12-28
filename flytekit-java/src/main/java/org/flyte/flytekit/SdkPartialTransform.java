@@ -94,25 +94,21 @@ class SdkPartialTransform extends SdkTransform {
 
   @Override
   public SdkTransform withNameOverride(String name) {
-    return withNameOverride(name, true);
-  }
-
-  @Override
-  SdkTransform withNameOverride(String name, boolean failOnDuplicate) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().name(name).build();
-    try {
-      checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::name, "name");
-    } catch (IllegalArgumentException e) {
-      if (failOnDuplicate) {
-        throw e;
-      }
-      return this;
-    }
+    checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::name, "name");
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
     return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+  }
+
+  @Override
+  SdkTransform withNameOverrideIfNotSet(String name) {
+    if (metadata != null && metadata.name() != null) {
+      return this;
+    }
+    return withNameOverride(name);
   }
 
   @Override

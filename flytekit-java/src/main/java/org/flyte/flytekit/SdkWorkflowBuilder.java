@@ -98,7 +98,7 @@ public class SdkWorkflowBuilder {
 
     SdkNode sdkNode =
         transform
-            .withNameOverride(fallbackNodeName, false)
+            .withNameOverrideIfNotSet(fallbackNodeName)
             .apply(this, actualNodeId, upstreamNodeIds, null, inputs);
     nodes.put(sdkNode.getNodeId(), sdkNode);
 

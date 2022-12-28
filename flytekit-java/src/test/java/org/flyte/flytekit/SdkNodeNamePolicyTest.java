@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.matchesRegex;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.util.Set;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -41,7 +41,7 @@ class SdkNodeNamePolicyTest {
   void nextNodeIdShouldReturnUniqueIds() {
     SdkNodeNamePolicy policy = new SdkNodeNamePolicy();
 
-    var ids = IntStream.range(0, 100).mapToObj(__ -> policy.nextNodeId()).collect(toList());
+    var ids = Stream.generate(policy::nextNodeId).limit(100).collect(toList());
     var uniqueIds = Set.copyOf(ids);
 
     assertThat("returned duplicated id", ids, hasSize(uniqueIds.size()));
@@ -51,24 +51,28 @@ class SdkNodeNamePolicyTest {
   void nextNodeIdShouldReturnSamePrefixForSamePolicy() {
     SdkNodeNamePolicy policy = new SdkNodeNamePolicy();
 
-    var ids = IntStream.range(0, 100).mapToObj(__ -> policy.nextNodeId()).collect(toList());
+    var ids = Stream.generate(policy::nextNodeId).limit(100).collect(toList());
 
     String firstId = ids.get(0);
-    String commonPrefix = firstId.substring(0, firstId.indexOf('-'));
+    String commonPrefix = prefix(firstId);
     assertThat(ids, everyItem(startsWith(commonPrefix)));
   }
 
   @Test
   void nextNodeIdShouldReturnUniquePrefixForDistinctPolicies() {
     var prefixes =
-        IntStream.range(0, 100)
-            .mapToObj(__ -> new SdkNodeNamePolicy())
+        Stream.generate(SdkNodeNamePolicy::new)
+            .limit(100)
             .map(SdkNodeNamePolicy::nextNodeId)
-            .map(id -> id.substring(0, id.indexOf('-')))
+            .map(SdkNodeNamePolicyTest::prefix)
             .collect(toList());
     var uniquePrefixes = Set.copyOf(prefixes);
 
     assertThat("returned duplicated prefix", prefixes, hasSize(uniquePrefixes.size()));
+  }
+
+  private static String prefix(String id) {
+    return id.substring(0, id.indexOf('-'));
   }
 
   @ParameterizedTest

@@ -78,10 +78,18 @@ public abstract class SdkTransform {
     return SdkPartialTransform.of(this, metadata);
   }
 
+  SdkTransform withNameOverrideIfNotSet(String name) {
+    return withNameOverride(name);
+  }
+
   public SdkTransform withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();
     return SdkPartialTransform.of(this, metadata);
+  }
+
+  public String getName() {
+    return getClass().getName();
   }
 }

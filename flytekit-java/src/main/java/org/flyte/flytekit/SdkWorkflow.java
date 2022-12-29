@@ -27,10 +27,6 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 public abstract class SdkWorkflow extends SdkTransform {
 
-  public String getName() {
-    return getClass().getName();
-  }
-
   public abstract void expand(SdkWorkflowBuilder builder);
 
   @Override

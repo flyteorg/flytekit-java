@@ -5,4 +5,3 @@ public abstract class FlyteBuilder<T> {
 
     abstract T getOutputs(SdkNode node);
 }
-

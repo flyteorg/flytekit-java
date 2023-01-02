@@ -29,8 +29,6 @@ class FibonacciWorkflow extends SdkWorkflow {
     val fib4 = builder.apply("fib-4", SumTask(fib2, fib3)).getOutput("c")
     val fib5 = builder.apply("fib-5", SumTask(fib3, fib4)).getOutput("c")
 
-    builder.apply(new WelcomeWorkflow().withInput("name", "name"))
-
     builder.output("fib5", fib5, "Value for Fib5")
   }
 }

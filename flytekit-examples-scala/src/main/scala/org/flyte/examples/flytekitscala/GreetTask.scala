@@ -16,72 +16,42 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkNode, SdkRunnableTask, SdkTransform, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.SdkScalaType
-
-
-// Users would write
 
 case class GreetTaskInput(name: String)
 case class GreetTaskOutput(greeting: String)
-// @FlyteTask
+
+/** Example Flyte task that takes a name as the input and outputs a simple
+  * greeting message.
+  */
 class GreetTask
     extends SdkRunnableTask(
       SdkScalaType[GreetTaskInput],
       SdkScalaType[GreetTaskOutput]
     ) {
+
+  /** Defines task behavior. This task takes a name as the input, wraps it in a
+    * welcome message, and outputs the message.
+    *
+    * @param input
+    *   the name of the person to be greeted
+    * @return
+    *   the welcome message
+    */
   override def run(input: GreetTaskInput): GreetTaskOutput =
     GreetTaskOutput(s"Welcome, ${input.name}!")
 }
 
+object GreetTask {
 
-class WelcomeWorkflow extends SdkWorkflow {
-
-  def expand(builder: SdkWorkflowBuilder): Unit = {
-
-    val greetNode: SdkNode = builder.apply(
-      new GreetTaskBuilder().withName("Donald Trump").build)
-
-    val greetOutputs: GreetOutput = GreetTaskBuilder.getOutputs(greetNode)
-
-    builder.output("greeting", greetOutputs.greeting())
-  }
-}
-
-
-class GreetOutput(node: SdkNode)  {
-
-  def this(node: SdkNode) {
-    this(node)
-  }
-
-  def greeting(): SdkBindingData = {
-    node.getOutputs.get("greeting")
-  }
-
-}
-
-object GreetTaskBuilder {
-
-  def getOutputs(node: SdkNode): GreetOutput = {
-    new GreetOutput(node = node)
-  }
-
-}
-
-// We would generate and write GreetTask to META-INF
-class GreetTaskBuilder {
-  var name: SdkBindingData = SdkBindingData.ofString("")
-
-  def withName(name:String): GreetTaskBuilder = {
-    this.name = SdkBindingData.ofString(name)
-    this
-  }
-
-  def withName(name: SdkBindingData): GreetTaskBuilder = {
-    this.name = name
-    this
-  }
-
-  def build: SdkTransform = new GreetTask().withInput("name", name)
+  /** Binds input data to this task
+    *
+    * @param name
+    *   the input name
+    * @return
+    *   a transformed instance of this class with input data
+    */
+  def apply(name: SdkBindingData): SdkTransform =
+    new GreetTask().withInput("name", name)
 }

@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{FlyteBuilder, FlyteNode, SdkBindingData, SdkNode, SdkRunnableTask, SdkTransform, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{FlyteBuilder, FlyteBuilder2, FlyteNode, FlyteTransform, SdkBindingData, SdkNode, SdkRunnableTask, SdkTransform, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.SdkScalaType
 
 
@@ -53,19 +53,22 @@ class WelcomeWorkflow2 extends SdkWorkflow {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
 
-    val greetOutput: GreetOutput = builder.add(
-      new GreetTaskBuilder().withName("Donald Trump"))
-
     // Problem: we need to get the node here to potentially modify it
     // with upstream node
-    val greetOutput2: FlyteNode[GreetOutput] = builder.adddd(
-      new GreetTaskBuilder().withName("Donald Trump").build)
+    val greetOutput: GreetOutput = builder.add(
+      new GreetTaskBuilder().withName("Donald Trump"))
+    val greetOutput2: FlyteNode[GreetOutput] = builder.addd(
+      new GreetTaskBuilder().withName("Donald Trump"))
+    val greetOutput3: FlyteNode[GreetOutput] = builder.adddd(
+      new GreetTaskBuilder2().withName("Donald Trump").build)
 
+    greetOutput3.getOutputs.greeting
 
-    greetOutput2.getNode
-    greetOutput2.getOutputs.greeting()
+    greetOutput3.getNode
 
-    greetOutput.greeting();
+    greetOutput2.getOutputs
+
+    greetOutput.greeting()
 
 
 
@@ -110,6 +113,30 @@ class GreetTaskBuilder extends FlyteBuilder[GreetOutput] {
   @Override
   def build: SdkTransform = new GreetTask().withInput("name", name)
 
+
+  @Override
+  def getOutputs(node: SdkNode): GreetOutput = {
+    new GreetOutput(node = node)
+  }
+}
+
+// We would generate and write GreetTask to META-INF
+class GreetTaskBuilder2 extends FlyteBuilder2[GreetOutput] {
+  var name: SdkBindingData = SdkBindingData.ofString("")
+
+
+  def withName(name:String): GreetTaskBuilder2 = {
+    this.name = SdkBindingData.ofString(name)
+    this
+  }
+
+  def withName(name: SdkBindingData): GreetTaskBuilder2 = {
+    this.name = name
+    this
+  }
+
+  @Override
+  def build: FlyteTransform[GreetOutput] = new FlyteTransform[GreetOutput](new GreetTask().withInput("name", name), this)
 
   @Override
   def getOutputs(node: SdkNode): GreetOutput = {

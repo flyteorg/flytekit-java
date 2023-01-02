@@ -17,15 +17,20 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.examples.flytekitscala.generated.{GreetOutput, GreetTaskBuilder}
-import org.flyte.flytekit.{FlyteNode, SdkRunnableTask, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{FlyteNode, SdkBindingData, SdkRunnableTask, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.SdkScalaType
 
 class MyWorkflow extends SdkWorkflow {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
 
+    val name: SdkBindingData = builder.inputOfString("name")
+
+    val node: FlyteNode[GreetOutput] =  builder.apply(
+      new GreetTaskBuilder().withName(name).build)
+
     val greetNode: FlyteNode[GreetOutput] = builder.apply(
-      new GreetTaskBuilder().withName("Donald Trump").build)
+      new GreetTaskBuilder().withName("Donald Trump").build.withUpstreamNode(node.get))
 
     builder.output("greeting", greetNode.getOutputs.greeting())
   }

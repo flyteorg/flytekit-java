@@ -1,5 +1,7 @@
 package org.flyte.flytekit;
 
+import java.time.Duration;
+
 public class FlyteTransform<T> {
 
     private final SdkTransform transform;
@@ -10,8 +12,19 @@ public class FlyteTransform<T> {
         this.builder = builder;
     }
 
-    public SdkTransform getTransform() {
-        return transform;
+    public FlyteTransform<T> withUpstreamNode(SdkNode node) {
+        transform.withUpstreamNode(node);
+        return this;
+    }
+
+    public FlyteTransform<T> withTimeoutOverride(Duration timeout) {
+        transform.withTimeoutOverride(timeout);
+        return this;
+    }
+
+    public FlyteTransform<T> withNameOverride(String name) {
+        transform.withNameOverride(name);
+        return this;
     }
 
     public FlyteBuilder<T> getBuilder() {

@@ -13,7 +13,7 @@ public class FlyteNode<T> {
       return outputs;
     }
 
-    public SdkNode getNode() {
+    public SdkNode get() {
       return node;
     }
 }

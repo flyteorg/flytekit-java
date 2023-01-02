@@ -36,7 +36,7 @@ class MyWorkflow extends SdkWorkflow {
 
 case class GreetTaskInput(name: String)
 case class GreetTaskOutput(greeting: String)
-// @FlyteTask
+// @FlyteBuilder
 class GreetingTask
   extends SdkRunnableTask(
     SdkScalaType[GreetTaskInput],

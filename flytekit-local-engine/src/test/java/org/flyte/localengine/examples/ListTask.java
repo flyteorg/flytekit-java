@@ -24,7 +24,8 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output, NopOutputTransformer> {
+public class ListTask
+    extends SdkRunnableTask<ListTask.Input, ListTask.Output, NopOutputTransformer> {
   private static final long serialVersionUID = -2504538437067986693L;
 
   public ListTask() {

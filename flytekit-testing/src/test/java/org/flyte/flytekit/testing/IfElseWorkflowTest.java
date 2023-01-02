@@ -26,7 +26,6 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
 import org.flyte.flytekit.NopOutputTransformer;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;

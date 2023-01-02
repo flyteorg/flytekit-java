@@ -27,7 +27,8 @@ import org.flyte.api.v1.WorkflowNode;
 
 /** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT extends OutputTransformer>
+public abstract class SdkRemoteLaunchPlan<
+        InputT, OutputT, OutputTransformerT extends OutputTransformer>
     extends SdkTransform<OutputTransformerT> {
 
   @Nullable
@@ -108,7 +109,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT ex
   }
 
   @AutoValue.Builder
-  public abstract static class Builder<InputT, OutputT, OutputTransformerT extends OutputTransformer> {
+  public abstract static class Builder<
+      InputT, OutputT, OutputTransformerT extends OutputTransformer> {
 
     public abstract Builder<InputT, OutputT, OutputTransformerT> domain(String domain);
 

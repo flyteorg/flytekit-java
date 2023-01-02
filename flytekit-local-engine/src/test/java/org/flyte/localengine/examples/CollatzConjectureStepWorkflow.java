@@ -23,7 +23,6 @@ import static org.flyte.flytekit.SdkConditions.when;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.NopOutputTransformer;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -89,7 +88,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransfor
   }
 
   @AutoService(SdkRunnableTask.class)
-  public static class Divide extends SdkRunnableTask<Divide.Input, Divide.Output, NopOutputTransformer> {
+  public static class Divide
+      extends SdkRunnableTask<Divide.Input, Divide.Output, NopOutputTransformer> {
     private static final long serialVersionUID = -526903889896397227L;
 
     public Divide() {

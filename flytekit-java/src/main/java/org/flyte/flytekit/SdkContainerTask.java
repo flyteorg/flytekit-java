@@ -26,7 +26,8 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Building block for tasks that execute arbitrary containers. */
-public abstract class SdkContainerTask<InputT, OutputT, OutputTransformerT extends OutputTransformer>
+public abstract class SdkContainerTask<
+        InputT, OutputT, OutputTransformerT extends OutputTransformer>
     extends SdkTransform<OutputTransformerT> implements Serializable {
 
   private static final long serialVersionUID = 42L;
@@ -111,7 +112,8 @@ public abstract class SdkContainerTask<InputT, OutputT, OutputTransformerT exten
         metadata,
         inputs,
         outputType.getVariableMap(),
-        getOutputTransformerClass());
+        getOutputTransformerClass(),
+        SumTask.Output.class);
   }
 
   /** Specifies container image. */

@@ -22,7 +22,6 @@ import static org.flyte.flytekit.SdkConditions.lt;
 import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;

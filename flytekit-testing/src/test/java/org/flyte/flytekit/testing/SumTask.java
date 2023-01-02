@@ -23,7 +23,8 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopOutputTransformer> {
+public class SumTask
+    extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopOutputTransformer> {
   private static final long serialVersionUID = 0L;
 
   public SumTask() {

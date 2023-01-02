@@ -31,7 +31,11 @@ case class GreetTaskOutput(greeting: String)
   * greeting message.
   */
 class GreetTask
-    extends SdkRunnableTask[GreetTaskInput, GreetTaskOutput, NopOutputTransformer](
+    extends SdkRunnableTask[
+      GreetTaskInput,
+      GreetTaskOutput,
+      NopOutputTransformer
+    ](
       SdkScalaType[GreetTaskInput],
       SdkScalaType[GreetTaskOutput]
     ) {

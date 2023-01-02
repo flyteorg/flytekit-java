@@ -29,13 +29,14 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 
 /** Represent a {@link org.flyte.flytekit.SdkRunnableTask} in a workflow DAG. */
-public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
+public class SdkTaskNode<T> extends SdkNode<T> {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
   private final List<String> upstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
-  private final Map<String, SdkBindingData> inputs;
+  private final Map<String, SdkBindingData<?>> inputs;
   private final Map<String, Variable> outputs;
+  private final T output;
 
   SdkTaskNode(
       SdkWorkflowBuilder builder,
@@ -43,10 +44,10 @@ public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
       PartialTaskIdentifier taskId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
+      Map<String, SdkBindingData<?>> inputs,
       Map<String, Variable> outputs,
-      Class<T> outputTransformerClass) {
-    super(builder, outputTransformerClass);
+      T output) {
+    super(builder);
 
     this.nodeId = nodeId;
     this.taskId = taskId;
@@ -54,10 +55,11 @@ public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
     this.metadata = metadata;
     this.inputs = inputs;
     this.outputs = outputs;
+    this.output = output;
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputs.entrySet().stream()
         .collect(
             toUnmodifiableMap(
@@ -65,6 +67,11 @@ public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
                 entry ->
                     SdkBindingData.ofOutputReference(
                         nodeId, entry.getKey(), entry.getValue().literalType())));
+  }
+
+  @Override
+  public T getOutputs() {
+    return output;
   }
 
   @Override
@@ -90,7 +97,7 @@ public class SdkTaskNode<T extends OutputTransformer> extends SdkNode<T> {
         .build();
   }
 
-  private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
+  private static Binding toBinding(String var_, SdkBindingData<?> sdkBindingData) {
     return Binding.builder().var_(var_).binding(sdkBindingData.idl()).build();
   }
 }

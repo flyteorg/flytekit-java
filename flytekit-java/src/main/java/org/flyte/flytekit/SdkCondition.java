@@ -21,29 +21,31 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition<OutputTransformerT extends OutputTransformer> extends SdkTransform<OutputTransformerT> {
-  private final List<SdkConditionCase<OutputTransformerT>> cases;
+public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
+  private final List<SdkConditionCase<OutputT>> cases;
   private final String otherwiseName;
-  private final SdkTransform<OutputTransformerT> otherwise;
+  private final SdkTransform<OutputT> otherwise;
 
   SdkCondition(
-      List<SdkConditionCase<OutputTransformerT>> cases,
+      List<SdkConditionCase<OutputT>> cases,
       String otherwiseName,
-      SdkTransform<OutputTransformerT> otherwise) {
+      SdkTransform<OutputT> otherwise) {
     this.cases = cases;
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
   }
 
-  public SdkCondition<OutputTransformerT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<OutputTransformerT> then) {
-    List<SdkConditionCase<OutputTransformerT>> newCases = new ArrayList<>(cases);
+  public SdkCondition<OutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
+
+    List<SdkConditionCase<OutputT>> newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition<OutputTransformerT> otherwise(String name, SdkTransform<OutputTransformerT> otherwise) {
+  public SdkCondition<OutputT> otherwise(
+      String name, SdkTransform<OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
@@ -52,12 +54,12 @@ public class SdkCondition<OutputTransformerT extends OutputTransformer> extends 
   }
 
   @Override
-  public SdkNode<OutputTransformerT> apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     if (metadata != null) {
       throw new IllegalArgumentException("invariant failed: metadata must be null");
     }
@@ -65,7 +67,7 @@ public class SdkCondition<OutputTransformerT extends OutputTransformer> extends 
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }
 
-    SdkBranchNode.Builder<OutputTransformerT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
+    SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
 
     for (SdkConditionCase case_ : cases) {
       nodeBuilder.addCase(case_);

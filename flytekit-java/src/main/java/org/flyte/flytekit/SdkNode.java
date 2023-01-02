@@ -16,69 +16,26 @@
  */
 package org.flyte.flytekit;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
-public abstract class SdkNode<OutputTransformerT extends OutputTransformer> {
+public abstract class SdkNode<OutputT> {
 
   protected final SdkWorkflowBuilder builder;
 
-  private final Class<OutputTransformerT> outputTransformerClass;
-
-  private OutputTransformerT outputTransformer;
-
   protected SdkNode(SdkWorkflowBuilder builder) {
-    this(builder, null);
-  }
-
-  protected SdkNode(SdkWorkflowBuilder builder, Class<OutputTransformerT> outputTransformerClass) {
     this.builder = builder;
-    this.outputTransformerClass = outputTransformerClass;
   }
 
-  public OutputTransformerT getOutputTransformer() {
-    if (outputTransformer == null) {
-      if (outputTransformerClass == null) {
-        String message =
-            String.format(
-                "Try to use a output transformer without specific a output transformer class from node: %s",
-                getNodeId());
-        CompilerError error =
-            CompilerError.create(
-                CompilerError.Kind.USED_OUTPUT_TRANSFORMER_WITHOUT_SPECIFIC_CLASS,
-                /* nodeId= */ getNodeId(),
-                /* message= */ message);
+  public abstract Map<String, SdkBindingData<?>> getOutputBindings();
 
-        throw new CompilerException(error);
-      } else {
-        initializeOutputTransformer();
-      }
-    }
+  public abstract OutputT getOutputs();
 
-    return outputTransformer;
-  }
-
-  private void initializeOutputTransformer() {
-    try {
-      Constructor<? extends OutputTransformerT> ctor = outputTransformerClass.getConstructor(Map.class);
-      this.outputTransformer = ctor.newInstance(getOutputs());
-    } catch (IllegalAccessException
-        | InstantiationException
-        | NoSuchMethodException
-        | InvocationTargetException ex) {
-      ex.printStackTrace();
-    }
-  }
-
-  public abstract Map<String, SdkBindingData> getOutputs();
-
-  public SdkBindingData getOutput(String name) {
-    SdkBindingData output = getOutputs().get(name);
+  public SdkBindingData<?> getOutput(String name) {
+    SdkBindingData<?> output = getOutputBindings().get(name);
 
     if (output == null) {
       String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());
@@ -98,16 +55,12 @@ public abstract class SdkNode<OutputTransformerT extends OutputTransformer> {
 
   public abstract Node toIdl();
 
-  public SdkNode<OutputTransformerT> apply(String id, SdkTransform<OutputTransformerT> transform) {
-    return apply(id, transform, null);
-  }
-
-  public SdkNode<OutputTransformerT> apply(String id, SdkTransform<OutputTransformerT> transform, Class<OutputTransformerT> outputTransformerClass) {
+  public SdkNode<OutputT> apply(String id, SdkTransform<OutputT> transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
-        getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
+        getOutputBindings().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
 
     return builder.applyInternal(
-        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputs(), outputTransformerClass);
+        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputBindings());
   }
 }

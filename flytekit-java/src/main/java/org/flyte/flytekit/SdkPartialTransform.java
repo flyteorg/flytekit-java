@@ -31,7 +31,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /** {@link SdkTransform} with partially specified inputs. */
-class SdkPartialTransform<T extends OutputTransformer> extends SdkTransform<T> {
+class SdkPartialTransform<T> extends SdkTransform<T> {
   private final SdkTransform<T> transform;
   private final Map<String, SdkBindingData> fixedInputs;
   private final List<String> extraUpstreamNodeIds;
@@ -48,25 +48,18 @@ class SdkPartialTransform<T extends OutputTransformer> extends SdkTransform<T> {
     this.metadata = metadata;
   }
 
-  static <T extends OutputTransformer> SdkTransform<T> of(
+  static <T> SdkTransform<T> of(
       SdkTransform<T> transform, Map<String, SdkBindingData> fixedInputs) {
     return new SdkPartialTransform<>(transform, fixedInputs, emptyList(), /*metadata=*/ null);
   }
 
-  static <T extends OutputTransformer> SdkTransform<T> of(
-      SdkTransform<T> transform, List<String> extraUpstreamNodeIds) {
+  static <T> SdkTransform<T> of(SdkTransform<T> transform, List<String> extraUpstreamNodeIds) {
     return new SdkPartialTransform<>(
         transform, emptyMap(), extraUpstreamNodeIds, /*metadata=*/ null);
   }
 
-  static <T extends OutputTransformer> SdkTransform<T> of(
-      SdkTransform<T> transform, SdkNodeMetadata metadata) {
+  static <T> SdkTransform<T> of(SdkTransform<T> transform, SdkNodeMetadata metadata) {
     return new SdkPartialTransform<>(transform, emptyMap(), emptyList(), metadata);
-  }
-
-  @Override
-  public Class<T> getOutputTransformerClass() {
-    return transform.getOutputTransformerClass();
   }
 
   @Override

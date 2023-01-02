@@ -30,7 +30,8 @@ public abstract class SdkWorkflowRegistry {
     return loadAll(ServiceLoader.load(SdkWorkflowRegistry.class));
   }
 
-  static List<SdkWorkflow<? extends OutputTransformer>> loadAll(Iterable<SdkWorkflowRegistry> loader) {
+  static List<SdkWorkflow<? extends OutputTransformer>> loadAll(
+      Iterable<SdkWorkflowRegistry> loader) {
     List<SdkWorkflow<? extends OutputTransformer>> workflows = new ArrayList<>();
 
     for (SdkWorkflowRegistry registry : loader) {

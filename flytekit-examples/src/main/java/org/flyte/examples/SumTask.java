@@ -18,27 +18,32 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkNode;
+import org.flyte.flytekit.SdkNodeMetadata;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
+import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
+import java.util.List;
+import java.util.Map;
+
 @AutoService(SdkRunnableTask.class)
-public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopOutputTransformer> {
+public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
   public SumTask() {
     super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
   }
 
-  public static SdkTransform<NopOutputTransformer> of(SdkBindingData a, SdkBindingData b) {
-    return new SumTask().withInput("a", a).withInput("b", b);
+  public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
+    return new SumTask<>().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue
   public abstract static class SumInput {
-    public abstract long a();
+    public abstract SdkBindingData<Long> a();
 
-    public abstract long b();
+    public abstract SdkBindingData<Long> b();
 
     public static SumInput create(long a, long b) {
       return new AutoValue_SumTask_SumInput(a, b);
@@ -47,7 +52,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumOutput {
-    public abstract long c();
+    public abstract SdkBindingData<Long> c();
 
     public static SumOutput create(long c) {
       return new AutoValue_SumTask_SumOutput(c);
@@ -56,7 +61,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @Override
   public SumOutput run(SumInput input) {
-    return SumOutput.create(input.a() + input.b());
+    return SumOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
   }
 
   @Override

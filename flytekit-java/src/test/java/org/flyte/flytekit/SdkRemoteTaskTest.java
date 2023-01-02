@@ -90,7 +90,7 @@ class SdkRemoteTaskTest {
                         .build())),
         () ->
             assertThat(
-                node.getOutputs(),
+                node.getOutputBindings(),
                 is(
                     singletonMap(
                         "c",

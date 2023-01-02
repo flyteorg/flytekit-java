@@ -16,7 +16,11 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopOutputTransformer, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{
+  NopOutputTransformer,
+  SdkWorkflow,
+  SdkWorkflowBuilder
+}
 
 class DynamicFibonacciWorkflow extends SdkWorkflow[NopOutputTransformer] {
 

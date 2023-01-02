@@ -31,7 +31,10 @@ import org.flyte.flytekit.SdkType;
 /** {@link RunnableTask} that can fix output for specific input. */
 class TestingRunnableTask<InputT, OutputT, OutputTransformerT extends OutputTransformer>
     extends TestingRunnableNode<
-        PartialTaskIdentifier, InputT, OutputT, TestingRunnableTask<InputT, OutputT, OutputTransformerT>>
+        PartialTaskIdentifier,
+        InputT,
+        OutputT,
+        TestingRunnableTask<InputT, OutputT, OutputTransformerT>>
     implements RunnableTask {
   private TestingRunnableTask(
       PartialTaskIdentifier taskId,

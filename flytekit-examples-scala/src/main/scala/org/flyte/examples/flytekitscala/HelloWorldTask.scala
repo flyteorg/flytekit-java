@@ -16,14 +16,17 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopOutputTransformer, SdkBindingData, SdkRunnableTask}
+import org.flyte.flytekit.{
+  NopOutputTransformer,
+  SdkBindingData,
+  SdkRunnableTask
+}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class HelloWorldTaskInput(message: String) {
   case class Named(message: SdkBindingData)
   def named: Named = Named(SdkBindingData.ofString(""))
 }
-
 
 class HelloWorldTask
     extends SdkRunnableTask[HelloWorldTaskInput, Unit, NopOutputTransformer](

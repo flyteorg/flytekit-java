@@ -27,17 +27,13 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
-public abstract class SdkTransform<T extends OutputTransformer> {
+public abstract class SdkTransform<T> {
   public abstract SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs);
-
-  public Class<T> getOutputTransformerClass() {
-    return (Class<T>) NopOutputTransformer.class;
-  }
+      Map<String, SdkBindingData<?>> inputs);
 
   public SdkTransform<T> withInput(String name, String value) {
     return withInput(name, SdkBindingData.ofString(value));
@@ -63,8 +59,11 @@ public abstract class SdkTransform<T extends OutputTransformer> {
     return withInput(name, SdkBindingData.ofFloat(value));
   }
 
-  public SdkTransform<T> withInput(String name, SdkStruct value) {
-    return withInput(name, SdkBindingData.ofStruct(value));
+  //TODO SdkStruct is not strongly typed. We need to decide if we make this a SdkTransform<?>, a SdkTransform<SdkStruct>
+  //     or even better SdkTransform<T> withInput(String name, SdkType<T> type, T value)
+  public SdkTransform<?> withInput(String name, SdkStruct value) {
+    return null;
+    //return withInput(name, SdkBindingData.ofStruct(value));
   }
 
   public SdkTransform<T> withInput(String name, SdkBindingData value) {

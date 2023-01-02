@@ -21,7 +21,6 @@ import com.google.auto.value.AutoValue;
 import java.util.Map;
 import org.flyte.examples.GreetTask.GreetOutputTransformer;
 import org.flyte.flytekit.OutputTransformer;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -49,8 +48,6 @@ public class GreetTask
   public static SdkTransform<GreetOutputTransformer> of(SdkBindingData name) {
     return new GreetTask().withInput("name", name);
   }
-
-
 
   /**
    * Generate an immutable value class that represents {@link GreetTask}'s input, which is a String.

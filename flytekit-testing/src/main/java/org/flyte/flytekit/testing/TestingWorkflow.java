@@ -20,7 +20,6 @@ import java.util.Map;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;

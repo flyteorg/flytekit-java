@@ -25,7 +25,6 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.NopOutputTransformer;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -277,13 +276,14 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlanOutput() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
-        SdkRemoteLaunchPlan.create(
-            "development",
-            "flyte-warehouse",
-            "SumWorkflow",
-            JacksonSdkType.of(SumLaunchPlanInput.class),
-            JacksonSdkType.of(SumLaunchPlanOutput.class));
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer>
+        launchplanRef =
+            SdkRemoteLaunchPlan.create(
+                "development",
+                "flyte-warehouse",
+                "SumWorkflow",
+                JacksonSdkType.of(SumLaunchPlanInput.class),
+                JacksonSdkType.of(SumLaunchPlanOutput.class));
 
     SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
@@ -315,13 +315,14 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlanOutput_isMissing() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
-        SdkRemoteLaunchPlan.create(
-            "development",
-            "flyte-warehouse",
-            "SumWorkflow",
-            JacksonSdkType.of(SumLaunchPlanInput.class),
-            JacksonSdkType.of(SumLaunchPlanOutput.class));
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer>
+        launchplanRef =
+            SdkRemoteLaunchPlan.create(
+                "development",
+                "flyte-warehouse",
+                "SumWorkflow",
+                JacksonSdkType.of(SumLaunchPlanInput.class),
+                JacksonSdkType.of(SumLaunchPlanOutput.class));
 
     SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {
@@ -365,13 +366,14 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlan() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer> launchplanRef =
-        SdkRemoteLaunchPlan.create(
-            "development",
-            "flyte-warehouse",
-            "SumWorkflow",
-            JacksonSdkType.of(SumLaunchPlanInput.class),
-            JacksonSdkType.of(SumLaunchPlanOutput.class));
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer>
+        launchplanRef =
+            SdkRemoteLaunchPlan.create(
+                "development",
+                "flyte-warehouse",
+                "SumWorkflow",
+                JacksonSdkType.of(SumLaunchPlanInput.class),
+                JacksonSdkType.of(SumLaunchPlanOutput.class));
 
     SdkWorkflow<NopOutputTransformer> workflow =
         new SdkWorkflow<>() {

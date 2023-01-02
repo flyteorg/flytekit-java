@@ -17,7 +17,6 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;

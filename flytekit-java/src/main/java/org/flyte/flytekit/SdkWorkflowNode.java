@@ -53,7 +53,7 @@ public class SdkWorkflowNode<T extends OutputTransformer> extends SdkNode<T> {
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
+  public Map<String, SdkBindingData> getOutputBindings() {
     return outputs;
   }
 

@@ -24,8 +24,9 @@ import org.flyte.api.v1.ComparisonExpression;
 public class SdkConditions {
   private SdkConditions() {}
 
-  public static <OutputTransformerT extends OutputTransformer> SdkCondition<OutputTransformerT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<OutputTransformerT> then) {
+  public static <OutputTransformerT extends OutputTransformer>
+      SdkCondition<OutputTransformerT> when(
+          String name, SdkBooleanExpression condition, SdkTransform<OutputTransformerT> then) {
     SdkConditionCase<OutputTransformerT> case_ = SdkConditionCase.create(name, condition, then);
 
     return new SdkCondition<>(singletonList(case_), null, null);

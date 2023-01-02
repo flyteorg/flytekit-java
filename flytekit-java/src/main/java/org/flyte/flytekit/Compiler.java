@@ -31,7 +31,7 @@ import org.flyte.api.v1.Variable;
 class Compiler {
 
   static List<CompilerError> validateApply(
-      String nodeId, Map<String, SdkBindingData> inputs, Map<String, Variable> variableMap) {
+      String nodeId, Map<String, SdkBindingData<?>> inputs, Map<String, Variable> variableMap) {
     List<CompilerError> errors = new ArrayList<>();
 
     Set<String> allKeys = new HashSet<>();
@@ -39,7 +39,7 @@ class Compiler {
     allKeys.addAll(variableMap.keySet());
 
     for (String key : allKeys) {
-      SdkBindingData input = inputs.get(key);
+      SdkBindingData<?> input = inputs.get(key);
       Variable variable = variableMap.get(key);
 
       if (variable == null) {

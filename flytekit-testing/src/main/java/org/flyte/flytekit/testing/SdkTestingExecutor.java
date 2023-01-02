@@ -306,8 +306,9 @@ public abstract class SdkTestingExecutor {
     return builder.build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer> SdkTestingExecutor withTaskOutput(
-      SdkRunnableTask<InputT, OutputT, OutputTransformerT> task, InputT input, OutputT output) {
+  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkTestingExecutor withTaskOutput(
+          SdkRunnableTask<InputT, OutputT, OutputTransformerT> task, InputT input, OutputT output) {
     TestingRunnableTask<InputT, OutputT, OutputTransformerT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
@@ -316,8 +317,9 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer> SdkTestingExecutor withTaskOutput(
-      SdkRemoteTask<InputT, OutputT, OutputTransformerT> task, InputT input, OutputT output) {
+  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkTestingExecutor withTaskOutput(
+          SdkRemoteTask<InputT, OutputT, OutputTransformerT> task, InputT input, OutputT output) {
     TestingRunnableTask<InputT, OutputT, OutputTransformerT> fixedTask =
         getFixedTaskOrDefault(task.name(), task.inputs(), task.outputs());
 
@@ -338,9 +340,10 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer> SdkTestingExecutor withLaunchPlan(
-      SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> launchPlan,
-      Function<InputT, OutputT> runFn) {
+  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkTestingExecutor withLaunchPlan(
+          SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> launchPlan,
+          Function<InputT, OutputT> runFn) {
     TestingRunnableLaunchPlan<InputT, OutputT> launchPlanTestDouble =
         getRunnableLaunchPlanOrDefault(
             launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
@@ -350,20 +353,23 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer> SdkTestingExecutor withTask(
-      SdkRunnableTask<InputT, OutputT, OutputTransformerT> task, Function<InputT, OutputT> runFn) {
+  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkTestingExecutor withTask(
+          SdkRunnableTask<InputT, OutputT, OutputTransformerT> task,
+          Function<InputT, OutputT> runFn) {
     TestingRunnableTask<InputT, OutputT, OutputTransformerT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
     return toBuilder().putFixedTask(task.getName(), fixedTask.withRunFn(runFn)).build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer> SdkTestingExecutor withWorkflowOutput(
-      SdkWorkflow<OutputTransformerT> workflow,
-      SdkType<InputT> inputType,
-      InputT input,
-      SdkType<OutputT> outputType,
-      OutputT output) {
+  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+      SdkTestingExecutor withWorkflowOutput(
+          SdkWorkflow<OutputTransformerT> workflow,
+          SdkType<InputT> inputType,
+          InputT input,
+          SdkType<OutputT> outputType,
+          OutputT output) {
     verifyInputOutputMatchesWorkflowInterface(workflow, inputType, outputType);
 
     // fixed tasks
@@ -371,7 +377,8 @@ public abstract class SdkTestingExecutor {
         getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
 
     // replace workflow
-    SdkWorkflow<OutputTransformerT> mockWorkflow = new TestingWorkflow<>(inputType, outputType, output);
+    SdkWorkflow<OutputTransformerT> mockWorkflow =
+        new TestingWorkflow<>(inputType, outputType, output);
 
     return toBuilder()
         .putWorkflowTemplate(workflow.getName(), mockWorkflow.toIdlTemplate())

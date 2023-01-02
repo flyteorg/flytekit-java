@@ -36,7 +36,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 
-public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends SdkNode<OutputTransformerT> {
+public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   private final String nodeId;
   private final SdkIfElseBlock ifElse;
   private final Map<String, LiteralType> outputTypes;
@@ -47,9 +47,8 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
       String nodeId,
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
-      Map<String, LiteralType> outputTypes,
-      Class<OutputTransformerT> outputTransformerClass) {
-    super(builder, outputTransformerClass);
+      Map<String, LiteralType> outputTypes) {
+    super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
@@ -58,12 +57,17 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputTypes.entrySet().stream()
         .collect(toUnmodifiableMap(Map.Entry::getKey, this::createOutput));
   }
 
-  private SdkBindingData createOutput(Map.Entry<String, LiteralType> entry) {
+  @Override
+  public OutputT getOutputs() {
+    return null;
+  }
+
+  private SdkBindingData<?> createOutput(Map.Entry<String, LiteralType> entry) {
     return SdkBindingData.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
   }
 
@@ -92,44 +96,26 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
         .build();
   }
 
-  static class Builder<OutputTransformerT extends OutputTransformer> {
+  static class Builder<OutputT> {
     private final SdkWorkflowBuilder builder;
 
-    private final Map<String, Map<String, SdkBindingData>> caseOutputs = new LinkedHashMap<>();
+    private final Map<String, Map<String, SdkBindingData<?>>> caseOutputs = new LinkedHashMap<>();
     private final List<SdkIfBlock> ifBlocks = new ArrayList<>();
 
     private SdkNode<?> elseNode;
     private Map<String, LiteralType> outputTypes;
-
-    private Class<OutputTransformerT> outputTransformerClass;
 
     Builder(SdkWorkflowBuilder builder) {
       this.builder = builder;
     }
 
     @CanIgnoreReturnValue
-    Builder<OutputTransformerT> addCase(SdkConditionCase case_) {
-      SdkNode<? extends OutputTransformer> sdkNode =
+    Builder<OutputT> addCase(SdkConditionCase<OutputT> case_) {
+      SdkNode<OutputT> sdkNode =
           case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
 
-      Class<OutputTransformerT> thatoutputTransformerClass = case_.then().getOutputTransformerClass();
 
-      if (outputTransformerClass != null) {
-        if (!outputTransformerClass.equals(thatoutputTransformerClass)) {
-          throw new IllegalArgumentException(
-              String.format(
-                  "NamedOutputs of node [%s] didn't match with namedOutputs"
-                      + " of previous nodes %s, expected: [%s], but got [%s]",
-                  sdkNode.getNodeId(),
-                  caseOutputs.keySet(),
-                  outputTransformerClass,
-                  thatoutputTransformerClass));
-        }
-      } else {
-        outputTransformerClass = thatoutputTransformerClass;
-      }
-
-      Map<String, SdkBindingData> thatOutputs = sdkNode.getOutputs();
+      Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
       Map<String, LiteralType> thatOutputTypes =
           thatOutputs.entrySet().stream()
               .collect(toUnmodifiableMap(Map.Entry::getKey, x -> x.getValue().type()));
@@ -145,7 +131,7 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
         outputTypes = thatOutputTypes;
       }
 
-      Map<String, SdkBindingData> previous = caseOutputs.put(case_.name(), thatOutputs);
+      Map<String, SdkBindingData<?>> previous = caseOutputs.put(case_.name(), thatOutputs);
 
       if (previous != null) {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", case_.name()));
@@ -157,7 +143,8 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
     }
 
     @CanIgnoreReturnValue
-    Builder<OutputTransformerT> addOtherwise(String name, SdkTransform<? extends OutputTransformer> otherwise) {
+    Builder<OutputT> addOtherwise(
+        String name, SdkTransform<OutputT> otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }
@@ -167,12 +154,12 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
       }
 
       elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap());
-      caseOutputs.put(name, elseNode.getOutputs());
+      caseOutputs.put(name, elseNode.getOutputBindings());
 
       return this;
     }
 
-    SdkBranchNode<OutputTransformerT> build(String nodeId, List<String> upstreamNodeIds) {
+    SdkBranchNode<OutputT> build(String nodeId, List<String> upstreamNodeIds) {
       if (ifBlocks.isEmpty()) {
         throw new IllegalArgumentException("addCase should be called at least once");
       }
@@ -185,7 +172,7 @@ public class SdkBranchNode<OutputTransformerT extends OutputTransformer> extends
               .build();
 
       return new SdkBranchNode<>(
-          builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, outputTransformerClass);
+          builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
     }
   }
 }

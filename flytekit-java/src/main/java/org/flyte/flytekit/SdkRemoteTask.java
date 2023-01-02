@@ -82,7 +82,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
     }
 
     Map<String, Variable> variableMap = outputs().getVariableMap();
-    OutputT output = outputs().fromVariableMap(nodeId, variableMap);
+    OutputT output = outputs().promiseFor(nodeId);
     return new SdkTaskNode<>(
         builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
   }

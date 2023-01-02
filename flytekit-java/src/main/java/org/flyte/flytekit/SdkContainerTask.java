@@ -27,8 +27,8 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Building block for tasks that execute arbitrary containers. */
 public abstract class SdkContainerTask<
-        InputT, OutputT, OutputTransformerT extends OutputTransformer>
-    extends SdkTransform<OutputTransformerT> implements Serializable {
+        InputT, OutputT>
+    extends SdkTransform<OutputT> implements Serializable {
 
   private static final long serialVersionUID = 42L;
 
@@ -90,12 +90,12 @@ public abstract class SdkContainerTask<
   }
 
   @Override
-  public SdkNode<OutputTransformerT> apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
     List<CompilerError> errors =
         Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
@@ -112,8 +112,7 @@ public abstract class SdkContainerTask<
         metadata,
         inputs,
         outputType.getVariableMap(),
-        getOutputTransformerClass(),
-        SumTask.Output.class);
+        outputType.promiseFor(nodeId));
   }
 
   /** Specifies container image. */

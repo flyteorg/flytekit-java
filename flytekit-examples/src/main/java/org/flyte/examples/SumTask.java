@@ -19,15 +19,9 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkNode;
-import org.flyte.flytekit.SdkNodeMetadata;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
-import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
-
-import java.util.List;
-import java.util.Map;
 
 @AutoService(SdkRunnableTask.class)
 public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
@@ -36,7 +30,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   }
 
   public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask<>().withInput("a", a).withInput("b", b);
+    return new SumTask().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue
@@ -46,7 +40,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
     public abstract SdkBindingData<Long> b();
 
     public static SumInput create(long a, long b) {
-      return new AutoValue_SumTask_SumInput(a, b);
+      return new AutoValue_SumTask_SumInput(SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
     }
   }
 
@@ -55,13 +49,13 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
     public abstract SdkBindingData<Long> c();
 
     public static SumOutput create(long c) {
-      return new AutoValue_SumTask_SumOutput(c);
+      return new AutoValue_SumTask_SumOutput(SdkBindingData.ofInteger(c));
     }
   }
 
   @Override
   public SumOutput run(SumInput input) {
-    return SumOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
+    return SumOutput.create(input.a().get() + input.b().get());
   }
 
   @Override

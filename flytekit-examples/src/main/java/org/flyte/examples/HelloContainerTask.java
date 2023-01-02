@@ -23,13 +23,12 @@ import com.google.auto.service.AutoService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkContainerTask;
 import org.flyte.flytekit.SdkTypes;
 
 /** Hello container in Flyte. */
 @AutoService(SdkContainerTask.class)
-public class HelloContainerTask extends SdkContainerTask<Void, Void, NopOutputTransformer> {
+public class HelloContainerTask extends SdkContainerTask<Void, Void> {
 
   public HelloContainerTask() {
     super(SdkTypes.nulls(), SdkTypes.nulls());

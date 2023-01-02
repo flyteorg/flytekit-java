@@ -25,8 +25,8 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-public abstract class SdkWorkflow<OutputTransformerT extends OutputTransformer>
-    extends SdkTransform<OutputTransformerT> {
+public abstract class SdkWorkflow<OutputT>
+    extends SdkTransform<OutputT> {
 
   public String getName() {
     return getClass().getName();
@@ -35,12 +35,12 @@ public abstract class SdkWorkflow<OutputTransformerT extends OutputTransformer>
   public abstract void expand(SdkWorkflowBuilder builder);
 
   @Override
-  public SdkNode<OutputTransformerT> apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
 
     PartialWorkflowIdentifier workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
@@ -60,7 +60,7 @@ public abstract class SdkWorkflow<OutputTransformerT extends OutputTransformer>
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(workflowId))
             .build();
 
-    Map<String, SdkBindingData> outputs =
+    Map<String, SdkBindingData<?>> outputs =
         innerBuilder.getOutputs().entrySet().stream()
             .collect(
                 Collectors.toMap(
@@ -75,8 +75,7 @@ public abstract class SdkWorkflow<OutputTransformerT extends OutputTransformer>
         metadata,
         workflowNode,
         inputs,
-        outputs,
-        getOutputTransformerClass());
+        outputs);
   }
 
   public WorkflowTemplate toIdlTemplate() {

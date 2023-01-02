@@ -47,9 +47,9 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
   private static class ContainerTaskImpl<
           InputT, OutputT, OutputTransformerT extends OutputTransformer>
       implements ContainerTask {
-    private final SdkContainerTask<InputT, OutputT, OutputTransformerT> sdkTask;
+    private final SdkContainerTask<InputT, OutputT> sdkTask;
 
-    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT, OutputTransformerT> sdkTask) {
+    private ContainerTaskImpl(SdkContainerTask<InputT, OutputT> sdkTask) {
       this.sdkTask = sdkTask;
     }
 
@@ -135,7 +135,7 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     Map<TaskIdentifier, ContainerTask> tasks = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
 
-    for (SdkContainerTask<?, ?, ?> sdkTask : loader) {
+    for (SdkContainerTask<?, ?> sdkTask : loader) {
       String name = sdkTask.getName();
       TaskIdentifier taskId =
           TaskIdentifier.builder()

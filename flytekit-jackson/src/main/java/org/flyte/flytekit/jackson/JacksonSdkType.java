@@ -130,4 +130,9 @@ public class JacksonSdkType<T> extends SdkType<T> {
       throw new RuntimeException("fromLiteralMap failed for [" + clazz.getName() + "]", e);
     }
   }
+
+  @Override
+  public T promiseFor(String nodeId) {
+    return null; // TODO
+  }
 }

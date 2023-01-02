@@ -42,7 +42,7 @@ public abstract class SdkBindingData<T> {
   @Nullable
   abstract T value();
 
-  static <T> SdkBindingData<T> create(BindingData idl, LiteralType type, T value) {
+  public static <T> SdkBindingData<T> create(BindingData idl, LiteralType type, T value) {
     return new AutoValue_SdkBindingData<>(idl, type, value);
   }
 

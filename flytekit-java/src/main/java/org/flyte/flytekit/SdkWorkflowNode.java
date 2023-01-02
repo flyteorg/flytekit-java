@@ -25,13 +25,13 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowNode;
 
-public class SdkWorkflowNode<T extends OutputTransformer> extends SdkNode<T> {
+public class SdkWorkflowNode<T> extends SdkNode<T> {
   private final String nodeId;
   private final List<String> upstreamNodeIds;
   private final SdkNodeMetadata metadata;
   private final WorkflowNode workflowNode;
-  private final Map<String, SdkBindingData> inputs;
-  private final Map<String, SdkBindingData> outputs;
+  private final Map<String, SdkBindingData<?>> inputs;
+  private final Map<String, SdkBindingData<?>> outputs;
 
   SdkWorkflowNode(
       SdkWorkflowBuilder builder,
@@ -39,10 +39,9 @@ public class SdkWorkflowNode<T extends OutputTransformer> extends SdkNode<T> {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       WorkflowNode workflowNode,
-      Map<String, SdkBindingData> inputs,
-      Map<String, SdkBindingData> outputs,
-      Class<T> outputTransformerClass) {
-    super(builder, outputTransformerClass);
+      Map<String, SdkBindingData<?>> inputs,
+      Map<String, SdkBindingData<?>> outputs) {
+    super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
@@ -53,8 +52,13 @@ public class SdkWorkflowNode<T extends OutputTransformer> extends SdkNode<T> {
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputBindings() {
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputs;
+  }
+
+  @Override
+  public T getOutputs() {
+    return null; // TODO implement
   }
 
   @Override
@@ -78,7 +82,7 @@ public class SdkWorkflowNode<T extends OutputTransformer> extends SdkNode<T> {
         .build();
   }
 
-  private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
+  private static Binding toBinding(String var_, SdkBindingData<?> sdkBindingData) {
     return Binding.builder().var_(var_).binding(sdkBindingData.idl()).build();
   }
 }

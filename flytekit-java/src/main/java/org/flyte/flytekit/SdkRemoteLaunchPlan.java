@@ -67,7 +67,7 @@ public abstract class SdkRemoteLaunchPlan<
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialLaunchPlanIdentifier workflowId =
         PartialLaunchPlanIdentifier.builder()
             .name(name())
@@ -81,7 +81,7 @@ public abstract class SdkRemoteLaunchPlan<
       throw new CompilerException(errors);
     }
 
-    Map<String, SdkBindingData> outputs =
+    Map<String, SdkBindingData<?>> outputs =
         outputs().getVariableMap().entrySet().stream()
             .collect(
                 toUnmodifiableMap(
@@ -99,8 +99,7 @@ public abstract class SdkRemoteLaunchPlan<
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
         inputs,
-        outputs,
-        getOutputTransformerClass());
+        outputs);
   }
 
   public static <InputT, OutputT, OutputTransformerT extends OutputTransformer>

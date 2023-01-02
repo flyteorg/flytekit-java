@@ -29,12 +29,12 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 
 /** {@link RunnableTask} that can fix output for specific input. */
-class TestingRunnableTask<InputT, OutputT, OutputTransformerT extends OutputTransformer>
+class TestingRunnableTask<InputT, OutputT>
     extends TestingRunnableNode<
         PartialTaskIdentifier,
         InputT,
         OutputT,
-        TestingRunnableTask<InputT, OutputT, OutputTransformerT>>
+        TestingRunnableTask<InputT, OutputT>>
     implements RunnableTask {
   private TestingRunnableTask(
       PartialTaskIdentifier taskId,
@@ -53,17 +53,17 @@ class TestingRunnableTask<InputT, OutputT, OutputTransformerT extends OutputTran
         "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
   }
 
-  static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
-      TestingRunnableTask<InputT, OutputT, OutputTransformerT> create(
-          SdkRunnableTask<InputT, OutputT, OutputTransformerT> task) {
+  static <InputT, OutputT>
+      TestingRunnableTask<InputT, OutputT> create(
+          SdkRunnableTask<InputT, OutputT> task) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
         taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap());
   }
 
-  static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
-      TestingRunnableTask<InputT, OutputT, OutputTransformerT> create(
+  static <InputT, OutputT>
+      TestingRunnableTask<InputT, OutputT> create(
           String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 

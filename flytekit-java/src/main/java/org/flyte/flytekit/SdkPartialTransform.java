@@ -33,13 +33,13 @@ import javax.annotation.Nullable;
 /** {@link SdkTransform} with partially specified inputs. */
 class SdkPartialTransform<T> extends SdkTransform<T> {
   private final SdkTransform<T> transform;
-  private final Map<String, SdkBindingData> fixedInputs;
+  private final Map<String, SdkBindingData<?>> fixedInputs;
   private final List<String> extraUpstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
 
   private SdkPartialTransform(
       SdkTransform<T> transform,
-      Map<String, SdkBindingData> fixedInputs,
+      Map<String, SdkBindingData<?>> fixedInputs,
       List<String> extraUpstreamNodeIds,
       @Nullable SdkNodeMetadata metadata) {
     this.transform = transform;
@@ -49,7 +49,7 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
   }
 
   static <T> SdkTransform<T> of(
-      SdkTransform<T> transform, Map<String, SdkBindingData> fixedInputs) {
+      SdkTransform<T> transform, Map<String, SdkBindingData<?>> fixedInputs) {
     return new SdkPartialTransform<>(transform, fixedInputs, emptyList(), /*metadata=*/ null);
   }
 
@@ -63,17 +63,17 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
   }
 
   @Override
-  public SdkTransform<T> withInput(String name, SdkBindingData value) {
+  public SdkTransform<T> withInput(String name, SdkBindingData<T> value) {
     // isn't necessary to override, but this reduces nesting and gives better error messages
 
-    SdkBindingData existing = fixedInputs.get(name);
+    SdkBindingData<?> existing = fixedInputs.get(name);
     if (existing != null) {
       String message =
           String.format("Duplicate values for input [%s]: [%s], [%s]", name, existing, value);
       throw new IllegalArgumentException(message);
     }
 
-    Map<String, SdkBindingData> newFixedInputs = new HashMap<>(fixedInputs);
+    Map<String, SdkBindingData<?>> newFixedInputs = new HashMap<>(fixedInputs);
     newFixedInputs.put(name, value);
 
     return new SdkPartialTransform<>(
@@ -81,7 +81,7 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
   }
 
   @Override
-  public <K extends OutputTransformer> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
+  public <K> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
     if (extraUpstreamNodeIds.contains(node.getNodeId())) {
       throw new IllegalArgumentException(
           String.format("Duplicate upstream node id [%s]", node.getNodeId()));
@@ -122,8 +122,8 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
-    Map<String, SdkBindingData> allInputs = new HashMap<>(fixedInputs);
+      Map<String, SdkBindingData<?>> inputs) {
+    Map<String, SdkBindingData<?>> allInputs = new HashMap<>(fixedInputs);
 
     inputs.forEach(
         (k, v) ->

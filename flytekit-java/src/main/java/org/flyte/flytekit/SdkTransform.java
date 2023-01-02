@@ -66,11 +66,11 @@ public abstract class SdkTransform<T> {
     //return withInput(name, SdkBindingData.ofStruct(value));
   }
 
-  public SdkTransform<T> withInput(String name, SdkBindingData value) {
+  public SdkTransform<T> withInput(String name, SdkBindingData<?> value) {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }
 
-  public <K extends OutputTransformer> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
+  public <K> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
     return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
   }
 

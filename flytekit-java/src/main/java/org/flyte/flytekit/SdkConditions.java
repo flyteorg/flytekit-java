@@ -24,51 +24,51 @@ import org.flyte.api.v1.ComparisonExpression;
 public class SdkConditions {
   private SdkConditions() {}
 
-  public static <OutputTransformerT extends OutputTransformer>
-      SdkCondition<OutputTransformerT> when(
-          String name, SdkBooleanExpression condition, SdkTransform<OutputTransformerT> then) {
-    SdkConditionCase<OutputTransformerT> case_ = SdkConditionCase.create(name, condition, then);
+  public static <OutputT>
+      SdkCondition<OutputT> when(
+          String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
+    SdkConditionCase<OutputT> case_ = SdkConditionCase.create(name, condition, then);
 
     return new SdkCondition<>(singletonList(case_), null, null);
   }
 
-  public static SdkBooleanExpression eq(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression eq(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.EQ));
   }
 
-  public static SdkBooleanExpression neq(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression neq(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.NEQ));
   }
 
-  public static SdkBooleanExpression gt(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression gt(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.GT));
   }
 
-  public static SdkBooleanExpression gte(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression gte(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.GTE));
   }
 
-  public static SdkBooleanExpression lt(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression lt(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.LT));
   }
 
-  public static SdkBooleanExpression lte(SdkBindingData left, SdkBindingData right) {
+  public static SdkBooleanExpression lte(SdkBindingData<?> left, SdkBindingData<?> right) {
     return ofComparison(
         SdkComparisonExpression.create(left, right, ComparisonExpression.Operator.LTE));
   }
 
-  public static SdkBooleanExpression isTrue(SdkBindingData data) {
+  public static SdkBooleanExpression isTrue(SdkBindingData<?> data) {
     return ofComparison(
         SdkComparisonExpression.create(
             data, SdkBindingData.ofBoolean(true), ComparisonExpression.Operator.EQ));
   }
 
-  public static SdkBooleanExpression isFalse(SdkBindingData data) {
+  public static SdkBooleanExpression isFalse(SdkBindingData<?> data) {
     return ofComparison(
         SdkComparisonExpression.create(
             data, SdkBindingData.ofBoolean(false), ComparisonExpression.Operator.EQ));

@@ -113,6 +113,8 @@ object SdkScalaType {
           param.typeclass.fromLiteral(paramLiteral)
         })
       }
+
+      def promiseFor(nodeId: String): T = null.asInstanceOf[T] // TODO
     }
   }
 
@@ -231,4 +233,6 @@ private object SdkUnitType extends SdkScalaProductType[Unit] {
     ju.Collections.emptyMap()
 
   def fromLiteralMap(literal: ju.Map[String, Literal]): Unit = ()
+
+  def promiseFor(nodeId: String): Unit = ()
 }

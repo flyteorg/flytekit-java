@@ -18,27 +18,28 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class UberWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class UberWorkflow<T> extends SdkWorkflow<T> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
-    SdkBindingData c = builder.inputOfInteger("c");
-    SdkBindingData d = builder.inputOfInteger("d");
-    SdkBindingData ab =
+    SdkBindingData<?> a = builder.inputOfInteger("a");
+    SdkBindingData<?> b = builder.inputOfInteger("b");
+    SdkBindingData<?> c = builder.inputOfInteger("c");
+    SdkBindingData<?> d = builder.inputOfInteger("d");
+    SdkBindingData<?> ab =
         builder
             .apply("sub-1", new SubWorkflow().withInput("left", a).withInput("right", b))
             .getOutput("result");
-    SdkBindingData abc =
+    SdkBindingData<?> abc =
         builder
             .apply("sub-2", new SubWorkflow().withInput("left", ab).withInput("right", c))
             .getOutput("result");
-    SdkBindingData abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutput("c");
+    SdkBindingData<?> abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutput("c");
     builder.output("total", abcd);
   }
 }

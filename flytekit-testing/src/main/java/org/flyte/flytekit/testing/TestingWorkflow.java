@@ -16,23 +16,28 @@
  */
 package org.flyte.flytekit.testing;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-class TestingWorkflow<InputT, OutputT> extends SdkWorkflow {
+class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
+  private final OutputT output;
   private final Map<String, Literal> outputLiterals;
 
   TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
     this.inputType = inputType;
     this.outputType = outputType;
+    this.output = output;
     this.outputLiterals = outputType.toLiteralMap(output);
   }
 
@@ -48,8 +53,14 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow {
   }
 
   private void defineOutput(SdkWorkflowBuilder builder, String name, Variable var) {
-    BindingData outputValue = Literals.toBindingData(outputLiterals.get(name));
-    SdkBindingData output = SdkBindingData.create(outputValue, var.literalType());
+    Literal literal = outputLiterals.get(name);
+    SdkBindingData<?> value;
+    try {
+      value = (SdkBindingData<?>)output.getClass().getMethod(name).invoke(output);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e); // TODO improve error message
+    }
+    SdkBindingData<?> output = SdkBindingData.create(Literals.toBindingData(literal), var.literalType(), value.get());
 
     builder.output(name, output, var.description());
   }

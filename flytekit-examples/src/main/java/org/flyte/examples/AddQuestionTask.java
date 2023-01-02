@@ -18,7 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -29,7 +29,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
  */
 @AutoService(SdkRunnableTask.class)
 public class AddQuestionTask
-    extends SdkRunnableTask<AddQuestionTask.Input, AddQuestionTask.Output, NopOutputTransformer> {
+    extends SdkRunnableTask<AddQuestionTask.Input, AddQuestionTask.Output> {
   public AddQuestionTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }
@@ -40,7 +40,7 @@ public class AddQuestionTask
    * @param greeting the input greeting message
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform<NopOutputTransformer> of(SdkBindingData greeting) {
+  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<?> greeting) {
     return new AddQuestionTask().withInput("greeting", greeting);
   }
 

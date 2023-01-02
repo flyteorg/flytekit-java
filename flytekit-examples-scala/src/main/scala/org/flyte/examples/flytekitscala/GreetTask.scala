@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkNode, SdkRunnableTask, SdkTransform, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{FlyteBuilder, FlyteNode, SdkBindingData, SdkNode, SdkRunnableTask, SdkTransform, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.SdkScalaType
 
 
@@ -49,6 +49,30 @@ class WelcomeWorkflow extends SdkWorkflow {
 }
 
 
+class WelcomeWorkflow2 extends SdkWorkflow {
+
+  def expand(builder: SdkWorkflowBuilder): Unit = {
+
+    val greetOutput: GreetOutput = builder.add(
+      new GreetTaskBuilder().withName("Donald Trump"))
+
+    // Problem: we need to get the node here to potentially modify it
+    // with upstream node
+    val greetOutput2: FlyteNode[GreetOutput] = builder.adddd(
+      new GreetTaskBuilder().withName("Donald Trump").build)
+
+
+    greetOutput2.getNode
+    greetOutput2.getOutputs.greeting()
+
+    greetOutput.greeting();
+
+
+
+  }
+}
+
+
 class GreetOutput(node: SdkNode)  {
 
   def this(node: SdkNode) {
@@ -61,7 +85,7 @@ class GreetOutput(node: SdkNode)  {
 
 }
 
-object GreetTaskBuilder {
+object GreetTaskBuilder  {
 
   def getOutputs(node: SdkNode): GreetOutput = {
     new GreetOutput(node = node)
@@ -70,7 +94,7 @@ object GreetTaskBuilder {
 }
 
 // We would generate and write GreetTask to META-INF
-class GreetTaskBuilder {
+class GreetTaskBuilder extends FlyteBuilder[GreetOutput] {
   var name: SdkBindingData = SdkBindingData.ofString("")
 
   def withName(name:String): GreetTaskBuilder = {
@@ -83,5 +107,12 @@ class GreetTaskBuilder {
     this
   }
 
+  @Override
   def build: SdkTransform = new GreetTask().withInput("name", name)
+
+
+  @Override
+  def getOutputs(node: SdkNode): GreetOutput = {
+    new GreetOutput(node = node)
+  }
 }

@@ -71,6 +71,32 @@ public class SdkWorkflowBuilder {
     return apply(/*nodeId=*/ null, transform, emptyMap());
   }
 
+  public <T> T add(FlyteBuilder<T> transformBuilder) {
+    SdkNode node = apply(/*nodeId=*/ null, transformBuilder.build(), emptyMap());
+
+    T outputs = transformBuilder.getOutputs(node);
+    return outputs;
+  }
+
+  public <T> FlyteNode<T> addd(FlyteBuilder<T> transformBuilder) {
+    SdkNode node = apply(/*nodeId=*/ null, transformBuilder.build(), emptyMap());
+
+    T outputs = transformBuilder.getOutputs(node);
+    return new FlyteNode<T>(node, outputs);
+  }
+
+  public <T> FlyteNode<T> adddd(SdkTransform2<T> transform) {
+    SdkNode node = apply(/*nodeId=*/ null, transformBuilder.build(), emptyMap());
+
+    T outputs = transformBuilder.getOutputs(node);
+    return new FlyteNode<T>(node, outputs);
+  }
+
+  public class SdkTransform2<T> {
+
+
+  }
+
   public SdkNode apply(SdkTransform transform, Map<String, SdkBindingData> inputs) {
     return applyInternal(/*nodeId=*/ null, transform, emptyList(), inputs);
   }

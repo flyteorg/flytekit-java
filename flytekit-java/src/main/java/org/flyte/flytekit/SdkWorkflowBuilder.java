@@ -162,7 +162,8 @@ public class SdkWorkflowBuilder {
   }
 
   public <T> SdkBindingData<T> inputOf(String name, LiteralType literalType, String help) {
-    SdkBindingData<T> bindingData = SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
+    SdkBindingData<T> bindingData =
+        SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
 
     inputDescriptions.put(name, help);
     inputs.put(name, bindingData);

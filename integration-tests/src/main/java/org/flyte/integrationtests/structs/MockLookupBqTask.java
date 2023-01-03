@@ -19,12 +19,13 @@ package org.flyte.integrationtests.structs;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class MockLookupBqTask
-    extends SdkRunnableTask<MockLookupBqTask.Input, MockLookupBqTask.Output, NopOutputTransformer> {
+    extends SdkRunnableTask<MockLookupBqTask.Input, MockLookupBqTask.Output> {
   private static final long serialVersionUID = 604843235716487166L;
 
   public MockLookupBqTask() {
@@ -33,12 +34,12 @@ public class MockLookupBqTask
 
   @AutoValue
   public abstract static class Input {
-    public abstract BQReference ref();
+    public abstract SdkBindingData<BQReference> ref();
 
     public abstract boolean checkIfExists();
 
     public static Input create(BQReference ref, boolean checkIfExists) {
-      return new AutoValue_MockLookupBqTask_Input(ref, checkIfExists);
+      return null; // TODO
     }
   }
 

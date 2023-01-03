@@ -30,15 +30,20 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   }
 
   public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask().withInput("a", a).withInput("b", b);
+    return new SumTask()
+            .withInput("a", a) // this still sucks
+            .withInput("b", b);
   }
 
   @AutoValue
-  public abstract static class SumInput {
+  public abstract static class SumInput
+  {
+    // SdkBindingData<Long> vs long
     public abstract SdkBindingData<Long> a();
 
     public abstract SdkBindingData<Long> b();
 
+    // we haven't decided if this are longs or sdkbinding data too
     public static SumInput create(long a, long b) {
       return new AutoValue_SumTask_SumInput(SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
     }
@@ -46,6 +51,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumOutput {
+
     public abstract SdkBindingData<Long> c();
 
     public static SumOutput create(long c) {

@@ -17,7 +17,6 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
-  NopOutputTransformer,
   SdkBindingData,
   SdkDynamicWorkflowTask,
   SdkWorkflowBuilder
@@ -26,14 +25,13 @@ import org.flyte.flytekitscala.SdkScalaType
 
 import scala.annotation.tailrec
 
-case class DynamicFibonacciWorkflowTaskInput(n: Long)
-case class DynamicFibonacciWorkflowTaskOutput(output: Long)
+case class DynamicFibonacciWorkflowTaskInput(n: SdkBindingData[Long])
+case class DynamicFibonacciWorkflowTaskOutput(output: SdkBindingData[Long])
 
 class DynamicFibonacciWorkflowTask
     extends SdkDynamicWorkflowTask[
       DynamicFibonacciWorkflowTaskInput,
-      DynamicFibonacciWorkflowTaskOutput,
-      NopOutputTransformer
+      DynamicFibonacciWorkflowTaskOutput
     ](
       SdkScalaType[DynamicFibonacciWorkflowTaskInput],
       SdkScalaType[DynamicFibonacciWorkflowTaskOutput]
@@ -46,21 +44,21 @@ class DynamicFibonacciWorkflowTask
 
     @tailrec
     def fib(
-        n: Long,
-        value: SdkBindingData,
-        prev: SdkBindingData
-    ): SdkBindingData = {
-      if (n == input.n) value
+        n: java.lang.Long,
+        value: SdkBindingData[java.lang.Long],
+        prev: SdkBindingData[java.lang.Long]
+    ): SdkBindingData[java.lang.Long] = {
+      if (n == input.n.get()) value
       else
         fib(
           n + 1,
-          builder(s"fib-${n + 1}", SumTask(value, prev)).getOutput("c"),
+          builder(s"fib-${n + 1}", SumTask(value, prev)).getOutputs.c,
           value
         )
     }
 
-    require(input.n > 0, "n < 0")
-    val value = if (input.n == 0) {
+    require(input.n.get() > 0, "n < 0")
+    val value = if (input.n.get() == 0) {
       SdkBindingData.ofInteger(0)
     } else {
       fib(1, SdkBindingData.ofInteger(1), SdkBindingData.ofInteger(0))

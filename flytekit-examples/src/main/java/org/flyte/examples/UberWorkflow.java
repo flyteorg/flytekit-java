@@ -27,19 +27,19 @@ public class UberWorkflow<T> extends SdkWorkflow<T> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<?> a = builder.inputOfInteger("a");
-    SdkBindingData<?> b = builder.inputOfInteger("b");
-    SdkBindingData<?> c = builder.inputOfInteger("c");
-    SdkBindingData<?> d = builder.inputOfInteger("d");
-    SdkBindingData<?> ab =
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> c = builder.inputOfInteger("c");
+    SdkBindingData<Long> d = builder.inputOfInteger("d");
+    SdkBindingData<Long> ab =
         builder
             .apply("sub-1", new SubWorkflow().withInput("left", a).withInput("right", b))
-            .getOutput("result");
-    SdkBindingData<?> abc =
+                .getOutputs().result();
+    SdkBindingData<Long> abc =
         builder
             .apply("sub-2", new SubWorkflow().withInput("left", ab).withInput("right", c))
-            .getOutput("result");
-    SdkBindingData<?> abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutput("c");
+                .getOutputs().result();
+    SdkBindingData<Long> abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutputs().c();
     builder.output("total", abcd);
   }
 }

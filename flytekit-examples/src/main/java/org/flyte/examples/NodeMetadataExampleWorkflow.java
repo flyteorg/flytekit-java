@@ -19,6 +19,7 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import java.time.Duration;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
@@ -27,17 +28,17 @@ public class NodeMetadataExampleWorkflow extends SdkWorkflow<NopOutputTransforme
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = SdkBindingData.ofInteger(0);
-    SdkBindingData b = SdkBindingData.ofInteger(1);
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(0);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(1);
 
-    SdkBindingData c =
+    SdkBindingData<Long> c =
         builder
             .apply(
                 "sum-a-b",
                 SumTask.of(a, b)
                     .withNameOverride("sum a+b")
                     .withTimeoutOverride(Duration.ofMinutes(15)))
-            .getOutput("c");
+            .getOutputs().c();
 
     builder.output("c", c, "Value of the sum");
   }

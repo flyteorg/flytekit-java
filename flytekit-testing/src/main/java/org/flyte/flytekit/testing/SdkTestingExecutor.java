@@ -327,9 +327,9 @@ public abstract class SdkTestingExecutor {
     return toBuilder().putFixedTask(task.name(), fixedTask.withFixedOutput(input, output)).build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+  public <InputT, OutputT>
       SdkTestingExecutor withLaunchPlanOutput(
-          SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> launchPlan,
+          SdkRemoteLaunchPlan<InputT, OutputT> launchPlan,
           InputT input,
           OutputT output) {
     TestingRunnableLaunchPlan<InputT, OutputT> runnableLaunchPlan =
@@ -341,9 +341,9 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+  public <InputT, OutputT>
       SdkTestingExecutor withLaunchPlan(
-          SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> launchPlan,
+          SdkRemoteLaunchPlan<InputT, OutputT> launchPlan,
           Function<InputT, OutputT> runFn) {
     TestingRunnableLaunchPlan<InputT, OutputT> launchPlanTestDouble =
         getRunnableLaunchPlanOrDefault(
@@ -354,7 +354,7 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public <InputT, OutputT, OutputTransformerT extends OutputTransformer>
+  public <InputT, OutputT>
       SdkTestingExecutor withTask(
           SdkRunnableTask<InputT, OutputT> task,
           Function<InputT, OutputT> runFn) {

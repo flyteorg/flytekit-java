@@ -18,6 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -33,12 +34,12 @@ public class RemoteLaunchPlanExample extends SdkWorkflow<NopOutputTransformer> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData fib0 = builder.inputOfInteger("fib0");
-    SdkBindingData fib1 = builder.inputOfInteger("fib1");
+    SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
+    SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");
     builder.apply("remote-launch-plan", create().withInput("fib0", fib0).withInput("fib1", fib1));
   }
 
-  public static SdkRemoteLaunchPlan<Input, Void, NopOutputTransformer> create() {
+  public static SdkRemoteLaunchPlan<Input, Void> create() {
     return SdkRemoteLaunchPlan.create(
         /* domain= */ "development",
         /* project= */ "flytesnacks",

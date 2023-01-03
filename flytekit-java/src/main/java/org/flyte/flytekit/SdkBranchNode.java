@@ -114,7 +114,6 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
       SdkNode<OutputT> sdkNode =
           case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
 
-
       Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
       Map<String, LiteralType> thatOutputTypes =
           thatOutputs.entrySet().stream()
@@ -143,8 +142,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     }
 
     @CanIgnoreReturnValue
-    Builder<OutputT> addOtherwise(
-        String name, SdkTransform<OutputT> otherwise) {
+    Builder<OutputT> addOtherwise(String name, SdkTransform<OutputT> otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }
@@ -171,8 +169,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
               .elseNode(elseNode)
               .build();
 
-      return new SdkBranchNode<>(
-          builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
+      return new SdkBranchNode<>(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
     }
   }
 }

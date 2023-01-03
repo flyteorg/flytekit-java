@@ -23,18 +23,15 @@ import org.flyte.flytekit.{
 }
 import org.flyte.flytekitscala.SdkScalaType
 
-case class HelloWorldTaskInput(message: String) {
-  case class Named(message: SdkBindingData)
-  def named: Named = Named(SdkBindingData.ofString(""))
-}
+case class HelloWorldTaskInput(message: SdkBindingData[String]) {}
 
 class HelloWorldTask
-    extends SdkRunnableTask[HelloWorldTaskInput, Unit, NopOutputTransformer](
+    extends SdkRunnableTask[HelloWorldTaskInput, Unit](
       SdkScalaType[HelloWorldTaskInput],
       SdkScalaType.unit
     ) {
 
   override def run(input: HelloWorldTaskInput): Unit = {
-    println(input.message)
+    println(input.message.get())
   }
 }

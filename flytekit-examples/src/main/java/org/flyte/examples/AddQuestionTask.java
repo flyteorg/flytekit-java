@@ -50,7 +50,7 @@ public class AddQuestionTask
    */
   @AutoValue
   public abstract static class Input {
-    public abstract String greeting();
+    public abstract SdkBindingData<String> greeting();
   }
 
   /**
@@ -59,7 +59,7 @@ public class AddQuestionTask
    */
   @AutoValue
   public abstract static class Output {
-    public abstract String greeting();
+    public abstract SdkBindingData<String> greeting();
 
     /**
      * Wraps the constructor of the generated output value class.
@@ -68,7 +68,7 @@ public class AddQuestionTask
      * @return output of AddQuestionTask
      */
     public static Output create(String greeting) {
-      return new AutoValue_AddQuestionTask_Output(greeting);
+      return new AutoValue_AddQuestionTask_Output(SdkBindingData.ofString(greeting));
     }
   }
 

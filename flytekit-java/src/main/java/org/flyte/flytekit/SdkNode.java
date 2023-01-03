@@ -36,7 +36,7 @@ public abstract class SdkNode<OutputT> {
 
   public SdkBindingData<OutputT> getOutput(String name) {
     // TODO Add unchecked
-    SdkBindingData<OutputT> output = (SdkBindingData<OutputT>)getOutputBindings().get(name);
+    SdkBindingData<OutputT> output = (SdkBindingData<OutputT>) getOutputBindings().get(name);
 
     if (output == null) {
       String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());
@@ -59,7 +59,9 @@ public abstract class SdkNode<OutputT> {
   public SdkNode<OutputT> apply(String id, SdkTransform<OutputT> transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
-        getOutputBindings().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
+        getOutputBindings().isEmpty()
+            ? Collections.singletonList(getNodeId())
+            : Collections.emptyList();
 
     return builder.applyInternal(
         id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputBindings());

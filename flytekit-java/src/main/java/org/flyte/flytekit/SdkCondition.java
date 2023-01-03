@@ -44,8 +44,7 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition<OutputT> otherwise(
-      String name, SdkTransform<OutputT> otherwise) {
+  public SdkCondition<OutputT> otherwise(String name, SdkTransform<OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }

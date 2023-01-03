@@ -18,9 +18,6 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import java.util.Map;
-import org.flyte.examples.GreetTask.GreetOutputTransformer;
-import org.flyte.flytekit.OutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
@@ -50,7 +47,7 @@ public class GreetTask
    */
   @AutoValue
   public abstract static class Input {
-    public abstract String name();
+    public abstract SdkBindingData<String> name();
   }
 
   /**
@@ -59,7 +56,7 @@ public class GreetTask
    */
   @AutoValue
   public abstract static class Output {
-    public abstract String greeting();
+    public abstract SdkBindingData<String> greeting();
 
     /**
      * Wraps the constructor of the generated output value class.
@@ -68,18 +65,7 @@ public class GreetTask
      * @return output of GreetTask
      */
     public static Output create(String greeting) {
-      return new AutoValue_GreetTask_Output(greeting);
-    }
-  }
-
-  public static class GreetOutputTransformer extends OutputTransformer {
-
-    public GreetOutputTransformer(Map<String, SdkBindingData<?>> outputs) {
-      super(outputs);
-    }
-
-    public SdkBindingData<?> greeting() {
-      return getOutputs().get("greeting");
+      return new AutoValue_GreetTask_Output(SdkBindingData.ofString(greeting));
     }
   }
 
@@ -92,6 +78,6 @@ public class GreetTask
    */
   @Override
   public Output run(Input input) {
-    return Output.create(String.format("Welcome, %s!", input.name()));
+    return Output.create(String.format("Welcome, %s!", input.name().get()));
   }
 }

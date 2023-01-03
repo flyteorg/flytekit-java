@@ -21,6 +21,7 @@ import static org.flyte.flytekit.SdkConditions.eq;
 
 import com.google.auto.service.AutoService;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkConditions;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -29,15 +30,14 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 public class ConditionalGreetingWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData name = builder.inputOfString("name");
-    SdkBindingData greeting =
-        builder
+    SdkBindingData<String> name = builder.inputOfString("name");
+    SdkBindingData<String> greeting = builder
             .apply(
-                "decide",
-                SdkConditions.when(
-                        "when-empty", eq(name, ofString("")), GreetTask.of(ofString("World")))
-                    .otherwise("when-not-empty", GreetTask.of(name)))
-            .getOutput("greeting");
+                    "decide",
+                    SdkConditions.when(
+                                    "when-empty", eq(name, ofString("")), GreetTask.of(ofString("World")))
+                            .otherwise("when-not-empty", GreetTask.of(name)))
+            .getOutputs().greeting();
 
     builder.output("greeting", greeting);
   }

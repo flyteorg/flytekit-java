@@ -32,7 +32,9 @@ public class FibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
 
-    SdkBindingData<Long> fib2 = builder.apply("fib-2", SumTask.of(fib0, fib1)).getOutputs().c();
+    SdkNode<SumTask.SumOutput> apply = builder.apply("fib-2", SumTask.of(fib0, fib1));
+    SumTask.SumOutput outputs = apply.getOutputs();
+    SdkBindingData<Long> fib2 = outputs.c();
     SdkBindingData<Long> fib3 = builder.apply("fib-3", SumTask.of(fib1, fib2)).getOutputs().c();
     SdkBindingData<Long> fib4 = builder.apply("fib-4", SumTask.of(fib2, fib3)).getOutputs().c();
     SdkBindingData<Long> fib5 = builder.apply("fib-5", SumTask.of(fib3, fib4)).getOutputs().c();

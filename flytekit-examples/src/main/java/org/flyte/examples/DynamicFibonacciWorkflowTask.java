@@ -36,26 +36,26 @@ public class DynamicFibonacciWorkflowTask
 
   @AutoValue
   abstract static class Input {
-    public abstract long n();
+    public abstract SdkBindingData<Long> n();
   }
 
   @AutoValue
   abstract static class Output {
-    public abstract long output();
+    public abstract SdkBindingData<Long> output();
   }
 
   @Override
   public void run(SdkWorkflowBuilder builder, Input input) {
-    if (input.n() < 0) {
+    if (input.n().get() < 0) {
       throw new IllegalArgumentException("n < 0");
-    } else if (input.n() == 0) {
+    } else if (input.n().get() == 0) {
       builder.output("output", SdkBindingData.ofInteger(0));
     } else {
-      @Var SdkBindingData prev = SdkBindingData.ofInteger(0);
-      @Var SdkBindingData value = SdkBindingData.ofInteger(1);
-      for (int i = 2; i <= input.n(); i++) {
-        SdkBindingData next = builder.apply("fib-" + i, SumTask.of(value, prev)).getOutput("c");
-        ;
+      @Var SdkBindingData<Long> prev = SdkBindingData.ofInteger(0);
+      @Var SdkBindingData<Long> value = SdkBindingData.ofInteger(1);
+      for (int i = 2; i <= input.n().get(); i++) {
+        SdkBindingData<Long> next =
+            builder.apply("fib-" + i, SumTask.of(value, prev)).getOutputs().c();
         prev = value;
         value = next;
       }

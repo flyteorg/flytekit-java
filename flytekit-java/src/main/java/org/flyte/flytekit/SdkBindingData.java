@@ -22,15 +22,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.function.Function;
-
+import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-
-import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class SdkBindingData<T> {
@@ -95,7 +93,10 @@ public abstract class SdkBindingData<T> {
   public T get() {
     if (idl().kind() == BindingData.Kind.PROMISE) {
       OutputReference promise = idl().promise();
-      throw new IllegalArgumentException(String.format("Value only available at workflow execution time: promise of %s[%s]", promise.nodeId(), promise.var()));
+      throw new IllegalArgumentException(
+          String.format(
+              "Value only available at workflow execution time: promise of %s[%s]",
+              promise.nodeId(), promise.var()));
     }
 
     return value();

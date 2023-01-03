@@ -63,7 +63,7 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
   }
 
   @Override
-  public SdkTransform<T> withInput(String name, SdkBindingData<T> value) {
+  public SdkTransform<T> withInput(String name, SdkBindingData<?> value) {
     // isn't necessary to override, but this reduces nesting and gives better error messages
 
     SdkBindingData<?> existing = fixedInputs.get(name);

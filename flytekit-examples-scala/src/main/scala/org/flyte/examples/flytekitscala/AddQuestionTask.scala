@@ -24,8 +24,8 @@ import org.flyte.flytekit.{
 }
 import org.flyte.flytekitscala.SdkScalaType
 
-case class AddQuestionTaskInput(greeting: String)
-case class AddQuestionTaskOutput(greeting: String)
+case class AddQuestionTaskInput(greeting: SdkBindingData[String])
+case class AddQuestionTaskOutput(greeting: SdkBindingData[String])
 
 /** Example Flyte task that takes a greeting message as input, appends "How are
   * you?", and outputs the result.
@@ -33,8 +33,7 @@ case class AddQuestionTaskOutput(greeting: String)
 class AddQuestionTask
     extends SdkRunnableTask[
       AddQuestionTaskInput,
-      AddQuestionTaskOutput,
-      NopOutputTransformer
+      AddQuestionTaskOutput
     ](
       SdkScalaType[AddQuestionTaskInput],
       SdkScalaType[AddQuestionTaskOutput]
@@ -49,7 +48,7 @@ class AddQuestionTask
     *   the updated greeting message
     */
   override def run(input: AddQuestionTaskInput): AddQuestionTaskOutput =
-    AddQuestionTaskOutput(s"${input.greeting} How are you?")
+    AddQuestionTaskOutput(SdkBindingData.ofString(s"${input.greeting} How are you?"))
 }
 
 object AddQuestionTask {
@@ -61,6 +60,6 @@ object AddQuestionTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(greeting: SdkBindingData): SdkTransform[NopOutputTransformer] =
+  def apply(greeting: SdkBindingData[String]): SdkTransform[AddQuestionTaskOutput] =
     new AddQuestionTask().withInput("greeting", greeting)
 }

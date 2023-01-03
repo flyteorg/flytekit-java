@@ -20,7 +20,7 @@ import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
-import org.flyte.flytekit.SdkType
+import org.flyte.flytekit.{SdkBindingData, SdkType}
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
@@ -118,6 +118,15 @@ object SdkScalaType {
     }
   }
 
+  implicit def sdkBindingLiteralType[T](implicit
+                                        sdkLiteral: SdkScalaLiteralType[T]
+                                       ): SdkScalaLiteralType[SdkBindingData[T]] =
+    SdkScalaLiteralType[SdkBindingData[T]](
+      sdkLiteral.getLiteralType,
+      value => sdkLiteral.toLiteral(value.get()),
+      literal => ??? // TODO fix here
+    )
+
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
       LiteralType.ofSimpleType(SimpleType.STRING),
@@ -160,6 +169,32 @@ object SdkScalaType {
       value =>
         Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
       _.scalar().primitive().duration()
+    )
+
+  // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>
+  //  This makes Scala dev mad when they are forced to use the java types instead of scala types
+  //  We need to think what to do, maybe move the factory methods out of SdkDataBinding into their own class
+  //  So java and scala can have their own factory class/companion object using their own native types
+  //  In the meantime, we need to duplicate all the literal types to use also the java types
+  implicit def javaLongLiteralType: SdkScalaLiteralType[java.lang.Long] =
+    SdkScalaLiteralType[java.lang.Long](
+      LiteralType.ofSimpleType(SimpleType.INTEGER),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
+      _.scalar().primitive().integer()
+    )
+
+  implicit def javaDoubleLiteralType: SdkScalaLiteralType[java.lang.Double] =
+    SdkScalaLiteralType[java.lang.Double](
+      LiteralType.ofSimpleType(SimpleType.FLOAT),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
+      literal => literal.scalar().primitive().float_()
+    )
+
+  implicit def javaBooleanLiteralType: SdkScalaLiteralType[java.lang.Boolean] =
+    SdkScalaLiteralType[java.lang.Boolean](
+      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
+      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
+      _.scalar().primitive().boolean_()
     )
 
   implicit def collectionLiteralType[T](implicit

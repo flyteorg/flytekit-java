@@ -18,6 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -26,11 +27,12 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 public class DynamicFibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData n = builder.inputOfInteger("n");
+    SdkBindingData<Long> n = builder.inputOfInteger("n");
 
-    SdkNode<?> fibonacci =
-        builder.apply("fibonacci", new DynamicFibonacciWorkflowTask().withInput("n", n));
+    SdkBindingData<Long> fibOutput =
+            builder.apply("fibonacci", new DynamicFibonacciWorkflowTask().withInput("n", n))
+                    .getOutputs().output();
 
-    builder.output("output", fibonacci.getOutput("output"));
+    builder.output("output", fibOutput);
   }
 }

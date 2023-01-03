@@ -18,6 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
@@ -28,15 +29,15 @@ public class WelcomeWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     // defines the input of the workflow
-    SdkBindingData name = builder.inputOfString("name", "The name for the welcome message");
+    SdkBindingData<String> name = builder.inputOfString("name", "The name for the welcome message");
 
     // uses the workflow input as the task input of the GreetTask
-    SdkBindingData greeting =
-        builder.apply("greet", GreetTask.of(name)).getOutputTransformer().g.greeting();
+    SdkBindingData<String> greeting =
+        builder.apply("greet", GreetTask.of(name)).getOutputs().greeting();
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
-    SdkBindingData greetingWithQuestion =
-        builder.apply("add-question", AddQuestionTask.of(greeting)).getOutput("greeting");
+    SdkBindingData<String> greetingWithQuestion =
+        builder.apply("add-question", AddQuestionTask.of(greeting)).getOutputs().greeting();
 
     // uses the task output of the AddQuestionTask as the output of the workflow
     builder.output("greeting", greetingWithQuestion, "Welcome message");

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
@@ -39,8 +40,10 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
-    SdkBindingData searchKeys = SdkBindingData.ofStringCollection(NAMES);
+    //TODO
+    /*
+    SdkBindingData<String> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
+    SdkBindingData<String> searchKeys = SdkBindingData.ofStringCollection(NAMES);
 
     SdkBindingData phoneNumbers =
         builder
@@ -51,6 +54,6 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
                     .withInput("searchKeys", searchKeys))
             .getOutput("values");
 
-    builder.output("phoneNumbers", phoneNumbers);
+    builder.output("phoneNumbers", phoneNumbers);*/
   }
 }

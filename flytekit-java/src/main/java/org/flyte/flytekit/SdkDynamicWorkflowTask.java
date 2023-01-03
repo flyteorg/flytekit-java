@@ -21,9 +21,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
-public abstract class SdkDynamicWorkflowTask<
-        InputT, OutputT>
-    extends SdkTransform<OutputT> {
+public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransform<OutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;

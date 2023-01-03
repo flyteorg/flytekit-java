@@ -27,9 +27,7 @@ import org.flyte.api.v1.WorkflowNode;
 
 /** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<
-        InputT, OutputT, OutputTransformerT extends OutputTransformer>
-    extends SdkTransform<OutputTransformerT> {
+public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<OutputT> {
 
   @Nullable
   public abstract String domain();
@@ -45,14 +43,13 @@ public abstract class SdkRemoteLaunchPlan<
 
   public abstract SdkType<OutputT> outputs();
 
-  public static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
-      SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> create(
-          String domain,
-          String project,
-          String name,
-          SdkType<InputT> inputs,
-          SdkType<OutputT> outputs) {
-    return SdkRemoteLaunchPlan.<InputT, OutputT, OutputTransformerT>builder()
+  public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
+      String domain,
+      String project,
+      String name,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
+    return SdkRemoteLaunchPlan.<InputT, OutputT>builder()
         .domain(domain)
         .project(project)
         .name(name)
@@ -62,7 +59,7 @@ public abstract class SdkRemoteLaunchPlan<
   }
 
   @Override
-  public SdkNode<OutputTransformerT> apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
@@ -102,27 +99,25 @@ public abstract class SdkRemoteLaunchPlan<
         outputs);
   }
 
-  public static <InputT, OutputT, OutputTransformerT extends OutputTransformer>
-      Builder<InputT, OutputT, OutputTransformerT> builder() {
+  public static <InputT, OutputT> Builder<InputT, OutputT> builder() {
     return new AutoValue_SdkRemoteLaunchPlan.Builder<>();
   }
 
   @AutoValue.Builder
-  public abstract static class Builder<
-      InputT, OutputT, OutputTransformerT extends OutputTransformer> {
+  public abstract static class Builder<InputT, OutputT> {
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> domain(String domain);
+    public abstract Builder<InputT, OutputT> domain(String domain);
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> project(String project);
+    public abstract Builder<InputT, OutputT> project(String project);
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> name(String name);
+    public abstract Builder<InputT, OutputT> name(String name);
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> version(String version);
+    public abstract Builder<InputT, OutputT> version(String version);
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> inputs(SdkType<InputT> inputs);
+    public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 
-    public abstract Builder<InputT, OutputT, OutputTransformerT> outputs(SdkType<OutputT> outputs);
+    public abstract Builder<InputT, OutputT> outputs(SdkType<OutputT> outputs);
 
-    public abstract SdkRemoteLaunchPlan<InputT, OutputT, OutputTransformerT> build();
+    public abstract SdkRemoteLaunchPlan<InputT, OutputT> build();
   }
 }

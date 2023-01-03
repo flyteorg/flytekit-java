@@ -19,37 +19,39 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class SubWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData left = builder.inputOfInteger("left");
-    SdkBindingData right = builder.inputOfInteger("right");
-    SdkBindingData result = builder.apply("sum", SumTask.of(left, right)).getOutput("c");
+    SdkBindingData<Long> left = builder.inputOfInteger("left");
+    SdkBindingData<Long> right = builder.inputOfInteger("right");
+    SdkBindingData<Long> result = builder.apply("sum", SumTask.of(left, right)).getOutputs().c();
     builder.output("result", result);
   }
 
-  @AutoValue
-  public abstract static class Input {
-    abstract long left();
-
-    abstract long right();
-
-    public static Input create(long left, long right) {
-      return new AutoValue_SubWorkflow_Input(left, right);
-    }
-  }
+  // TODO verify why this was here. It is not used
+//  @AutoValue
+//  public abstract static class Input {
+//    abstract long left();
+//
+//    abstract long right();
+//
+//    public static Input create(long left, long right) {
+//      return new AutoValue_SubWorkflow_Input(left, right);
+//    }
+//  }
 
   @AutoValue
   public abstract static class Output {
-    abstract long result();
+    abstract SdkBindingData<Long> result();
 
     public static Output create(long result) {
-      return new AutoValue_SubWorkflow_Output(result);
+      return new AutoValue_SubWorkflow_Output(SdkBindingData.ofInteger(result));
     }
   }
 }

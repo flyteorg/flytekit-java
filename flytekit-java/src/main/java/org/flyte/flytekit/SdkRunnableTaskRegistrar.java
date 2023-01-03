@@ -41,8 +41,7 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     LOG.setLevel(Level.ALL);
   }
 
-  private static class RunnableTaskImpl<InputT, OutputT>
-      implements RunnableTask {
+  private static class RunnableTaskImpl<InputT, OutputT> implements RunnableTask {
     private final SdkRunnableTask<InputT, OutputT> sdkTask;
 
     private RunnableTaskImpl(SdkRunnableTask<InputT, OutputT> sdkTask) {

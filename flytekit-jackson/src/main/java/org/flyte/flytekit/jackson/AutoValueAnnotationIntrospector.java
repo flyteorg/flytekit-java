@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.flyte.flytekit.SdkBindingData;
 
 class AutoValueAnnotationIntrospector extends NopAnnotationIntrospector {
   private static final long serialVersionUID = 1L;
@@ -131,6 +132,10 @@ class AutoValueAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     if (!Modifier.isAbstract(method.getModifiers())) {
+      return false;
+    }
+
+    if (!method.getReturnType().equals(SdkBindingData.class)) {
       return false;
     }
 

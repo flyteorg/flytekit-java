@@ -22,7 +22,7 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 
 @AutoService(SdkRunnableTask.class)
-public class FailingTask extends SdkRunnableTask<Void, Void, NopOutputTransformer> {
+public class FailingTask extends SdkRunnableTask<Void, Void> {
   private static final long serialVersionUID = 42L;
 
   public static FailingTask of() {

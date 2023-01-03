@@ -53,11 +53,6 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform
     return "raw-container";
   }
 
-  /** Specifies task name. */
-  public String getName() {
-    return getClass().getName();
-  }
-
   /** Specifies task input type. */
   public SdkType<InputT> getInputType() {
     return inputType;

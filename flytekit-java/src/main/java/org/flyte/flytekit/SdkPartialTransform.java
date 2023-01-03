@@ -104,6 +104,14 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
+  SdkTransform withNameOverrideIfNotSet(String name) {
+    if (metadata != null && metadata.name() != null) {
+      return this;
+    }
+    return withNameOverride(name);
+  }
+
+  @Override
   public SdkTransform withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
@@ -112,6 +120,11 @@ class SdkPartialTransform extends SdkTransform {
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
     return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+  }
+
+  @Override
+  public String getName() {
+    return transform.getName();
   }
 
   @Override

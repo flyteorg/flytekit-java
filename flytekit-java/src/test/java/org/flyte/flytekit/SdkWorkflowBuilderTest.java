@@ -25,6 +25,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.List;
@@ -51,20 +53,30 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class SdkWorkflowBuilderTest {
 
+  @Mock SdkNodeNamePolicy sdkNodeNamePolicy;
+
   @Test
-  void testTimes2WorkflowIdl() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+  void testTimes4WorkflowIdl() {
+    when(sdkNodeNamePolicy.nextNodeId()).thenReturn("foo-n0", "foo-n1");
+    when(sdkNodeNamePolicy.toNodeName(any())).thenReturn("multiplication-task");
 
-    new Times2Workflow().expand(builder);
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder(sdkNodeNamePolicy);
 
-    Node expectedNode =
+    new Times4Workflow().expand(builder);
+
+    Node node0 =
         Node.builder()
-            .id("square")
+            .id("foo-n0")
+            .metadata(NodeMetadata.builder().name("multiplication-task").build())
             .taskNode(
                 TaskNode.builder()
                     .referenceId(
@@ -90,13 +102,39 @@ class SdkWorkflowBuilderTest {
                         .build()))
             .upstreamNodeIds(emptyList())
             .build();
+    Node node1 =
+        Node.builder()
+            .id("foo-n1")
+            .metadata(NodeMetadata.builder().name("multiplication-task").build())
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .name("org.flyte.flytekit.SdkWorkflowBuilderTest$MultiplicationTask")
+                            .build())
+                    .build())
+            .inputs(
+                asList(
+                    Binding.builder()
+                        .var_("a")
+                        .binding(
+                            BindingData.ofOutputReference(
+                                OutputReference.builder().var("c").nodeId("foo-n0").build()))
+                        .build(),
+                    Binding.builder()
+                        .var_("b")
+                        .binding(
+                            BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(2L))))
+                        .build()))
+            .upstreamNodeIds(emptyList())
+            .build();
 
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
-            .outputs(expectedOutputs())
-            .nodes(singletonList(expectedNode))
+            .outputs(expectedOutputs("foo-n1"))
+            .nodes(List.of(node0, node1))
             .build();
 
     assertEquals(expected, builder.toIdlTemplate());
@@ -176,7 +214,7 @@ class SdkWorkflowBuilderTest {
         WorkflowTemplate.builder()
             .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
-            .outputs(expectedOutputs())
+            .outputs(expectedOutputs("square"))
             .nodes(singletonList(expectedNode))
             .build();
 
@@ -445,28 +483,32 @@ class SdkWorkflowBuilderTest {
         .build();
   }
 
-  private List<Binding> expectedOutputs() {
+  private List<Binding> expectedOutputs(String nodeId) {
     return singletonList(
         Binding.builder()
             .var_("out")
             .binding(
                 BindingData.ofOutputReference(
-                    OutputReference.builder().var("c").nodeId("square").build()))
+                    OutputReference.builder().var("c").nodeId(nodeId).build()))
             .build());
   }
 
-  private static class Times2Workflow extends SdkWorkflow {
+  private static class Times4Workflow extends SdkWorkflow {
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData two = literalOfInteger(2L);
-      SdkBindingData out =
+      SdkBindingData out1 =
           builder
-              .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .getOutput("c");
+      SdkBindingData out2 =
+          builder
+              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two))
               .getOutput("c");
 
-      builder.output("out", out);
+      builder.output("out", out2);
     }
   }
 

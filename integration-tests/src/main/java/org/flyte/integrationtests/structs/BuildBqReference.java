@@ -36,7 +36,7 @@ public class BuildBqReference
 
   @Override
   public Output run(Input input) {
-    return Output.create(BQReference.create(input.project(), input.dataset(), input.tableName()));
+    return Output.create(BQReference.create(input.project().get(), input.dataset().get(), input.tableName().get()));
   }
 
   @AutoValue

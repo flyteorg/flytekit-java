@@ -20,15 +20,17 @@ import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofString;
 
 import com.google.auto.service.AutoService;
+import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class MockPipelineWorkflow extends SdkWorkflow {
+public class MockPipelineWorkflow extends SdkWorkflow<NopOutputTransformer> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData tableName = builder.inputOfString("tableName");
-    SdkBindingData ref =
+    SdkBindingData<String> tableName = builder.inputOfString("tableName");
+    SdkBindingData<BQReference> ref =
         builder
             .apply(
                 "build-ref",
@@ -36,7 +38,7 @@ public class MockPipelineWorkflow extends SdkWorkflow {
                     .withInput("project", ofString("styx-1265"))
                     .withInput("dataset", ofString("styx-insights"))
                     .withInput("tableName", tableName))
-            .getOutput("ref");
+            .getOutputs().ref();
     SdkBindingData exists =
         builder
             .apply(
@@ -44,7 +46,7 @@ public class MockPipelineWorkflow extends SdkWorkflow {
                 new MockLookupBqTask()
                     .withInput("ref", ref)
                     .withInput("checkIfExists", ofBoolean(true)))
-            .getOutput("exists");
+            .getOutputs().exists();
     builder.output("exists", exists);
   }
 }

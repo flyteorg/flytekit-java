@@ -36,7 +36,7 @@ public class MockLookupBqTask
   public abstract static class Input {
     public abstract SdkBindingData<BQReference> ref();
 
-    public abstract boolean checkIfExists();
+    public abstract SdkBindingData<Boolean> checkIfExists();
 
     public static Input create(BQReference ref, boolean checkIfExists) {
       return null; // TODO
@@ -45,15 +45,15 @@ public class MockLookupBqTask
 
   @AutoValue
   public abstract static class Output {
-    public abstract boolean exists();
+    public abstract SdkBindingData<Boolean> exists();
 
     public static Output create(boolean exists) {
-      return new AutoValue_MockLookupBqTask_Output(exists);
+      return new AutoValue_MockLookupBqTask_Output(SdkBindingData.ofBoolean(exists));
     }
   }
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.ref().tableName().contains("table-exists"));
+    return Output.create(input.ref().get().tableName().contains("table-exists"));
   }
 }

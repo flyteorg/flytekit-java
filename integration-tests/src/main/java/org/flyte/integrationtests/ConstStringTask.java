@@ -39,7 +39,7 @@ public class ConstStringTask
     abstract SdkBindingData<String> value();
 
     public static Output create(String value) {
-      return new AutoValue_ConstStringTask_Output(value);
+      return new AutoValue_ConstStringTask_Output(SdkBindingData.ofString(value));
     }
   }
 
@@ -47,12 +47,12 @@ public class ConstStringTask
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }
 
-  public static SdkTransform of(String value) {
+  public static SdkTransform<Output> of(String value) {
     return new ConstStringTask().withInput("value", SdkBindingData.ofString(value));
   }
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.value());
+    return Output.create(input.value().get());
   }
 }

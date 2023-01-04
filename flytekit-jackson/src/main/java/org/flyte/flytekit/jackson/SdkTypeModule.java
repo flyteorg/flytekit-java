@@ -18,7 +18,9 @@ package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import org.flyte.flytekit.SdkBindingData;
 
 class SdkTypeModule extends Module {
   // For now, we don't make module public, however, one day
@@ -40,9 +42,14 @@ class SdkTypeModule extends Module {
   public void setupModule(SetupContext context) {
     SimpleSerializers serializers = new SimpleSerializers();
     serializers.addSerializer(new LiteralSerializer());
+    serializers.addSerializer(new SdkBindingDataSerializer());
+
+    SimpleDeserializers deserializers = new SimpleDeserializers();
+    deserializers.addDeserializer(SdkBindingData.class, new SdkBindingDataDeserializer());
 
     context.addSerializers(serializers);
     context.addDeserializers(new LiteralMapDeserializers());
+    context.addDeserializers(deserializers);
 
     // append with lowest priority to use as fallback, if builtin annotations aren't present
     context.appendAnnotationIntrospector(new AutoValueAnnotationIntrospector());

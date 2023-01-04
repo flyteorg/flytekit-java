@@ -108,8 +108,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
     if (SdkBindingData.class.isAssignableFrom(type)) {
       return toLiteralType(javaType.getBindings().getBoundType(0));
-    }
-    else if (isPrimitiveAssignableFrom(Long.class, type)) {
+    } else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
       return LiteralTypes.FLOAT;

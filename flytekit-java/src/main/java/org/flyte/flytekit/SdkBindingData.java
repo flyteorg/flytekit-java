@@ -39,7 +39,7 @@ import org.flyte.api.v1.SimpleType;
 @AutoValue
 public abstract class SdkBindingData<T> {
 
-    abstract BindingData idl();
+  abstract BindingData idl();
 
   abstract LiteralType type();
 

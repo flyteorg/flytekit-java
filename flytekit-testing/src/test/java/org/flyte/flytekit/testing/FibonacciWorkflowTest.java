@@ -118,7 +118,11 @@ public class FibonacciWorkflowTest {
   }
 
   public static class FibonacciWorkflow extends SdkWorkflow {
-    @Override
+      public FibonacciWorkflow() {
+          super(outputType);
+      }
+
+      @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData fib0 = builder.inputOfInteger("fib0");
       SdkBindingData fib1 = builder.inputOfInteger("fib1");
@@ -164,7 +168,11 @@ public class FibonacciWorkflowTest {
 
   /** FibonacciWorkflow, but using RemoteSumTask instead. */
   public static class RemoteFibonacciWorkflow extends SdkWorkflow {
-    @Override
+      public RemoteFibonacciWorkflow() {
+          super(outputType);
+      }
+
+      @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData fib0 = builder.inputOfInteger("fib0");
       SdkBindingData fib1 = builder.inputOfInteger("fib1");

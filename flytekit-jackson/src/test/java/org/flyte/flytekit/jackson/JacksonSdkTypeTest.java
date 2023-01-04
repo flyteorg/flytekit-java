@@ -45,7 +45,6 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Test;
 
@@ -265,23 +264,23 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class AutoValueInput {
-    public abstract SdkBindingData<Long> i();
+    public abstract long i();
 
-    public abstract SdkBindingData<Double> f();
+    public abstract double f();
 
-    public abstract SdkBindingData<String> s();
+    public abstract String s();
 
-    public abstract SdkBindingData<Boolean> b();
+    public abstract boolean b();
 
-    public abstract SdkBindingData<Instant> t();
+    public abstract Instant t();
 
-    public abstract SdkBindingData<Duration> d();
+    public abstract Duration d();
 
-    public abstract SdkBindingData<Blob> blob();
+    public abstract Blob blob();
 
-    public abstract SdkBindingData<List<String>> l();
+    public abstract List<String> l();
 
-    public abstract SdkBindingData<Map<String, String>> m();
+    public abstract Map<String, String> m();
 
     public static AutoValueInput create(
         long i,
@@ -293,16 +292,7 @@ public class JacksonSdkTypeTest {
         Blob blob,
         List<String> l,
         Map<String, String> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-              SdkBindingData.ofInteger(i),
-              SdkBindingData.ofFloat(f),
-              SdkBindingData.ofString(s),
-              SdkBindingData.ofBoolean(b),
-              SdkBindingData.ofDatetime(t),
-              SdkBindingData.ofDuration(d),
-              null, //TODO blob
-              null, //TODO list
-              null, //TODO map);
+      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, blob, l, m);
     }
   }
 

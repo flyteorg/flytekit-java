@@ -42,18 +42,23 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   private final Map<String, LiteralType> outputTypes;
   private final List<String> upstreamNodeIds;
 
+  private final OutputT outputs;
+
   private SdkBranchNode(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
-      Map<String, LiteralType> outputTypes) {
+      Map<String, LiteralType> outputTypes,
+      OutputT outputs
+  ) {
     super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
     this.ifElse = ifElse;
     this.outputTypes = outputTypes;
+    this.outputs = outputs;
   }
 
   @Override
@@ -64,7 +69,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
 
   @Override
   public OutputT getOutputs() {
-    return null;
+    return outputs;
   }
 
   private SdkBindingData<?> createOutput(Map.Entry<String, LiteralType> entry) {
@@ -91,13 +96,14 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     return Node.builder()
         .id(nodeId)
         .branchNode(BranchNode.builder().ifElse(ifElseBlock).build())
-        .inputs(unmodifiableList(new ArrayList<>(extraInputs.values())))
+        .inputs(List.copyOf(extraInputs.values()))
         .upstreamNodeIds(upstreamNodeIds)
         .build();
   }
 
   static class Builder<OutputT> {
     private final SdkWorkflowBuilder builder;
+    private final SdkType<OutputT> outputType;
 
     private final Map<String, Map<String, SdkBindingData<?>>> caseOutputs = new LinkedHashMap<>();
     private final List<SdkIfBlock> ifBlocks = new ArrayList<>();
@@ -105,8 +111,9 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     private SdkNode<?> elseNode;
     private Map<String, LiteralType> outputTypes;
 
-    Builder(SdkWorkflowBuilder builder) {
+    Builder(SdkWorkflowBuilder builder, SdkType<OutputT> outputType) {
       this.builder = builder;
+      this.outputType = outputType;
     }
 
     @CanIgnoreReturnValue
@@ -169,7 +176,8 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
               .elseNode(elseNode)
               .build();
 
-      return new SdkBranchNode<>(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
+      OutputT outputs = outputType.promiseFor(nodeId);
+      return new SdkBranchNode<>(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, outputs);
     }
   }
 }

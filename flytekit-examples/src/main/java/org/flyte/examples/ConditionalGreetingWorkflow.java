@@ -28,6 +28,10 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class ConditionalGreetingWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  public ConditionalGreetingWorkflow() {
+    super(outputType);
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<String> name = builder.inputOfString("name");

@@ -22,7 +22,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class InnerSubWorkflow extends SdkWorkflow {
-  @Override
+    public InnerSubWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData a = builder.inputOfInteger("a");
     SdkBindingData b = builder.inputOfInteger("b");

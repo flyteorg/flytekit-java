@@ -44,9 +44,7 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     LOG.setLevel(Level.ALL);
   }
 
-  private static class ContainerTaskImpl<
-          InputT, OutputT, OutputTransformerT extends OutputTransformer>
-      implements ContainerTask {
+  private static class ContainerTaskImpl<InputT, OutputT> implements ContainerTask {
     private final SdkContainerTask<InputT, OutputT> sdkTask;
 
     private ContainerTaskImpl(SdkContainerTask<InputT, OutputT> sdkTask) {

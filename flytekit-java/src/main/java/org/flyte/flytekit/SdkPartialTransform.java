@@ -117,6 +117,11 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
   }
 
   @Override
+  public SdkType<T> getOutputType() {
+    return transform.getOutputType();
+  }
+
+  @Override
   public SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,

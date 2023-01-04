@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BooleanExpression;
@@ -36,7 +35,6 @@ import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.NodeMetadata;
@@ -444,7 +442,7 @@ class SdkWorkflowBuilderTest {
                     .build()))
         .outputs(
             singletonMap(
-                "out",
+                "o",
                 Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .build();
   }
@@ -452,74 +450,82 @@ class SdkWorkflowBuilderTest {
   private List<Binding> expectedOutputs() {
     return singletonList(
         Binding.builder()
-            .var_("out")
+            .var_("o")
             .binding(
                 BindingData.ofOutputReference(
-                    OutputReference.builder().var("c").nodeId("square").build()))
+                    OutputReference.builder().var("o").nodeId("square").build()))
             .build());
   }
 
-  private static class Times2Workflow extends SdkWorkflow<NopOutputTransformer> {
+  private static class Times2Workflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    private Times2Workflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<?> in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData<?> two = literalOfInteger(2L);
-      SdkBindingData<?> out =
+      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
+      SdkBindingData<Long> two = literalOfInteger(2L);
+      SdkBindingData<Long> out =
           builder
               .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
-              .getOutput("c");
+              .getOutputs().o();
 
-      builder.output("out", out);
+      builder.output("o", out);
     }
   }
 
-  private static class ConditionalWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  private static class ConditionalWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    private ConditionalWorkflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<?> in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData<?> two = literalOfInteger(2L);
+      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
+      SdkBindingData<Long> two = literalOfInteger(2L);
 
-      SdkNode<?> out =
-          builder.apply(
+      SdkNode<TestUnaryIntegerOutput> out = builder.apply(
               "square",
               SdkConditions.when(
-                  "neq",
-                  SdkConditions.neq(in, two),
-                  new MultiplicationTask().withInput("a", in).withInput("b", two)));
+                      "neq",
+                      SdkConditions.neq(in, two),
+                      new MultiplicationTask().withInput("a", in).withInput("b", two)));
 
-      builder.output("out", out.getOutput("c"));
+      builder.output("o", out.getOutputs().o());
     }
   }
 
   static class MultiplicationTask
-      extends SdkRunnableTask<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRunnableTask<TestPairIntegerInput, TestUnaryIntegerOutput> {
     private static final long serialVersionUID = -1971936360636181781L;
 
     MultiplicationTask() {
-      super(
-          TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.INTEGER),
-          TestSdkType.of("c", LiteralTypes.INTEGER));
+      super(new TestPairIntegerInput.SdkType(), new TestUnaryIntegerOutput.SdkType());
     }
 
     @Override
-    public Map<String, Literal> run(Map<String, Literal> input) {
+    public TestUnaryIntegerOutput run(TestPairIntegerInput input) {
       throw new UnsupportedOperationException();
     }
   }
 
-  static class MultiplicationWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  static class MultiplicationWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    MultiplicationWorkflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData<?> a = builder.inputOfInteger("a");
       SdkBindingData<?> b = builder.inputOfInteger("b");
 
-      SdkNode<?> multiply =
-          builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
+      SdkNode<TestUnaryIntegerOutput> multiply = builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
-      builder.output("c", multiply.getOutput("c"));
+      builder.output("c", multiply.getOutputs().o());
     }
   }
 

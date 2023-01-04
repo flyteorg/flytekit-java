@@ -27,7 +27,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class SimpleSdkLaunchPlanTest {
-  private static final SdkWorkflow WORKFLOW = new TestWorkflow();
+  private static final SdkWorkflow<Void> WORKFLOW = new TestWorkflow();
 
   private static final SdkLaunchPlan LP = SdkLaunchPlan.of(WORKFLOW).withName("lp");
   private static final SdkLaunchPlan LP2 = SdkLaunchPlan.of(WORKFLOW).withName("lp2");
@@ -86,14 +86,22 @@ public class SimpleSdkLaunchPlanTest {
     }
   }
 
-  public static class TestWorkflow extends SdkWorkflow {
+  public static class TestWorkflow extends SdkWorkflow<Void> {
+    public TestWorkflow() {
+      super(SdkTypes.nulls());
+    }
+
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       // Do nothing
     }
   }
 
-  private static class OtherTestWorkflow extends SdkWorkflow {
+  private static class OtherTestWorkflow extends SdkWorkflow<Void> {
+    private OtherTestWorkflow() {
+      super(SdkTypes.nulls());
+    }
+
     @Override
     public void expand(SdkWorkflowBuilder builder) {
       // Do nothing

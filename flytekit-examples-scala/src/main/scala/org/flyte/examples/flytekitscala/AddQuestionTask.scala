@@ -48,7 +48,9 @@ class AddQuestionTask
     *   the updated greeting message
     */
   override def run(input: AddQuestionTaskInput): AddQuestionTaskOutput =
-    AddQuestionTaskOutput(SdkBindingData.ofString(s"${input.greeting} How are you?"))
+    AddQuestionTaskOutput(
+      SdkBindingData.ofString(s"${input.greeting} How are you?")
+    )
 }
 
 object AddQuestionTask {
@@ -60,6 +62,8 @@ object AddQuestionTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(greeting: SdkBindingData[String]): SdkTransform[AddQuestionTaskOutput] =
+  def apply(
+      greeting: SdkBindingData[String]
+  ): SdkTransform[AddQuestionTaskOutput] =
     new AddQuestionTask().withInput("greeting", greeting)
 }

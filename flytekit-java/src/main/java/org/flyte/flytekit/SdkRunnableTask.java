@@ -59,6 +59,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
     return inputType;
   }
 
+  @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }

@@ -24,7 +24,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class StructWorkflow extends SdkWorkflow<NopOutputTransformer> {
-  @Override
+    public StructWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData someString = builder.inputOfString("someString");
     SdkBindingData someStruct = builder.inputOfStruct("someStruct");

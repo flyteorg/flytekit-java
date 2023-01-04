@@ -22,7 +22,7 @@ import org.flyte.flytekit.{
   SdkWorkflowBuilder
 }
 
-class FibonacciWorkflow extends SdkWorkflow[NopOutputTransformer] {
+class FibonacciWorkflow extends SdkWorkflow[NopOutputTransformer](outputType) {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")

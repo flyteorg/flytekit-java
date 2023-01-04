@@ -35,8 +35,8 @@ public class SdkTaskNode<T> extends SdkNode<T> {
   private final List<String> upstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
   private final Map<String, SdkBindingData<?>> inputs;
-  private final Map<String, Variable> outputs;
-  private final T output;
+  private final Map<String, Variable> outputVars;
+  private final T outputs;
 
   SdkTaskNode(
       SdkWorkflowBuilder builder,
@@ -45,8 +45,8 @@ public class SdkTaskNode<T> extends SdkNode<T> {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs,
-      Map<String, Variable> outputs,
-      T output) {
+      Map<String, Variable> outputVars,
+      T outputs) {
     super(builder);
 
     this.nodeId = nodeId;
@@ -54,13 +54,13 @@ public class SdkTaskNode<T> extends SdkNode<T> {
     this.upstreamNodeIds = upstreamNodeIds;
     this.metadata = metadata;
     this.inputs = inputs;
+    this.outputVars = outputVars;
     this.outputs = outputs;
-    this.output = output;
   }
 
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
-    return outputs.entrySet().stream()
+    return outputVars.entrySet().stream()
         .collect(
             toUnmodifiableMap(
                 Map.Entry::getKey,
@@ -71,7 +71,7 @@ public class SdkTaskNode<T> extends SdkNode<T> {
 
   @Override
   public T getOutputs() {
-    return output;
+    return outputs;
   }
 
   @Override

@@ -25,7 +25,11 @@ import org.flyte.localengine.ImmutableList;
 
 @AutoService(SdkWorkflow.class)
 public class ListWorkflow extends SdkWorkflow<NopOutputTransformer> {
-  @Override
+    public ListWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkNode<NopOutputTransformer> sum1 =
         builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));

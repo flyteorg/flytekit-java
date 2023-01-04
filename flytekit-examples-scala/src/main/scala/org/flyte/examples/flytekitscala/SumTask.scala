@@ -24,7 +24,10 @@ import org.flyte.flytekit.{
 }
 import org.flyte.flytekitscala.SdkScalaType
 
-case class SumTaskInput(a: SdkBindingData[java.lang.Long], b: SdkBindingData[java.lang.Long])
+case class SumTaskInput(
+    a: SdkBindingData[java.lang.Long],
+    b: SdkBindingData[java.lang.Long]
+)
 case class SumTaskOutput(c: SdkBindingData[java.lang.Long])
 
 class SumTask

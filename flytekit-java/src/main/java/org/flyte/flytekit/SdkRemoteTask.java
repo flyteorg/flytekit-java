@@ -46,6 +46,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
 
   public abstract SdkType<OutputT> outputs();
 
+  @Override
+  public SdkType<OutputT> getOutputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return outputs();
+  }
+
   public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
       String domain,
       String project,

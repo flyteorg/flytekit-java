@@ -43,6 +43,12 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
 
   public abstract SdkType<OutputT> outputs();
 
+  @Override
+  public SdkType<OutputT> getOutputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return outputs();
+  }
+
   public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
       String domain,
       String project,
@@ -87,6 +93,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
                         SdkBindingData.ofOutputReference(
                             nodeId, entry.getKey(), entry.getValue().literalType())));
 
+    OutputT promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(
         builder,
         nodeId,
@@ -96,7 +103,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
         inputs,
-        outputs);
+        outputs,
+        promise);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

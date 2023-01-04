@@ -17,7 +17,6 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import java.util.concurrent.Future;
 import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
@@ -27,7 +26,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class FibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public FibonacciWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");

@@ -46,7 +46,7 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
   }
 
   Map<WorkflowIdentifier, WorkflowTemplate> load(
-      SdkConfig sdkConfig, List<SdkWorkflow<? extends OutputTransformer>> sdkWorkflows) {
+      SdkConfig sdkConfig, List<SdkWorkflow<?>> sdkWorkflows) {
     LOG.fine("Discovering SdkWorkflow");
 
     Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();

@@ -26,7 +26,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class WelcomeWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public WelcomeWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     // defines the input of the workflow
     SdkBindingData<String> name = builder.inputOfString("name", "The name for the welcome message");

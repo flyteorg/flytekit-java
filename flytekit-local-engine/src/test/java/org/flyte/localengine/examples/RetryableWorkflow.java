@@ -23,7 +23,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class RetryableWorkflow extends SdkWorkflow<NopOutputTransformer> {
-  @Override
+    public RetryableWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     builder.apply("node-1", new RetryableTask());
   }

@@ -39,7 +39,7 @@ public class SdkBindingDataTest {
 
   @Test
   public void testOfBindingCollection() {
-    List<SdkBindingData> input =
+    List<SdkBindingData<Long>> input =
         Arrays.asList(SdkBindingData.ofInteger(42L), SdkBindingData.ofInteger(1337L));
 
     List<BindingData> expected =
@@ -47,29 +47,15 @@ public class SdkBindingDataTest {
             BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(42L))),
             BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
-    SdkBindingData output = SdkBindingData.ofBindingCollection(input);
+    SdkBindingData<List<Long>> output = SdkBindingData.ofBindingCollection(input);
 
     assertThat(
         output,
         equalTo(
             SdkBindingData.create(
                 BindingData.ofCollection(expected),
-                LiteralType.ofCollectionType(LiteralTypes.INTEGER))));
-  }
-
-  @Test
-  public void testOfBindingCollection_incompatible() {
-    IllegalArgumentException e =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SdkBindingData.ofBindingCollection(
-                    Arrays.asList(SdkBindingData.ofBoolean(true), SdkBindingData.ofInteger(42))));
-
-    assertThat(
-        e.getMessage(),
-        equalTo(
-            "Type LiteralType{simpleType=INTEGER} doesn't match expected type LiteralType{simpleType=BOOLEAN}"));
+                LiteralType.ofCollectionType(LiteralTypes.INTEGER),
+                List.of(42L, 1337L))));
   }
 
   @Test
@@ -87,7 +73,7 @@ public class SdkBindingDataTest {
 
   @Test
   public void testOfBindingMap() {
-    Map<String, SdkBindingData> input = new HashMap<>();
+    Map<String, SdkBindingData<Long>> input = new HashMap<>();
     input.put("a", SdkBindingData.ofInteger(42L));
     input.put("b", SdkBindingData.ofInteger(1337L));
 
@@ -95,28 +81,15 @@ public class SdkBindingDataTest {
     expected.put("a", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(42L))));
     expected.put("b", BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
-    SdkBindingData output = SdkBindingData.ofBindingMap(input);
+    SdkBindingData<Map<String, Long>> output = SdkBindingData.ofBindingMap(input);
 
     assertThat(
         output,
         equalTo(
             SdkBindingData.create(
-                BindingData.ofMap(expected), LiteralType.ofMapValueType(LiteralTypes.INTEGER))));
-  }
-
-  @Test
-  public void testOfBindingMap_incompatible() {
-    Map<String, SdkBindingData> input = new LinkedHashMap<>();
-    input.put("a", SdkBindingData.ofBoolean(true));
-    input.put("b", SdkBindingData.ofInteger(42L));
-
-    IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> SdkBindingData.ofBindingMap(input));
-
-    assertThat(
-        e.getMessage(),
-        equalTo(
-            "Key [b] (type LiteralType{simpleType=INTEGER}) doesn't match expected type LiteralType{simpleType=BOOLEAN}"));
+                BindingData.ofMap(expected),
+                LiteralType.ofMapValueType(LiteralTypes.INTEGER),
+                Map.of("a", 42L, "b", 1337L))));
   }
 
   @Test
@@ -147,13 +120,14 @@ public class SdkBindingDataTest {
             .addStructField("b", SdkStruct.builder().addIntegerField("b_nested", 42L).build())
             .build();
 
-    SdkBindingData output = SdkBindingData.ofStruct(input);
+    SdkBindingData<SdkStruct> output = SdkBindingData.ofStruct(input);
 
     assertThat(
         output,
         equalTo(
             SdkBindingData.create(
                 BindingData.ofScalar(Scalar.ofGeneric(expected)),
-                LiteralType.ofSimpleType(SimpleType.STRUCT))));
+                LiteralType.ofSimpleType(SimpleType.STRUCT),
+                input)));
   }
 }

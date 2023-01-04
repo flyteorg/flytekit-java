@@ -47,7 +47,7 @@ import org.flyte.flytekit.{
   * |:-------------------------|
   * | output: greeting(string) |
   */
-class WelcomeWorkflow extends SdkWorkflow[NopOutputTransformer] {
+class WelcomeWorkflow extends SdkWorkflow[NopOutputTransformer](outputType) {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     // defines the input of the workflow
@@ -59,7 +59,8 @@ class WelcomeWorkflow extends SdkWorkflow[NopOutputTransformer] {
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     val greetingWithQuestion = builder
       .apply("add-question", AddQuestionTask(greeting))
-      .getOutputs.greeting
+      .getOutputs
+      .greeting
 
     // uses the task output of the AddQuestionTask as the output of the workflow
     builder.output("greeting", greetingWithQuestion, "Welcome message")

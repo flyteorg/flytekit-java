@@ -37,13 +37,13 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
   }
 
   public void registerDefaultLaunchPlans() {
-    List<SdkWorkflow<? extends OutputTransformer>> workflows = SdkWorkflowRegistry.loadAll();
+    List<SdkWorkflow<?>> workflows = SdkWorkflowRegistry.loadAll();
 
     registerDefaultLaunchPlans(workflows);
   }
 
   // Visible for testing
-  void registerDefaultLaunchPlans(List<SdkWorkflow<? extends OutputTransformer>> workflows) {
+  void registerDefaultLaunchPlans(List<SdkWorkflow<?>> workflows) {
     for (SdkWorkflow<?> sdkWorkflow : workflows) {
       SdkLaunchPlan defaultLaunchPlan = SdkLaunchPlan.of(sdkWorkflow);
       registerLaunchPlan(defaultLaunchPlan);

@@ -119,8 +119,8 @@ object SdkScalaType {
   }
 
   implicit def sdkBindingLiteralType[T](implicit
-                                        sdkLiteral: SdkScalaLiteralType[T]
-                                       ): SdkScalaLiteralType[SdkBindingData[T]] =
+      sdkLiteral: SdkScalaLiteralType[T]
+  ): SdkScalaLiteralType[SdkBindingData[T]] =
     SdkScalaLiteralType[SdkBindingData[T]](
       sdkLiteral.getLiteralType,
       value => sdkLiteral.toLiteral(value.get()),

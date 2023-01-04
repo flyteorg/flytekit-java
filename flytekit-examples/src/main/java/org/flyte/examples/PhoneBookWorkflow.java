@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.flytekit.NopOutputTransformer;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
@@ -36,6 +35,10 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
     PHONE_BOOK.put("frodo", "123");
     PHONE_BOOK.put("bilbo", "456");
     PHONE_BOOK.put("gandalf", "789");
+  }
+
+  public PhoneBookWorkflow() {
+    super(outputType);
   }
 
   @Override

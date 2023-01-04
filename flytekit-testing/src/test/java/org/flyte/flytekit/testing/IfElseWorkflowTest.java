@@ -71,7 +71,11 @@ public class IfElseWorkflowTest {
   }
 
   static class BranchNodeWorkflow extends SdkWorkflow<NopOutputTransformer> {
-    @Override
+      BranchNodeWorkflow() {
+          super(outputType);
+      }
+
+      @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData a = builder.inputOfInteger("a");
       SdkBindingData b = builder.inputOfInteger("b");

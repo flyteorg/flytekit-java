@@ -32,7 +32,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkWorkflow.class)
 public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public CollatzConjectureStepWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData x = builder.inputOfInteger("x");
     SdkBindingData isOdd =

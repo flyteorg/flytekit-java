@@ -24,7 +24,11 @@ import org.flyte.localengine.ImmutableMap;
 
 @AutoService(SdkWorkflow.class)
 public class MapWorkflow extends SdkWorkflow {
-  @Override
+    public MapWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkNode<?> sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
     SdkNode<?> sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));

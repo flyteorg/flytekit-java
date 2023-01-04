@@ -40,7 +40,6 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowNode.Reference;
 import org.flyte.api.v1.WorkflowTemplate;
-import org.flyte.flytekit.OutputTransformer;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
@@ -452,7 +451,7 @@ public abstract class SdkTestingExecutor {
 
     abstract Builder taskTestDoubles(Map<String, TestingRunnableTask<?, ?>> taskTestDoubles);
 
-    abstract Builder workflow(SdkWorkflow workflow);
+    abstract Builder workflow(SdkWorkflow<?> workflow);
 
     abstract Builder launchPlanTestDoubles(
         Map<String, TestingRunnableLaunchPlan<?, ?>> launchPlanTestDoubles);

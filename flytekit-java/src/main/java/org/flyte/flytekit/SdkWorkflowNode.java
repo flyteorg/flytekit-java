@@ -30,8 +30,9 @@ public class SdkWorkflowNode<T> extends SdkNode<T> {
   private final List<String> upstreamNodeIds;
   private final SdkNodeMetadata metadata;
   private final WorkflowNode workflowNode;
-  private final Map<String, SdkBindingData<?>> inputs;
-  private final Map<String, SdkBindingData<?>> outputs;
+  private final Map<String, SdkBindingData<?>> inputBindings;
+  private final Map<String, SdkBindingData<?>> outputBindings;
+  private final T outputs;
 
   SdkWorkflowNode(
       SdkWorkflowBuilder builder,
@@ -39,26 +40,28 @@ public class SdkWorkflowNode<T> extends SdkNode<T> {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       WorkflowNode workflowNode,
-      Map<String, SdkBindingData<?>> inputs,
-      Map<String, SdkBindingData<?>> outputs) {
+      Map<String, SdkBindingData<?>> inputBindings,
+      Map<String, SdkBindingData<?>> outputBindings,
+      T outputs) {
     super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
     this.metadata = metadata;
     this.workflowNode = workflowNode;
-    this.inputs = inputs;
+    this.inputBindings = inputBindings;
+    this.outputBindings = outputBindings;
     this.outputs = outputs;
   }
 
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
-    return outputs;
+    return outputBindings;
   }
 
   @Override
   public T getOutputs() {
-    return null; // TODO implement
+    return outputs;
   }
 
   @Override
@@ -69,7 +72,7 @@ public class SdkWorkflowNode<T> extends SdkNode<T> {
   @Override
   public Node toIdl() {
     List<Binding> inputBindings =
-        inputs.entrySet().stream()
+        this.inputBindings.entrySet().stream()
             .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(toUnmodifiableList());
 

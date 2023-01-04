@@ -28,6 +28,9 @@ import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
 public abstract class SdkTransform<T> {
+
+  public abstract SdkType<T> getOutputType();
+
   public abstract SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,

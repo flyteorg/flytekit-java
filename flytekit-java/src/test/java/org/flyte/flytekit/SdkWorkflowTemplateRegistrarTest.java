@@ -33,7 +33,7 @@ public class SdkWorkflowTemplateRegistrarTest {
     SdkConfig sdkConfig =
         SdkConfig.builder().domain("domain").project("project").version("version").build();
 
-    List<SdkWorkflow<? extends OutputTransformer>> sdkWorkflows =
+    List<SdkWorkflow<?>> sdkWorkflows =
         Arrays.asList(new TestWorkflow("workflow1"), new TestWorkflow("workflow2"));
 
     Map<WorkflowIdentifier, WorkflowTemplate> workflows =
@@ -58,10 +58,11 @@ public class SdkWorkflowTemplateRegistrarTest {
                 .build()));
   }
 
-  private static class TestWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  private static class TestWorkflow extends SdkWorkflow<Void> {
     private final String name;
 
     private TestWorkflow(String name) {
+      super(SdkTypes.nulls());
       this.name = name;
     }
 

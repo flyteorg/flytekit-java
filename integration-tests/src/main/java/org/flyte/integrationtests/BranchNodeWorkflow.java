@@ -30,6 +30,10 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class BranchNodeWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  public BranchNodeWorkflow() {
+    super(outputType);
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> a = builder.inputOfInteger("a");

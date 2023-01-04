@@ -17,9 +17,8 @@
 package org.flyte.flytekit.testing;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
-import org.flyte.api.v1.BindingData;
+
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
@@ -35,7 +34,8 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
   private final Map<String, Literal> outputLiterals;
 
   TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
-    this.inputType = inputType;
+      super(outputType);
+      this.inputType = inputType;
     this.outputType = outputType;
     this.output = output;
     this.outputLiterals = outputType.toLiteralMap(output);

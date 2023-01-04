@@ -26,6 +26,10 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class NodeMetadataExampleWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
+  public NodeMetadataExampleWorkflow() {
+    super(outputType);
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> a = SdkBindingData.ofInteger(0);

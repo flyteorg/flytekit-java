@@ -16,11 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import java.util.Map;
-
-public class NopOutputTransformer extends OutputTransformer {
-
-  public NopOutputTransformer(Map<String, SdkBindingData> outputs) {
-    super(outputs);
-  }
-}
+// TODO REMOVE THIS
+// only it is used as place holder type for workflows, but it should be removed
+public class NopOutputTransformer {}

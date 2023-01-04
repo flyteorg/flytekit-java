@@ -16,14 +16,20 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
@@ -33,7 +39,7 @@ import org.flyte.api.v1.SimpleType;
 @AutoValue
 public abstract class SdkBindingData<T> {
 
-  abstract BindingData idl();
+    abstract BindingData idl();
 
   abstract LiteralType type();
 
@@ -79,6 +85,78 @@ public abstract class SdkBindingData<T> {
     LiteralType literalType = LiteralType.ofSimpleType(getSimpleType(primitive.kind()));
 
     return create(bindingData, literalType, value);
+  }
+
+  public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {
+    // TODO we can fix that by introducing "top type" into type system and
+    // implementing type casting in SDK, for now, we fail
+
+    if (elements.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Can't create binding for an empty list without knowing the type, "
+              + "to create an empty map use `of<type>Collection` instead");
+    }
+
+    List<BindingData> bindings = elements.stream().map(SdkBindingData::idl).collect(toList());
+    BindingData bindingData = BindingData.ofCollection(bindings);
+
+    LiteralType elementType = elements.get(0).type();
+    LiteralType collectionType = LiteralType.ofCollectionType(elementType);
+    boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
+    List<T> unwrappedElements =
+        (hasPromise) ? null : elements.stream().map(SdkBindingData::get).collect(toList());
+
+    return SdkBindingData.create(bindingData, collectionType, unwrappedElements);
+  }
+
+  private static boolean isAPromise(BindingData bindingData) {
+    switch (bindingData.kind()) {
+      case SCALAR:
+        return false;
+      case PROMISE:
+        return true;
+      case COLLECTION:
+        return bindingData.collection().stream().anyMatch(SdkBindingData::isAPromise);
+      case MAP:
+        return bindingData.map().values().stream().anyMatch(SdkBindingData::isAPromise);
+    }
+    throw new IllegalArgumentException("BindingData.Kind not recognized: " + bindingData.kind());
+  }
+
+  public static <T> SdkBindingData<Map<String, T>> ofBindingMap(
+      Map<String, SdkBindingData<T>> valueMap) {
+    // TODO we can fix that by introducing "top type" into type system and
+    // implementing type casting in SDK, for now, we fail
+
+    if (valueMap.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Can't create binding for an empty map without knowing the type, "
+              + "to create an empty map use `of<type>Map` instead");
+    }
+
+    Map<String, BindingData> bindings =
+        valueMap.entrySet().stream()
+            .map(e -> Map.entry(e.getKey(), e.getValue().idl()))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    BindingData bindingData = BindingData.ofMap(bindings);
+
+    LiteralType elementType = valueMap.values().iterator().next().type();
+    LiteralType mapType = LiteralType.ofMapValueType(elementType);
+    boolean hasPromise = bindings.values().stream().anyMatch(SdkBindingData::isAPromise);
+    Map<String, T> unwrappedElements =
+        (hasPromise)
+            ? null
+            : valueMap.entrySet().stream()
+                .map(e -> Map.entry(e.getKey(), e.getValue().get()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    return SdkBindingData.create(bindingData, mapType, unwrappedElements);
+  }
+
+  public static SdkBindingData<SdkStruct> ofStruct(SdkStruct value) {
+    BindingData bindingData = BindingData.ofScalar(Scalar.ofGeneric(value.struct()));
+    LiteralType literalType = LiteralType.ofSimpleType(SimpleType.STRUCT);
+    return SdkBindingData.create(bindingData, literalType, value);
   }
 
   public static <T> SdkBindingData<T> ofOutputReference(

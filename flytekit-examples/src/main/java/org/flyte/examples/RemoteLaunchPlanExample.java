@@ -32,7 +32,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 // @AutoService(SdkWorkflow.class)
 public class RemoteLaunchPlanExample extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public RemoteLaunchPlanExample() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");

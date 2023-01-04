@@ -25,7 +25,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class ContainerWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public ContainerWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     builder.apply("hello-container-task", new HelloContainerTask());
   }

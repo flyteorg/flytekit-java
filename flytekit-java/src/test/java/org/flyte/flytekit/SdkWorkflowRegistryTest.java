@@ -27,33 +27,37 @@ public class SdkWorkflowRegistryTest {
 
   @Test
   public void testLoadAll() {
-    SdkWorkflow<NopOutputTransformer> workflow1 = new TestWorkflow();
-    SdkWorkflow<NopOutputTransformer> workflow2 = new TestWorkflow();
-    SdkWorkflow<NopOutputTransformer> workflow3 = new TestWorkflow();
+    SdkWorkflow<Void> workflow1 = new TestWorkflow();
+    SdkWorkflow<Void> workflow2 = new TestWorkflow();
+    SdkWorkflow<Void> workflow3 = new TestWorkflow();
 
-    List<SdkWorkflow<? extends OutputTransformer>> workflows =
+    List<SdkWorkflow<?>> workflows =
         SdkWorkflowRegistry.loadAll(
-            Arrays.asList(
-                new SimpleSdkWorkflowRegistry(Arrays.asList(workflow1)),
-                new SimpleSdkWorkflowRegistry(Arrays.asList(workflow2, workflow3))));
+            List.of(
+                new SimpleSdkWorkflowRegistry(List.of(workflow1)),
+                new SimpleSdkWorkflowRegistry(List.of(workflow2, workflow3))));
 
     assertThat(workflows, containsInAnyOrder(workflow1, workflow2, workflow3));
   }
 
   static class SimpleSdkWorkflowRegistry extends SdkWorkflowRegistry {
-    private final List<SdkWorkflow<? extends OutputTransformer>> workflows;
+    private final List<SdkWorkflow<?>> workflows;
 
-    public SimpleSdkWorkflowRegistry(List<SdkWorkflow<? extends OutputTransformer>> workflows) {
+    public SimpleSdkWorkflowRegistry(List<SdkWorkflow<?>> workflows) {
       this.workflows = workflows;
     }
 
     @Override
-    public List<SdkWorkflow<? extends OutputTransformer>> getWorkflows() {
+    public List<SdkWorkflow<?>> getWorkflows() {
       return workflows;
     }
   }
 
-  private static class TestWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  private static class TestWorkflow extends SdkWorkflow<Void> {
+    private TestWorkflow() {
+      super(SdkTypes.nulls());
+    }
+
     @Override
     public void expand(SdkWorkflowBuilder builder) {}
   }

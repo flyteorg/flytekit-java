@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.flyte.flytekit.NopOutputTransformer;
-import org.flyte.flytekit.OutputTransformer;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;

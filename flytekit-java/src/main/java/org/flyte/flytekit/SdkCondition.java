@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
+  private final SdkType<OutputT> outputType;
   private final List<SdkConditionCase<OutputT>> cases;
   private final String otherwiseName;
   private final SdkTransform<OutputT> otherwise;
@@ -33,6 +34,7 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
     this.cases = cases;
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
+    this.outputType = cases.get(0).then().getOutputType();
   }
 
   public SdkCondition<OutputT> when(
@@ -53,6 +55,11 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
   }
 
   @Override
+  public SdkType<OutputT> getOutputType() {
+    return outputType;
+  }
+
+  @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
@@ -66,9 +73,9 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
       throw new IllegalArgumentException("invariant failed: inputs must be empty");
     }
 
-    SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder);
+    SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder, outputType);
 
-    for (SdkConditionCase case_ : cases) {
+    for (SdkConditionCase<OutputT> case_ : cases) {
       nodeBuilder.addCase(case_);
     }
 

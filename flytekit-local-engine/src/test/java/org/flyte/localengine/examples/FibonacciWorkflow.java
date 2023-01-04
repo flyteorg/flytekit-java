@@ -25,7 +25,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class FibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
-  @Override
+    public FibonacciWorkflow() {
+        super(outputType);
+    }
+
+    @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData fib0 = builder.inputOfInteger("fib0");
     SdkBindingData fib1 = builder.inputOfInteger("fib1");

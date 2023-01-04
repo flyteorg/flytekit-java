@@ -29,8 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
@@ -96,9 +94,8 @@ class SdkLaunchPlanTest {
     Instant now = Instant.now();
     Duration duration = Duration.ofSeconds(123);
 
-    Map<String, Literal> fixedInputs = new HashMap<>();
-    fixedInputs.put("inputsFoo", Literals.ofInteger(456));
-    fixedInputs.put("inputsBar", Literals.ofFloat(4.56));
+    TestPairIntegerInput fixedInputs =
+        TestPairIntegerInput.create(SdkBindingData.ofInteger(456), SdkBindingData.ofInteger(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -108,9 +105,7 @@ class SdkLaunchPlanTest {
             .withFixedInput("boolean", true)
             .withFixedInput("datetime", now)
             .withFixedInput("duration", duration)
-            .withFixedInputs(
-                TestSdkType.of("inputsFoo", LiteralTypes.INTEGER, "inputsBar", LiteralTypes.FLOAT),
-                fixedInputs);
+            .withFixedInputs(new TestPairIntegerInput.SdkType(), fixedInputs);
 
     assertThat(
         plan.fixedInputs(),
@@ -121,8 +116,8 @@ class SdkLaunchPlanTest {
             hasEntry("boolean", asLiteral(Primitive.ofBooleanValue(true))),
             hasEntry("datetime", asLiteral(Primitive.ofDatetime(now))),
             hasEntry("duration", asLiteral(Primitive.ofDuration(duration))),
-            hasEntry("inputsFoo", asLiteral(Primitive.ofIntegerValue(456))),
-            hasEntry("inputsBar", asLiteral(Primitive.ofFloatValue(4.56)))));
+            hasEntry("a", asLiteral(Primitive.ofIntegerValue(456))),
+            hasEntry("b", asLiteral(Primitive.ofIntegerValue(789)))));
   }
 
   @Test
@@ -130,9 +125,8 @@ class SdkLaunchPlanTest {
     Instant now = Instant.now();
     Duration duration = Duration.ofSeconds(123);
 
-    Map<String, Literal> defaultInputs = new HashMap<>();
-    defaultInputs.put("inputsFoo", Literals.ofInteger(456));
-    defaultInputs.put("inputsBar", Literals.ofFloat(4.56));
+    TestPairIntegerInput fixedInputs =
+        TestPairIntegerInput.create(SdkBindingData.ofInteger(456), SdkBindingData.ofInteger(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -142,9 +136,7 @@ class SdkLaunchPlanTest {
             .withDefaultInput("boolean", true)
             .withDefaultInput("datetime", now)
             .withDefaultInput("duration", duration)
-            .withDefaultInput(
-                TestSdkType.of("inputsFoo", LiteralTypes.INTEGER, "inputsBar", LiteralTypes.FLOAT),
-                defaultInputs);
+            .withDefaultInput(new TestPairIntegerInput.SdkType(), fixedInputs);
 
     assertThat(
         plan.defaultInputs(),
@@ -154,8 +146,9 @@ class SdkLaunchPlanTest {
             hasEntry("string", asParameter(Primitive.ofStringValue("123"), SimpleType.STRING)),
             hasEntry("boolean", asParameter(Primitive.ofBooleanValue(true), SimpleType.BOOLEAN)),
             hasEntry("datetime", asParameter(Primitive.ofDatetime(now), SimpleType.DATETIME)),
-            hasEntry(
-                "duration", asParameter(Primitive.ofDuration(duration), SimpleType.DURATION))));
+            hasEntry("duration", asParameter(Primitive.ofDuration(duration), SimpleType.DURATION)),
+            hasEntry("a", asParameter(Primitive.ofIntegerValue(456), SimpleType.INTEGER)),
+            hasEntry("b", asParameter(Primitive.ofIntegerValue(789), SimpleType.INTEGER))));
   }
 
   @Test
@@ -227,8 +220,8 @@ class SdkLaunchPlanTest {
         plan -> plan.withFixedInput("datetime", false),
         plan -> plan.withFixedInput("duration", Instant.now()),
         plan -> plan.withFixedInput("integer", Duration.ZERO),
-        plan -> plan.withFixedInput("inputsFoo", "not a integer"),
-        plan -> plan.withFixedInput("inputsBar", "not a float"));
+        plan -> plan.withFixedInput("a", "not a integer"),
+        plan -> plan.withFixedInput("b", "not a integer"));
   }
 
   private Literal asLiteral(Primitive primitive) {
@@ -244,7 +237,11 @@ class SdkLaunchPlanTest {
         Literal.ofScalar(Scalar.ofPrimitive(primitive)));
   }
 
-  private static class TestWorkflow extends SdkWorkflow {
+  private static class TestWorkflow extends SdkWorkflow<Void> {
+
+    private TestWorkflow() {
+      super(SdkTypes.nulls());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -254,12 +251,16 @@ class SdkLaunchPlanTest {
       builder.inputOfBoolean("boolean");
       builder.inputOfDatetime("datetime");
       builder.inputOfDuration("duration");
-      builder.inputOfInteger("inputsFoo");
-      builder.inputOfFloat("inputsBar");
+      builder.inputOfInteger("a");
+      builder.inputOfInteger("b");
     }
   }
 
-  private static class NoInputsTestWorkflow extends SdkWorkflow {
+  private static class NoInputsTestWorkflow extends SdkWorkflow<Void> {
+
+    private NoInputsTestWorkflow() {
+      super(SdkTypes.nulls());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {

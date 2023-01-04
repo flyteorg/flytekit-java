@@ -564,7 +564,11 @@ class LocalEngineTest {
   @AutoService(SdkWorkflow.class)
   public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow {
 
-    @Override
+      public TestCaseExhaustivenessWorkflow() {
+          super(outputType);
+      }
+
+      @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData x = builder.inputOfInteger("x");
       SdkBindingData nextX =

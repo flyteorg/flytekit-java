@@ -67,7 +67,7 @@ class IfBlockIdl {
   }
 
   private static ComparisonExpression toIdl(
-      Map<String, Binding> extraInputs, SdkComparisonExpression booleanExpression) {
+      Map<String, Binding> extraInputs, SdkComparisonExpression<?> booleanExpression) {
     return ComparisonExpression.builder()
         .operator(booleanExpression.operator())
         .leftValue(toOperand(extraInputs, booleanExpression.left()))
@@ -75,7 +75,7 @@ class IfBlockIdl {
         .build();
   }
 
-  private static Operand toOperand(Map<String, Binding> extraInputs, SdkBindingData bindingData) {
+  private static Operand toOperand(Map<String, Binding> extraInputs, SdkBindingData<?> bindingData) {
     BindingData idl = bindingData.idl();
 
     // always allocate a new var name to make vars more predictable and easier to follow

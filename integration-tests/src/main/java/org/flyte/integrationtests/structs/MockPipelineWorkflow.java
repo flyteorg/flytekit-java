@@ -27,6 +27,10 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
 public class MockPipelineWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  public MockPipelineWorkflow() {
+    super(outputType);
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<String> tableName = builder.inputOfString("tableName");

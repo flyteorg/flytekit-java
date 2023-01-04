@@ -18,41 +18,32 @@ package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class SumTask
-    extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput, NopOutputTransformer> {
+    extends SdkRunnableTask<SumTask.SumInput, TestUnaryIntegerOutput> {
   private static final long serialVersionUID = -7796919693971619417L;
 
   public SumTask() {
-    super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
+    super(JacksonSdkType.of(SumInput.class), new TestUnaryIntegerOutput.SdkType());
   }
 
   @AutoValue
   public abstract static class SumInput {
-    public abstract long a();
+    public abstract SdkBindingData<Long> a();
 
-    public abstract long b();
+    public abstract SdkBindingData<Long> b();
 
     public static SumInput create(long a, long b) {
-      return new AutoValue_SumTask_SumInput(a, b);
-    }
-  }
-
-  @AutoValue
-  public abstract static class SumOutput {
-    public abstract long c();
-
-    public static SumOutput create(long c) {
-      return new AutoValue_SumTask_SumOutput(c);
+      return new AutoValue_SumTask_SumInput(SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
     }
   }
 
   @Override
-  public SumOutput run(SumInput input) {
-    return SumOutput.create(input.a() + input.b());
+  public TestUnaryIntegerOutput run(SumInput input) {
+    return TestUnaryIntegerOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
   }
 }

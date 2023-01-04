@@ -22,7 +22,7 @@ import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -30,19 +30,19 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 // if x is even, then x/2 else 3x+1
 @AutoService(SdkWorkflow.class)
-public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
 
     public CollatzConjectureStepWorkflow() {
-        super(outputType);
+        super(new TestUnaryIntegerOutput.SdkType());
     }
 
     @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData x = builder.inputOfInteger("x");
-    SdkBindingData isOdd =
-        builder.apply("is_odd", new IsEvenTask().withInput("x", x)).getOutput("res");
+    SdkBindingData<Long> x = builder.inputOfInteger("x");
+    SdkBindingData<Boolean> isOdd =
+        builder.apply("is_odd", new IsEvenTask().withInput("x", x)).getOutputs().res();
 
-    SdkBindingData nextX =
+    SdkBindingData<Long> nextX =
         builder
             .apply(
                 "decide",
@@ -51,14 +51,14 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransfor
                         isTrue(isOdd),
                         new Divide().withInput("num", x).withInput("den", ofInteger(2L)))
                     .otherwise("was_odd", new ThreeXPlusOne().withInput("x", x)))
-            .getOutput("res");
+            .getOutputs().o();
 
     builder.output("nextX", nextX);
   }
 
   @AutoService(SdkRunnableTask.class)
   public static class IsEvenTask
-      extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output, NopOutputTransformer> {
+      extends SdkRunnableTask<IsEvenTask.Input, IsEvenTask.Output> {
     private static final long serialVersionUID = -1606085903949620311L;
 
     public IsEvenTask() {
@@ -73,56 +73,57 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransfor
     @AutoValue
     public abstract static class Input {
 
-      public abstract Long x();
+      public abstract SdkBindingData<Long> x();
 
       public static Input create(Long x) {
-        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Input(x);
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Input(SdkBindingData.ofInteger(x));
       }
     }
 
     @AutoValue
     public abstract static class Output {
 
-      public abstract boolean res();
+      public abstract SdkBindingData<Boolean> res();
 
       public static Output create(boolean res) {
-        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Output(SdkBindingData.ofBoolean(res));
       }
     }
   }
 
   @AutoService(SdkRunnableTask.class)
   public static class Divide
-      extends SdkRunnableTask<Divide.Input, Divide.Output, NopOutputTransformer> {
+      extends SdkRunnableTask<Divide.Input, TestUnaryIntegerOutput> {
     private static final long serialVersionUID = -526903889896397227L;
 
     public Divide() {
-      super(JacksonSdkType.of(Divide.Input.class), JacksonSdkType.of(Divide.Output.class));
+      super(JacksonSdkType.of(Divide.Input.class), new TestUnaryIntegerOutput.SdkType());
     }
 
     @Override
-    public Divide.Output run(Divide.Input input) {
-      return Divide.Output.create(input.num() / input.den());
+    public TestUnaryIntegerOutput run(Divide.Input input) {
+      return TestUnaryIntegerOutput.create(SdkBindingData.ofInteger(input.num().get() / input.den().get()));
     }
 
     @AutoValue
     public abstract static class Input {
-      public abstract long num();
+      public abstract SdkBindingData<Long> num();
 
-      public abstract long den();
+      public abstract SdkBindingData<Long> den();
 
       public static Input create(long num, long den) {
-        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Input(num, den);
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Input(
+                SdkBindingData.ofInteger(num), SdkBindingData.ofInteger(den));
       }
     }
 
     @AutoValue
     public abstract static class Output {
 
-      public abstract long res();
+      public abstract SdkBindingData<Long> res();
 
       public static Output create(long res) {
-        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Output(SdkBindingData.ofInteger(res));
       }
     }
   }
@@ -130,36 +131,27 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<NopOutputTransfor
   // 3x+1
   @AutoService(SdkRunnableTask.class)
   public static class ThreeXPlusOne
-      extends SdkRunnableTask<ThreeXPlusOne.Input, ThreeXPlusOne.Output, NopOutputTransformer> {
+      extends SdkRunnableTask<ThreeXPlusOne.Input, TestUnaryIntegerOutput> {
     private static final long serialVersionUID = 932934331328064751L;
 
     public ThreeXPlusOne() {
       super(
           JacksonSdkType.of(ThreeXPlusOne.Input.class),
-          JacksonSdkType.of(ThreeXPlusOne.Output.class));
+          new TestUnaryIntegerOutput.SdkType());
     }
 
     @Override
-    public ThreeXPlusOne.Output run(ThreeXPlusOne.Input input) {
-      return ThreeXPlusOne.Output.create(3 * input.x() + 1);
+    public TestUnaryIntegerOutput run(ThreeXPlusOne.Input input) {
+      return TestUnaryIntegerOutput.create(SdkBindingData.ofInteger(3 * input.x().get() + 1));
     }
 
     @AutoValue
     public abstract static class Input {
-      public abstract long x();
+      public abstract SdkBindingData<Long> x();
 
       public static Input create(long x) {
-        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Input(x);
-      }
-    }
-
-    @AutoValue
-    public abstract static class Output {
-
-      public abstract long res();
-
-      public static Output create(long res) {
-        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Output(res);
+        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Input(
+                SdkBindingData.ofInteger(x));
       }
     }
   }

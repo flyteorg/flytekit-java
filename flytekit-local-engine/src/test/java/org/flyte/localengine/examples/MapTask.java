@@ -19,12 +19,18 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
+import static java.util.stream.Collectors.toMap;
+
 @AutoService(SdkRunnableTask.class)
-public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output, NopOutputTransformer> {
+public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
   private static final long serialVersionUID = 4810131589121130850L;
 
   public MapTask() {
@@ -33,15 +39,23 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output, NopO
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.map());
+    return Output.create(input.map().get());
   }
 
   @AutoValue
   public abstract static class Input {
-    public abstract Map<String, Long> map();
+    public abstract SdkBindingData<Map<String, Long>> map();
 
     public static Input create(Map<String, Long> map) {
-      return new AutoValue_MapTask_Input(map);
+      return new AutoValue_MapTask_Input(
+              SdkBindingData.ofBindingMap(
+                      map.entrySet().stream()
+                              .map(e -> Map.entry(e.getKey(), SdkBindingData.ofInteger(e.getValue())))
+                              .collect(
+                                      toMap(
+                                              Map.Entry::getKey,
+                                              (Function<Map.Entry<String, SdkBindingData<Long>>, SdkBindingData<Long>>) Map.Entry::getValue))
+              ));
     }
   }
 

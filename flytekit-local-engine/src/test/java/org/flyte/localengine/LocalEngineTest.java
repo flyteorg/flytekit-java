@@ -47,7 +47,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkWorkflow;
@@ -562,59 +562,51 @@ class LocalEngineTest {
   }
 
   @AutoService(SdkWorkflow.class)
-  public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow {
+  public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow<TestCaseExhaustivenessWorkflow.NoOpType> {
 
       public TestCaseExhaustivenessWorkflow() {
-          super(outputType);
+          super(JacksonSdkType.of(NoOpType.class));
       }
 
       @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData x = builder.inputOfInteger("x");
-      SdkBindingData nextX =
+      SdkBindingData<Long> x = builder.inputOfInteger("x");
+      SdkBindingData<Long> nextX =
           builder
               .apply(
                   "decide",
                   when("eq_1", eq(ofInteger(1L), x), NoOp.of(x))
                       .when("eq_2", eq(ofInteger(2L), x), NoOp.of(x)))
-              .getOutput("x");
+              .getOutputs().x();
 
       builder.output("nextX", nextX);
     }
 
     @AutoService(SdkRunnableTask.class)
-    public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput, NopOutputTransformer> {
+    public static class NoOp extends SdkRunnableTask<NoOpType, NoOpType> {
       private static final long serialVersionUID = 327687642904919547L;
 
       public NoOp() {
-        super(JacksonSdkType.of(NoOpInput.class), JacksonSdkType.of(NoOpOutput.class));
+        super(JacksonSdkType.of(NoOpType.class), JacksonSdkType.of(NoOpType.class));
       }
 
       @Override
-      public NoOpOutput run(NoOpInput input) {
-        return NoOpOutput.create(input.x());
+      public NoOpType run(NoOpType input) {
+        return NoOpType.create(input.x().get());
       }
 
-      static SdkTransform of(SdkBindingData x) {
+      static SdkTransform<NoOpType> of(SdkBindingData<Long> x) {
         return new NoOp().withInput("x", x);
       }
     }
 
     @AutoValue
-    public abstract static class NoOpInput {
-      abstract long x();
+    public abstract static class NoOpType {
+      abstract SdkBindingData<Long> x();
 
-      public static NoOpInput create(long x) {
-        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpInput(x);
-      }
-    }
-
-    @AutoValue
-    public abstract static class NoOpOutput {
-      abstract long x();
-
-      public static NoOpOutput create(long x) {
-        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpOutput(x);
+      public static NoOpType create(long x) {
+        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(
+                SdkBindingData.ofInteger(x));
       }
     }
   }

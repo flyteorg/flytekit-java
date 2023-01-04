@@ -27,6 +27,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -85,6 +86,10 @@ public abstract class SdkBindingData<T> {
     LiteralType literalType = LiteralType.ofSimpleType(getSimpleType(primitive.kind()));
 
     return create(bindingData, literalType, value);
+  }
+
+  public static <T> SdkBindingData<List<T>> ofCollection(List<T> collection,Function<T, SdkBindingData<T>> function) {
+    return SdkBindingData.ofBindingCollection(collection.stream().map(function).collect(Collectors.toList()));
   }
 
   public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {

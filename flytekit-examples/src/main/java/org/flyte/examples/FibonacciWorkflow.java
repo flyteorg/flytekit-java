@@ -17,17 +17,18 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopOutputTransformer;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
 
     public FibonacciWorkflow() {
-        super(outputType);
+        super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
     }
 
     @Override
@@ -44,4 +45,13 @@ public class FibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
 
     builder.output("fib5", fib5, "Value for Fib5");
   }
+
+    @AutoValue
+    public abstract static class Output {
+        public abstract SdkBindingData<Long> fib5();
+
+        public static FibonacciWorkflow.Output create(Long fib5) {
+            return new AutoValue_FibonacciWorkflow_Output(SdkBindingData.ofInteger(fib5));
+        }
+    }
 }

@@ -61,7 +61,7 @@ public class BatchLookUpTask
     public abstract SdkBindingData<List<String>> values();
 
     public static Output create(List<String> values) {
-      return new AutoValue_BatchLookUpTask_Output(values);
+      return new AutoValue_BatchLookUpTask_Output(SdkBindingData.ofCollection(values, SdkBindingData::ofString));
     }
   }
 }

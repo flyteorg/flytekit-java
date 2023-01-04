@@ -18,13 +18,12 @@ package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
 import java.util.concurrent.atomic.AtomicLong;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 
 /** Used to test retries. Shares global counter that only works in testing mode. */
 @AutoService(SdkRunnableTask.class)
-public class RetryableTask extends SdkRunnableTask<Void, Void, NopOutputTransformer> {
+public class RetryableTask extends SdkRunnableTask<Void, Void> {
   private static final long serialVersionUID = -4698187378116857395L;
 
   public static final AtomicLong ATTEMPTS_BEFORE_SUCCESS = new AtomicLong();

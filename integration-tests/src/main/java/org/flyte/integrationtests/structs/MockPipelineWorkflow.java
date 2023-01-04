@@ -20,15 +20,17 @@ import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofString;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class MockPipelineWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class MockPipelineWorkflow extends SdkWorkflow<MockPipelineWorkflow.Output> {
   public MockPipelineWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(MockPipelineWorkflow.Output.class));
   }
 
   @Override
@@ -43,7 +45,7 @@ public class MockPipelineWorkflow extends SdkWorkflow<NopOutputTransformer> {
                     .withInput("dataset", ofString("styx-insights"))
                     .withInput("tableName", tableName))
             .getOutputs().ref();
-    SdkBindingData exists =
+    SdkBindingData<Boolean> exists =
         builder
             .apply(
                 "lookup",
@@ -52,5 +54,14 @@ public class MockPipelineWorkflow extends SdkWorkflow<NopOutputTransformer> {
                     .withInput("checkIfExists", ofBoolean(true)))
             .getOutputs().exists();
     builder.output("exists", exists);
+  }
+
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<Boolean> exists();
+
+    public static Output create(Boolean exists) {
+      return new AutoValue_MockPipelineWorkflow_Output(SdkBindingData.ofBoolean(exists));
+    }
   }
 }

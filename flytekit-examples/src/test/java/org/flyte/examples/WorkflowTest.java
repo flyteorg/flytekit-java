@@ -29,7 +29,7 @@ public class WorkflowTest {
   @Test
   public void testSubWorkflow() {
     SdkTestingExecutor.Result result =
-        SdkTestingExecutor.of(new UberWorkflow<>())
+        SdkTestingExecutor.of(new UberWorkflow())
             .withFixedInput("a", 1)
             .withFixedInput("b", 2)
             .withFixedInput("c", 3)

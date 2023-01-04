@@ -17,16 +17,16 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 /** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
-public class ContainerWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class ContainerWorkflow extends SdkWorkflow<Void> {
 
     public ContainerWorkflow() {
-        super(outputType);
+        super(SdkTypes.nulls());
     }
 
     @Override

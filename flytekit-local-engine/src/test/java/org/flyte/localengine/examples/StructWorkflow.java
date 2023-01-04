@@ -17,22 +17,25 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.api.v1.Struct;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
+import org.flyte.flytekit.SdkStruct;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkWorkflow.class)
-public class StructWorkflow extends SdkWorkflow<NopOutputTransformer> {
+// @AutoService(SdkWorkflow.class) TODO fix
+public class StructWorkflow extends SdkWorkflow<StructTask.Output> {
     public StructWorkflow() {
-        super(outputType);
+        super(JacksonSdkType.of(StructTask.Output.class));
     }
 
     @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData someString = builder.inputOfString("someString");
-    SdkBindingData someStruct = builder.inputOfStruct("someStruct");
-    SdkNode<?> structNode =
+    SdkBindingData<String> someString = builder.inputOfString("someString");
+    SdkBindingData<SdkStruct> someStruct = builder.inputOfStruct("someStruct");
+    SdkNode<StructTask.Output> structNode =
         builder.apply(
             "node-struct-1",
             new StructTask()

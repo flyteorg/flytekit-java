@@ -17,7 +17,6 @@
 package org.flyte.examples;
 
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;

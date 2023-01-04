@@ -17,7 +17,6 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{
-  NopOutputTransformer,
   SdkBindingData,
   SdkRunnableTask
 }

@@ -153,11 +153,11 @@ public class SdkWorkflowBuilder {
     return inputOf(name, LiteralType.ofSimpleType(SimpleType.FLOAT), help);
   }
 
-  public SdkBindingData<?> inputOfStruct(String name) {
+  public SdkBindingData<SdkStruct> inputOfStruct(String name) {
     return inputOfStruct(name, "");
   }
 
-  public SdkBindingData<?> inputOfStruct(String name, String help) {
+  public SdkBindingData<SdkStruct> inputOfStruct(String name, String help) {
     return inputOf(name, LiteralType.ofSimpleType(SimpleType.STRUCT), help);
   }
 

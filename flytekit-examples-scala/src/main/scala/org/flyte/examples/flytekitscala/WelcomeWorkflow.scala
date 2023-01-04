@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{NopOutputTransformer, SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.SdkScalaType
 
 /** Example workflow that takes a name and outputs a welcome message

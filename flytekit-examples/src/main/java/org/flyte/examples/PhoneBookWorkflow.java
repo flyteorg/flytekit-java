@@ -51,7 +51,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
      * @return output of NodeMetadataExampleWorkflow
      */
     public static PhoneBookWorkflow.Output create(List<String> phoneNumbers) {
-      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofStringCollection(phoneNumbers));
+      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofCollection(phoneNumbers, SdkBindingData::ofString));
     }
   }
 
@@ -68,7 +68,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     SdkBindingData<List<String>> searchKeys =
-            SdkBindingData.ofStringCollection(NAMES);
+            SdkBindingData.ofCollection(NAMES, SdkBindingData::ofString);
 
     SdkBindingData<List<String>> phoneNumbers =
         builder

@@ -88,8 +88,8 @@ public abstract class SdkBindingData<T> {
     return create(bindingData, literalType, value);
   }
 
-  public static SdkBindingData<List<String>> ofStringCollection(List<String> collection) {
-    return SdkBindingData.ofBindingCollection(collection.stream().map(SdkBindingData::ofString).collect(Collectors.toList()));
+  public static <T> SdkBindingData<List<T>> ofCollection(List<T> collection,Function<T, SdkBindingData<T>> function) {
+    return SdkBindingData.ofBindingCollection(collection.stream().map(function).collect(Collectors.toList()));
   }
 
   public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {

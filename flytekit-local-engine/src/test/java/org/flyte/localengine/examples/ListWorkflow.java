@@ -17,32 +17,35 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.localengine.ImmutableList;
 
+import java.util.List;
+
 @AutoService(SdkWorkflow.class)
-public class ListWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class ListWorkflow extends SdkWorkflow<ListTask.Output> {
     public ListWorkflow() {
-        super(outputType);
+        super(JacksonSdkType.of(ListTask.Output.class));
     }
 
     @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkNode<NopOutputTransformer> sum1 =
+    SdkNode<TestUnaryIntegerOutput> sum1 =
         builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
-    SdkNode<NopOutputTransformer> sum2 =
+    SdkNode<TestUnaryIntegerOutput> sum2 =
         builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
 
-    SdkBindingData list =
+    SdkBindingData<List<Long>> list =
         SdkBindingData.ofBindingCollection(
-            ImmutableList.of(sum1.getOutput("c"), sum2.getOutput("c")));
+            ImmutableList.of(sum1.getOutputs().o(), sum2.getOutputs().o()));
 
-    SdkNode<NopOutputTransformer> list1 =
+    SdkNode<ListTask.Output> list1 =
         builder.apply("list-1", new ListTask().withInput("list", list));
 
-    builder.output("list", list1.getOutput("list"));
+    builder.output("list", list1.getOutputs().list());
   }
 }

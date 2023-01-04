@@ -35,7 +35,8 @@ public abstract class SdkNode<OutputT> {
   public abstract OutputT getOutputs();
 
   public SdkBindingData<OutputT> getOutput(String name) {
-    // TODO Add unchecked
+
+    @SuppressWarnings("unchecked")
     SdkBindingData<OutputT> output = (SdkBindingData<OutputT>) getOutputBindings().get(name);
 
     if (output == null) {

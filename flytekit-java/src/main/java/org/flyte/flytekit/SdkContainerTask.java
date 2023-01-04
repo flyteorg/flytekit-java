@@ -64,6 +64,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Out
   }
 
   /** Specifies task output type. */
+  @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }

@@ -104,7 +104,7 @@ public abstract class SdkBindingData<T> {
     LiteralType collectionType = LiteralType.ofCollectionType(elementType);
     boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
     List<T> unwrappedElements =
-        (hasPromise) ? null : elements.stream().map(SdkBindingData::get).collect(toList());
+        hasPromise ? null : elements.stream().map(SdkBindingData::get).collect(toList());
 
     return SdkBindingData.create(bindingData, collectionType, unwrappedElements);
   }
@@ -144,7 +144,7 @@ public abstract class SdkBindingData<T> {
     LiteralType mapType = LiteralType.ofMapValueType(elementType);
     boolean hasPromise = bindings.values().stream().anyMatch(SdkBindingData::isAPromise);
     Map<String, T> unwrappedElements =
-        (hasPromise)
+        hasPromise
             ? null
             : valueMap.entrySet().stream()
                 .map(e -> Map.entry(e.getKey(), e.getValue().get()))

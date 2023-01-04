@@ -44,6 +44,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
     return inputType;
   }
 
+  @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }

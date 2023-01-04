@@ -17,17 +17,35 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
+import org.flyte.examples.GreetTask.Output;
 import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExampleWorkflow.Output> {
+
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<String> c();
+
+    /**
+     * Wraps the constructor of the generated output value class.
+     *
+     * @param c the String literal output of {@link NodeMetadataExampleWorkflow}
+     * @return output of NodeMetadataExampleWorkflow
+     */
+    public static NodeMetadataExampleWorkflow.Output create(String c) {
+      return new AutoValue_NodeMetadataExampleWorkflow_Output(SdkBindingData.ofString(c));
+    }
+  }
 
   public NodeMetadataExampleWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(NodeMetadataExampleWorkflow.Output.class));
   }
 
   @Override

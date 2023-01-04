@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -40,9 +41,9 @@ public class BatchLookUpTask
   @Override
   public Output run(Input input) {
     List<String> foundValues =
-        input.searchKeys().stream()
-            .filter(key -> input.keyValues().containsKey(key))
-            .map(key -> input.keyValues().get(key))
+        input.searchKeys().get().stream()
+            .filter(key -> input.keyValues().get().containsKey(key))
+            .map(key -> input.keyValues().get().get(key))
             .collect(Collectors.toList());
 
     return Output.create(foundValues);
@@ -50,14 +51,14 @@ public class BatchLookUpTask
 
   @AutoValue
   public abstract static class Input {
-    public abstract Map<String, String> keyValues();
+    public abstract SdkBindingData<Map<String, String>> keyValues();
 
-    public abstract List<String> searchKeys();
+    public abstract SdkBindingData<List<String>> searchKeys();
   }
 
   @AutoValue
   public abstract static class Output {
-    public abstract List<String> values();
+    public abstract SdkBindingData<List<String>> values();
 
     public static Output create(List<String> values) {
       return new AutoValue_BatchLookUpTask_Output(values);

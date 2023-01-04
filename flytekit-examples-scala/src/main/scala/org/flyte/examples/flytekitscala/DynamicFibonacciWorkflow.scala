@@ -16,13 +16,11 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{
-  NopOutputTransformer,
-  SdkWorkflow,
-  SdkWorkflowBuilder
-}
+import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekitscala.SdkScalaType
 
-class DynamicFibonacciWorkflow extends SdkWorkflow[NopOutputTransformer](outputType) {
+case class DynamicFibonacciWorkflowOutput(output: SdkBindingData[Long])
+class DynamicFibonacciWorkflow extends SdkWorkflow[DynamicFibonacciWorkflowOutput](SdkScalaType[DynamicFibonacciWorkflowOutput]) {
 
   override def expand(builder: SdkWorkflowBuilder): Unit = {
     val n = builder.inputOfInteger("n")
@@ -30,7 +28,7 @@ class DynamicFibonacciWorkflow extends SdkWorkflow[NopOutputTransformer](outputT
       "fibonacci",
       new DynamicFibonacciWorkflowTask().withInput("n", n)
     )
-    builder.output("output", fibonacci.getOutput("output"))
+    builder.output("output", fibonacci.getOutputs.output)
   }
 
 }

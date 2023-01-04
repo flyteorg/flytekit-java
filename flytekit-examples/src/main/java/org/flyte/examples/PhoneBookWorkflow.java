@@ -17,11 +17,16 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
@@ -37,26 +42,46 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
     PHONE_BOOK.put("gandalf", "789");
   }
 
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<List<String>> phoneNumbers();
+
+    /**
+     * Wraps the constructor of the generated output value class.
+     *
+     * @param phoneNumbers the String literal output of {@link NodeMetadataExampleWorkflow}
+     * @return output of NodeMetadataExampleWorkflow
+     */
+    public static NodeMetadataExampleWorkflow.Output create(List<String> phoneNumbers) {
+      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofBindingCollection(phoneNumbers));
+    }
+  }
+
   public PhoneBookWorkflow() {
     super(outputType);
   }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    //TODO
-    /*
-    SdkBindingData<String> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
-    SdkBindingData<String> searchKeys = SdkBindingData.ofStringCollection(NAMES);
+    SdkBindingData<Map<String, String>> phoneBook =
+        SdkBindingData.ofBindingMap(
+            PHONE_BOOK.entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), SdkBindingData.ofString(entry.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-    SdkBindingData phoneNumbers =
+    SdkBindingData<List<String>> searchKeys =
+        SdkBindingData.ofBindingCollection(
+            NAMES.stream().map(SdkBindingData::ofString).collect(Collectors.toList()));
+
+    SdkBindingData<List<String>> phoneNumbers =
         builder
             .apply(
                 "search",
                 new BatchLookUpTask()
                     .withInput("keyValues", phoneBook)
                     .withInput("searchKeys", searchKeys))
-            .getOutput("values");
+            .getOutputs().values();
 
-    builder.output("phoneNumbers", phoneNumbers);*/
+    builder.output("phoneNumbers", phoneNumbers);
   }
 }

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkBindingData;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
@@ -104,11 +106,14 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   private LiteralType toLiteralType(JavaType javaType) {
     Class<?> type = javaType.getRawClass();
 
-    if (isPrimitiveAssignableFrom(Long.class, type)) {
+    if (SdkBindingData.class.isAssignableFrom(type)) {
+      return toLiteralType(javaType.getBindings().getBoundType(0));
+    }
+    else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
       return LiteralTypes.FLOAT;
-    } else if (String.class == type || javaType.isEnumType()) {
+    } else if (String.class.equals(type) || javaType.isEnumType()) {
       return LiteralTypes.STRING;
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
       return LiteralTypes.BOOLEAN;

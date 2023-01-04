@@ -140,11 +140,8 @@ class LocalEngineTest {
 
   @Test
   public void testBindingMap() {
-    String workflowName = new MapWorkflow().getName();
-
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflow = new MapWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
-    WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
         new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
@@ -233,11 +230,8 @@ class LocalEngineTest {
 
   @Test
   public void testRetryableTask_failed() {
-    String workflowName = new RetryableWorkflow().getName();
-
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflow = new RetryableWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
-    WorkflowTemplate workflow = workflows.get(workflowName);
 
     TestingListener listener = new TestingListener();
 

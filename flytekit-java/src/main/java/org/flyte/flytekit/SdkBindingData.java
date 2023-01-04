@@ -91,14 +91,34 @@ public abstract class SdkBindingData<T> {
     return SdkBindingData.ofBindingCollection(collection.stream().map(function).collect(Collectors.toList()));
   }
 
-  public static SdkBindingData<Map<String, Long>> ofLongMap(Map<String, Long> map) {
+  public static <T> SdkBindingData<Map<String, T>> ofMap(Map<String, T> map, Function<T, SdkBindingData<T>> bindingFunction) {
     return SdkBindingData.ofBindingMap(
-            map.entrySet().stream()
-                    .map(e -> Map.entry(e.getKey(), SdkBindingData.ofInteger(e.getValue())))
-                    .collect(
-                            toMap(
-                                    Map.Entry::getKey,
-                                    Map.Entry::getValue)));
+        map.entrySet().stream()
+            .map(e -> Map.entry(e.getKey(), bindingFunction.apply(e.getValue())))
+            .collect(
+                toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue)));
+  }
+
+  public static SdkBindingData<Map<String, Long>> ofLongMap(Map<String, Long> map) {
+    return ofMap(map, SdkBindingData::ofInteger);
+  }
+
+  public static SdkBindingData<Map<String, String>> ofStringMap(Map<String, String> map) {
+    return ofMap(map, SdkBindingData::ofString);
+  }
+
+  public static SdkBindingData<Map<String, Boolean>> ofBooleanMap(Map<String, Boolean> map) {
+    return ofMap(map, SdkBindingData::ofBoolean);
+  }
+
+  public static SdkBindingData<Map<String, Duration>> ofDurationMap(Map<String, Duration> map) {
+    return ofMap(map, SdkBindingData::ofDuration);
+  }
+
+  public static SdkBindingData<Map<String, Instant>> ofDatetimeMap(Map<String, Instant> map) {
+    return ofMap(map, SdkBindingData::ofDatetime);
   }
 
 

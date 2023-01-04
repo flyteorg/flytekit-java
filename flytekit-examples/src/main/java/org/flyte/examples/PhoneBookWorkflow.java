@@ -61,11 +61,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Map<String, String>> phoneBook =
-        SdkBindingData.ofBindingMap(
-            PHONE_BOOK.entrySet().stream()
-                .map(entry -> Map.entry(entry.getKey(), SdkBindingData.ofString(entry.getValue())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
 
     SdkBindingData<List<String>> searchKeys =
             SdkBindingData.ofCollection(NAMES, SdkBindingData::ofString);

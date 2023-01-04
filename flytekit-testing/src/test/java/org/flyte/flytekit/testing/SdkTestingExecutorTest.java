@@ -24,7 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
-import org.flyte.flytekit.NopOutputTransformer;
+
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -277,7 +278,7 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithLaunchPlanOutput() {
-    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput, NopOutputTransformer>
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput>
         launchplanRef =
             SdkRemoteLaunchPlan.create(
                 "development",

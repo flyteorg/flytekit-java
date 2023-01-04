@@ -25,7 +25,8 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
-import org.flyte.flytekit.NopOutputTransformer;
+
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
@@ -51,7 +52,7 @@ public class IfElseWorkflowTest {
             .withFixedInput("b", b)
             .withFixedInput("c", c)
             .withFixedInput("d", d)
-            .withTask(new ConstStringTask(), in -> Output.create(in.value()))
+            .withTask(new ConstStringTask(), in -> Output.create(in.value().get()))
             .execute();
 
     assertThat(output.getStringOutput("value"), equalTo(expected));
@@ -70,19 +71,19 @@ public class IfElseWorkflowTest {
         Arguments.of(2, 1, 4, 3, "a > b && c > d"));
   }
 
-  static class BranchNodeWorkflow extends SdkWorkflow<NopOutputTransformer> {
+  static class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
       BranchNodeWorkflow() {
-          super(outputType);
+          super(JacksonSdkType.of(ConstStringTask.Output.class));
       }
 
       @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData a = builder.inputOfInteger("a");
-      SdkBindingData b = builder.inputOfInteger("b");
-      SdkBindingData c = builder.inputOfInteger("c");
-      SdkBindingData d = builder.inputOfInteger("d");
+      SdkBindingData<Long> a = builder.inputOfInteger("a");
+      SdkBindingData<Long> b = builder.inputOfInteger("b");
+      SdkBindingData<Long> c = builder.inputOfInteger("c");
+      SdkBindingData<Long> d = builder.inputOfInteger("d");
 
-      SdkCondition<NopOutputTransformer> condition =
+      SdkCondition<ConstStringTask.Output> condition =
           when(
                   "a == b",
                   eq(a, b),
@@ -109,20 +110,20 @@ public class IfElseWorkflowTest {
   }
 
   static class ConstStringTask
-      extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output, NopOutputTransformer> {
+      extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output> {
     private static final long serialVersionUID = 5553122612313564203L;
 
     @AutoValue
     abstract static class Input {
-      abstract String value();
+      abstract SdkBindingData<String> value();
     }
 
     @AutoValue
     abstract static class Output {
-      abstract String value();
+      abstract SdkBindingData<String> value();
 
       public static Output create(String value) {
-        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(value);
+        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(SdkBindingData.ofString(value));
       }
     }
 
@@ -130,13 +131,13 @@ public class IfElseWorkflowTest {
       super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
     }
 
-    public static SdkTransform<NopOutputTransformer> of(String value) {
+    public static SdkTransform<Output> of(String value) {
       return new ConstStringTask().withInput("value", SdkBindingData.ofString(value));
     }
 
     @Override
     public Output run(Input input) {
-      return Output.create(input.value());
+      return Output.create(input.value().get());
     }
   }
 }

@@ -17,10 +17,13 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.localengine.ImmutableMap;
+
+import java.util.Map;
 
 @AutoService(SdkWorkflow.class)
 public class MapWorkflow extends SdkWorkflow {
@@ -30,17 +33,17 @@ public class MapWorkflow extends SdkWorkflow {
 
     @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkNode<?> sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
-    SdkNode<?> sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
+    SdkNode<TestUnaryIntegerOutput> sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
+    SdkNode<TestUnaryIntegerOutput> sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
 
-    SdkBindingData map =
+    SdkBindingData<Map<String, TestUnaryIntegerOutput>> map =
         SdkBindingData.ofBindingMap(
             ImmutableMap.of(
                 "e", sum1.getOutput("c"),
                 "f", sum2.getOutput("c")));
 
-    SdkNode<?> map1 = builder.apply("map-1", new MapTask().withInput("map", map));
+    SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask().withInput("map", map));
 
-    builder.output("map", map1.getOutput("map"));
+    builder.output("map", map1.getOutputs().map());
   }
 }

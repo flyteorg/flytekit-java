@@ -21,11 +21,12 @@ import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class DynamicFibonacciWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class DynamicFibonacciWorkflow extends SdkWorkflow<DynamicFibonacciWorkflowTask.Output> {
   public DynamicFibonacciWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(DynamicFibonacciWorkflowTask.Output.class));
   }
 
   @Override

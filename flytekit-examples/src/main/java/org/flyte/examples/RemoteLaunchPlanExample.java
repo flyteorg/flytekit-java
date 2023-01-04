@@ -30,10 +30,10 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 // launchplan to be registered already.
 // The order that we register objects in jflyte is: task, workflows and launchplans
 // @AutoService(SdkWorkflow.class)
-public class RemoteLaunchPlanExample extends SdkWorkflow<NopOutputTransformer> {
+public class RemoteLaunchPlanExample extends SdkWorkflow<Void> {
 
     public RemoteLaunchPlanExample() {
-        super(outputType);
+        super(SdkTypes.nulls());
     }
 
     @Override

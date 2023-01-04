@@ -27,11 +27,12 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class BranchNodeWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
   public BranchNodeWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(ConstStringTask.Output.class));
   }
 
   @Override

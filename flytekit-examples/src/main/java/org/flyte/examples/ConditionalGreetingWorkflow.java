@@ -25,11 +25,12 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkConditions;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class ConditionalGreetingWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Output> {
   public ConditionalGreetingWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(GreetTask.Output.class));
   }
 
   @Override

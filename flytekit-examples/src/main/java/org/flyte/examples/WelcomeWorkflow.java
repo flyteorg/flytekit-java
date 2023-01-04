@@ -21,13 +21,14 @@ import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
-public class WelcomeWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class WelcomeWorkflow extends SdkWorkflow<AddQuestionTask.Output> {
 
     public WelcomeWorkflow() {
-        super(outputType);
+        super(JacksonSdkType.of(AddQuestionTask.Output.class));
     }
 
     @Override

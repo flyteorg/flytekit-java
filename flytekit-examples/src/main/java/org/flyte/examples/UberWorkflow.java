@@ -20,12 +20,13 @@ import com.google.auto.service.AutoService;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class UberWorkflow<T> extends SdkWorkflow<T> {
+public class UberWorkflow extends SdkWorkflow<SubWorkflow.Output> {
 
     public UberWorkflow() {
-        super(outputType);
+        super(JacksonSdkType.of(SubWorkflow.Output.class));
     }
 
     @Override

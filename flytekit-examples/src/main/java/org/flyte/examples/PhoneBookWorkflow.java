@@ -22,16 +22,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
 
   private static final List<String> NAMES = Arrays.asList("frodo", "bilbo");
   private static final Map<String, String> PHONE_BOOK = new HashMap<>();
@@ -52,13 +50,13 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
      * @param phoneNumbers the String literal output of {@link NodeMetadataExampleWorkflow}
      * @return output of NodeMetadataExampleWorkflow
      */
-    public static NodeMetadataExampleWorkflow.Output create(List<String> phoneNumbers) {
-      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofBindingCollection(phoneNumbers));
+    public static PhoneBookWorkflow.Output create(List<String> phoneNumbers) {
+      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofStringCollection(phoneNumbers));
     }
   }
 
   public PhoneBookWorkflow() {
-    super(outputType);
+    super(JacksonSdkType.of(PhoneBookWorkflow.Output.class));
   }
 
   @Override
@@ -70,8 +68,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<NopOutputTransformer> {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     SdkBindingData<List<String>> searchKeys =
-        SdkBindingData.ofBindingCollection(
-            NAMES.stream().map(SdkBindingData::ofString).collect(Collectors.toList()));
+            SdkBindingData.ofStringCollection(NAMES);
 
     SdkBindingData<List<String>> phoneNumbers =
         builder

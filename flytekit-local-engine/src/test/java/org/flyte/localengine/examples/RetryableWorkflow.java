@@ -17,14 +17,14 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.NopOutputTransformer;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class RetryableWorkflow extends SdkWorkflow<NopOutputTransformer> {
+public class RetryableWorkflow extends SdkWorkflow<Void> {
     public RetryableWorkflow() {
-        super(outputType);
+        super(SdkTypes.nulls());
     }
 
     @Override

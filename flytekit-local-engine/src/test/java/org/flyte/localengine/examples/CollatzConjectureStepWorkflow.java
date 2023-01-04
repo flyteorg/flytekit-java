@@ -67,7 +67,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
     @Override
     public IsEvenTask.Output run(IsEvenTask.Input input) {
-      return IsEvenTask.Output.create(input.x() % 2 == 0);
+      return IsEvenTask.Output.create(input.x().get() % 2 == 0);
     }
 
     @AutoValue

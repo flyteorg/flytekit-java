@@ -17,13 +17,12 @@
 package org.flyte.flytekit.testing;
 
 import com.google.auto.value.AutoValue;
-import org.flyte.flytekit.NopOutputTransformer;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 public class RemoteSumTask {
 
-  public static SdkRemoteTask<RemoteSumInput, RemoteSumOutput, NopOutputTransformer> create() {
+  public static SdkRemoteTask<RemoteSumInput, RemoteSumOutput> create() {
     return SdkRemoteTask.create(
         /* domain= */ null,
         /* project= */ "project",

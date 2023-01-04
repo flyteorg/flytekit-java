@@ -30,7 +30,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
@@ -91,6 +90,17 @@ public abstract class SdkBindingData<T> {
   public static <T> SdkBindingData<List<T>> ofCollection(List<T> collection,Function<T, SdkBindingData<T>> function) {
     return SdkBindingData.ofBindingCollection(collection.stream().map(function).collect(Collectors.toList()));
   }
+
+  public static SdkBindingData<Map<String, Long>> ofLongMap(Map<String, Long> map) {
+    return SdkBindingData.ofBindingMap(
+            map.entrySet().stream()
+                    .map(e -> Map.entry(e.getKey(), SdkBindingData.ofInteger(e.getValue())))
+                    .collect(
+                            toMap(
+                                    Map.Entry::getKey,
+                                    Map.Entry::getValue)));
+  }
+
 
   public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {
     // TODO we can fix that by introducing "top type" into type system and

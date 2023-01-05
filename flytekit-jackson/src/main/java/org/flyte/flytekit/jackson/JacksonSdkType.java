@@ -90,7 +90,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
           getVariableMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
-      // The previous trick with JavaType and withValueHandler did't work because
+      // The previous trick with JavaType and withValueHandler didn't work because
       // Jackson caches serializers, without considering valueHandler as significant part
       // of the caching key.
 
@@ -124,14 +124,11 @@ public class JacksonSdkType<T> extends SdkType<T> {
   @Override
   public T fromLiteralMap(Map<String, Literal> value) {
     try {
-      JsonNode tree = OBJECT_MAPPER.valueToTree(value);
-
-      //TODO: Here we can get the literalTypeMaps... but we need to find a way to pass into the serializer
       Map<String, LiteralType> literalTypeMap =
           getVariableMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
-
+      JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonLiteralMap(value, literalTypeMap));
 
       return OBJECT_MAPPER.treeToValue(tree, clazz);
     } catch (JsonProcessingException e) {

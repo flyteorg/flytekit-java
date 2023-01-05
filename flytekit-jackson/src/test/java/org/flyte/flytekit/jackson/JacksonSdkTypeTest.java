@@ -147,7 +147,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoToLiteralMap() {
     PojoInput input = new PojoInput();
-    input.a = 42;
+    input.a = SdkBindingData.ofInteger(42);
 
     Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
 
@@ -157,13 +157,13 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoFromLiteralMap() {
     PojoInput expected = new PojoInput();
-    expected.a = 42;
+    expected.a = SdkBindingData.ofInteger(42);
 
     PojoInput pojoInput =
         JacksonSdkType.of(PojoInput.class)
             .fromLiteralMap(Map.of("a", literalOf(Primitive.ofIntegerValue(42))));
 
-    assertThat(pojoInput, equalTo(expected));
+    assertThat(pojoInput.a.get(), equalTo(expected.a.get()));
   }
 
   @Test
@@ -334,7 +334,7 @@ public class JacksonSdkTypeTest {
   }
 
   public static final class PojoInput {
-    public long a;
+    public SdkBindingData<Long> a;
 
     @Override
     public boolean equals(Object o) {

@@ -33,15 +33,19 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 
 class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
@@ -82,29 +86,52 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
             }
             break;
           case GENERIC:
-            //TODO: We need to implement this
+            // TODO: We need to implement this
             break;
           case BLOB:
-            //TODO: We need to implement this
+            // TODO: We need to implement this
             break;
         }
         break;
       case COLLECTION:
-        //TODO: We need to recover the inner element type from the tree.get("type").
+        Iterator<JsonNode> elements = tree.get("value").elements();
+        switch (SimpleType.valueOf(tree.get("type").asText())) {
+          case STRING:
+            return SdkBindingData.ofBindingCollection(
+                generateListFromIterator(elements, JsonNode::asText, SdkBindingData::ofString));
+            // TODO: Implement the other case
+        }
 
-        List<SdkBindingData<?>> bindingDataList =
-            StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(
-                    tree.get("value").elements(), Spliterator.ORDERED),
-                false).map(this::transform).collect(Collectors.toList());
-
-        return null;
+        break;
       case MAP:
-        //TODO: We need to implement this
+        switch (SimpleType.valueOf(tree.get("type").asText())) {
+          case STRING:
+            return SdkBindingData.ofStringMap(generateMapFromNode(tree, JsonNode::asText));
+            // TODO: Implement the other case
+        }
         break;
     }
 
     return null;
+  }
+
+  private <T> Map<String, T> generateMapFromNode(
+      JsonNode mapNode, Function<JsonNode, T> transformer) {
+    JsonNode node = mapNode.get("value");
+    return StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(node.fieldNames(), Spliterator.ORDERED), false)
+        .map(name -> Map.entry(name, transformer.apply(node.get(name).get("value"))))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private <T> List<SdkBindingData<T>> generateListFromIterator(
+      Iterator<JsonNode> iterator,
+      Function<JsonNode, T> jsonTransformer,
+      Function<T, SdkBindingData<T>> bindingDataTransformer) {
+    return StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+        .map(node -> bindingDataTransformer.apply(jsonTransformer.apply(node.get("value"))))
+        .collect(Collectors.toList());
   }
 
   @Override

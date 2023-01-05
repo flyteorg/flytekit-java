@@ -42,9 +42,9 @@ class SdkTypeModule extends Module {
   public void setupModule(SetupContext context) {
     SimpleSerializers serializers = new SimpleSerializers();
     serializers.addSerializer(new SdkBindingDataSerializer());
-
-    context.addSerializers(new LiteralSerializers());
     context.addSerializers(serializers);
+
+    context.addSerializers(new LiteralMapSerializers());
     context.addDeserializers(new LiteralMapDeserializers());
     context.addDeserializers(new SdkBindingDataDeserializers());
 

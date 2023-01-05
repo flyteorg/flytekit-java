@@ -30,58 +30,66 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Struct.Value;
 
-//TODO: We need to transform this into StdSerializer<JacksonLiteralMap> to have knowledge about the field names.
-class LiteralSerializer extends StdSerializer<Literal> {
+class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
   private static final long serialVersionUID = 0L;
-  private final transient Map<String, LiteralType> literalTypeMap;
 
-  public LiteralSerializer(Map<String, LiteralType> literalTypeMap) {
-    super(Literal.class);
-    this.literalTypeMap = literalTypeMap;
+  public LiteralMapSerializer() {
+    super(JacksonLiteralMap.class);
   }
 
   @Override
-  public void serialize(Literal value, JsonGenerator gen, SerializerProvider serializers)
+  public void serialize(JacksonLiteralMap map, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
+    gen.writeStartObject();
+    for(Map.Entry<String, Literal> entry : map.getLiteralMap().entrySet()) {
+      gen.writeFieldName(entry.getKey());
+      gen.writeStartObject();
+      serialize(entry.getKey(), entry.getValue(), gen, serializers, map.getLiteralTypeMap());
+      gen.writeEndObject();
+    }
+    gen.writeEndObject();
+  }
+
+  public void serialize(String key, Literal value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap)
+      throws IOException {
+
     switch (value.kind()) {
       case SCALAR:
-        gen.writeStartObject();
         gen.writeFieldName("literal");
         gen.writeObject(Literal.Kind.SCALAR);
         serialize(value.scalar(), gen, serializers);
-        gen.writeEndObject();
         return;
 
       case MAP:
-        gen.writeStartObject();
         gen.writeFieldName("literal");
         gen.writeObject(Literal.Kind.MAP);
         gen.writeFieldName("type");
-        //TODO: Here we need to put the type of the inner element
-        // gen.writeObject(INNER_ELEMENT_TYPE);
-        for (Map.Entry<String, Literal> entry : value.map().entrySet()) {
+        gen.writeObject(literalTypeMap.get(key).mapValueType().simpleType());
+        gen.writeFieldName("value");
+        gen.writeStartObject();
+        for(Map.Entry<String, Literal> entry : value.map().entrySet()) {
           gen.writeFieldName(entry.getKey());
-          serialize(entry.getValue(), gen, serializers);
+          gen.writeStartObject();
+          serialize(entry.getKey(), entry.getValue(), gen, serializers, literalTypeMap);
+          gen.writeEndObject();
         }
         gen.writeEndObject();
-
 
         return;
 
       case COLLECTION:
-        gen.writeStartObject();
         gen.writeFieldName("literal");
         gen.writeObject(Literal.Kind.COLLECTION);
         gen.writeFieldName("type");
-        //TODO: Here we need to put the type of the inner element
-        // gen.writeObject(INNER_ELEMENT_TYPE);
+        gen.writeObject(literalTypeMap.get(key).collectionType().simpleType());
         gen.writeFieldName("value");
         gen.writeStartArray();
         for (Literal element : value.collection()) {
-          serialize(element, gen, serializers);
+          gen.writeStartObject();
+          serialize(key, element, gen, serializers, literalTypeMap);
+          gen.writeEndObject();
         }
         gen.writeEndArray();
-        gen.writeEndObject();
 
         return;
     }
@@ -118,42 +126,42 @@ class LiteralSerializer extends StdSerializer<Literal> {
     switch (value.kind()) {
       case BOOLEAN_VALUE:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.BOOLEAN_VALUE);
+        gen.writeObject(Kind.BOOLEAN_VALUE);
         gen.writeFieldName("value");
         gen.writeBoolean(value.booleanValue());
         return;
 
       case DATETIME:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.DATETIME);
+        gen.writeObject(Kind.DATETIME);
         gen.writeFieldName("value");
         gen.writeString(value.datetime().toString());
         return;
 
       case DURATION:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.DURATION);
+        gen.writeObject(Kind.DURATION);
         gen.writeFieldName("value");
         gen.writeString(value.duration().toString());
         return;
 
       case FLOAT_VALUE:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.FLOAT_VALUE);
+        gen.writeObject(Kind.FLOAT_VALUE);
         gen.writeFieldName("value");
         gen.writeNumber(value.floatValue());
         return;
 
       case INTEGER_VALUE:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.INTEGER_VALUE);
+        gen.writeObject(Kind.INTEGER_VALUE);
         gen.writeFieldName("value");
         gen.writeNumber(value.integerValue());
         return;
 
       case STRING_VALUE:
         gen.writeFieldName("primitive");
-        gen.writeObject(Primitive.Kind.STRING_VALUE);
+        gen.writeObject(Kind.STRING_VALUE);
         gen.writeFieldName("value");
         gen.writeString(value.stringValue());
         return;
@@ -165,7 +173,7 @@ class LiteralSerializer extends StdSerializer<Literal> {
   private void serialize(Struct generic, JsonGenerator gen) throws IOException {
     gen.writeStartObject();
 
-    for (Map.Entry<String, Struct.Value> entry : generic.fields().entrySet()) {
+    for (Map.Entry<String, Value> entry : generic.fields().entrySet()) {
       gen.writeFieldName(entry.getKey());
       serialize(entry.getValue(), gen);
     }
@@ -173,7 +181,7 @@ class LiteralSerializer extends StdSerializer<Literal> {
     gen.writeEndObject();
   }
 
-  private void serialize(Struct.Value value, JsonGenerator gen) throws IOException {
+  private void serialize(Value value, JsonGenerator gen) throws IOException {
     switch (value.kind()) {
       case BOOL_VALUE:
         gen.writeFieldName("structType");
@@ -188,7 +196,7 @@ class LiteralSerializer extends StdSerializer<Literal> {
         gen.writeFieldName("structValue");
         gen.writeStartArray();
 
-        for (Struct.Value element : value.listValue()) {
+        for (Value element : value.listValue()) {
           serialize(element, gen);
         }
 

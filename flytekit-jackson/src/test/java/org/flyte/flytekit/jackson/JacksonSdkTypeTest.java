@@ -21,6 +21,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -140,37 +144,37 @@ public class JacksonSdkTypeTest {
     assertThat(literalMap, equalTo(expected));
   }
 
-//  @Test
-//  public void testPojoToLiteralMap() {
-//    PojoInput input = new PojoInput();
-//    input.a = 42;
-//
-//    Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
-//
-//    assertThat(literalMap, equalTo(singletonMap("a", literalOf(Primitive.ofIntegerValue(42)))));
-//  }
-//
-//  @Test
-//  public void testPojoFromLiteralMap() {
-//    PojoInput expected = new PojoInput();
-//    expected.a = 42;
-//
-//    PojoInput pojoInput =
-//        JacksonSdkType.of(PojoInput.class)
-//            .fromLiteralMap(singletonMap("a", literalOf(Primitive.ofIntegerValue(42))));
-//
-//    assertThat(pojoInput, equalTo(expected));
-//  }
-//
-//  @Test
-//  public void testPojoVariableMap() {
-//    Variable expected =
-//        Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
-//
-//    Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
-//
-//    assertThat(variableMap, equalTo(singletonMap("a", expected)));
-//  }
+  @Test
+  public void testPojoToLiteralMap() {
+    PojoInput input = new PojoInput();
+    input.a = 42;
+
+    Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
+
+    assertThat(literalMap, equalTo(Map.of("a", literalOf(Primitive.ofIntegerValue(42)))));
+  }
+
+  @Test
+  public void testPojoFromLiteralMap() {
+    PojoInput expected = new PojoInput();
+    expected.a = 42;
+
+    PojoInput pojoInput =
+        JacksonSdkType.of(PojoInput.class)
+            .fromLiteralMap(Map.of("a", literalOf(Primitive.ofIntegerValue(42))));
+
+    assertThat(pojoInput, equalTo(expected));
+  }
+
+  @Test
+  public void testPojoVariableMap() {
+    Variable expected =
+        Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
+
+    Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
+
+    assertThat(variableMap, equalTo(Map.of("a", expected)));
+  }
 //
 //  @Test
 //  public void testStructRoundtrip() {
@@ -260,13 +264,9 @@ public class JacksonSdkTypeTest {
   @AutoValue
   public abstract static class AutoValueInput {
     public abstract SdkBindingData<Long> i();
-
     public abstract SdkBindingData<Double> f();
-
     public abstract SdkBindingData<String> s();
-
     public abstract SdkBindingData<Boolean> b();
-
     public abstract SdkBindingData<Instant> t();
 
     public abstract SdkBindingData<Duration> d();

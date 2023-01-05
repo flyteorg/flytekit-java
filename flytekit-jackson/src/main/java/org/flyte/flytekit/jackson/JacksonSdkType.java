@@ -28,6 +28,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -124,6 +125,13 @@ public class JacksonSdkType<T> extends SdkType<T> {
   public T fromLiteralMap(Map<String, Literal> value) {
     try {
       JsonNode tree = OBJECT_MAPPER.valueToTree(value);
+
+      //TODO: Here we can get the literalTypeMaps... but we need to find a way to pass into the serializer
+      Map<String, LiteralType> literalTypeMap =
+          getVariableMap().entrySet().stream()
+              .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+
+
 
       return OBJECT_MAPPER.treeToValue(tree, clazz);
     } catch (JsonProcessingException e) {

@@ -23,15 +23,21 @@ import java.io.IOException;
 import java.util.Map;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Primitive.Kind;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
+import org.flyte.api.v1.Struct.Value;
 
+//TODO: We need to transform this into StdSerializer<JacksonLiteralMap> to have knowledge about the field names.
 class LiteralSerializer extends StdSerializer<Literal> {
   private static final long serialVersionUID = 0L;
+  private final transient Map<String, LiteralType> literalTypeMap;
 
-  public LiteralSerializer() {
+  public LiteralSerializer(Map<String, LiteralType> literalTypeMap) {
     super(Literal.class);
+    this.literalTypeMap = literalTypeMap;
   }
 
   @Override
@@ -39,25 +45,43 @@ class LiteralSerializer extends StdSerializer<Literal> {
       throws IOException {
     switch (value.kind()) {
       case SCALAR:
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.SCALAR);
         serialize(value.scalar(), gen, serializers);
+        gen.writeEndObject();
         return;
 
       case MAP:
         gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.MAP);
+        gen.writeFieldName("type");
+        //TODO: Here we need to put the type of the inner element
+        // gen.writeObject(INNER_ELEMENT_TYPE);
         for (Map.Entry<String, Literal> entry : value.map().entrySet()) {
           gen.writeFieldName(entry.getKey());
           serialize(entry.getValue(), gen, serializers);
         }
         gen.writeEndObject();
 
+
         return;
 
       case COLLECTION:
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.COLLECTION);
+        gen.writeFieldName("type");
+        //TODO: Here we need to put the type of the inner element
+        // gen.writeObject(INNER_ELEMENT_TYPE);
+        gen.writeFieldName("value");
         gen.writeStartArray();
         for (Literal element : value.collection()) {
           serialize(element, gen, serializers);
         }
         gen.writeEndArray();
+        gen.writeEndObject();
 
         return;
     }
@@ -69,14 +93,20 @@ class LiteralSerializer extends StdSerializer<Literal> {
       throws IOException {
     switch (value.kind()) {
       case PRIMITIVE:
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.PRIMITIVE);
         serialize(value.primitive(), gen);
         return;
 
       case GENERIC:
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.GENERIC);
         serialize(value.generic(), gen);
         return;
 
       case BLOB:
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.BLOB);
         serializers.findValueSerializer(Blob.class).serialize(value.blob(), gen, serializers);
         return;
     }
@@ -87,26 +117,44 @@ class LiteralSerializer extends StdSerializer<Literal> {
   public void serialize(Primitive value, JsonGenerator gen) throws IOException {
     switch (value.kind()) {
       case BOOLEAN_VALUE:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.BOOLEAN_VALUE);
+        gen.writeFieldName("value");
         gen.writeBoolean(value.booleanValue());
         return;
 
       case DATETIME:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.DATETIME);
+        gen.writeFieldName("value");
         gen.writeString(value.datetime().toString());
         return;
 
       case DURATION:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.DURATION);
+        gen.writeFieldName("value");
         gen.writeString(value.duration().toString());
         return;
 
       case FLOAT_VALUE:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.FLOAT_VALUE);
+        gen.writeFieldName("value");
         gen.writeNumber(value.floatValue());
         return;
 
       case INTEGER_VALUE:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.INTEGER_VALUE);
+        gen.writeFieldName("value");
         gen.writeNumber(value.integerValue());
         return;
 
       case STRING_VALUE:
+        gen.writeFieldName("primitive");
+        gen.writeObject(Primitive.Kind.STRING_VALUE);
+        gen.writeFieldName("value");
         gen.writeString(value.stringValue());
         return;
     }
@@ -128,10 +176,16 @@ class LiteralSerializer extends StdSerializer<Literal> {
   private void serialize(Struct.Value value, JsonGenerator gen) throws IOException {
     switch (value.kind()) {
       case BOOL_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.BOOL_VALUE);
+        gen.writeFieldName("structValue");
         gen.writeBoolean(value.boolValue());
         return;
 
       case LIST_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.LIST_VALUE);
+        gen.writeFieldName("structValue");
         gen.writeStartArray();
 
         for (Struct.Value element : value.listValue()) {
@@ -142,18 +196,30 @@ class LiteralSerializer extends StdSerializer<Literal> {
         return;
 
       case NUMBER_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.NUMBER_VALUE);
+        gen.writeFieldName("structValue");
         gen.writeNumber(value.numberValue());
         return;
 
       case STRING_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.STRING_VALUE);
+        gen.writeFieldName("structValue");
         gen.writeString(value.stringValue());
         return;
 
       case STRUCT_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.STRUCT_VALUE);
+        gen.writeFieldName("structValue");
         serialize(value.structValue(), gen);
         return;
 
       case NULL_VALUE:
+        gen.writeFieldName("structType");
+        gen.writeObject(Value.Kind.NULL_VALUE);
+        gen.writeFieldName("structValue");
         gen.writeNull();
         return;
     }

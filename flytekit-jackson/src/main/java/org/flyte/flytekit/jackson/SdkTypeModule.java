@@ -41,15 +41,12 @@ class SdkTypeModule extends Module {
   @Override
   public void setupModule(SetupContext context) {
     SimpleSerializers serializers = new SimpleSerializers();
-    serializers.addSerializer(new LiteralSerializer());
     serializers.addSerializer(new SdkBindingDataSerializer());
 
-    SimpleDeserializers deserializers = new SimpleDeserializers();
-    deserializers.addDeserializer(SdkBindingData.class, new SdkBindingDataDeserializer());
-
+    context.addSerializers(new LiteralSerializers());
     context.addSerializers(serializers);
     context.addDeserializers(new LiteralMapDeserializers());
-    context.addDeserializers(deserializers);
+    context.addDeserializers(new SdkBindingDataDeserializers());
 
     // append with lowest priority to use as fallback, if builtin annotations aren't present
     context.appendAnnotationIntrospector(new AutoValueAnnotationIntrospector());

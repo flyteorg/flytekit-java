@@ -35,7 +35,6 @@ import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-
 @AutoValue
 public abstract class SdkBindingData<T> {
 

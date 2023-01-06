@@ -76,7 +76,7 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       p.nextToken();
     }
 
-    return new JacksonLiteralMap(unmodifiableMap(literalMap));
+    return new JacksonLiteralMap(unmodifiableMap(literalMap), unmodifiableMap(literalTypeMap));
   }
 
   private static Literal deserialize(

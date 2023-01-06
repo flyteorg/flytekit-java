@@ -100,7 +100,11 @@ public abstract class SdkBindingData<T> {
                     Map.Entry::getValue)));
   }
 
-  public static SdkBindingData<Map<String, Long>> ofLongMap(Map<String, Long> map) {
+  public static SdkBindingData<Map<String, Double>> ofFloatMap(Map<String, Double> map) {
+    return ofMap(map, SdkBindingData::ofFloat);
+  }
+
+  public static SdkBindingData<Map<String, Long>> ofIntegerMap(Map<String, Long> map) {
     return ofMap(map, SdkBindingData::ofInteger);
   }
 

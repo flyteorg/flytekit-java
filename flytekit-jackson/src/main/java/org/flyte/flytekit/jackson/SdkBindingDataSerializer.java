@@ -32,15 +32,15 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
 import org.flyte.flytekit.SdkBindingData;
 
-class SdkBindingDataSerializer extends StdSerializer<SdkBindingData> {
+class SdkBindingDataSerializer extends StdSerializer<SdkBindingData<?>> {
   private static final long serialVersionUID = 0L;
 
   public SdkBindingDataSerializer() {
-    super(SdkBindingData.class);
+    super(SdkBindingData.class, true);
   }
 
   @Override
-  public void serialize(SdkBindingData sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
+  public void serialize(SdkBindingData<?> sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
     gen.writeObject(sdkBindingData.get());
   }

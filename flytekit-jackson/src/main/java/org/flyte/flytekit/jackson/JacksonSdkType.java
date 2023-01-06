@@ -18,6 +18,7 @@ package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -43,7 +44,10 @@ public class JacksonSdkType<T> extends SdkType<T> {
       new ObjectMapper()
           .registerModule(new SdkTypeModule())
           .registerModule(new JavaTimeModule())
-          .registerModule(new ParameterNamesModule());
+          .registerModule(new ParameterNamesModule())
+          // TODO: Think about this, this is necessary right now because we are adding literal and
+          // scalar inside the JSONode in the case of GENERIC
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;

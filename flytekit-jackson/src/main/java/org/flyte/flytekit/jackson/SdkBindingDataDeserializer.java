@@ -17,19 +17,10 @@
 package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -40,33 +31,24 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Struct;
 import org.flyte.flytekit.SdkBindingData;
 
-class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
-    implements ContextualDeserializer {
+class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   private static final long serialVersionUID = 0L;
-  private JavaType type;
 
   public SdkBindingDataDeserializer() {
     super(SdkBindingData.class);
   }
 
-  @Override
-  public JsonDeserializer<?> createContextual(
-      DeserializationContext deserializationContext, BeanProperty beanProperty)
-      throws JsonMappingException {
-    this.type = beanProperty.getType().containedType(0);
-    return this;
-  }
-
   private SdkBindingData<?> transform(JsonNode tree) {
-    switch (Literal.Kind.valueOf(tree.get("literal").asText())) {
+    Literal.Kind literalKind = Literal.Kind.valueOf(tree.get("literal").asText());
+    switch (literalKind) {
       case SCALAR:
         switch (Scalar.Kind.valueOf(tree.get("scalar").asText())) {
           case PRIMITIVE:
@@ -86,52 +68,120 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
             }
             break;
           case GENERIC:
-            // TODO: We need to implement this
-            break;
+            return transformStructValue(tree);
           case BLOB:
             // TODO: We need to implement this
             break;
         }
         break;
       case COLLECTION:
+        SimpleType collectionSimpleInnerType = SimpleType.valueOf(tree.get("type").asText());
         Iterator<JsonNode> elements = tree.get("value").elements();
-        switch (SimpleType.valueOf(tree.get("type").asText())) {
+        switch (collectionSimpleInnerType) {
           case STRING:
-            return SdkBindingData.ofBindingCollection(
-                generateListFromIterator(elements, JsonNode::asText, SdkBindingData::ofString));
-            // TODO: Implement the other case
+            return generateListFromIterator(elements, JsonNode::asText, SdkBindingData::ofString);
+          case DATETIME:
+            return generateListFromIterator(
+                elements, (node) -> Instant.parse(node.asText()), SdkBindingData::ofDatetime);
+          case DURATION:
+            return generateListFromIterator(
+                elements, (node) -> Duration.parse(node.asText()), SdkBindingData::ofDuration);
+          case INTEGER:
+            return generateListFromIterator(elements, JsonNode::asLong, SdkBindingData::ofInteger);
+          case FLOAT:
+            return generateListFromIterator(elements, JsonNode::asDouble, SdkBindingData::ofFloat);
+          case BOOLEAN:
+            return generateListFromIterator(
+                elements, JsonNode::asBoolean, SdkBindingData::ofBoolean);
+          case STRUCT:
+            // TODO: need to implement this.
+            throw new RuntimeException("not supported");
+          default:
+            throw new UnsupportedOperationException(
+                String.format(
+                    "Not supported simple type %s. Literal: %s",
+                    collectionSimpleInnerType, literalKind.name()));
         }
 
-        break;
       case MAP:
-        switch (SimpleType.valueOf(tree.get("type").asText())) {
+        SimpleType mapSimpleInnerType = SimpleType.valueOf(tree.get("type").asText());
+        switch (mapSimpleInnerType) {
           case STRING:
             return SdkBindingData.ofStringMap(generateMapFromNode(tree, JsonNode::asText));
-            // TODO: Implement the other case
+          case DATETIME:
+            return SdkBindingData.ofDatetimeMap(
+                generateMapFromNode(tree, (node) -> Instant.parse(node.asText())));
+          case DURATION:
+            return SdkBindingData.ofDurationMap(
+                generateMapFromNode(tree, (node) -> Duration.parse(node.asText())));
+          case INTEGER:
+            return SdkBindingData.ofIntegerMap(generateMapFromNode(tree, JsonNode::asLong));
+          case FLOAT:
+            return SdkBindingData.ofFloatMap(generateMapFromNode(tree, JsonNode::asDouble));
+          case BOOLEAN:
+            return SdkBindingData.ofBooleanMap(generateMapFromNode(tree, JsonNode::asBoolean));
+          case STRUCT:
+            // TODO: need to implement this.
+            throw new RuntimeException("not supported");
+          default:
+            throw new UnsupportedOperationException(
+                String.format(
+                    "Not supported simple type %s. Literal: %s",
+                    mapSimpleInnerType, literalKind.name()));
         }
-        break;
+
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Not supported literal type %s", literalKind.name()));
     }
 
+    // TODO: Think about it
+    throw new IllegalStateException("");
+  }
+
+  private SdkBindingData<?> transformStructValue(JsonNode node) {
+    switch (Struct.Value.Kind.valueOf(node.get("structType").asText())) {
+      case STRING_VALUE:
+        return SdkBindingData.ofString(node.get("structValue").asText());
+      case STRUCT_VALUE:
+        break;
+      case LIST_VALUE:
+        return null;
+        /*return SdkBindingData.ofBindingCollection(
+            StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize(
+                        node.get("structValue").elements(), Spliterator.ORDERED),
+                    false)
+                .map(this::transformStructValue)
+                .collect(Collectors.toList()));*/
+      case BOOL_VALUE:
+        return SdkBindingData.ofBoolean(node.get("structValue").booleanValue());
+      case NULL_VALUE:
+        return null;
+      case NUMBER_VALUE:
+        return SdkBindingData.ofFloat(node.get("structValue").doubleValue());
+    }
     return null;
   }
 
   private <T> Map<String, T> generateMapFromNode(
-      JsonNode mapNode, Function<JsonNode, T> transformer) {
+      JsonNode mapNode, Function<JsonNode, T> jsonTransformer) {
     JsonNode node = mapNode.get("value");
     return StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(node.fieldNames(), Spliterator.ORDERED), false)
-        .map(name -> Map.entry(name, transformer.apply(node.get(name).get("value"))))
+        .map(name -> Map.entry(name, jsonTransformer.apply(node.get(name).get("value"))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private <T> List<SdkBindingData<T>> generateListFromIterator(
+  private <T> SdkBindingData<List<T>> generateListFromIterator(
       Iterator<JsonNode> iterator,
       Function<JsonNode, T> jsonTransformer,
       Function<T, SdkBindingData<T>> bindingDataTransformer) {
-    return StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-        .map(node -> bindingDataTransformer.apply(jsonTransformer.apply(node.get("value"))))
-        .collect(Collectors.toList());
+    return SdkBindingData.ofBindingCollection(
+        StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+            .map(node -> bindingDataTransformer.apply(jsonTransformer.apply(node.get("value"))))
+            .collect(Collectors.toList()));
   }
 
   @Override

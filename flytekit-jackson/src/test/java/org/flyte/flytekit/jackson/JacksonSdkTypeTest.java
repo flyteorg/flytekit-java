@@ -20,6 +20,7 @@ import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
@@ -175,92 +178,101 @@ public class JacksonSdkTypeTest {
 
     assertThat(variableMap, equalTo(Map.of("a", expected)));
   }
-//
-//  @Test
-//  public void testStructRoundtrip() {
-//    StructInput input =
-//        StructInput.create(
-//            StructValueInput.create(
-//                /* stringValue= */ "nested-string",
-//                /* boolValue= */ false,
-//                /* listValue= */ Arrays.asList(1, 2, 3),
-//                /* structValue= */ StructValueInput.create(
-//                    /* stringValue= */ "nested-nested-string",
-//                    /* boolValue= */ true,
-//                    /* listValue= */ Arrays.asList(4, 5, 6),
-//                    /* structValue= */ null,
-//                    /* numberValue= */ 1337.0),
-//                /* numberValue= */ 42.0));
-//
-//    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
-//
-//    assertThat(sdkType.fromLiteralMap(sdkType.toLiteralMap(input)), equalTo(input));
-//  }
-//
-//  @Test
-//  public void testConverterToLiteralMap() {
-//    InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
-//    Map<String, Literal> expected = new HashMap<>();
-//    expected.put("customType", literalOf(Primitive.ofStringValue("ONE")));
-//    expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
-//
-//    Map<String, Literal> literalMap =
-//        JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
-//
-//    assertThat(literalMap, equalTo(expected));
-//  }
-//
-//  @Test
-//  public void testConverterFromLiteralMap() {
-//    InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
-//    Map<String, Literal> literalMap = new HashMap<>();
-//    literalMap.put("customType", literalOf(Primitive.ofStringValue("TWO")));
-//    literalMap.put("customEnum", literalOf(Primitive.ofStringValue("ONE")));
-//
-//    InputWithCustomType output =
-//        JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
-//
-//    assertThat(output, equalTo(expected));
-//  }
-//
-//  @Test
-//  public void testConverterVariableMap() {
-//    Map<String, Variable> expected = new HashMap<>();
-//    expected.put(
-//        "customType", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
-//    expected.put(
-//        "customEnum", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
-//
-//    Map<String, Variable> variableMap =
-//        JacksonSdkType.of(InputWithCustomType.class).getVariableMap();
-//
-//    assertThat(variableMap, equalTo(expected));
-//  }
-//
-//  @Test
-//  void testUnknownSerializer() {
-//    // Serialization doesn't work because Jackson doesn't recognize empty classes as
-//    // Java beans good thing that exception is thrown when constructing JacksonSdkType
-//    // and not at the moment when we need to serialize.
-//    //
-//    // If class doesn't have creator, we can serialize, but we can't deserialize it.
-//    // It isn't checked at the moment, because we don't know if JacksonSdkType is constructed
-//    // for input (that needs deserialization) or output (that doesn't).
-//    IllegalArgumentException e =
-//        assertThrows(IllegalArgumentException.class, () -> JacksonSdkType.of(Unannotated.class));
-//
-//    assertThat(
-//        e.getMessage(),
-//        equalTo(
-//            "Failed to find serializer for [org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated]"));
-//    assertThat(
-//        e.getCause().getMessage(),
-//        equalTo(
-//            "No serializer found for class org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated and no properties discovered to create BeanSerializer"));
-//  }
+
+  @Test
+  public void testStructRoundtrip() {
+    StructInput input =
+        StructInput.create(
+            StructValueInput.create(
+                /* stringValue= */ "nested-string",
+                /* boolValue= */ false,
+                ///* listValue= */ Arrays.asList(1L, 2L, 3L),
+                /* structValue= */ StructValueInput.create(
+                    /* stringValue= */ "nested-string",
+                    /* boolValue= */ false,
+                    ///* listValue= */ Arrays.asList(1L, 2L, 3L),
+                    /* structValue= */ null,
+                    /* numberValue= */ 42.0
+                ),
+                /* numberValue= */ 42.0
+                ));
+
+    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
+
+    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
+
+    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
+  }
+
+  @Test
+  public void testConverterToLiteralMap() {
+    InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
+    Map<String, Literal> expected = new HashMap<>();
+    expected.put("customType", literalOf(Primitive.ofStringValue("ONE")));
+    expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
+
+    Map<String, Literal> literalMap =
+        JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
+
+    assertThat(literalMap, equalTo(expected));
+  }
+
+  @Test
+  public void testConverterFromLiteralMap() {
+    InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
+    Map<String, Literal> literalMap = new HashMap<>();
+    literalMap.put("customType", literalOf(Primitive.ofStringValue("TWO")));
+    literalMap.put("customEnum", literalOf(Primitive.ofStringValue("ONE")));
+
+    InputWithCustomType output =
+        JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
+
+    assertThat(output, equalTo(expected));
+  }
+
+  @Test
+  public void testConverterVariableMap() {
+    Map<String, Variable> expected = new HashMap<>();
+    expected.put(
+        "customType", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+    expected.put(
+        "customEnum", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+
+    Map<String, Variable> variableMap =
+        JacksonSdkType.of(InputWithCustomType.class).getVariableMap();
+
+    assertThat(variableMap, equalTo(expected));
+  }
+
+  @Test
+  void testUnknownSerializer() {
+    // Serialization doesn't work because Jackson doesn't recognize empty classes as
+    // Java beans good thing that exception is thrown when constructing JacksonSdkType
+    // and not at the moment when we need to serialize.
+    //
+    // If class doesn't have creator, we can serialize, but we can't deserialize it.
+    // It isn't checked at the moment, because we don't know if JacksonSdkType is constructed
+    // for input (that needs deserialization) or output (that doesn't).
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> JacksonSdkType.of(Unannotated.class));
+
+    assertThat(
+        e.getMessage(),
+        equalTo(
+            "Failed to find serializer for [org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated]"));
+    assertThat(
+        e.getCause().getMessage(),
+        equalTo(
+            "No serializer found for class org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated and no properties discovered to create BeanSerializer"));
+  }
 
   public static class Unannotated {}
 
+  /*
+
+
+    {"literal":"SCALAR","scalar":"PRIMITIVE", "primiteve":"LONG", "value":2000}
+   */
   @AutoValue
   public abstract static class AutoValueInput {
     public abstract SdkBindingData<Long> i();
@@ -302,7 +314,7 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class StructInput {
-    public abstract StructValueInput structValue();
+    public abstract StructValueInput structLevel1();
 
     public static StructInput create(StructValueInput structValue) {
       return new AutoValue_JacksonSdkTypeTest_StructInput(structValue);
@@ -311,25 +323,30 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class StructValueInput {
-    public abstract String stringValue();
+    public abstract SdkBindingData<String> stringValue();
 
-    public abstract boolean boolValue();
+    public abstract SdkBindingData<Boolean> boolValue();
 
-    public abstract List<Integer> listValue();
+    //public abstract SdkBindingData<List<Long>> listValue();
 
     @Nullable
-    public abstract StructValueInput structValue();
+    public abstract StructValueInput structLevel2();
 
-    public abstract Double numberValue();
+    public abstract SdkBindingData<Double> numberValue();
 
     public static StructValueInput create(
         String stringValue,
         boolean boolValue,
-        List<Integer> listValue,
+        //List<Long> listValue,
         StructValueInput structValue,
         Double numberValue) {
       return new AutoValue_JacksonSdkTypeTest_StructValueInput(
-          stringValue, boolValue, listValue, structValue, numberValue);
+          SdkBindingData.ofString(stringValue),
+          SdkBindingData.ofBoolean(boolValue),
+          //SdkBindingData.ofCollection(listValue, SdkBindingData::ofInteger),
+          structValue,
+          SdkBindingData.ofFloat(numberValue)
+      );
     }
   }
 

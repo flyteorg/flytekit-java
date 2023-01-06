@@ -30,11 +30,6 @@ class JacksonLiteralMap {
     this.type = type;
   }
 
-  JacksonLiteralMap(Map<String, Literal> value) {
-    this.value = value;
-    this.type = null;
-  }
-
   public Map<String, Literal> getLiteralMap() {
     return value;
   }

@@ -41,23 +41,29 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
   public void serialize(JacksonLiteralMap map, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
     gen.writeStartObject();
-    for(Map.Entry<String, Literal> entry : map.getLiteralMap().entrySet()) {
+    for (Map.Entry<String, Literal> entry : map.getLiteralMap().entrySet()) {
       gen.writeFieldName(entry.getKey());
       gen.writeStartObject();
-      serialize(entry.getKey(), entry.getValue(), gen, serializers, map.getLiteralTypeMap());
+      serializeLiteral(entry.getKey(), entry.getValue(), gen, serializers, map.getLiteralTypeMap());
       gen.writeEndObject();
     }
     gen.writeEndObject();
   }
 
-  public void serialize(String key, Literal value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap)
+
+  public void serializeLiteral(
+      String key,
+      Literal value,
+      JsonGenerator gen,
+      SerializerProvider serializers,
+      Map<String, LiteralType> literalTypeMap)
       throws IOException {
 
     switch (value.kind()) {
       case SCALAR:
         gen.writeFieldName("literal");
         gen.writeObject(Literal.Kind.SCALAR);
-        serialize(value.scalar(), gen, serializers);
+        serializeScalar(value.scalar(), gen, serializers, literalTypeMap);
         return;
 
       case MAP:
@@ -67,14 +73,15 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
         gen.writeObject(literalTypeMap.get(key).mapValueType().simpleType());
         gen.writeFieldName("value");
         gen.writeStartObject();
-        for(Map.Entry<String, Literal> entry : value.map().entrySet()) {
+
+        for (Map.Entry<String, Literal> entry : value.map().entrySet()) {
           gen.writeFieldName(entry.getKey());
           gen.writeStartObject();
-          serialize(entry.getKey(), entry.getValue(), gen, serializers, literalTypeMap);
+          serializeLiteral(entry.getKey(), entry.getValue(), gen, serializers, literalTypeMap);
           gen.writeEndObject();
         }
-        gen.writeEndObject();
 
+        gen.writeEndObject();
         return;
 
       case COLLECTION:
@@ -84,32 +91,33 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
         gen.writeObject(literalTypeMap.get(key).collectionType().simpleType());
         gen.writeFieldName("value");
         gen.writeStartArray();
+
         for (Literal element : value.collection()) {
           gen.writeStartObject();
-          serialize(key, element, gen, serializers, literalTypeMap);
+          serializeLiteral(key, element, gen, serializers, literalTypeMap);
           gen.writeEndObject();
         }
-        gen.writeEndArray();
 
+        gen.writeEndArray();
         return;
     }
 
     throw new AssertionError("Unexpected Literal.Kind: [" + value.kind() + "]");
   }
 
-  public void serialize(Scalar value, JsonGenerator gen, SerializerProvider serializers)
+  public void serializeScalar(Scalar value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap)
       throws IOException {
     switch (value.kind()) {
       case PRIMITIVE:
         gen.writeFieldName("scalar");
         gen.writeObject(Scalar.Kind.PRIMITIVE);
-        serialize(value.primitive(), gen);
+        serializePrimitive(value.primitive(), gen);
         return;
 
       case GENERIC:
         gen.writeFieldName("scalar");
         gen.writeObject(Scalar.Kind.GENERIC);
-        serialize(value.generic(), gen);
+        serializeGeneric(value.generic(), gen, serializers, literalTypeMap);
         return;
 
       case BLOB:
@@ -122,7 +130,7 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
     throw new AssertionError("Unexpected Scalar.Kind: [" + value.kind() + "]");
   }
 
-  public void serialize(Primitive value, JsonGenerator gen) throws IOException {
+  public void serializePrimitive(Primitive value, JsonGenerator gen) throws IOException {
     switch (value.kind()) {
       case BOOLEAN_VALUE:
         gen.writeFieldName("primitive");
@@ -170,64 +178,81 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
     throw new AssertionError("Unexpected Primitive.Kind: [" + value.kind() + "]");
   }
 
-  private void serialize(Struct generic, JsonGenerator gen) throws IOException {
-    gen.writeStartObject();
-
+  private void serializeGeneric(Struct generic, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap) throws IOException {
     for (Map.Entry<String, Value> entry : generic.fields().entrySet()) {
       gen.writeFieldName(entry.getKey());
-      serialize(entry.getValue(), gen);
+      serializeStructValue(entry.getValue(), gen, serializers, literalTypeMap);
     }
-
-    gen.writeEndObject();
   }
 
-  private void serialize(Value value, JsonGenerator gen) throws IOException {
+  private void serializeStructValue(Value value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap) throws IOException {
     switch (value.kind()) {
       case BOOL_VALUE:
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.SCALAR);
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.GENERIC);
         gen.writeFieldName("structType");
         gen.writeObject(Value.Kind.BOOL_VALUE);
         gen.writeFieldName("structValue");
         gen.writeBoolean(value.boolValue());
+        gen.writeEndObject();
+
         return;
 
       case LIST_VALUE:
-        gen.writeFieldName("structType");
-        gen.writeObject(Value.Kind.LIST_VALUE);
-        gen.writeFieldName("structValue");
-        gen.writeStartArray();
+        throw new RuntimeException("not supported list inside the struct");
+        //gen.writeFieldName("structType");
+        //gen.writeObject(Value.Kind.LIST_VALUE);
+        //gen.writeFieldName("structValue");
+        //gen.writeStartArray();
 
-        for (Value element : value.listValue()) {
-          serialize(element, gen);
-        }
+        //for (Value element : value.listValue()) {
+        //  gen.writeStartObject();
+        //  serializeStructValue(element, gen, serializers, literalTypeMap);
+        //  gen.writeEndObject();
+        //}
 
-        gen.writeEndArray();
-        return;
+        //gen.writeEndArray();
 
       case NUMBER_VALUE:
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.SCALAR);
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.GENERIC);
         gen.writeFieldName("structType");
         gen.writeObject(Value.Kind.NUMBER_VALUE);
         gen.writeFieldName("structValue");
         gen.writeNumber(value.numberValue());
+        gen.writeEndObject();
         return;
 
       case STRING_VALUE:
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.SCALAR);
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.GENERIC);
         gen.writeFieldName("structType");
         gen.writeObject(Value.Kind.STRING_VALUE);
         gen.writeFieldName("structValue");
         gen.writeString(value.stringValue());
+        gen.writeEndObject();
         return;
 
       case STRUCT_VALUE:
-        gen.writeFieldName("structType");
-        gen.writeObject(Value.Kind.STRUCT_VALUE);
-        gen.writeFieldName("structValue");
-        serialize(value.structValue(), gen);
+        gen.writeStartObject();
+        gen.writeFieldName("literal");
+        gen.writeObject(Literal.Kind.SCALAR);
+        gen.writeFieldName("scalar");
+        gen.writeObject(Scalar.Kind.GENERIC);
+        serializeGeneric(value.structValue(), gen, serializers, literalTypeMap);
+        gen.writeEndObject();
         return;
 
       case NULL_VALUE:
-        gen.writeFieldName("structType");
-        gen.writeObject(Value.Kind.NULL_VALUE);
-        gen.writeFieldName("structValue");
         gen.writeNull();
         return;
     }

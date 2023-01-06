@@ -64,7 +64,7 @@ public class JacksonSdkTypeTest {
     expected.put("b", createVar(SimpleType.BOOLEAN));
     expected.put("t", createVar(SimpleType.DATETIME));
     expected.put("d", createVar(SimpleType.DURATION));
-    //expected.put("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE)));
+    // expected.put("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE)));
     expected.put("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))));
     expected.put("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING))));
 
@@ -75,11 +75,11 @@ public class JacksonSdkTypeTest {
   void testFromLiteralMap() {
     Instant datetime = Instant.ofEpochSecond(12, 34);
     Duration duration = Duration.ofSeconds(56, 78);
-//    Blob blob =
-//        Blob.builder()
-//            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
-//            .uri("file://test")
-//            .build();
+    //    Blob blob =
+    //        Blob.builder()
+    //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+    //            .uri("file://test")
+    //            .build();
     Map<String, Literal> literalMap = new HashMap<>();
     literalMap.put("i", literalOf(Primitive.ofIntegerValue(123L)));
     literalMap.put("f", literalOf(Primitive.ofFloatValue(123.0)));
@@ -87,11 +87,9 @@ public class JacksonSdkTypeTest {
     literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    //literalMap.put("blob", literalOf(blob));
-    literalMap.put(
-        "l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
-    literalMap.put(
-        "m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
+    // literalMap.put("blob", literalOf(blob));
+    literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
+    literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
 
     AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
 
@@ -105,18 +103,18 @@ public class JacksonSdkTypeTest {
                 /* b= */ true,
                 /* t= */ datetime,
                 /* d= */ duration,
-                ///* blob= */ blob,
+                /// * blob= */ blob,
                 /* l= */ List.of("123"),
                 /* m= */ Map.of("marco", "polo"))));
   }
 
   @Test
   void testToLiteralMap() {
-//    Blob blob =
-//        Blob.builder()
-//            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
-//            .uri("file://test")
-//            .build();
+    //    Blob blob =
+    //        Blob.builder()
+    //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+    //            .uri("file://test")
+    //            .build();
     Map<String, Literal> literalMap =
         JacksonSdkType.of(AutoValueInput.class)
             .toLiteralMap(
@@ -127,7 +125,7 @@ public class JacksonSdkTypeTest {
                     /* b= */ false,
                     /* t= */ Instant.ofEpochSecond(42, 1),
                     /* d= */ Duration.ofSeconds(1, 42),
-                    ///* blob= */ blob,
+                    /// * blob= */ blob,
                     /* l= */ List.of("foo"),
                     /* m= */ Map.of("marco", "polo")));
 
@@ -138,11 +136,9 @@ public class JacksonSdkTypeTest {
     expected.put("b", literalOf(Primitive.ofBooleanValue(false)));
     expected.put("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1))));
     expected.put("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42))));
-    expected.put(
-        "l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo")))));
-    expected.put(
-        "m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
-    //expected.put("blob", literalOf(blob));
+    expected.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo")))));
+    expected.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
+    // expected.put("blob", literalOf(blob));
 
     assertThat(literalMap, equalTo(expected));
   }
@@ -186,16 +182,17 @@ public class JacksonSdkTypeTest {
             StructValueInput.create(
                 /* stringValue= */ "nested-string",
                 /* boolValue= */ false,
-                ///* listValue= */ Arrays.asList(1L, 2L, 3L),
+                /// * listValue= */ Arrays.asList(1L, 2L, 3L),
                 /* structValue= */ StructValueInput.create(
                     /* stringValue= */ "nested-string",
                     /* boolValue= */ false,
-                    ///* listValue= */ Arrays.asList(1L, 2L, 3L),
+                    //TODO: Think about how enable
+                    // it, the main problem is to know the inner type because the Stuct is a
+                    // SimpleType without inner information
+                    /// * listValue= */ Arrays.asList(1L, 2L, 3L),
                     /* structValue= */ null,
-                    /* numberValue= */ 42.0
-                ),
-                /* numberValue= */ 42.0
-                ));
+                    /* numberValue= */ 42.0),
+                /* numberValue= */ 42.0));
 
     SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
 
@@ -271,14 +268,18 @@ public class JacksonSdkTypeTest {
   /*
 
 
-    {"literal":"SCALAR","scalar":"PRIMITIVE", "primiteve":"LONG", "value":2000}
-   */
+   {"literal":"SCALAR","scalar":"PRIMITIVE", "primiteve":"LONG", "value":2000}
+  */
   @AutoValue
   public abstract static class AutoValueInput {
     public abstract SdkBindingData<Long> i();
+
     public abstract SdkBindingData<Double> f();
+
     public abstract SdkBindingData<String> s();
+
     public abstract SdkBindingData<Boolean> b();
+
     public abstract SdkBindingData<Instant> t();
 
     public abstract SdkBindingData<Duration> d();
@@ -297,18 +298,18 @@ public class JacksonSdkTypeTest {
         boolean b,
         Instant t,
         Duration d,
-        //Blob blob,
+        // Blob blob,
         List<String> l,
         Map<String, String> m) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-              SdkBindingData.ofInteger(i),
-              SdkBindingData.ofFloat(f),
-              SdkBindingData.ofString(s),
-              SdkBindingData.ofBoolean(b),
-              SdkBindingData.ofDatetime(t),
-              SdkBindingData.ofDuration(d),
-              SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-              SdkBindingData.ofStringMap(m));
+          SdkBindingData.ofInteger(i),
+          SdkBindingData.ofFloat(f),
+          SdkBindingData.ofString(s),
+          SdkBindingData.ofBoolean(b),
+          SdkBindingData.ofDatetime(t),
+          SdkBindingData.ofDuration(d),
+          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+          SdkBindingData.ofStringMap(m));
     }
   }
 
@@ -327,7 +328,7 @@ public class JacksonSdkTypeTest {
 
     public abstract SdkBindingData<Boolean> boolValue();
 
-    //public abstract SdkBindingData<List<Long>> listValue();
+    // public abstract SdkBindingData<List<Long>> listValue();
 
     @Nullable
     public abstract StructValueInput structLevel2();
@@ -337,16 +338,15 @@ public class JacksonSdkTypeTest {
     public static StructValueInput create(
         String stringValue,
         boolean boolValue,
-        //List<Long> listValue,
+        // List<Long> listValue,
         StructValueInput structValue,
         Double numberValue) {
       return new AutoValue_JacksonSdkTypeTest_StructValueInput(
           SdkBindingData.ofString(stringValue),
           SdkBindingData.ofBoolean(boolValue),
-          //SdkBindingData.ofCollection(listValue, SdkBindingData::ofInteger),
+          // SdkBindingData.ofCollection(listValue, SdkBindingData::ofInteger),
           structValue,
-          SdkBindingData.ofFloat(numberValue)
-      );
+          SdkBindingData.ofFloat(numberValue));
     }
   }
 

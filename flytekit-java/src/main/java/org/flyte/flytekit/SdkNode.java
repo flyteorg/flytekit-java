@@ -34,10 +34,10 @@ public abstract class SdkNode<OutputT> {
 
   public abstract OutputT getOutputs();
 
-  public SdkBindingData<OutputT> getOutput(String name) {
+  public SdkBindingData<?> getOutput(String name) {
 
     @SuppressWarnings("unchecked")
-    SdkBindingData<OutputT> output = (SdkBindingData<OutputT>) getOutputBindings().get(name);
+    SdkBindingData<?> output = getOutputBindings().get(name);
 
     if (output == null) {
       String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());

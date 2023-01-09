@@ -38,10 +38,10 @@ public class OuterSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
         builder
             .apply("outer-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
             .getOutputs().o();
-    SdkBindingData<TestUnaryIntegerOutput> res =
+    SdkBindingData<Long> res =
         builder
             .apply("outer-sum-ab-c", new InnerSubWorkflow().withInput("a", ab).withInput("b", c))
-            .getOutput("result");
+            .getOutputs().o();
     builder.output("o", res);
   }
 }

@@ -45,7 +45,7 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
     public abstract SdkBindingData<Map<String, Long>> map();
 
     public static Input create(Map<String, Long> map) {
-      return new AutoValue_MapTask_Input(SdkBindingData.ofLongMap(map));
+      return new AutoValue_MapTask_Input(SdkBindingData.ofIntegerMap(map));
     }
   }
 
@@ -54,7 +54,7 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
     public abstract SdkBindingData<Map<String, Long>> map();
 
     public static Output create(Map<String, Long> map) {
-      return new AutoValue_MapTask_Output(SdkBindingData.ofLongMap(map));
+      return new AutoValue_MapTask_Output(SdkBindingData.ofIntegerMap(map));
     }
   }
 }

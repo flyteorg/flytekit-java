@@ -195,9 +195,7 @@ public class JacksonSdkTypeTest {
                 /* numberValue= */ 42.0));
 
     SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
-
     Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
-
     assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
   }
 

@@ -72,8 +72,6 @@ class LocalEngineTest {
 
   @Test
   void testFibonacci() {
-    String workflowName = new FibonacciWorkflow().getName();
-
     Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(0L)));
     Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
     Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
@@ -81,7 +79,7 @@ class LocalEngineTest {
     Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
     Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(5L)));
 
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -89,8 +87,7 @@ class LocalEngineTest {
     Map<String, Literal> outputs =
         new LocalEngine(
                 ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
-            .compileAndExecute(
-                workflows.get(workflowName), ImmutableMap.of("fib0", fib0, "fib1", fib1));
+            .compileAndExecute(workflowTemplate, ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
     assertEquals(
@@ -102,19 +99,19 @@ class LocalEngineTest {
             .add(ofStarting("fib-2", ImmutableMap.of("a", fib0, "b", fib1)))
             .add(
                 ofCompleted(
-                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("c", fib2)))
+                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("o", fib2)))
             .add(ofStarting("fib-3", ImmutableMap.of("a", fib1, "b", fib2)))
             .add(
                 ofCompleted(
-                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("c", fib3)))
+                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("o", fib3)))
             .add(ofStarting("fib-4", ImmutableMap.of("a", fib2, "b", fib3)))
             .add(
                 ofCompleted(
-                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("c", fib4)))
+                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("o", fib4)))
             .add(ofStarting("fib-5", ImmutableMap.of("a", fib3, "b", fib4)))
             .add(
                 ofCompleted(
-                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
+                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("o", fib5)))
             .build(),
         listener.actions);
   }
@@ -558,13 +555,14 @@ class LocalEngineTest {
   }
 
   @AutoService(SdkWorkflow.class)
-  public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow<TestCaseExhaustivenessWorkflow.NoOpType> {
+  public static class TestCaseExhaustivenessWorkflow
+      extends SdkWorkflow<TestCaseExhaustivenessWorkflow.NoOpType> {
 
-      public TestCaseExhaustivenessWorkflow() {
-          super(JacksonSdkType.of(NoOpType.class));
-      }
+    public TestCaseExhaustivenessWorkflow() {
+      super(JacksonSdkType.of(NoOpType.class));
+    }
 
-      @Override
+    @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData<Long> x = builder.inputOfInteger("x");
       SdkBindingData<Long> nextX =
@@ -573,7 +571,8 @@ class LocalEngineTest {
                   "decide",
                   when("eq_1", eq(ofInteger(1L), x), NoOp.of(x))
                       .when("eq_2", eq(ofInteger(2L), x), NoOp.of(x)))
-              .getOutputs().x();
+              .getOutputs()
+              .x();
 
       builder.output("nextX", nextX);
     }
@@ -602,7 +601,7 @@ class LocalEngineTest {
 
       public static NoOpType create(long x) {
         return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(
-                SdkBindingData.ofInteger(x));
+            SdkBindingData.ofInteger(x));
       }
     }
   }

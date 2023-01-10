@@ -46,7 +46,8 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
     abstract SdkBindingData<Long> right();
 
     public static Input create(long left, long right) {
-      return new AutoValue_SubWorkflow_Input(SdkBindingData.ofInteger(left), SdkBindingData.ofInteger(right));
+      return new AutoValue_SubWorkflow_Input(
+          SdkBindingData.ofInteger(left), SdkBindingData.ofInteger(right));
     }
   }
 

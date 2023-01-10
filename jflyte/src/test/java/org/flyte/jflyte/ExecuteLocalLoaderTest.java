@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
@@ -37,11 +36,10 @@ public class ExecuteLocalLoaderTest {
 
     Map<String, ClassLoader> modules =
         ImmutableMap.of("source1", classLoader1, "source2", classLoader2);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>>
-        tasksPerClassLoader =
-            ImmutableMap.of(
-                classLoader1, ImmutableMap.of("task1", task1),
-                classLoader2, ImmutableMap.of("task2", task2));
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
+        ImmutableMap.of(
+            classLoader1, ImmutableMap.of("task1", task1),
+            classLoader2, ImmutableMap.of("task2", task2));
 
     Map<String, SdkRunnableTask<?, ?>> tasksByName =
         ExecuteLocalLoader.loadAll(modules, (cl, __) -> tasksPerClassLoader.get(cl), emptyMap());
@@ -60,13 +58,11 @@ public class ExecuteLocalLoaderTest {
 
     Map<String, ClassLoader> modules =
         ImmutableMap.of("source1", classLoader1, "source2", classLoader2, "source3", classLoader3);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>>
-        tasksPerClassLoader =
-            ImmutableMap.of(
-                classLoader1, ImmutableMap.of("dupTask1", duplicateTask1, "unqTask", uniqueTask),
-                classLoader2,
-                    ImmutableMap.of("dupTask1", duplicateTask1, "dupTask2", duplicateTask2),
-                classLoader3, ImmutableMap.of("dupTask2", duplicateTask2));
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>> tasksPerClassLoader =
+        ImmutableMap.of(
+            classLoader1, ImmutableMap.of("dupTask1", duplicateTask1, "unqTask", uniqueTask),
+            classLoader2, ImmutableMap.of("dupTask1", duplicateTask1, "dupTask2", duplicateTask2),
+            classLoader3, ImmutableMap.of("dupTask2", duplicateTask2));
 
     RuntimeException exception =
         assertThrows(

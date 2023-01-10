@@ -60,9 +60,17 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
       method.setAccessible(true);
       value = (SdkBindingData<?>) method.invoke(output);
     } catch (NoSuchMethodException e) {
-      throw new RuntimeException(String.format("Failure to define output - could not read attribute name %s from type %s", name, output.getClass()), e);
+      throw new RuntimeException(
+          String.format(
+              "Failure to define output - could not read attribute name %s from type %s",
+              name, output.getClass()),
+          e);
     } catch (InvocationTargetException | IllegalAccessException e) {
-      throw new RuntimeException(String.format("Failure to define output - could invoke method %s from type %s", name, output.getClass()), e);
+      throw new RuntimeException(
+          String.format(
+              "Failure to define output - could invoke method %s from type %s",
+              name, output.getClass()),
+          e);
     }
     SdkBindingData<?> output =
         SdkBindingData.create(Literals.toBindingData(literal), var.literalType(), value.get());

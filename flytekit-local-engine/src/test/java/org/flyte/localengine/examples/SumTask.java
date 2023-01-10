@@ -23,8 +23,7 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class SumTask
-    extends SdkRunnableTask<SumTask.SumInput, TestUnaryIntegerOutput> {
+public class SumTask extends SdkRunnableTask<SumTask.SumInput, TestUnaryIntegerOutput> {
   private static final long serialVersionUID = -7796919693971619417L;
 
   public SumTask() {
@@ -38,12 +37,14 @@ public class SumTask
     public abstract SdkBindingData<Long> b();
 
     public static SumInput create(long a, long b) {
-      return new AutoValue_SumTask_SumInput(SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
+      return new AutoValue_SumTask_SumInput(
+          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
     }
   }
 
   @Override
   public TestUnaryIntegerOutput run(SumInput input) {
-    return TestUnaryIntegerOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
+    return TestUnaryIntegerOutput.create(
+        SdkBindingData.ofInteger(input.a().get() + input.b().get()));
   }
 }

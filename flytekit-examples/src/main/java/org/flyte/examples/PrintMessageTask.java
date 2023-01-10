@@ -26,8 +26,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Receives message as an input, and prints it. */
 @AutoService(SdkRunnableTask.class)
-public class PrintMessageTask
-    extends SdkRunnableTask<PrintMessageTask.Input, Void> {
+public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Void> {
 
   public PrintMessageTask() {
     super(JacksonSdkType.of(Input.class), SdkTypes.nulls());

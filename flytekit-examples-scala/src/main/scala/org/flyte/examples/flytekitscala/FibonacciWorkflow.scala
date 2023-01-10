@@ -21,7 +21,10 @@ import org.flyte.flytekitscala.SdkScalaType
 
 case class FibonacciWorkflowOutput(fib5: SdkBindingData[Long])
 
-class FibonacciWorkflow extends SdkWorkflow[FibonacciWorkflowOutput](SdkScalaType[FibonacciWorkflowOutput]) {
+class FibonacciWorkflow
+    extends SdkWorkflow[FibonacciWorkflowOutput](
+      SdkScalaType[FibonacciWorkflowOutput]
+    ) {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")

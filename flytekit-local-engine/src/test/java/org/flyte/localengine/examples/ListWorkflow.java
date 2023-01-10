@@ -17,6 +17,7 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
+import java.util.List;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
@@ -24,15 +25,13 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.localengine.ImmutableList;
 
-import java.util.List;
-
 @AutoService(SdkWorkflow.class)
 public class ListWorkflow extends SdkWorkflow<ListTask.Output> {
-    public ListWorkflow() {
-        super(JacksonSdkType.of(ListTask.Output.class));
-    }
+  public ListWorkflow() {
+    super(JacksonSdkType.of(ListTask.Output.class));
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkNode<TestUnaryIntegerOutput> sum1 =
         builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));

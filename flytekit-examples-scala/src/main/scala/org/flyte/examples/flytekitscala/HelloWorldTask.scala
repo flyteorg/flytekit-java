@@ -16,10 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{
-  SdkBindingData,
-  SdkRunnableTask
-}
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class HelloWorldTaskInput(message: SdkBindingData[String]) {}

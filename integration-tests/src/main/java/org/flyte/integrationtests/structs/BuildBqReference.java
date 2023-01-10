@@ -35,7 +35,8 @@ public class BuildBqReference
 
   @Override
   public Output run(Input input) {
-    return Output.create(BQReference.create(input.project().get(), input.dataset().get(), input.tableName().get()));
+    return Output.create(
+        BQReference.create(input.project().get(), input.dataset().get(), input.tableName().get()));
   }
 
   @AutoValue
@@ -48,10 +49,9 @@ public class BuildBqReference
 
     public static Input create(String project, String dataset, String tableName) {
       return new AutoValue_BuildBqReference_Input(
-              SdkBindingData.ofString(project),
-              SdkBindingData.ofString(dataset),
-              SdkBindingData.ofString(tableName)
-      );
+          SdkBindingData.ofString(project),
+          SdkBindingData.ofString(dataset),
+          SdkBindingData.ofString(tableName));
     }
   }
 
@@ -61,7 +61,8 @@ public class BuildBqReference
 
     public static Output create(BQReference ref) {
       // TODO We need a way to generate SdkBindings of generic autovalues like BQReference
-      //  that would be mapped to sdkStructs. JacksonSdkType of nested autovalues are mapped as structs
+      //  that would be mapped to sdkStructs. JacksonSdkType of nested autovalues are mapped as
+      // structs
       return null;
     }
   }

@@ -151,7 +151,7 @@ class LocalEngineTest {
     assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
   }
 
-  //TODO: Enable this test when the struct will be supported
+  // TODO: Enable this test when the struct will be supported
   @Disabled
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
@@ -469,14 +469,10 @@ class LocalEngineTest {
                 .add(ofStarting("decide", singletonMap("$0", literalFalse)))
                 .add(ofPending("was_odd"))
                 .add(ofStarting("was_odd", singletonMap("x", oddX)))
+                .add(ofCompleted("was_odd", singletonMap("x", oddX), singletonMap("o", odd3XPlus1)))
                 .add(
                     ofCompleted(
-                        "was_odd", singletonMap("x", oddX), singletonMap("o", odd3XPlus1)))
-                .add(
-                    ofCompleted(
-                        "decide",
-                        singletonMap("$0", literalFalse),
-                        singletonMap("o", odd3XPlus1)))
+                        "decide", singletonMap("$0", literalFalse), singletonMap("o", odd3XPlus1)))
                 .build()),
         Arguments.of(
             6L,
@@ -600,8 +596,7 @@ class LocalEngineTest {
       abstract SdkBindingData<Long> x();
 
       public static NoOpType create(SdkBindingData<Long> x) {
-        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(
-            x);
+        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(x);
       }
     }
   }

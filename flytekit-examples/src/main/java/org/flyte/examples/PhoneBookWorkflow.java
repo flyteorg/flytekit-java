@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -51,7 +50,8 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
      * @return output of NodeMetadataExampleWorkflow
      */
     public static PhoneBookWorkflow.Output create(List<String> phoneNumbers) {
-      return new AutoValue_PhoneBookWorkflow_Output(SdkBindingData.ofCollection(phoneNumbers, SdkBindingData::ofString));
+      return new AutoValue_PhoneBookWorkflow_Output(
+          SdkBindingData.ofCollection(phoneNumbers, SdkBindingData::ofString));
     }
   }
 
@@ -64,7 +64,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
     SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
 
     SdkBindingData<List<String>> searchKeys =
-            SdkBindingData.ofCollection(NAMES, SdkBindingData::ofString);
+        SdkBindingData.ofCollection(NAMES, SdkBindingData::ofString);
 
     SdkBindingData<List<String>> phoneNumbers =
         builder
@@ -73,7 +73,8 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
                 new BatchLookUpTask()
                     .withInput("keyValues", phoneBook)
                     .withInput("searchKeys", searchKeys))
-            .getOutputs().values();
+            .getOutputs()
+            .values();
 
     builder.output("phoneNumbers", phoneNumbers);
   }

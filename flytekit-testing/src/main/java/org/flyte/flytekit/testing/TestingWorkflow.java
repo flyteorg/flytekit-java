@@ -18,7 +18,6 @@ package org.flyte.flytekit.testing;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
@@ -34,8 +33,8 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
   private final Map<String, Literal> outputLiterals;
 
   TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
-      super(outputType);
-      this.inputType = inputType;
+    super(outputType);
+    this.inputType = inputType;
     this.outputType = outputType;
     this.output = output;
     this.outputLiterals = outputType.toLiteralMap(output);
@@ -56,11 +55,12 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
     Literal literal = outputLiterals.get(name);
     SdkBindingData<?> value;
     try {
-      value = (SdkBindingData<?>)output.getClass().getMethod(name).invoke(output);
+      value = (SdkBindingData<?>) output.getClass().getMethod(name).invoke(output);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e); // TODO improve error message
     }
-    SdkBindingData<?> output = SdkBindingData.create(Literals.toBindingData(literal), var.literalType(), value.get());
+    SdkBindingData<?> output =
+        SdkBindingData.create(Literals.toBindingData(literal), var.literalType(), value.get());
 
     builder.output(name, output, var.description());
   }

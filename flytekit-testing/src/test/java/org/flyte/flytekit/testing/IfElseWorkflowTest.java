@@ -25,7 +25,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
-
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkRunnableTask;
@@ -72,11 +71,11 @@ public class IfElseWorkflowTest {
   }
 
   static class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
-      BranchNodeWorkflow() {
-          super(JacksonSdkType.of(ConstStringTask.Output.class));
-      }
+    BranchNodeWorkflow() {
+      super(JacksonSdkType.of(ConstStringTask.Output.class));
+    }
 
-      @Override
+    @Override
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData<Long> a = builder.inputOfInteger("a");
       SdkBindingData<Long> b = builder.inputOfInteger("b");
@@ -123,7 +122,8 @@ public class IfElseWorkflowTest {
       abstract SdkBindingData<String> value();
 
       public static Output create(String value) {
-        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(SdkBindingData.ofString(value));
+        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(
+            SdkBindingData.ofString(value));
       }
     }
 

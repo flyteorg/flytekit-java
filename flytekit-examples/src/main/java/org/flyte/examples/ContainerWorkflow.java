@@ -25,11 +25,11 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 @AutoService(SdkWorkflow.class)
 public class ContainerWorkflow extends SdkWorkflow<Void> {
 
-    public ContainerWorkflow() {
-        super(SdkTypes.nulls());
-    }
+  public ContainerWorkflow() {
+    super(SdkTypes.nulls());
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     builder.apply("hello-container-task", new HelloContainerTask());
   }

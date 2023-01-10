@@ -33,8 +33,10 @@ public class DynamicFibonacciWorkflow extends SdkWorkflow<DynamicFibonacciWorkfl
     SdkBindingData<Long> n = builder.inputOfInteger("n");
 
     SdkBindingData<Long> fibOutput =
-            builder.apply("fibonacci", new DynamicFibonacciWorkflowTask().withInput("n", n))
-                    .getOutputs().output();
+        builder
+            .apply("fibonacci", new DynamicFibonacciWorkflowTask().withInput("n", n))
+            .getOutputs()
+            .output();
 
     builder.output("output", fibOutput);
   }

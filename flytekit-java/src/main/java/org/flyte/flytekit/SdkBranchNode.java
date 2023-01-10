@@ -18,7 +18,6 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
@@ -50,8 +49,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
       Map<String, LiteralType> outputTypes,
-      OutputT outputs
-  ) {
+      OutputT outputs) {
     super(builder);
 
     this.nodeId = nodeId;
@@ -177,7 +175,8 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
               .build();
 
       OutputT outputs = outputType.promiseFor(nodeId);
-      return new SdkBranchNode<>(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, outputs);
+      return new SdkBranchNode<>(
+          builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, outputs);
     }
   }
 }

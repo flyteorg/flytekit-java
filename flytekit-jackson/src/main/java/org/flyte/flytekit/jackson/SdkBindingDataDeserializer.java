@@ -36,7 +36,6 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Struct;
 import org.flyte.flytekit.SdkBindingData;
 
 class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {

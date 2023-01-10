@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit.jackson;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -36,8 +38,6 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
-
-import static java.util.stream.Collectors.toMap;
 
 public class JacksonSdkType<T> extends SdkType<T> {
 
@@ -145,13 +145,17 @@ public class JacksonSdkType<T> extends SdkType<T> {
   public T promiseFor(String nodeId) {
     try {
       Map<String, SdkBindingData<?>> bindingMap =
-              getVariableMap().entrySet().stream()
-                      .collect(toMap(
-                              Map.Entry::getKey,
-                              x -> SdkBindingData.ofOutputReference(nodeId, x.getKey(), x.getValue().literalType())));
+          getVariableMap().entrySet().stream()
+              .collect(
+                  toMap(
+                      Map.Entry::getKey,
+                      x ->
+                          SdkBindingData.ofOutputReference(
+                              nodeId, x.getKey(), x.getValue().literalType())));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
-      ObjectMapper mapper = new ObjectMapper()
+      ObjectMapper mapper =
+          new ObjectMapper()
               .registerModule(new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap)))
               .registerModule(new JavaTimeModule())
               .registerModule(new ParameterNamesModule())

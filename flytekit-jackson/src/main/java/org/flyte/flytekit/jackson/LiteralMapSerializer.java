@@ -50,7 +50,6 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
     gen.writeEndObject();
   }
 
-
   public void serializeLiteral(
       String key,
       Literal value,
@@ -105,7 +104,11 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
     throw new AssertionError("Unexpected Literal.Kind: [" + value.kind() + "]");
   }
 
-  public void serializeScalar(Scalar value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap)
+  public void serializeScalar(
+      Scalar value,
+      JsonGenerator gen,
+      SerializerProvider serializers,
+      Map<String, LiteralType> literalTypeMap)
       throws IOException {
     switch (value.kind()) {
       case PRIMITIVE:
@@ -178,14 +181,24 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
     throw new AssertionError("Unexpected Primitive.Kind: [" + value.kind() + "]");
   }
 
-  private void serializeGeneric(Struct generic, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap) throws IOException {
+  private void serializeGeneric(
+      Struct generic,
+      JsonGenerator gen,
+      SerializerProvider serializers,
+      Map<String, LiteralType> literalTypeMap)
+      throws IOException {
     for (Map.Entry<String, Value> entry : generic.fields().entrySet()) {
       gen.writeFieldName(entry.getKey());
       serializeStructValue(entry.getValue(), gen, serializers, literalTypeMap);
     }
   }
 
-  private void serializeStructValue(Value value, JsonGenerator gen, SerializerProvider serializers, Map<String, LiteralType> literalTypeMap) throws IOException {
+  private void serializeStructValue(
+      Value value,
+      JsonGenerator gen,
+      SerializerProvider serializers,
+      Map<String, LiteralType> literalTypeMap)
+      throws IOException {
     switch (value.kind()) {
       case BOOL_VALUE:
         gen.writeStartObject();

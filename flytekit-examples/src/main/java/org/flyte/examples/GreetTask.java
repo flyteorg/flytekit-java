@@ -25,8 +25,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 @AutoService(SdkRunnableTask.class)
-public class GreetTask
-    extends SdkRunnableTask<GreetTask.Input, GreetTask.Output> {
+public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output> {
 
   public GreetTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));

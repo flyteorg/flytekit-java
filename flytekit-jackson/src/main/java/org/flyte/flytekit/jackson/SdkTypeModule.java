@@ -22,13 +22,13 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
 
 class SdkTypeModule extends Module {
-  private static final Deserializers DEFAULT_SDKBINDING_DESERIALIZERS = new SdkBindingDataDeserializers();
+  private static final Deserializers DEFAULT_SDKBINDING_DESERIALIZERS =
+      new SdkBindingDataDeserializers();
   private final Deserializers sdkbindingDeserializers;
   // For now, we don't make module public, however, one day
   // when we are stable, we can open-up and allow customizations
   // then we can add factory method to JacksonSdkType to specify
   // custom ObjectMapper.
-
 
   public SdkTypeModule() {
     this(DEFAULT_SDKBINDING_DESERIALIZERS);

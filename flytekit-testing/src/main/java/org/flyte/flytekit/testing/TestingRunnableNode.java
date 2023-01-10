@@ -86,6 +86,8 @@ public abstract class TestingRunnableNode<
       return outputType.toLiteralMap(runFn.apply(input));
     }
 
+    // TODO see if we can improve this error message as input is hard to read
+    // We can improve the SdkBindingData toString method
     String message =
         String.format(
             "Can't find input %s for remote %s [%s] across known %s inputs, "

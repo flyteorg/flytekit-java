@@ -39,16 +39,16 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
   }
 
   // TODO verify why this was here. It is not used
-//  @AutoValue
-//  public abstract static class Input {
-//    abstract long left();
-//
-//    abstract long right();
-//
-//    public static Input create(long left, long right) {
-//      return new AutoValue_SubWorkflow_Input(left, right);
-//    }
-//  }
+  @AutoValue
+  public abstract static class Input {
+    abstract long left();
+
+    abstract long right();
+
+    public static Input create(long left, long right) {
+      return new AutoValue_SubWorkflow_Input(left, right);
+    }
+  }
 
   @AutoValue
   public abstract static class Output {

@@ -31,11 +31,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 // @AutoService(SdkWorkflow.class)
 public class RemoteLaunchPlanExample extends SdkWorkflow<Void> {
 
-    public RemoteLaunchPlanExample() {
-        super(SdkTypes.nulls());
-    }
+  public RemoteLaunchPlanExample() {
+    super(SdkTypes.nulls());
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");

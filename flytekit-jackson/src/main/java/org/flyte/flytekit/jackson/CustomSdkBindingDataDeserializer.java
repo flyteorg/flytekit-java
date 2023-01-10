@@ -21,10 +21,9 @@ import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.flyte.flytekit.SdkBindingData;
-
 import java.io.IOException;
 import java.util.Map;
+import org.flyte.flytekit.SdkBindingData;
 
 class CustomSdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   private static final long serialVersionUID = -4955760538022844107L;

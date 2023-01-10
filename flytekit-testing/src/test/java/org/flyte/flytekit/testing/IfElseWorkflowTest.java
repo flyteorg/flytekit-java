@@ -102,7 +102,7 @@ public class IfElseWorkflowTest {
                       .when("c > d", gt(c, d), ConstStringTask.of("a > b && c > d"))
                       .when("c < d", lt(c, d), ConstStringTask.of("a > b && c < d")));
 
-      SdkBindingData value = builder.apply("condition", condition).getOutput("value");
+      SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 
       builder.output("value", value);
     }

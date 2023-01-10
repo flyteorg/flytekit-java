@@ -41,12 +41,12 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
   // TODO verify why this was here. It is not used
   @AutoValue
   public abstract static class Input {
-    abstract long left();
+    abstract SdkBindingData<Long> left();
 
-    abstract long right();
+    abstract SdkBindingData<Long> right();
 
     public static Input create(long left, long right) {
-      return new AutoValue_SubWorkflow_Input(left, right);
+      return new AutoValue_SubWorkflow_Input(SdkBindingData.ofInteger(left), SdkBindingData.ofInteger(right));
     }
   }
 

@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import org.flyte.flytekit.NopOutputTransformer;
+
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTypes;
 import org.junit.jupiter.api.Test;
@@ -37,13 +37,13 @@ public class ExecuteLocalLoaderTest {
 
     Map<String, ClassLoader> modules =
         ImmutableMap.of("source1", classLoader1, "source2", classLoader2);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?, ? extends OutputTransformer>>>
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>>
         tasksPerClassLoader =
             ImmutableMap.of(
                 classLoader1, ImmutableMap.of("task1", task1),
                 classLoader2, ImmutableMap.of("task2", task2));
 
-    Map<String, SdkRunnableTask<?, ?, ? extends OutputTransformer>> tasksByName =
+    Map<String, SdkRunnableTask<?, ?>> tasksByName =
         ExecuteLocalLoader.loadAll(modules, (cl, __) -> tasksPerClassLoader.get(cl), emptyMap());
 
     assertEquals(ImmutableMap.of("task1", task1, "task2", task2), tasksByName);
@@ -60,7 +60,7 @@ public class ExecuteLocalLoaderTest {
 
     Map<String, ClassLoader> modules =
         ImmutableMap.of("source1", classLoader1, "source2", classLoader2, "source3", classLoader3);
-    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?, ? extends OutputTransformer>>>
+    Map<ClassLoader, Map<String, SdkRunnableTask<?, ?>>>
         tasksPerClassLoader =
             ImmutableMap.of(
                 classLoader1, ImmutableMap.of("dupTask1", duplicateTask1, "unqTask", uniqueTask),
@@ -81,7 +81,7 @@ public class ExecuteLocalLoaderTest {
         exception.getMessage());
   }
 
-  private static class TestTask extends SdkRunnableTask<Void, Void, NopOutputTransformer> {
+  private static class TestTask extends SdkRunnableTask<Void, Void> {
     private static final long serialVersionUID = -2949483398581210936L;
 
     private TestTask() {

@@ -46,6 +46,6 @@ public class UberWorkflow extends SdkWorkflow<SubWorkflow.Output> {
             .getOutputs()
             .result();
     SdkBindingData<Long> abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutputs().c();
-    builder.output("total", abcd);
+    builder.output("result", abcd);
   }
 }

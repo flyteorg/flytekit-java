@@ -152,7 +152,6 @@ class LocalEngineTest {
   }
 
   @Test
-  @Disabled // TODO fix
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
 
@@ -279,7 +278,7 @@ class LocalEngineTest {
     Literal result = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(16L)));
     Literal outerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal outerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
-    Literal outerC = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal outerO = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
 
@@ -298,7 +297,7 @@ class LocalEngineTest {
             .compileAndExecute(
                 workflowTemplates.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 
-    assertEquals(ImmutableMap.of("result", result), outputs);
+    assertEquals(ImmutableMap.of("o", result), outputs);
     assertEquals(
         ImmutableList.<List<Object>>builder()
             .add(ofPending("nested-workflow"))
@@ -308,7 +307,7 @@ class LocalEngineTest {
             .add(ofStarting("outer-sum-a-b", ImmutableMap.of("a", a, "b", b)))
             .add(
                 ofCompleted(
-                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("c", outerC)))
+                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("o", outerO)))
             .add(ofStarting("outer-sum-ab-c", ImmutableMap.of("a", outerA, "b", outerB)))
             .add(ofPending("inner-sum-a-b"))
             .add(ofStarting("inner-sum-a-b", ImmutableMap.of("a", innerA, "b", innerB)))
@@ -316,17 +315,17 @@ class LocalEngineTest {
                 ofCompleted(
                     "inner-sum-a-b",
                     ImmutableMap.of("a", outerA, "b", outerB),
-                    ImmutableMap.of("c", result)))
+                    ImmutableMap.of("o", result)))
             .add(
                 ofCompleted(
                     "outer-sum-ab-c",
                     ImmutableMap.of("a", outerA, "b", outerB),
-                    ImmutableMap.of("result", result)))
+                    ImmutableMap.of("o", result)))
             .add(
                 ofCompleted(
                     "nested-workflow",
                     ImmutableMap.of("a", a, "b", b, "c", c),
-                    ImmutableMap.of("result", result)))
+                    ImmutableMap.of("o", result)))
             .build(),
         listener.actions);
   }
@@ -471,12 +470,12 @@ class LocalEngineTest {
                 .add(ofStarting("was_odd", singletonMap("x", oddX)))
                 .add(
                     ofCompleted(
-                        "was_odd", singletonMap("x", oddX), singletonMap("res", odd3XPlus1)))
+                        "was_odd", singletonMap("x", oddX), singletonMap("o", odd3XPlus1)))
                 .add(
                     ofCompleted(
                         "decide",
                         singletonMap("$0", literalFalse),
-                        singletonMap("res", odd3XPlus1)))
+                        singletonMap("o", odd3XPlus1)))
                 .build()),
         Arguments.of(
             6L,
@@ -495,12 +494,12 @@ class LocalEngineTest {
                     ofCompleted(
                         "was_even",
                         ImmutableMap.of("num", evenX, "den", literal2),
-                        singletonMap("res", evenXDividedBy2)))
+                        singletonMap("o", evenXDividedBy2)))
                 .add(
                     ofCompleted(
                         "decide",
                         singletonMap("$0", literalTrue),
-                        singletonMap("res", evenXDividedBy2)))
+                        singletonMap("o", evenXDividedBy2)))
                 .build()));
   }
 
@@ -587,7 +586,7 @@ class LocalEngineTest {
 
       @Override
       public NoOpType run(NoOpType input) {
-        return NoOpType.create(input.x().get());
+        return NoOpType.create(input.x());
       }
 
       static SdkTransform<NoOpType> of(SdkBindingData<Long> x) {
@@ -599,9 +598,9 @@ class LocalEngineTest {
     public abstract static class NoOpType {
       abstract SdkBindingData<Long> x();
 
-      public static NoOpType create(long x) {
+      public static NoOpType create(SdkBindingData<Long> x) {
         return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(
-            SdkBindingData.ofInteger(x));
+            x);
       }
     }
   }

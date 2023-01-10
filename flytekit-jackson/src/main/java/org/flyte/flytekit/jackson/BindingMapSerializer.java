@@ -14,8 +14,9 @@ public class BindingMapSerializer extends JsonSerializer<JacksonBindingMap> {
       throws IOException {
     gen.writeStartObject();
     for (Map.Entry<String, SdkBindingData<?>> entry : value.getBindingsMap().entrySet()) {
-      gen.writeFieldName(entry.getKey());
-      gen.writeString("");
+      String attr = entry.getKey();
+      gen.writeFieldName(attr);
+      gen.writeString(attr);
     }
     gen.writeEndObject();
   }

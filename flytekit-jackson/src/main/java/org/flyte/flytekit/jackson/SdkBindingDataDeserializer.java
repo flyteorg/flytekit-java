@@ -68,10 +68,9 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             }
             break;
           case GENERIC:
-            return transformStructValue(tree);
           case BLOB:
             // TODO: We need to implement this
-            break;
+            throw new RuntimeException("not supported");
         }
         break;
       case COLLECTION:
@@ -122,7 +121,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             return SdkBindingData.ofBooleanMap(generateMapFromNode(tree, JsonNode::asBoolean));
           case STRUCT:
             // TODO: need to implement this.
-            throw new RuntimeException("not supported");
+            throw new UnsupportedOperationException("not supported");
           default:
             throw new UnsupportedOperationException(
                 String.format(
@@ -137,31 +136,6 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
 
     // TODO: Think about it
     throw new IllegalStateException("");
-  }
-
-  private SdkBindingData<?> transformStructValue(JsonNode node) {
-    switch (Struct.Value.Kind.valueOf(node.get("structType").asText())) {
-      case STRING_VALUE:
-        return SdkBindingData.ofString(node.get("structValue").asText());
-      case STRUCT_VALUE:
-        break;
-      case LIST_VALUE:
-        return null;
-        /*return SdkBindingData.ofBindingCollection(
-            StreamSupport.stream(
-                    Spliterators.spliteratorUnknownSize(
-                        node.get("structValue").elements(), Spliterator.ORDERED),
-                    false)
-                .map(this::transformStructValue)
-                .collect(Collectors.toList()));*/
-      case BOOL_VALUE:
-        return SdkBindingData.ofBoolean(node.get("structValue").booleanValue());
-      case NULL_VALUE:
-        return null;
-      case NUMBER_VALUE:
-        return SdkBindingData.ofFloat(node.get("structValue").doubleValue());
-    }
-    return null;
   }
 
   private <T> Map<String, T> generateMapFromNode(

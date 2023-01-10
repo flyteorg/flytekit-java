@@ -118,13 +118,45 @@ object SdkScalaType {
     }
   }
 
-  implicit def sdkBindingLiteralType[T](implicit
-      sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[SdkBindingData[T]] =
+  implicit def sdkBindingLiteralType[T](implicit sdkLiteral: SdkScalaLiteralType[T]): SdkScalaLiteralType[SdkBindingData[T]] =
     SdkScalaLiteralType[SdkBindingData[T]](
       sdkLiteral.getLiteralType,
       value => sdkLiteral.toLiteral(value.get()),
-      literal => ??? // TODO fix here
+      literal => {
+        val value = literal.kind() match {
+          case Literal.Kind.SCALAR =>
+            val scalar = literal.scalar()
+            scalar.kind() match {
+              case Scalar.Kind.PRIMITIVE =>
+                val primitive = scalar.primitive()
+                primitive.kind() match {
+                  case Primitive.Kind.DATETIME =>
+                    SdkBindingData.ofDatetime(instantLiteralType.fromLiteral(literal))
+                  case Primitive.Kind.DURATION =>
+                    SdkBindingData.ofDuration(durationLiteralType.fromLiteral(literal))
+                  case Primitive.Kind.BOOLEAN_VALUE =>
+                    SdkBindingData.ofBoolean(booleanLiteralType.fromLiteral(literal))
+                  case Primitive.Kind.FLOAT_VALUE =>
+                    SdkBindingData.ofFloat(doubleLiteralType.fromLiteral(literal))
+                  case Primitive.Kind.INTEGER_VALUE =>
+                    SdkBindingData.ofInteger(longLiteralType.fromLiteral(literal))
+                  case Primitive.Kind.STRING_VALUE =>
+                    SdkBindingData.ofString(stringLiteralType.fromLiteral(literal))
+                  case _ => throw new RuntimeException("not supported")
+                }
+              case Scalar.Kind.GENERIC => throw new RuntimeException("not supported")
+              case Scalar.Kind.BLOB => throw new RuntimeException("not supported")
+
+            }
+          case Literal.Kind.MAP =>
+            throw new RuntimeException("not supported")
+          case Literal.Kind.COLLECTION =>
+            throw new RuntimeException("not supported")
+          case _ => throw new RuntimeException("not supported")
+        }
+
+        value.asInstanceOf[SdkBindingData[T]]
+      }
     )
 
   implicit def stringLiteralType: SdkScalaLiteralType[String] =

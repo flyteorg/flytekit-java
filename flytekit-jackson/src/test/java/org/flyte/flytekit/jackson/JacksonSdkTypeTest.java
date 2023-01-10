@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,9 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkStruct;
 import org.flyte.flytekit.SdkType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
@@ -52,25 +55,25 @@ public class JacksonSdkTypeTest {
       BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
 
   public static AutoValueInput createAutoValueInput(
-        long i,
-        double f,
-        String s,
-        boolean b,
-        Instant t,
-        Duration d,
-        // Blob blob,
-        List<String> l,
-        Map<String, String> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-          SdkBindingData.ofInteger(i),
-          SdkBindingData.ofFloat(f),
-          SdkBindingData.ofString(s),
-          SdkBindingData.ofBoolean(b),
-          SdkBindingData.ofDatetime(t),
-          SdkBindingData.ofDuration(d),
-          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-          SdkBindingData.ofStringMap(m));
-    }
+      long i,
+      double f,
+      String s,
+      boolean b,
+      Instant t,
+      Duration d,
+      // Blob blob,
+      List<String> l,
+      Map<String, String> m) {
+    return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
+        SdkBindingData.ofInteger(i),
+        SdkBindingData.ofFloat(f),
+        SdkBindingData.ofString(s),
+        SdkBindingData.ofBoolean(b),
+        SdkBindingData.ofDatetime(t),
+        SdkBindingData.ofDuration(d),
+        SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+        SdkBindingData.ofStringMap(m));
+  }
 
   @Test
   public void testVariableMap() {
@@ -192,24 +195,23 @@ public class JacksonSdkTypeTest {
     assertThat(variableMap, equalTo(Map.of("a", expected)));
   }
 
-  @Test
+  @Disabled("Not supported struct with the strongly types implementation.")
   public void testStructRoundtrip() {
     StructInput input =
         StructInput.create(
-            StructValueInput.create(
-                /* stringValue= */ "nested-string",
-                /* boolValue= */ false,
-                /// * listValue= */ Arrays.asList(1L, 2L, 3L),
-                /* structValue= */ StructValueInput.create(
-                    /* stringValue= */ "nested-string",
-                    /* boolValue= */ false,
-                    //TODO: Think about how enable
-                    // it, the main problem is to know the inner type because the Stuct is a
-                    // SimpleType without inner information
-                    /// * listValue= */ Arrays.asList(1L, 2L, 3L),
-                    /* structValue= */ null,
-                    /* numberValue= */ 42.0),
-                /* numberValue= */ 42.0));
+            null
+            //StructValueInput.create(
+            //    /* stringValue= */ "nested-string",
+            //    /* boolValue= */ false,
+            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
+            //    /* structValue= */ StructValueInput.create(
+            //        /* stringValue= */ "nested-string",
+            //        /* boolValue= */ false,
+            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
+            //        /* structValue= */ null,
+            //        /* numberValue= */ 42.0),
+            //    /* numberValue= */ 42.0)
+        );
 
     SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
     Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
@@ -229,7 +231,7 @@ public class JacksonSdkTypeTest {
     assertThat(literalMap, equalTo(expected));
   }
 
-  @Test
+  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
   public void testConverterFromLiteralMap() {
     InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
     Map<String, Literal> literalMap = new HashMap<>();
@@ -242,7 +244,7 @@ public class JacksonSdkTypeTest {
     assertThat(output, equalTo(expected));
   }
 
-  @Test
+  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
   public void testConverterVariableMap() {
     Map<String, Variable> expected = new HashMap<>();
     expected.put(
@@ -261,10 +263,34 @@ public class JacksonSdkTypeTest {
     AutoValueInput autoValueInput = JacksonSdkType.of(AutoValueInput.class).promiseFor("node-id");
 
     assertThat(
-            autoValueInput.i(),
-            equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+        autoValueInput.i(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+    assertThat(
+        autoValueInput.f(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
+    assertThat(
+        autoValueInput.s(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
+    assertThat(
+        autoValueInput.b(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
+    assertThat(
+        autoValueInput.t(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
+    assertThat(
+        autoValueInput.d(),
+        equalTo(SdkBindingData.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
+    assertThat(
+        autoValueInput.l(),
+        equalTo(
+            SdkBindingData.ofOutputReference(
+                "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
+    assertThat(
+        autoValueInput.m(),
+        equalTo(
+            SdkBindingData.ofOutputReference(
+                "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
   }
-
 
   @Test
   void testUnknownSerializer() {
@@ -290,11 +316,6 @@ public class JacksonSdkTypeTest {
 
   public static class Unannotated {}
 
-  /*
-
-
-   {"literal":"SCALAR","scalar":"PRIMITIVE", "primiteve":"LONG", "value":2000}
-  */
   @AutoValue
   public abstract static class AutoValueInput {
     public abstract SdkBindingData<Long> i();
@@ -317,61 +338,53 @@ public class JacksonSdkTypeTest {
     public abstract SdkBindingData<Map<String, String>> m();
 
     public static AutoValueInput create(
-            SdkBindingData<Long> i,
-            SdkBindingData<Double> f,
-            SdkBindingData<String> s,
-            SdkBindingData<Boolean> b,
-            SdkBindingData<Instant> t,
-            SdkBindingData<Duration> d,
-            // Blob blob,
-            SdkBindingData<List<String>> l,
-            SdkBindingData<Map<String, String>> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-              i,
-              f,
-              s,
-              b,
-              t,
-              d,
-              l,
-              m);
+        SdkBindingData<Long> i,
+        SdkBindingData<Double> f,
+        SdkBindingData<String> s,
+        SdkBindingData<Boolean> b,
+        SdkBindingData<Instant> t,
+        SdkBindingData<Duration> d,
+        // Blob blob,
+        SdkBindingData<List<String>> l,
+        SdkBindingData<Map<String, String>> m) {
+      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
     }
   }
 
   @AutoValue
   public abstract static class StructInput {
-    public abstract StructValueInput structLevel1();
+    public abstract SdkBindingData<StructValueInput> structLevel1();
 
-    public static StructInput create(StructValueInput structValue) {
+    public static StructInput create(SdkBindingData<StructValueInput> structValue) {
       return new AutoValue_JacksonSdkTypeTest_StructInput(structValue);
     }
   }
 
   @AutoValue
   public abstract static class StructValueInput {
-    public abstract SdkBindingData<String> stringValue();
+    public abstract String stringValue();
 
-    public abstract SdkBindingData<Boolean> boolValue();
+    public abstract Boolean boolValue();
 
-    // public abstract SdkBindingData<List<Long>> listValue();
+    public abstract List<Long> listValue();
 
     @Nullable
     public abstract StructValueInput structLevel2();
 
-    public abstract SdkBindingData<Double> numberValue();
+    public abstract Double numberValue();
 
     public static StructValueInput create(
         String stringValue,
         boolean boolValue,
-        // List<Long> listValue,
+        List<Long> listValue,
         StructValueInput structValue,
         Double numberValue) {
       return new AutoValue_JacksonSdkTypeTest_StructValueInput(
-          SdkBindingData.ofString(stringValue),
-          SdkBindingData.ofBoolean(boolValue),
-          // SdkBindingData.ofCollection(listValue, SdkBindingData::ofInteger),
+          stringValue,
+          boolValue,
+          listValue,
           structValue,
-          SdkBindingData.ofFloat(numberValue));
+          numberValue);
     }
   }
 

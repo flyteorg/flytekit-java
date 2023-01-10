@@ -203,18 +203,6 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
 
       case LIST_VALUE:
         throw new RuntimeException("not supported list inside the struct");
-        //gen.writeFieldName("structType");
-        //gen.writeObject(Value.Kind.LIST_VALUE);
-        //gen.writeFieldName("structValue");
-        //gen.writeStartArray();
-
-        //for (Value element : value.listValue()) {
-        //  gen.writeStartObject();
-        //  serializeStructValue(element, gen, serializers, literalTypeMap);
-        //  gen.writeEndObject();
-        //}
-
-        //gen.writeEndArray();
 
       case NUMBER_VALUE:
         gen.writeStartObject();

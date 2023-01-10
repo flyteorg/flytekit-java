@@ -19,20 +19,16 @@ package org.flyte.flytekit.jackson;
 import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +50,27 @@ public class JacksonSdkTypeTest {
 
   static final BlobType BLOB_TYPE =
       BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
+
+  public static AutoValueInput createAutoValueInput(
+        long i,
+        double f,
+        String s,
+        boolean b,
+        Instant t,
+        Duration d,
+        // Blob blob,
+        List<String> l,
+        Map<String, String> m) {
+      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
+          SdkBindingData.ofInteger(i),
+          SdkBindingData.ofFloat(f),
+          SdkBindingData.ofString(s),
+          SdkBindingData.ofBoolean(b),
+          SdkBindingData.ofDatetime(t),
+          SdkBindingData.ofDuration(d),
+          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+          SdkBindingData.ofStringMap(m));
+    }
 
   @Test
   public void testVariableMap() {
@@ -96,7 +113,7 @@ public class JacksonSdkTypeTest {
     assertThat(
         input,
         equalTo(
-            AutoValueInput.create(
+            createAutoValueInput(
                 /* i= */ 123L,
                 /* f= */ 123.0,
                 /* s= */ "123",
@@ -118,7 +135,7 @@ public class JacksonSdkTypeTest {
     Map<String, Literal> literalMap =
         JacksonSdkType.of(AutoValueInput.class)
             .toLiteralMap(
-                AutoValueInput.create(
+                createAutoValueInput(
                     /* i= */ 42L,
                     /* f= */ 42.0d,
                     /* s= */ "42",
@@ -240,6 +257,16 @@ public class JacksonSdkTypeTest {
   }
 
   @Test
+  void testPromiseFor() {
+    AutoValueInput autoValueInput = JacksonSdkType.of(AutoValueInput.class).promiseFor("node-id");
+
+    assertThat(
+            autoValueInput.i(),
+            equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+  }
+
+
+  @Test
   void testUnknownSerializer() {
     // Serialization doesn't work because Jackson doesn't recognize empty classes as
     // Java beans good thing that exception is thrown when constructing JacksonSdkType
@@ -290,24 +317,24 @@ public class JacksonSdkTypeTest {
     public abstract SdkBindingData<Map<String, String>> m();
 
     public static AutoValueInput create(
-        long i,
-        double f,
-        String s,
-        boolean b,
-        Instant t,
-        Duration d,
-        // Blob blob,
-        List<String> l,
-        Map<String, String> m) {
+            SdkBindingData<Long> i,
+            SdkBindingData<Double> f,
+            SdkBindingData<String> s,
+            SdkBindingData<Boolean> b,
+            SdkBindingData<Instant> t,
+            SdkBindingData<Duration> d,
+            // Blob blob,
+            SdkBindingData<List<String>> l,
+            SdkBindingData<Map<String, String>> m) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-          SdkBindingData.ofInteger(i),
-          SdkBindingData.ofFloat(f),
-          SdkBindingData.ofString(s),
-          SdkBindingData.ofBoolean(b),
-          SdkBindingData.ofDatetime(t),
-          SdkBindingData.ofDuration(d),
-          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-          SdkBindingData.ofStringMap(m));
+              i,
+              f,
+              s,
+              b,
+              t,
+              d,
+              l,
+              m);
     }
   }
 

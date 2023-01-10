@@ -36,7 +36,10 @@ import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
+
+import static java.util.stream.Collectors.toMap;
 
 public class JacksonSdkType<T> extends SdkType<T> {
 
@@ -92,7 +95,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
       Map<String, LiteralType> literalTypeMap =
           getVariableMap().entrySet().stream()
-              .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+              .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
       // The previous trick with JavaType and withValueHandler didn't work because
       // Jackson caches serializers, without considering valueHandler as significant part
@@ -130,7 +133,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
     try {
       Map<String, LiteralType> literalTypeMap =
           getVariableMap().entrySet().stream()
-              .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+              .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonLiteralMap(value, literalTypeMap));
 
@@ -142,6 +145,23 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
   @Override
   public T promiseFor(String nodeId) {
-    return null; // TODO
+    try {
+      Map<String, SdkBindingData<?>> bindingMap =
+              getVariableMap().entrySet().stream()
+                      .collect(toMap(
+                              Map.Entry::getKey,
+                              x -> SdkBindingData.ofOutputReference(nodeId, x.getKey(), x.getValue().literalType())));
+
+      JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
+      ObjectMapper mapper = new ObjectMapper()
+              .registerModule(new SdkTypeModule(new SdkBindingDataDeserializers2(bindingMap)))
+              .registerModule(new JavaTimeModule())
+              .registerModule(new ParameterNamesModule())
+              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+      return mapper.treeToValue(tree, clazz);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("promiseFor failed for [" + clazz.getName() + "]", e);
+    }
   }
 }

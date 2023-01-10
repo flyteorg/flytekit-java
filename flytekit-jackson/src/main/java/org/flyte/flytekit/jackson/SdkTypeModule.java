@@ -18,15 +18,25 @@ package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.module.SimpleDeserializers;
+import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
-import org.flyte.flytekit.SdkBindingData;
 
 class SdkTypeModule extends Module {
+  private static final Deserializers DEFAULT_SDKBINDING_DESERIALIZERS = new SdkBindingDataDeserializers();
+  private final Deserializers sdkbindingDeserializers;
   // For now, we don't make module public, however, one day
   // when we are stable, we can open-up and allow customizations
   // then we can add factory method to JacksonSdkType to specify
   // custom ObjectMapper.
+
+
+  public SdkTypeModule() {
+    this(DEFAULT_SDKBINDING_DESERIALIZERS);
+  }
+
+  public SdkTypeModule(Deserializers sdkbindingDeserializers) {
+    this.sdkbindingDeserializers = sdkbindingDeserializers;
+  }
 
   @Override
   public String getModuleName() {
@@ -46,7 +56,8 @@ class SdkTypeModule extends Module {
 
     context.addSerializers(new LiteralMapSerializers());
     context.addDeserializers(new LiteralMapDeserializers());
-    context.addDeserializers(new SdkBindingDataDeserializers());
+    context.addSerializers(new BindingMapSerializers());
+    context.addDeserializers(sdkbindingDeserializers);
 
     // append with lowest priority to use as fallback, if builtin annotations aren't present
     context.appendAnnotationIntrospector(new AutoValueAnnotationIntrospector());

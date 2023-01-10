@@ -19,19 +19,16 @@ package org.flyte.flytekit.jackson;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 
-class CustomSdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
-  private static final long serialVersionUID = -4955760538022844107L;
-
+class CustomSdkBindingDataDeserializer extends JsonDeserializer<SdkBindingData<?>> {
   private final Map<String, SdkBindingData<?>> bindingsMap;
 
   public CustomSdkBindingDataDeserializer(Map<String, SdkBindingData<?>> bindingsMap) {
-    super(SdkBindingData.class);
     this.bindingsMap = bindingsMap;
   }
 
@@ -40,7 +37,6 @@ class CustomSdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>
       JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
     TreeNode treeNode = jsonParser.readValueAsTree();
     String attr = ((TextNode) treeNode).asText();
-    SdkBindingData<?> bindingData = bindingsMap.get(attr);
-    return bindingData;
+    return bindingsMap.get(attr);
   }
 }

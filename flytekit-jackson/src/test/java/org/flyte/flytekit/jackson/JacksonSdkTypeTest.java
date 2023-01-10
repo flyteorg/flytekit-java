@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -472,8 +471,8 @@ public class JacksonSdkTypeTest {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
-  @SuppressWarnings({"unused"})
-  private static Literal literalOf(Blob blob) {
-    return Literal.ofScalar(Scalar.ofBlob(blob));
-  }
+  // @SuppressWarnings({"unused"})
+  // private static Literal literalOf(Blob blob) {
+  //   return Literal.ofScalar(Scalar.ofBlob(blob));
+  // }
 }

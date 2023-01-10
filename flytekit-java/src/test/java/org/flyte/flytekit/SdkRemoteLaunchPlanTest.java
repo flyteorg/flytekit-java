@@ -44,7 +44,8 @@ public class SdkRemoteLaunchPlanTest {
     SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 
-    SdkNode<TestUnaryBooleanOutput> node = remoteLaunchPlan.apply(
+    SdkNode<TestUnaryBooleanOutput> node =
+        remoteLaunchPlan.apply(
             mock(SdkWorkflowBuilder.class),
             "some-node-id",
             singletonList("upstream-1"),

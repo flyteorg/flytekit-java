@@ -43,7 +43,8 @@ public class MockPipelineWorkflow extends SdkWorkflow<MockPipelineWorkflow.Outpu
                     .withInput("project", ofString("styx-1265"))
                     .withInput("dataset", ofString("styx-insights"))
                     .withInput("tableName", tableName))
-            .getOutputs().ref();
+            .getOutputs()
+            .ref();
     SdkBindingData<Boolean> exists =
         builder
             .apply(
@@ -51,7 +52,8 @@ public class MockPipelineWorkflow extends SdkWorkflow<MockPipelineWorkflow.Outpu
                 new MockLookupBqTask()
                     .withInput("ref", ref)
                     .withInput("checkIfExists", ofBoolean(true)))
-            .getOutputs().exists();
+            .getOutputs()
+            .exists();
     builder.output("exists", exists);
   }
 

@@ -58,7 +58,8 @@ public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExample
                 SumTask.of(a, b)
                     .withNameOverride("sum a+b")
                     .withTimeoutOverride(Duration.ofMinutes(15)))
-            .getOutputs().c();
+            .getOutputs()
+            .c();
 
     builder.output("c", c, "Value of the sum");
   }

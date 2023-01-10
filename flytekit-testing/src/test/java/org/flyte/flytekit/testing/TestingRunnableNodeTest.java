@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +46,7 @@ class TestingRunnableNodeTest {
 
   @Test
   void testRun_withFunction() {
-    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in()));
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
     TestNode node = new TestNode(fn, emptyMap());
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
@@ -57,7 +58,7 @@ class TestingRunnableNodeTest {
   void testRun_preferStubValuesOverFunction() {
     Map<Input, Output> fixedOutputs =
         singletonMap(Input.create("meaning of life"), Output.create(42L));
-    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in()));
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
     TestNode node = new TestNode(fn, fixedOutputs);
 
     Map<String, Literal> output =
@@ -79,7 +80,7 @@ class TestingRunnableNodeTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input Input{in=not in fixed outputs} for remote test [TestTask] "
+            "Can't find input Input{in=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{stringValue=not in fixed outputs}}}, type=LiteralType{simpleType=STRING}, value=not in fixed outputs}} for remote test [TestTask] "
                 + "across known test inputs, use a magic wang to provide a test double"));
   }
 
@@ -95,7 +96,7 @@ class TestingRunnableNodeTest {
 
   @Test
   void testWithRunFn() {
-    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in()));
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
     TestNode node = new TestNode(null, emptyMap()).withRunFn(fn);
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
@@ -128,19 +129,19 @@ class TestingRunnableNodeTest {
 
   @AutoValue
   abstract static class Input {
-    abstract String in();
+    abstract SdkBindingData<String> in();
 
     public static Input create(String in) {
-      return new AutoValue_TestingRunnableNodeTest_Input(in);
+      return new AutoValue_TestingRunnableNodeTest_Input(SdkBindingData.ofString(in));
     }
   }
 
   @AutoValue
   abstract static class Output {
-    abstract Long out();
+    abstract SdkBindingData<Long> out();
 
     public static Output create(Long out) {
-      return new AutoValue_TestingRunnableNodeTest_Output(out);
+      return new AutoValue_TestingRunnableNodeTest_Output(SdkBindingData.ofInteger(out));
     }
   }
 }

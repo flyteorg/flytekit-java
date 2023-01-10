@@ -35,13 +35,15 @@ public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Output> {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<String> name = builder.inputOfString("name");
-    SdkBindingData<String> greeting = builder
+    SdkBindingData<String> greeting =
+        builder
             .apply(
-                    "decide",
-                    SdkConditions.when(
-                                    "when-empty", eq(name, ofString("")), GreetTask.of(ofString("World")))
-                            .otherwise("when-not-empty", GreetTask.of(name)))
-            .getOutputs().greeting();
+                "decide",
+                SdkConditions.when(
+                        "when-empty", eq(name, ofString("")), GreetTask.of(ofString("World")))
+                    .otherwise("when-not-empty", GreetTask.of(name)))
+            .getOutputs()
+            .greeting();
 
     builder.output("greeting", greeting);
   }

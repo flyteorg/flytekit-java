@@ -27,8 +27,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkDynamicWorkflowTask.class)
 public class DynamicFibonacciWorkflowTask
     extends SdkDynamicWorkflowTask<
-        DynamicFibonacciWorkflowTask.Input,
-        DynamicFibonacciWorkflowTask.Output> {
+        DynamicFibonacciWorkflowTask.Input, DynamicFibonacciWorkflowTask.Output> {
   public DynamicFibonacciWorkflowTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }

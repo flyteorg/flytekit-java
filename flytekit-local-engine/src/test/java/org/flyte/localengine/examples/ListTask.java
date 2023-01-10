@@ -19,14 +19,12 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
-
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
-public class ListTask
-    extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
+public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
   private static final long serialVersionUID = -2504538437067986693L;
 
   public ListTask() {
@@ -43,7 +41,8 @@ public class ListTask
     public abstract SdkBindingData<List<Long>> list();
 
     public static Input create(List<Long> list) {
-      return new AutoValue_ListTask_Input(SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
+      return new AutoValue_ListTask_Input(
+          SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
     }
   }
 
@@ -52,7 +51,8 @@ public class ListTask
     public abstract SdkBindingData<List<Long>> list();
 
     public static Output create(List<Long> list) {
-      return new AutoValue_ListTask_Output(SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
+      return new AutoValue_ListTask_Output(
+          SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
     }
   }
 }

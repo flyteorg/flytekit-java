@@ -18,7 +18,14 @@ package org.flyte.flytekitscala
 
 import java.time.{Duration, Instant}
 import collection.JavaConverters._
-import org.flyte.api.v1.{Literal, LiteralType, Primitive, Scalar, SimpleType, Variable}
+import org.flyte.api.v1.{
+  Literal,
+  LiteralType,
+  Primitive,
+  Scalar,
+  SimpleType,
+  Variable
+}
 import org.flyte.flytekit.SdkBindingData
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -26,12 +33,12 @@ import org.junit.Test
 class SdkScalaTypeTest {
 
   case class ScalarInput(
-                          string: SdkBindingData[String],
-                          integer: Long,
-                          float: Double,
-                          boolean: Boolean,
-                          datetime: Instant,
-                          duration: Duration
+      string: SdkBindingData[String],
+      integer: Long,
+      float: Double,
+      boolean: Boolean,
+      datetime: Instant,
+      duration: Duration
   )
 
   case class CollectionInput(

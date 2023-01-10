@@ -17,6 +17,7 @@
 package org.flyte.flytekit.testing;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -34,10 +35,10 @@ public class RemoteVoidOutputTask {
 
   @AutoValue
   public abstract static class Input {
-    public abstract String ignore();
+    public abstract SdkBindingData<String> ignore();
 
     public static Input create(String ignore) {
-      return new AutoValue_RemoteVoidOutputTask_Input(/*ignore=*/ ignore);
+      return new AutoValue_RemoteVoidOutputTask_Input(/*ignore=*/ SdkBindingData.ofString(ignore));
     }
   }
 }

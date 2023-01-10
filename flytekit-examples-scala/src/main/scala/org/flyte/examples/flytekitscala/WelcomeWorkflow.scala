@@ -47,7 +47,10 @@ import org.flyte.flytekitscala.SdkScalaType
 
 case class WelcomeWorkflowOutput(greeting: SdkBindingData[String])
 
-class WelcomeWorkflow extends SdkWorkflow[WelcomeWorkflowOutput](SdkScalaType[WelcomeWorkflowOutput]) {
+class WelcomeWorkflow
+    extends SdkWorkflow[WelcomeWorkflowOutput](
+      SdkScalaType[WelcomeWorkflowOutput]
+    ) {
 
   def expand(builder: SdkWorkflowBuilder): Unit = {
     // defines the input of the workflow

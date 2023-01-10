@@ -35,6 +35,7 @@ import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
+
 @AutoValue
 public abstract class SdkBindingData<T> {
 
@@ -86,18 +87,18 @@ public abstract class SdkBindingData<T> {
     return create(bindingData, literalType, value);
   }
 
-  public static <T> SdkBindingData<List<T>> ofCollection(List<T> collection,Function<T, SdkBindingData<T>> function) {
-    return SdkBindingData.ofBindingCollection(collection.stream().map(function).collect(Collectors.toList()));
+  public static <T> SdkBindingData<List<T>> ofCollection(
+      List<T> collection, Function<T, SdkBindingData<T>> function) {
+    return SdkBindingData.ofBindingCollection(
+        collection.stream().map(function).collect(Collectors.toList()));
   }
 
-  public static <T> SdkBindingData<Map<String, T>> ofMap(Map<String, T> map, Function<T, SdkBindingData<T>> bindingFunction) {
+  public static <T> SdkBindingData<Map<String, T>> ofMap(
+      Map<String, T> map, Function<T, SdkBindingData<T>> bindingFunction) {
     return SdkBindingData.ofBindingMap(
         map.entrySet().stream()
             .map(e -> Map.entry(e.getKey(), bindingFunction.apply(e.getValue())))
-            .collect(
-                toMap(
-                    Map.Entry::getKey,
-                    Map.Entry::getValue)));
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
   public static SdkBindingData<Map<String, Double>> ofFloatMap(Map<String, Double> map) {
@@ -123,7 +124,6 @@ public abstract class SdkBindingData<T> {
   public static SdkBindingData<Map<String, Instant>> ofDatetimeMap(Map<String, Instant> map) {
     return ofMap(map, SdkBindingData::ofDatetime);
   }
-
 
   public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {
     // TODO we can fix that by introducing "top type" into type system and

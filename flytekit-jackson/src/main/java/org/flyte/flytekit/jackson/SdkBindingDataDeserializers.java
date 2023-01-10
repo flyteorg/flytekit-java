@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.Deserializers;
-import java.util.Map;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.flytekit.SdkBindingData;
 
 class SdkBindingDataDeserializers extends Deserializers.Base {
@@ -31,7 +29,6 @@ class SdkBindingDataDeserializers extends Deserializers.Base {
   public JsonDeserializer<?> findBeanDeserializer(
       JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
     if (SdkBindingData.class.isAssignableFrom(type.getRawClass())) {
-
 
       return new SdkBindingDataDeserializer();
     }

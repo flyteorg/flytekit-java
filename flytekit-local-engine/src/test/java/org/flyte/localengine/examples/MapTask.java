@@ -19,13 +19,9 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
-import java.util.function.Function;
-
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
-
-import static java.util.stream.Collectors.toMap;
 
 @AutoService(SdkRunnableTask.class)
 public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {

@@ -118,7 +118,9 @@ object SdkScalaType {
     }
   }
 
-  implicit def sdkBindingLiteralType[T](implicit sdkLiteral: SdkScalaLiteralType[T]): SdkScalaLiteralType[SdkBindingData[T]] =
+  implicit def sdkBindingLiteralType[T](implicit
+      sdkLiteral: SdkScalaLiteralType[T]
+  ): SdkScalaLiteralType[SdkBindingData[T]] =
     SdkScalaLiteralType[SdkBindingData[T]](
       sdkLiteral.getLiteralType,
       value => sdkLiteral.toLiteral(value.get()),
@@ -131,21 +133,35 @@ object SdkScalaType {
                 val primitive = scalar.primitive()
                 primitive.kind() match {
                   case Primitive.Kind.DATETIME =>
-                    SdkBindingData.ofDatetime(instantLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofDatetime(
+                      instantLiteralType.fromLiteral(literal)
+                    )
                   case Primitive.Kind.DURATION =>
-                    SdkBindingData.ofDuration(durationLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofDuration(
+                      durationLiteralType.fromLiteral(literal)
+                    )
                   case Primitive.Kind.BOOLEAN_VALUE =>
-                    SdkBindingData.ofBoolean(booleanLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofBoolean(
+                      booleanLiteralType.fromLiteral(literal)
+                    )
                   case Primitive.Kind.FLOAT_VALUE =>
-                    SdkBindingData.ofFloat(doubleLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofFloat(
+                      doubleLiteralType.fromLiteral(literal)
+                    )
                   case Primitive.Kind.INTEGER_VALUE =>
-                    SdkBindingData.ofInteger(longLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofInteger(
+                      longLiteralType.fromLiteral(literal)
+                    )
                   case Primitive.Kind.STRING_VALUE =>
-                    SdkBindingData.ofString(stringLiteralType.fromLiteral(literal))
+                    SdkBindingData.ofString(
+                      stringLiteralType.fromLiteral(literal)
+                    )
                   case _ => throw new RuntimeException("not supported")
                 }
-              case Scalar.Kind.GENERIC => throw new RuntimeException("not supported")
-              case Scalar.Kind.BLOB => throw new RuntimeException("not supported")
+              case Scalar.Kind.GENERIC =>
+                throw new RuntimeException("not supported")
+              case Scalar.Kind.BLOB =>
+                throw new RuntimeException("not supported")
 
             }
           case Literal.Kind.MAP =>

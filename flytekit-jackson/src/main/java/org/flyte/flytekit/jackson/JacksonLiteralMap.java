@@ -33,6 +33,7 @@ class JacksonLiteralMap {
   public Map<String, Literal> getLiteralMap() {
     return value;
   }
+
   public Map<String, LiteralType> getLiteralTypeMap() {
     return type;
   }

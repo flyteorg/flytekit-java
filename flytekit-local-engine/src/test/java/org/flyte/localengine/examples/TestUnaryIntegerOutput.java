@@ -17,6 +17,7 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.value.AutoValue;
+import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -24,8 +25,6 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-
-import java.util.Map;
 
 @AutoValue
 public abstract class TestUnaryIntegerOutput {
@@ -42,7 +41,8 @@ public abstract class TestUnaryIntegerOutput {
 
     @Override
     public Map<String, Literal> toLiteralMap(TestUnaryIntegerOutput value) {
-      return Map.of(VAR, Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value.o().get()))));
+      return Map.of(
+          VAR, Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value.o().get()))));
     }
 
     @Override

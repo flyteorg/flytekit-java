@@ -25,11 +25,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkWorkflow.class)
 public class OuterSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
 
-    public OuterSubWorkflow() {
-        super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
-    }
+  public OuterSubWorkflow() {
+    super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> a = builder.inputOfInteger("a");
     SdkBindingData<Long> b = builder.inputOfInteger("b");
@@ -37,11 +37,13 @@ public class OuterSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
     SdkBindingData<Long> ab =
         builder
             .apply("outer-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
-            .getOutputs().o();
+            .getOutputs()
+            .o();
     SdkBindingData<Long> res =
         builder
             .apply("outer-sum-ab-c", new InnerSubWorkflow().withInput("a", ab).withInput("b", c))
-            .getOutputs().o();
+            .getOutputs()
+            .o();
     builder.output("o", res);
   }
 }

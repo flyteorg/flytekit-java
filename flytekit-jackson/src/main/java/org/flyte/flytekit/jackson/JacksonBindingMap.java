@@ -16,9 +16,8 @@
  */
 package org.flyte.flytekit.jackson;
 
-import org.flyte.flytekit.SdkBindingData;
-
 import java.util.Map;
+import org.flyte.flytekit.SdkBindingData;
 
 /** Class used to register custom serializer for maps. */
 class JacksonBindingMap {

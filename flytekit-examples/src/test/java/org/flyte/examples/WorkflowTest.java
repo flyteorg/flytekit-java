@@ -36,7 +36,7 @@ public class WorkflowTest {
             .withFixedInput("d", 4)
             .execute();
 
-    assertEquals(10L, result.getIntegerOutput("total"));
+    assertEquals(10L, result.getIntegerOutput("result"));
   }
 
   @Test
@@ -55,7 +55,7 @@ public class WorkflowTest {
                 new SumTask(), SumTask.SumInput.create(0L, 4L), SumTask.SumOutput.create(42L))
             .execute();
 
-    assertEquals(42L, result.getIntegerOutput("total"));
+    assertEquals(42L, result.getIntegerOutput("result"));
   }
 
   @Test
@@ -83,7 +83,7 @@ public class WorkflowTest {
             .withTaskOutput(new SumTask(), SumInput.create(10L, 4L), SumOutput.create(15L))
             .execute();
 
-    assertEquals(15L, result.getIntegerOutput("total"));
+    assertEquals(15L, result.getIntegerOutput("result"));
   }
 
   @Test

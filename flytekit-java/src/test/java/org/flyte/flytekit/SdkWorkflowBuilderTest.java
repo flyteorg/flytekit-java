@@ -442,8 +442,7 @@ class SdkWorkflowBuilderTest {
                     .build()))
         .outputs(
             singletonMap(
-                "o",
-                Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
+                "o", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .build();
   }
 
@@ -470,7 +469,8 @@ class SdkWorkflowBuilderTest {
       SdkBindingData<Long> out =
           builder
               .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
-              .getOutputs().o();
+              .getOutputs()
+              .o();
 
       builder.output("o", out);
     }
@@ -487,12 +487,13 @@ class SdkWorkflowBuilderTest {
       SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData<Long> two = literalOfInteger(2L);
 
-      SdkNode<TestUnaryIntegerOutput> out = builder.apply(
+      SdkNode<TestUnaryIntegerOutput> out =
+          builder.apply(
               "square",
               SdkConditions.when(
-                      "neq",
-                      SdkConditions.neq(in, two),
-                      new MultiplicationTask().withInput("a", in).withInput("b", two)));
+                  "neq",
+                  SdkConditions.neq(in, two),
+                  new MultiplicationTask().withInput("a", in).withInput("b", two)));
 
       builder.output("o", out.getOutputs().o());
     }
@@ -523,7 +524,8 @@ class SdkWorkflowBuilderTest {
       SdkBindingData<Long> a = builder.inputOfInteger("a");
       SdkBindingData<Long> b = builder.inputOfInteger("b");
 
-      SdkNode<TestUnaryIntegerOutput> multiply = builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
+      SdkNode<TestUnaryIntegerOutput> multiply =
+          builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
       builder.output("c", multiply.getOutputs().o());
     }

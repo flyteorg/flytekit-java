@@ -26,11 +26,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkWorkflow.class)
 public class WelcomeWorkflow extends SdkWorkflow<AddQuestionTask.Output> {
 
-    public WelcomeWorkflow() {
-        super(JacksonSdkType.of(AddQuestionTask.Output.class));
-    }
+  public WelcomeWorkflow() {
+    super(JacksonSdkType.of(AddQuestionTask.Output.class));
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     // defines the input of the workflow
     SdkBindingData<String> name = builder.inputOfString("name", "The name for the welcome message");

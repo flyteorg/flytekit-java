@@ -20,16 +20,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Blob;
-import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.Struct;
 import org.flyte.flytekit.SdkBindingData;
 
 class SdkBindingDataSerializer extends StdSerializer<SdkBindingData<?>> {
@@ -40,7 +30,8 @@ class SdkBindingDataSerializer extends StdSerializer<SdkBindingData<?>> {
   }
 
   @Override
-  public void serialize(SdkBindingData<?> sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
+  public void serialize(
+      SdkBindingData<?> sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
     gen.writeObject(sdkBindingData.get());
   }

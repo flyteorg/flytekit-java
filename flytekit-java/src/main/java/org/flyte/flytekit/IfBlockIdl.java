@@ -75,7 +75,8 @@ class IfBlockIdl {
         .build();
   }
 
-  private static Operand toOperand(Map<String, Binding> extraInputs, SdkBindingData<?> bindingData) {
+  private static Operand toOperand(
+      Map<String, Binding> extraInputs, SdkBindingData<?> bindingData) {
     BindingData idl = bindingData.idl();
 
     // always allocate a new var name to make vars more predictable and easier to follow

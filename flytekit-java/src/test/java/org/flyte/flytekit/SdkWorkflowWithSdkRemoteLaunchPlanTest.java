@@ -117,7 +117,8 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
       SdkBindingData<Long> a = builder.inputOfInteger("a");
       SdkBindingData<Long> b = builder.inputOfInteger("b");
 
-      SdkNode<TestUnaryBooleanOutput> node1 = builder.apply(
+      SdkNode<TestUnaryBooleanOutput> node1 =
+          builder.apply(
               "some-node-id", new TestSdkRemoteLaunchPlan().withInput("a", a).withInput("b", b));
 
       builder.output("o", node1.getOutputs().o());

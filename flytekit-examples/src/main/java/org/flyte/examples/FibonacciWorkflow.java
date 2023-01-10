@@ -27,11 +27,11 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 @AutoService(SdkWorkflow.class)
 public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
 
-    public FibonacciWorkflow() {
-        super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
-    }
+  public FibonacciWorkflow() {
+    super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
+  }
 
-    @Override
+  @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
@@ -46,12 +46,12 @@ public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
     builder.output("fib5", fib5, "Value for Fib5");
   }
 
-    @AutoValue
-    public abstract static class Output {
-        public abstract SdkBindingData<Long> fib5();
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<Long> fib5();
 
-        public static FibonacciWorkflow.Output create(Long fib5) {
-            return new AutoValue_FibonacciWorkflow_Output(SdkBindingData.ofInteger(fib5));
-        }
+    public static FibonacciWorkflow.Output create(Long fib5) {
+      return new AutoValue_FibonacciWorkflow_Output(SdkBindingData.ofInteger(fib5));
     }
+  }
 }

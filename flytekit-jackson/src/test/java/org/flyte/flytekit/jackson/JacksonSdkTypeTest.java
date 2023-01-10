@@ -19,7 +19,6 @@ package org.flyte.flytekit.jackson;
 import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,7 +28,6 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +42,13 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkStruct;
 import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
 
+  @SuppressWarnings("UnusedVariable")
   static final BlobType BLOB_TYPE =
       BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
 
@@ -200,7 +198,7 @@ public class JacksonSdkTypeTest {
     StructInput input =
         StructInput.create(
             null
-            //StructValueInput.create(
+            // StructValueInput.create(
             //    /* stringValue= */ "nested-string",
             //    /* boolValue= */ false,
             //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
@@ -211,7 +209,7 @@ public class JacksonSdkTypeTest {
             //        /* structValue= */ null,
             //        /* numberValue= */ 42.0),
             //    /* numberValue= */ 42.0)
-        );
+            );
 
     SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
     Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
@@ -380,11 +378,7 @@ public class JacksonSdkTypeTest {
         StructValueInput structValue,
         Double numberValue) {
       return new AutoValue_JacksonSdkTypeTest_StructValueInput(
-          stringValue,
-          boolValue,
-          listValue,
-          structValue,
-          numberValue);
+          stringValue, boolValue, listValue, structValue, numberValue);
     }
   }
 
@@ -478,6 +472,7 @@ public class JacksonSdkTypeTest {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
 
+  @SuppressWarnings({"unused"})
   private static Literal literalOf(Blob blob) {
     return Literal.ofScalar(Scalar.ofBlob(blob));
   }

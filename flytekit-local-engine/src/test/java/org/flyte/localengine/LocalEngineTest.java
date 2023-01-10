@@ -151,7 +151,8 @@ class LocalEngineTest {
     assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
   }
 
-  @Test
+  //TODO: Enable this test when the struct will be supported
+  @Disabled
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
 

@@ -29,10 +29,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
@@ -154,7 +152,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
       ObjectMapper mapper = new ObjectMapper()
-              .registerModule(new SdkTypeModule(new SdkBindingDataDeserializers2(bindingMap)))
+              .registerModule(new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap)))
               .registerModule(new JavaTimeModule())
               .registerModule(new ParameterNamesModule())
               .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

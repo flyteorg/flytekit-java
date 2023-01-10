@@ -26,12 +26,12 @@ import org.flyte.flytekit.SdkBindingData;
 import java.io.IOException;
 import java.util.Map;
 
-class SdkBindingDataDeserializer2 extends StdDeserializer<SdkBindingData<?>> {
+class CustomSdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   private static final long serialVersionUID = -4955760538022844107L;
 
   private final Map<String, SdkBindingData<?>> bindingsMap;
 
-  public SdkBindingDataDeserializer2(Map<String, SdkBindingData<?>> bindingsMap) {
+  public CustomSdkBindingDataDeserializer(Map<String, SdkBindingData<?>> bindingsMap) {
     super(SdkBindingData.class);
     this.bindingsMap = bindingsMap;
   }

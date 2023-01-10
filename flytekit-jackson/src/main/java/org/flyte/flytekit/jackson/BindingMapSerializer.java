@@ -9,14 +9,14 @@ import java.io.IOException;
 import java.util.Map;
 
 public class BindingMapSerializer extends JsonSerializer<JacksonBindingMap> {
-    @Override
-    public void serialize(JacksonBindingMap value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeStartObject();
-        for (Map.Entry<String, SdkBindingData<?>> entry : value.getBindingsMap().entrySet()) {
-            String attr = entry.getKey();
-            gen.writeFieldName(attr);
-            gen.writeString(attr);
-        }
-        gen.writeEndObject();
+  @Override
+  public void serialize(JacksonBindingMap value, JsonGenerator gen, SerializerProvider serializers)
+      throws IOException {
+    gen.writeStartObject();
+    for (Map.Entry<String, SdkBindingData<?>> entry : value.getBindingsMap().entrySet()) {
+      gen.writeFieldName(entry.getKey());
+      gen.writeString("");
     }
+    gen.writeEndObject();
+  }
 }

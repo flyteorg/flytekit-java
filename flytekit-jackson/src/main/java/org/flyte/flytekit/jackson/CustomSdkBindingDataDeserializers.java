@@ -26,10 +26,10 @@ import org.flyte.flytekit.SdkBindingData;
 import java.util.Map;
 
 //TODO find a better name
-class SdkBindingDataDeserializers2 extends Deserializers.Base {
+class CustomSdkBindingDataDeserializers extends Deserializers.Base {
   private final Map<String, SdkBindingData<?>> bindingsMap;
 
-  SdkBindingDataDeserializers2(Map<String, SdkBindingData<?>> bindingsMap) {
+  CustomSdkBindingDataDeserializers(Map<String, SdkBindingData<?>> bindingsMap) {
     this.bindingsMap = bindingsMap;
   }
 
@@ -37,9 +37,7 @@ class SdkBindingDataDeserializers2 extends Deserializers.Base {
   public JsonDeserializer<?> findBeanDeserializer(
       JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
     if (SdkBindingData.class.isAssignableFrom(type.getRawClass())) {
-
-
-      return new SdkBindingDataDeserializer2(bindingsMap);
+      return new CustomSdkBindingDataDeserializer(bindingsMap);
     }
 
     return null;

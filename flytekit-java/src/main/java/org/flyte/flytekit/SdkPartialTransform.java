@@ -104,8 +104,9 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
 
     return new SdkPartialTransform<>(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
   }
-  
-  SdkTransform withNameOverrideIfNotSet(String name) {
+
+  @Override
+  SdkTransform<T> withNameOverrideIfNotSet(String name) {
     if (metadata != null && metadata.name() != null) {
       return this;
     }

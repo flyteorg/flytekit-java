@@ -62,11 +62,6 @@ public class SdkWorkflowBuilder {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public <T> SdkNode<T> apply(
-      String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
-    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs);
-  }
-
   public <T> SdkNode<T> apply(String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
@@ -83,7 +78,6 @@ public class SdkWorkflowBuilder {
       String nodeId,
       SdkTransform<T> transform,
       List<String> upstreamNodeIds,
-      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
 
     String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);

@@ -117,7 +117,7 @@ class SdkWorkflowBuilderTest {
                         .var_("a")
                         .binding(
                             BindingData.ofOutputReference(
-                                OutputReference.builder().var("c").nodeId("foo-n0").build()))
+                                OutputReference.builder().var("o").nodeId("foo-n0").build()))
                         .build(),
                     Binding.builder()
                         .var_("b")
@@ -494,9 +494,9 @@ class SdkWorkflowBuilderTest {
             .build());
   }
 
-  private static class Times2Workflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+  private static class Times4Workflow extends SdkWorkflow<TestUnaryIntegerOutput> {
 
-    private Times2Workflow() {
+    protected Times4Workflow() {
       super(new TestUnaryIntegerOutput.SdkType());
     }
 
@@ -504,31 +504,14 @@ class SdkWorkflowBuilderTest {
     public void expand(SdkWorkflowBuilder builder) {
       SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
       SdkBindingData<Long> two = literalOfInteger(2L);
-      SdkBindingData<Long> out =
-          builder
-              .apply("square", new MultiplicationTask().withInput("a", in).withInput("b", two))
-              .getOutputs()
-              .o();
-
-      builder.output("o", out);
-  }
-
-  private static class Times4Workflow extends SdkWorkflow {
-
-    @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData<Long> two = literalOfInteger(2L);
       SdkBindingData<Long> out1 =
           builder
-              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two))
-              .getOutputs.o();
-      SdkBindingData out2 =
+              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two)).getOutputs().o();
+      SdkBindingData<Long> out2 =
           builder
-              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two))
-              .getOutputs.o();
+              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two)).getOutputs().o();
 
-      builder.output("out", out2);
+      builder.output("o", out2);
     }
   }
 

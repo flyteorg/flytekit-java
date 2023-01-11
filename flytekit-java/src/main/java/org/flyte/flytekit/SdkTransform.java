@@ -85,7 +85,7 @@ public abstract class SdkTransform<T> {
     return SdkPartialTransform.of(this, metadata);
   }
 
-  SdkTransform withNameOverrideIfNotSet(String name) {
+  SdkTransform<T> withNameOverrideIfNotSet(String name) {
     return withNameOverride(name);
   }
 

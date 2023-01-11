@@ -32,10 +32,6 @@ public abstract class SdkWorkflow<OutputT> extends SdkTransform<OutputT> {
     this.outputType = outputType;
   }
 
-  public String getName() {
-    return getClass().getName();
-  }
-
   public abstract void expand(SdkWorkflowBuilder builder);
 
   @Override

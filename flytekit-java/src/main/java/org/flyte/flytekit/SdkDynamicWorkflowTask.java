@@ -36,10 +36,6 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
     return "dynamic";
   }
 
-  public String getName() {
-    return getClass().getName();
-  }
-
   public SdkType<InputT> getInputType() {
     return inputType;
   }

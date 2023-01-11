@@ -68,6 +68,11 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
   }
 
   @Override
+  public String getName() {
+    return name();
+  }
+
+  @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,

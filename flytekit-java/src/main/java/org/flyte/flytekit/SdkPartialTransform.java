@@ -112,7 +112,7 @@ class SdkPartialTransform<T> extends SdkTransform<T> {
     }
     return withNameOverride(name);
   }
-  
+
   @Override
   public SdkTransform<T> withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");

@@ -506,10 +506,14 @@ class SdkWorkflowBuilderTest {
       SdkBindingData<Long> two = literalOfInteger(2L);
       SdkBindingData<Long> out1 =
           builder
-              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two)).getOutputs().o();
+              .apply(new MultiplicationTask().withInput("a", in).withInput("b", two))
+              .getOutputs()
+              .o();
       SdkBindingData<Long> out2 =
           builder
-              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two)).getOutputs().o();
+              .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two))
+              .getOutputs()
+              .o();
 
       builder.output("o", out2);
     }

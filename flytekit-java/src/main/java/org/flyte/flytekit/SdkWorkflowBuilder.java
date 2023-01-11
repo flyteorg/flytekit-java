@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -62,7 +61,8 @@ public class SdkWorkflowBuilder {
     return apply(nodeId, transform, emptyMap());
   }
 
-  public <T> SdkNode<T> apply(String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
+  public <T> SdkNode<T> apply(
+      String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
@@ -100,7 +100,7 @@ public class SdkWorkflowBuilder {
         transform
             .withNameOverrideIfNotSet(fallbackNodeName)
             .apply(this, actualNodeId, upstreamNodeIds, null, inputs);
-            
+
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;

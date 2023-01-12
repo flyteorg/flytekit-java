@@ -28,6 +28,7 @@ import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.TypedInterface;
@@ -47,6 +48,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
     Node expectedNode =
         Node.builder()
             .id("some-node-id")
+            .metadata(NodeMetadata.builder().name("some-node-id").build())
             .workflowNode(
                 WorkflowNode.builder()
                     .reference(

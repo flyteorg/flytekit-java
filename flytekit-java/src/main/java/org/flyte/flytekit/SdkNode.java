@@ -64,7 +64,6 @@ public abstract class SdkNode<OutputT> {
             ? Collections.singletonList(getNodeId())
             : Collections.emptyList();
 
-    return builder.applyInternal(
-        id, transform, upstreamNodeIds, /*metadata=*/ null, getOutputBindings());
+    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputBindings());
   }
 }

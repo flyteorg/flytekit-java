@@ -22,8 +22,14 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
 import org.slf4j.Logger;
@@ -32,38 +38,62 @@ import org.slf4j.LoggerFactory;
 class PackageLoader {
   private static final Logger LOG = LoggerFactory.getLogger(PackageLoader.class);
 
-  static ClassLoader load(Map<String, FileSystem> fileSystems, TaskTemplate taskTemplate) {
+  static ClassLoader load(
+      Map<String, FileSystem> fileSystems,
+      TaskTemplate taskTemplate,
+      ExecutorService executorService) {
     JFlyteCustom custom = JFlyteCustom.deserializeFromStruct(taskTemplate.custom());
 
-    return loadPackage(fileSystems, custom.artifacts());
+    return loadPackage(fileSystems, custom.artifacts(), executorService);
   }
 
   private static ClassLoader loadPackage(
-      Map<String, FileSystem> fileSystems, List<Artifact> artifacts) {
+      Map<String, FileSystem> fileSystems,
+      List<Artifact> artifacts,
+      ExecutorService executorService) {
+    Path tmp = createTempDirectory();
+
+    List<CompletionStage<Void>> stages =
+        artifacts.stream()
+            .filter(distinct())
+            .map(artifact -> handleArtifact(fileSystems, artifact, tmp, executorService))
+            .collect(Collectors.toList());
+    CompletableFutures.getAll(stages);
+
+    return ClassLoaders.forDirectory(tmp.toFile());
+  }
+
+  private static Path createTempDirectory() {
     try {
-      Path tmp = Files.createTempDirectory("tasks");
+      return Files.createTempDirectory("tasks");
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
 
-      // TODO do in parallel
+  private static Predicate<Artifact> distinct() {
+    Map<String, Boolean> seen = new HashMap<>();
+    return artifact -> seen.putIfAbsent(artifact.name(), Boolean.TRUE) == null;
+  }
 
-      for (Artifact artifact : artifacts) {
-        FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
+  private static CompletableFuture<Void> handleArtifact(
+      Map<String, FileSystem> fileSystems,
+      Artifact artifact,
+      Path tmp,
+      ExecutorService executorService) {
+    return CompletableFuture.runAsync(
+        () -> handleArtifact(fileSystems, artifact, tmp), executorService);
+  }
 
-        try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
-          Path path = tmp.resolve(artifact.name());
+  private static void handleArtifact(
+      Map<String, FileSystem> fileSystems, Artifact artifact, Path tmp) {
+    Path path = tmp.resolve(artifact.name());
+    FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
-          if (path.toFile().exists()) {
-            // file already exists, but we have checksums, so we should be ok
-            LOG.warn("Duplicate entry in artifacts: [{}]", artifact);
-            continue;
-          }
+    try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
+      LOG.info("Copied {} to {}", artifact.location(), path);
 
-          LOG.info("Copied {} to {}", artifact.location(), path);
-
-          Files.copy(Channels.newInputStream(reader), path);
-        }
-      }
-
-      return ClassLoaders.forDirectory(tmp.toFile());
+      Files.copy(Channels.newInputStream(reader), path);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

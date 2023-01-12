@@ -215,7 +215,7 @@ public class JacksonSdkTypeTest {
     assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
   }
 
-  @Test
+  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
   public void testConverterToLiteralMap() {
     InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
     Map<String, Literal> expected = new HashMap<>();
@@ -311,7 +311,31 @@ public class JacksonSdkTypeTest {
             "No serializer found for class org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated and no properties discovered to create BeanSerializer"));
   }
 
+  @Test
+  void rejectDeprecatedAutoValueInput() {
+
+    UnsupportedOperationException e =
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> JacksonSdkType.of(AutoValueDeprecatedInput.class));
+
+    assertThat(
+        e.getMessage(),
+        equalTo(
+            "Field 'i' from class 'org.flyte.flytekit.jackson.JacksonSdkTypeTest$AutoValueDeprecatedInput'"
+                + " is declared as 'long' and it is not matching any of the supported types. Please make sure your variable declared type is wrapped in 'SdkBindingData<>'."));
+  }
+
   public static class Unannotated {}
+
+  @AutoValue
+  public abstract static class AutoValueDeprecatedInput {
+    public abstract long i();
+
+    public static AutoValueDeprecatedInput create(long i) {
+      return new AutoValue_JacksonSdkTypeTest_AutoValueDeprecatedInput(i);
+    }
+  }
 
   @AutoValue
   public abstract static class AutoValueInput {

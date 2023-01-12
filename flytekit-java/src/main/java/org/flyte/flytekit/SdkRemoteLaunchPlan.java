@@ -65,6 +65,11 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
   }
 
   @Override
+  public String getName() {
+    return name();
+  }
+
+  @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,

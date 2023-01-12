@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -38,8 +38,14 @@ public class SdkWorkflowBuilder {
   private final Map<String, SdkBindingData<?>> outputs;
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
+  private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
   public SdkWorkflowBuilder() {
+    this(new SdkNodeNamePolicy());
+  }
+
+  // VisibleForTesting
+  SdkWorkflowBuilder(SdkNodeNamePolicy sdkNodeNamePolicy) {
     // Using LinkedHashMap to preserve declaration order
     this.nodes = new LinkedHashMap<>();
     this.inputs = new LinkedHashMap<>();
@@ -47,6 +53,8 @@ public class SdkWorkflowBuilder {
 
     this.inputDescriptions = new HashMap<>();
     this.outputDescriptions = new HashMap<>();
+
+    this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
 
   public <T> SdkNode<T> apply(String nodeId, SdkTransform<T> transform) {
@@ -55,27 +63,44 @@ public class SdkWorkflowBuilder {
 
   public <T> SdkNode<T> apply(
       String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
-    return applyInternal(nodeId, transform, emptyList(), /*metadata=*/ null, inputs);
+    return applyInternal(nodeId, transform, emptyList(), inputs);
+  }
+
+  public <T> SdkNode<T> apply(SdkTransform<T> transform) {
+    return apply(/*nodeId=*/ null, transform, emptyMap());
+  }
+
+  public <T> SdkNode<T> apply(SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
+    return applyInternal(/*nodeId=*/ null, transform, emptyList(), inputs);
   }
 
   protected <T> SdkNode<T> applyInternal(
       String nodeId,
       SdkTransform<T> transform,
       List<String> upstreamNodeIds,
-      @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
 
-    if (nodes.containsKey(nodeId)) {
+    String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);
+
+    if (nodes.containsKey(actualNodeId)) {
       CompilerError error =
           CompilerError.create(
               CompilerError.Kind.DUPLICATE_NODE_ID,
-              nodeId,
+              actualNodeId,
               "Trying to insert two nodes with the same id.");
 
       throw new CompilerException(error);
     }
 
-    SdkNode<T> sdkNode = transform.apply(this, nodeId, upstreamNodeIds, metadata, inputs);
+    String fallbackNodeName =
+        Objects.requireNonNullElseGet(
+            nodeId, () -> sdkNodeNamePolicy.toNodeName(transform.getName()));
+
+    SdkNode<T> sdkNode =
+        transform
+            .withNameOverrideIfNotSet(fallbackNodeName)
+            .apply(this, actualNodeId, upstreamNodeIds, null, inputs);
+
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;

@@ -66,13 +66,6 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
-    if (metadata != null) {
-      throw new IllegalArgumentException("invariant failed: metadata must be null");
-    }
-    if (!inputs.isEmpty()) {
-      throw new IllegalArgumentException("invariant failed: inputs must be empty");
-    }
-
     SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder, outputType);
 
     for (SdkConditionCase<OutputT> case_ : cases) {

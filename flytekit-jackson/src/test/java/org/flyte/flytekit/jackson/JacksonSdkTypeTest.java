@@ -223,7 +223,7 @@ public class JacksonSdkTypeTest {
     expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
 
     Map<String, Literal> literalMap =
-         JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
+        JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
 
     assertThat(literalMap, equalTo(expected));
   }
@@ -315,7 +315,9 @@ public class JacksonSdkTypeTest {
   void rejectDeprecatedAutoValueInput() {
 
     UnsupportedOperationException e =
-        assertThrows(UnsupportedOperationException.class, () -> JacksonSdkType.of(AutoValueDeprecatedInput.class));
+        assertThrows(
+            UnsupportedOperationException.class,
+            () -> JacksonSdkType.of(AutoValueDeprecatedInput.class));
 
     assertThat(
         e.getMessage(),
@@ -326,13 +328,11 @@ public class JacksonSdkTypeTest {
 
   public static class Unannotated {}
 
-
   @AutoValue
   public abstract static class AutoValueDeprecatedInput {
     public abstract long i();
 
-    public static AutoValueDeprecatedInput create(
-        long i) {
+    public static AutoValueDeprecatedInput create(long i) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueDeprecatedInput(i);
     }
   }

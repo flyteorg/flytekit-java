@@ -163,7 +163,8 @@ public class FibonacciWorkflowTest {
     public abstract SdkBindingData<Long> fib1();
 
     public static FibonacciWorkflowInputs create(long fib0, long fib1) {
-      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(SdkBindingData.ofInteger(fib0), SdkBindingData.ofInteger(fib1));
+      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(
+          SdkBindingData.ofInteger(fib0), SdkBindingData.ofInteger(fib1));
     }
   }
 

@@ -453,7 +453,8 @@ public class SdkTestingExecutorTest {
     abstract SdkBindingData<Long> in();
 
     public static SimpleSubWorkflowInput create(long in) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(SdkBindingData.ofInteger(in));
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(
+          SdkBindingData.ofInteger(in));
     }
   }
 

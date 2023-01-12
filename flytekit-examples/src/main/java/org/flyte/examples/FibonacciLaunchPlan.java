@@ -18,6 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkLaunchPlan;
 import org.flyte.flytekit.SdkLaunchPlanRegistry;
 import org.flyte.flytekit.SimpleSdkLaunchPlanRegistry;
@@ -53,12 +54,13 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
 
   @AutoValue
   abstract static class Input {
-    abstract long fib0();
+    abstract SdkBindingData<Long> fib0();
 
-    abstract long fib1();
+    abstract SdkBindingData<Long> fib1();
 
     public static Input create(long fib0, long fib1) {
-      return new AutoValue_FibonacciLaunchPlan_Input(fib0, fib1);
+      return new AutoValue_FibonacciLaunchPlan_Input(
+          SdkBindingData.ofInteger(fib0), SdkBindingData.ofInteger(fib1));
     }
   }
 }

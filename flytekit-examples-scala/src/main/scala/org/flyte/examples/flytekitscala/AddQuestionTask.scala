@@ -44,7 +44,7 @@ class AddQuestionTask
     */
   override def run(input: AddQuestionTaskInput): AddQuestionTaskOutput =
     AddQuestionTaskOutput(
-      SdkBindingData.ofString(s"${input.greeting} How are you?")
+      SdkBindingData.ofString(s"${input.greeting.get} How are you?")
     )
 }
 

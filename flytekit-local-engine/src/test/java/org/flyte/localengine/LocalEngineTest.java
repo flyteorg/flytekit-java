@@ -60,7 +60,6 @@ import org.flyte.localengine.examples.MapWorkflow;
 import org.flyte.localengine.examples.NestedSubWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
-import org.flyte.localengine.examples.StructWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -152,7 +151,7 @@ class LocalEngineTest {
   }
 
   // TODO: Enable this test when the struct will be supported
-  @Disabled
+  /*@Disabled
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
 
@@ -187,7 +186,7 @@ class LocalEngineTest {
                         "someKey1", Struct.Value.ofStringValue("some_value_1-output"),
                         "someKey2", Struct.Value.ofBoolValue(true)))));
     assertEquals(expectedOutput, outputs.get("outputStructData"));
-  }
+  }*/
 
   @Test
   public void testRetryableTask_completed() {

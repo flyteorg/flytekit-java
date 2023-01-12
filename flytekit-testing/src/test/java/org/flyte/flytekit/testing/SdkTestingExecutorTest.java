@@ -450,10 +450,10 @@ public class SdkTestingExecutorTest {
 
   @AutoValue
   abstract static class SimpleSubWorkflowInput {
-    abstract long in();
+    abstract SdkBindingData<Long> in();
 
     public static SimpleSubWorkflowInput create(long in) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(SdkBindingData.ofInteger(in));
     }
   }
 

@@ -39,7 +39,7 @@ public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Vo
   /** Input for {@link PrintMessageTask}. */
   @AutoValue
   public abstract static class Input {
-    public abstract String message();
+    public abstract SdkBindingData<String> message();
   }
 
   @Override

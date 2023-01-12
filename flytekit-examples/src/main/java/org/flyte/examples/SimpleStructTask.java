@@ -24,7 +24,10 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
+
+//TODO: Enable when Structs are supported
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
+/*
 @AutoService(SdkRunnableTask.class)
 public class SimpleStructTask
     extends SdkRunnableTask<SimpleStructTask.Input, SimpleStructTask.Output> {
@@ -55,3 +58,4 @@ public class SimpleStructTask
     return Output.create(input.in());
   }
 }
+*/

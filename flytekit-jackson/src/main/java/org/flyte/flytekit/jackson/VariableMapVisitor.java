@@ -66,7 +66,10 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   @Override
   public void property(BeanProperty prop) {
     JavaType handledType = getHandledType(prop);
-    LiteralType literalType = toLiteralType(handledType);
+    LiteralType literalType = toLiteralType(handledType,
+        /*rootLevel=*/ true,
+        prop.getName(),
+        prop.getMember().getMember().getDeclaringClass().getName());
     Variable variable = Variable.builder().description("").literalType(literalType).build();
 
     builder.put(prop.getName(), variable);
@@ -102,11 +105,15 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     return unmodifiableMap(new HashMap<>(builder));
   }
 
-  private LiteralType toLiteralType(JavaType javaType) {
+  private LiteralType toLiteralType(JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {
     Class<?> type = javaType.getRawClass();
 
+    if(rootLevel && !SdkBindingData.class.isAssignableFrom(type))
+      throw new UnsupportedOperationException(String.format("Field '%s' from class '%s' is declared as '%s' and it is not matching any of the supported types. "
+          + "Please make sure your variable declared type is wrapped in 'SdkBindingData<>'.", propName, declaringClassName, type));
+
     if (SdkBindingData.class.isAssignableFrom(type)) {
-      return toLiteralType(javaType.getBindings().getBoundType(0));
+      return toLiteralType(javaType.getBindings().getBoundType(0), false, propName, declaringClassName);
     } else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
@@ -122,7 +129,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     } else if (List.class.isAssignableFrom(type)) {
       JavaType elementType = javaType.getBindings().getBoundType(0);
 
-      return LiteralType.ofCollectionType(toLiteralType(elementType));
+      return LiteralType.ofCollectionType(toLiteralType(elementType, false, propName, declaringClassName));
     } else if (Map.class.isAssignableFrom(type)) {
       JavaType keyType = javaType.getBindings().getBoundType(0);
       JavaType valueType = javaType.getBindings().getBoundType(1);
@@ -132,7 +139,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             "Only Map<String, ?> is supported, got [" + javaType.getGenericSignature() + "]");
       }
 
-      return LiteralType.ofMapValueType(toLiteralType(valueType));
+      return LiteralType.ofMapValueType(toLiteralType(valueType, false, propName, declaringClassName));
     } else if (Blob.class.isAssignableFrom(type)) {
       // TODO add annotation to specify dimensionality and format
       BlobType blobType =

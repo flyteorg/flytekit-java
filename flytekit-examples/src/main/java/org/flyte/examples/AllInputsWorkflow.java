@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
@@ -40,6 +41,9 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
   @Override
   public void expand(SdkWorkflowBuilder builder) {
 
+    Calendar cal = Calendar.getInstance();
+    cal.set(2023, Calendar.JANUARY, 16);
+
     SdkNode<AutoAllInputsOutput> apply =
         builder.apply(
             "all-inputs",
@@ -48,7 +52,7 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
                 SdkBindingData.ofFloat(2),
                 SdkBindingData.ofString("test"),
                 SdkBindingData.ofBoolean(true),
-                SdkBindingData.ofDatetime(Instant.EPOCH),
+                SdkBindingData.ofDatetime(cal.toInstant()),
                 SdkBindingData.ofDuration(Duration.ofDays(1L)),
                 SdkBindingData.ofCollection(Arrays.asList("foo", "bar"), SdkBindingData::ofString),
                 SdkBindingData.ofMap(Map.of("test", "test"), SdkBindingData::ofString)));

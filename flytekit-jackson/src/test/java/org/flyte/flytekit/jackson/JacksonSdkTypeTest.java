@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -42,7 +43,6 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -307,25 +307,26 @@ public class JacksonSdkTypeTest {
 
   @Disabled("Not supported struct with the strongly types implementation.")
   public void testStructRoundtrip() {
-    StructInput input =
-        StructInput.create(
-            null
-            // StructValueInput.create(
-            //    /* stringValue= */ "nested-string",
-            //    /* boolValue= */ false,
-            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //    /* structValue= */ StructValueInput.create(
-            //        /* stringValue= */ "nested-string",
-            //        /* boolValue= */ false,
-            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //        /* structValue= */ null,
-            //        /* numberValue= */ 42.0),
-            //    /* numberValue= */ 42.0)
-            );
-
-    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
-    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
-    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
+    fail();
+    //    StructInput input =
+    //        StructInput.create(
+    //            null
+    //            // StructValueInput.create(
+    //            //    /* stringValue= */ "nested-string",
+    //            //    /* boolValue= */ false,
+    //            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
+    //            //    /* structValue= */ StructValueInput.create(
+    //            //        /* stringValue= */ "nested-string",
+    //            //        /* boolValue= */ false,
+    //            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
+    //            //        /* structValue= */ null,
+    //            //        /* numberValue= */ 42.0),
+    //            //    /* numberValue= */ 42.0)
+    //            );
+    //
+    //    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
+    //    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
+    //    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
   }
 
   @Disabled("Not supported customType & customEnum with the strongly types implementation.")

@@ -73,9 +73,9 @@ public class JacksonSdkTypeTest {
                 SdkBindingData.ofDatetime(t),
                 SdkBindingData.ofDuration(d),
                 SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-                (m == null) ? null : SdkBindingData.ofStringMap(m),
+                SdkBindingData.ofStringMap(m),
                 SdkBindingData.ofCollection(ll, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
-                (ml == null) ? null : SdkBindingData.ofMap(ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString))
+                SdkBindingData.ofMap(ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString))
         );
     }
 
@@ -112,17 +112,17 @@ public class JacksonSdkTypeTest {
         literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
         literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
         literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-        // literalMap.put("blob", literalOf(blob));
+//      literalMap.put("blob", literalOf(blob));
         literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
-        // literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
+        literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
         literalMap.put("ll", Literal.ofCollection(
                 List.of(
                         Literal.ofCollection(List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
                         Literal.ofCollection(List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c"))))
         ));
-/*    literalMap.put("ml", Literal.ofMap(
+        literalMap.put("ml", Literal.ofMap(
             Map.of("frodo", Literal.ofCollection(
-                    List.of(literalOf(Primitive.ofStringValue("baggins")))))));*/
+                    List.of(stringLiteralOf("baggins"), stringLiteralOf("bolson"))))));
 
         AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
 
@@ -138,9 +138,9 @@ public class JacksonSdkTypeTest {
                                 /* d= */ duration,
                                 /// * blob= */ blob,
                                 /* l= */ List.of("123"),
-                                /* m= */ null, // Map.of("marco", "polo"),
+                                /* m= */ Map.of("marco", "polo"),
                                 /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
-                                /* ml= */ null)));
+                                /* ml= */ Map.of("frodo", List.of("baggins", "bolson")))));
     }
 
     private static Literal stringLiteralOf(String string) {
@@ -168,7 +168,7 @@ public class JacksonSdkTypeTest {
                                         /* l= */ List.of("foo"),
                                         /* m= */ Map.of("marco", "polo"),
                                         /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
-                                        /* ml= */ Map.of("frodo", List.of("baggins"))));
+                                        /* ml= */ Map.of("frodo", List.of("baggins", "bolson"))));
 
         assertThat(literalMap, allOf(List.of(
                 hasEntry("i", literalOf(Primitive.ofIntegerValue(42L))),
@@ -178,14 +178,14 @@ public class JacksonSdkTypeTest {
                 hasEntry("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1)))),
                 hasEntry("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42)))),
                 hasEntry("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo"))))),
-                //hasEntry("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo"))))),
+                hasEntry("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo"))))),
                 hasEntry("ll", Literal.ofCollection(
                         List.of(
                                 Literal.ofCollection(List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
-                                Literal.ofCollection(List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c"))))))
-                // hasEntry("ml", Literal.ofMap(
-                //        Map.of("frodo", Literal.ofCollection(
-                //                List.of(literalOf(Primitive.ofStringValue("baggins")))))))
+                                Literal.ofCollection(List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c")))))),
+                hasEntry("ml", Literal.ofMap(
+                       Map.of("frodo", Literal.ofCollection(
+                                List.of(stringLiteralOf("baggins"), stringLiteralOf("bolson"))))))
                 // hasEntry("blob", literalOf(blob))
                 )));
     }
@@ -387,12 +387,10 @@ public class JacksonSdkTypeTest {
 
         public abstract SdkBindingData<List<String>> l();
 
-        @Nullable
         public abstract SdkBindingData<Map<String, String>> m();
 
         public abstract SdkBindingData<List<List<String>>> ll();
 
-        @Nullable
         public abstract SdkBindingData<Map<String, List<String>>> ml();
 
         public static AutoValueInput create(

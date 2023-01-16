@@ -75,34 +75,11 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         }
         break;
       case COLLECTION:
-        SdkBindingData<?> tree1 = transformCollection(tree);
-        if (tree1 != null) return tree1;
+        return transformCollection(tree);
 
 
       case MAP:
-        SimpleType mapSimpleInnerType = SimpleType.valueOf(tree.get("type").asText());
-        switch (mapSimpleInnerType) {
-          case STRING:
-            return SdkBindingData.ofStringMap(generateMapFromNode(tree, JsonNode::asText));
-          case DATETIME:
-            return SdkBindingData.ofDatetimeMap(
-                generateMapFromNode(tree, (node) -> Instant.parse(node.asText())));
-          case DURATION:
-            return SdkBindingData.ofDurationMap(
-                generateMapFromNode(tree, (node) -> Duration.parse(node.asText())));
-          case INTEGER:
-            return SdkBindingData.ofIntegerMap(generateMapFromNode(tree, JsonNode::asLong));
-          case FLOAT:
-            return SdkBindingData.ofFloatMap(generateMapFromNode(tree, JsonNode::asDouble));
-          case BOOLEAN:
-            return SdkBindingData.ofBooleanMap(generateMapFromNode(tree, JsonNode::asBoolean));
-          case STRUCT:
-            // TODO: need to implement this.
-            throw new UnsupportedOperationException("not supported");
-          default:
-            throw new UnsupportedOperationException(
-                String.format("Not supported simple type %s.", mapSimpleInnerType));
-        }
+        return transformMap(tree);
 
       default:
         throw new UnsupportedOperationException(
@@ -113,15 +90,30 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
     throw new IllegalStateException("");
   }
 
-  private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
-    /*
+  private <T> SdkBindingData<Map<String, T>> transformMap(JsonNode tree) {
+    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get("type").get("kind").asText());
+    Iterator<JsonNode> entries = tree.get("value").elements();
+    switch (kind) {
+      case SIMPLE_TYPE:
+        return (SdkBindingData<Map<String, T>>) transformMapSimpleType(tree, entries);
+      case SCHEMA_TYPE:
+        break;
+      case COLLECTION_TYPE:
+        break;
+      case MAP_VALUE_TYPE:
+        break;
+      case BLOB_TYPE:
+        break;
+    }
+    return null; // TODO throw exception
+  }
 
-    */
+  private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
     LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get("type").get("kind").asText());
     Iterator<JsonNode> elements = tree.get("value").elements();
     switch (kind) {
       case SIMPLE_TYPE:
-        return (SdkBindingData<List<T>>) transformSimpleType(tree, elements);
+        return (SdkBindingData<List<T>>) transformCollectionSimpleType(tree, elements);
       case SCHEMA_TYPE:
       case BLOB_TYPE:
         // TODO: We need to implement this
@@ -135,10 +127,10 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       case MAP_VALUE_TYPE:
         break;
     }
-    return null;
+    return null; // TODO throw exception
   }
 
-  private SdkBindingData<?> transformSimpleType(JsonNode tree, Iterator<JsonNode> elements) {
+  private SdkBindingData<?> transformCollectionSimpleType(JsonNode tree, Iterator<JsonNode> elements) {
     SimpleType collectionSimpleInnerType = SimpleType.valueOf(tree.get("type").get("value").asText());
     switch (collectionSimpleInnerType) {
       case STRING:
@@ -162,6 +154,33 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       default:
         throw new UnsupportedOperationException(
                 String.format("Not supported simple type %s.", collectionSimpleInnerType));
+    }
+  }
+
+  private SdkBindingData<?> transformMapSimpleType(JsonNode tree, Iterator<JsonNode> entries) {
+    SimpleType mapSimpleInnerType = SimpleType.valueOf(tree.get("type").get("value").asText());
+    switch (mapSimpleInnerType) {
+      case STRING:
+        return generateListFromIterator(entries, JsonNode::asText, SdkBindingData::ofString);
+      case DATETIME:
+        return generateListFromIterator(
+                entries, (node) -> Instant.parse(node.asText()), SdkBindingData::ofDatetime);
+      case DURATION:
+        return generateListFromIterator(
+                entries, (node) -> Duration.parse(node.asText()), SdkBindingData::ofDuration);
+      case INTEGER:
+        return generateListFromIterator(entries, JsonNode::asLong, SdkBindingData::ofInteger);
+      case FLOAT:
+        return generateListFromIterator(entries, JsonNode::asDouble, SdkBindingData::ofFloat);
+      case BOOLEAN:
+        return generateListFromIterator(
+                entries, JsonNode::asBoolean, SdkBindingData::ofBoolean);
+      case STRUCT:
+        // TODO: need to implement this.
+        throw new RuntimeException("not supported");
+      default:
+        throw new UnsupportedOperationException(
+                String.format("Not supported simple type %s.", mapSimpleInnerType));
     }
   }
 

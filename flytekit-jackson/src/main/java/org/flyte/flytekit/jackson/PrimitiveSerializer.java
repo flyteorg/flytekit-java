@@ -1,37 +1,57 @@
+/*
+ * Copyright 2021 Flyte Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-import java.io.IOException;
-
 public abstract class PrimitiveSerializer extends ScalarSerializer {
 
-    public PrimitiveSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
-        super(gen, key, value, serializerProvider, literalType);
-    }
+  public PrimitiveSerializer(
+      JsonGenerator gen,
+      String key,
+      Literal value,
+      SerializerProvider serializerProvider,
+      LiteralType literalType) {
+    super(gen, key, value, serializerProvider, literalType);
+  }
 
-    @Override
-    public final void serializeScalar() throws IOException {
-        gen.writeObject(Scalar.Kind.PRIMITIVE);
-        serializePrimitive();
-    }
+  @Override
+  public final void serializeScalar() throws IOException {
+    gen.writeObject(Scalar.Kind.PRIMITIVE);
+    serializePrimitive();
+  }
 
-    abstract void serializePrimitive() throws IOException;
+  abstract void serializePrimitive() throws IOException;
 
+  protected void writePrimitive(Object kind, WritePrimitiveFunction writeValueFunction)
+      throws IOException {
+    gen.writeFieldName("primitive");
+    gen.writeObject(kind);
+    gen.writeFieldName("value");
+    writeValueFunction.write(gen, value.scalar().primitive());
+  }
 
-    protected void writePrimitive(Object kind, WritePrimitiveFunction writeValueFunction) throws IOException {
-        gen.writeFieldName("primitive");
-        gen.writeObject(kind);
-        gen.writeFieldName("value");
-        writeValueFunction.write(gen, value.scalar().primitive());
-    }
-
-    interface WritePrimitiveFunction {
-        void write(JsonGenerator gen, Primitive value) throws IOException;
-    }
+  interface WritePrimitiveFunction {
+    void write(JsonGenerator gen, Primitive value) throws IOException;
+  }
 }

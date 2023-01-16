@@ -36,7 +36,7 @@ public abstract class LiteralType {
     MAP_VALUE_TYPE,
 
     /** A blob might have specialized implementation details depending on associated metadata. */
-    BLOB_TYPE
+    BLOB_TYPE,
   }
 
   public abstract Kind getKind();

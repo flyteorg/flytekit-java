@@ -14,14 +14,14 @@ abstract class LiteralSerializer {
     protected final String key;
     protected final Literal value;
     protected final SerializerProvider serializerProvider;
-    protected final Map<String, LiteralType> literalTypeMap;
+    protected final LiteralType literalType;
 
-    public LiteralSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
+    public LiteralSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
         this.gen = gen;
         this.key = key;
         this.value = value;
         this.serializerProvider = serializerProvider;
-        this.literalTypeMap = literalTypeMap;
+        this.literalType = literalType;
     }
 
     final void serialize() throws IOException {

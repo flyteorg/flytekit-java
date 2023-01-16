@@ -10,10 +10,9 @@ import java.util.Map;
 
 public abstract class ScalarSerializer extends LiteralSerializer {
 
-    public ScalarSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public ScalarSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
     }
-
 
     @Override
     final void serializeLiteral() throws IOException {

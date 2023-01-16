@@ -16,23 +16,10 @@
  */
 package org.flyte.flytekit.jackson;
 
-import static org.flyte.api.v1.LiteralType.ofSimpleType;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import javax.annotation.Nullable;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -45,458 +32,510 @@ import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.flyte.api.v1.LiteralType.ofSimpleType;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class JacksonSdkTypeTest {
 
-  @SuppressWarnings("UnusedVariable")
-  static final BlobType BLOB_TYPE =
-      BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
+    @SuppressWarnings("UnusedVariable")
+    static final BlobType BLOB_TYPE =
+            BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
 
-  public static AutoValueInput createAutoValueInput(
-      long i,
-      double f,
-      String s,
-      boolean b,
-      Instant t,
-      Duration d,
-      // Blob blob,
-      List<String> l,
-      Map<String, String> m) {
-    return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-        SdkBindingData.ofInteger(i),
-        SdkBindingData.ofFloat(f),
-        SdkBindingData.ofString(s),
-        SdkBindingData.ofBoolean(b),
-        SdkBindingData.ofDatetime(t),
-        SdkBindingData.ofDuration(d),
-        SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-        SdkBindingData.ofStringMap(m));
-  }
-
-  @Test
-  public void testVariableMap() {
-    Map<String, Variable> expected = new HashMap<>();
-    expected.put("i", createVar(SimpleType.INTEGER));
-    expected.put("f", createVar(SimpleType.FLOAT));
-    expected.put("s", createVar(SimpleType.STRING));
-    expected.put("b", createVar(SimpleType.BOOLEAN));
-    expected.put("t", createVar(SimpleType.DATETIME));
-    expected.put("d", createVar(SimpleType.DURATION));
-    // expected.put("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE)));
-    expected.put("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))));
-    expected.put("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING))));
-
-    assertEquals(expected, JacksonSdkType.of(AutoValueInput.class).getVariableMap());
-  }
-
-  @Test
-  void testFromLiteralMap() {
-    Instant datetime = Instant.ofEpochSecond(12, 34);
-    Duration duration = Duration.ofSeconds(56, 78);
-    //    Blob blob =
-    //        Blob.builder()
-    //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
-    //            .uri("file://test")
-    //            .build();
-    Map<String, Literal> literalMap = new HashMap<>();
-    literalMap.put("i", literalOf(Primitive.ofIntegerValue(123L)));
-    literalMap.put("f", literalOf(Primitive.ofFloatValue(123.0)));
-    literalMap.put("s", literalOf(Primitive.ofStringValue("123")));
-    literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
-    literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
-    literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    // literalMap.put("blob", literalOf(blob));
-    literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
-    literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
-
-    AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
-
-    assertThat(
-        input,
-        equalTo(
-            createAutoValueInput(
-                /* i= */ 123L,
-                /* f= */ 123.0,
-                /* s= */ "123",
-                /* b= */ true,
-                /* t= */ datetime,
-                /* d= */ duration,
-                /// * blob= */ blob,
-                /* l= */ List.of("123"),
-                /* m= */ Map.of("marco", "polo"))));
-  }
-
-  @Test
-  void testToLiteralMap() {
-    //    Blob blob =
-    //        Blob.builder()
-    //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
-    //            .uri("file://test")
-    //            .build();
-    Map<String, Literal> literalMap =
-        JacksonSdkType.of(AutoValueInput.class)
-            .toLiteralMap(
-                createAutoValueInput(
-                    /* i= */ 42L,
-                    /* f= */ 42.0d,
-                    /* s= */ "42",
-                    /* b= */ false,
-                    /* t= */ Instant.ofEpochSecond(42, 1),
-                    /* d= */ Duration.ofSeconds(1, 42),
-                    /// * blob= */ blob,
-                    /* l= */ List.of("foo"),
-                    /* m= */ Map.of("marco", "polo")));
-
-    Map<String, Literal> expected = new HashMap<>();
-    expected.put("i", literalOf(Primitive.ofIntegerValue(42L)));
-    expected.put("f", literalOf(Primitive.ofFloatValue(42.0d)));
-    expected.put("s", literalOf(Primitive.ofStringValue("42")));
-    expected.put("b", literalOf(Primitive.ofBooleanValue(false)));
-    expected.put("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1))));
-    expected.put("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42))));
-    expected.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo")))));
-    expected.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
-    // expected.put("blob", literalOf(blob));
-
-    assertThat(literalMap, equalTo(expected));
-  }
-
-  @Test
-  public void testPojoToLiteralMap() {
-    PojoInput input = new PojoInput();
-    input.a = SdkBindingData.ofInteger(42);
-
-    Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
-
-    assertThat(literalMap, equalTo(Map.of("a", literalOf(Primitive.ofIntegerValue(42)))));
-  }
-
-  @Test
-  public void testPojoFromLiteralMap() {
-    PojoInput expected = new PojoInput();
-    expected.a = SdkBindingData.ofInteger(42);
-
-    PojoInput pojoInput =
-        JacksonSdkType.of(PojoInput.class)
-            .fromLiteralMap(Map.of("a", literalOf(Primitive.ofIntegerValue(42))));
-
-    assertThat(pojoInput.a.get(), equalTo(expected.a.get()));
-  }
-
-  @Test
-  public void testPojoVariableMap() {
-    Variable expected =
-        Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
-
-    Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
-
-    assertThat(variableMap, equalTo(Map.of("a", expected)));
-  }
-
-  @Disabled("Not supported struct with the strongly types implementation.")
-  public void testStructRoundtrip() {
-    StructInput input =
-        StructInput.create(
-            null
-            // StructValueInput.create(
-            //    /* stringValue= */ "nested-string",
-            //    /* boolValue= */ false,
-            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //    /* structValue= */ StructValueInput.create(
-            //        /* stringValue= */ "nested-string",
-            //        /* boolValue= */ false,
-            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //        /* structValue= */ null,
-            //        /* numberValue= */ 42.0),
-            //    /* numberValue= */ 42.0)
-            );
-
-    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
-    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
-    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
-  }
-
-  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
-  public void testConverterToLiteralMap() {
-    InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
-    Map<String, Literal> expected = new HashMap<>();
-    expected.put("customType", literalOf(Primitive.ofStringValue("ONE")));
-    expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
-
-    Map<String, Literal> literalMap =
-         JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
-
-    assertThat(literalMap, equalTo(expected));
-  }
-
-  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
-  public void testConverterFromLiteralMap() {
-    InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
-    Map<String, Literal> literalMap = new HashMap<>();
-    literalMap.put("customType", literalOf(Primitive.ofStringValue("TWO")));
-    literalMap.put("customEnum", literalOf(Primitive.ofStringValue("ONE")));
-
-    InputWithCustomType output =
-        JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
-
-    assertThat(output, equalTo(expected));
-  }
-
-  @Disabled("Not supported customType & customEnum with the strongly types implementation.")
-  public void testConverterVariableMap() {
-    Map<String, Variable> expected = new HashMap<>();
-    expected.put(
-        "customType", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
-    expected.put(
-        "customEnum", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
-
-    Map<String, Variable> variableMap =
-        JacksonSdkType.of(InputWithCustomType.class).getVariableMap();
-
-    assertThat(variableMap, equalTo(expected));
-  }
-
-  @Test
-  void testPromiseFor() {
-    AutoValueInput autoValueInput = JacksonSdkType.of(AutoValueInput.class).promiseFor("node-id");
-
-    assertThat(
-        autoValueInput.i(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
-    assertThat(
-        autoValueInput.f(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
-    assertThat(
-        autoValueInput.s(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
-    assertThat(
-        autoValueInput.b(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
-    assertThat(
-        autoValueInput.t(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
-    assertThat(
-        autoValueInput.d(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
-    assertThat(
-        autoValueInput.l(),
-        equalTo(
-            SdkBindingData.ofOutputReference(
-                "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
-    assertThat(
-        autoValueInput.m(),
-        equalTo(
-            SdkBindingData.ofOutputReference(
-                "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
-  }
-
-  @Test
-  void testUnknownSerializer() {
-    // Serialization doesn't work because Jackson doesn't recognize empty classes as
-    // Java beans good thing that exception is thrown when constructing JacksonSdkType
-    // and not at the moment when we need to serialize.
-    //
-    // If class doesn't have creator, we can serialize, but we can't deserialize it.
-    // It isn't checked at the moment, because we don't know if JacksonSdkType is constructed
-    // for input (that needs deserialization) or output (that doesn't).
-    IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> JacksonSdkType.of(Unannotated.class));
-
-    assertThat(
-        e.getMessage(),
-        equalTo(
-            "Failed to find serializer for [org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated]"));
-    assertThat(
-        e.getCause().getMessage(),
-        equalTo(
-            "No serializer found for class org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated and no properties discovered to create BeanSerializer"));
-  }
-
-  @Test
-  void rejectDeprecatedAutoValueInput() {
-
-    UnsupportedOperationException e =
-        assertThrows(UnsupportedOperationException.class, () -> JacksonSdkType.of(AutoValueDeprecatedInput.class));
-
-    assertThat(
-        e.getMessage(),
-        equalTo(
-            "Field 'i' from class 'org.flyte.flytekit.jackson.JacksonSdkTypeTest$AutoValueDeprecatedInput'"
-                + " is declared as 'long' and it is not matching any of the supported types. Please make sure your variable declared type is wrapped in 'SdkBindingData<>'."));
-  }
-
-  public static class Unannotated {}
-
-
-  @AutoValue
-  public abstract static class AutoValueDeprecatedInput {
-    public abstract long i();
-
-    public static AutoValueDeprecatedInput create(
-        long i) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueDeprecatedInput(i);
-    }
-  }
-
-  @AutoValue
-  public abstract static class AutoValueInput {
-    public abstract SdkBindingData<Long> i();
-
-    public abstract SdkBindingData<Double> f();
-
-    public abstract SdkBindingData<String> s();
-
-    public abstract SdkBindingData<Boolean> b();
-
-    public abstract SdkBindingData<Instant> t();
-
-    public abstract SdkBindingData<Duration> d();
-
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
-
-    public abstract SdkBindingData<List<String>> l();
-
-    public abstract SdkBindingData<Map<String, String>> m();
-
-    public static AutoValueInput create(
-        SdkBindingData<Long> i,
-        SdkBindingData<Double> f,
-        SdkBindingData<String> s,
-        SdkBindingData<Boolean> b,
-        SdkBindingData<Instant> t,
-        SdkBindingData<Duration> d,
-        // Blob blob,
-        SdkBindingData<List<String>> l,
-        SdkBindingData<Map<String, String>> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
-    }
-  }
-
-  @AutoValue
-  public abstract static class StructInput {
-    public abstract SdkBindingData<StructValueInput> structLevel1();
-
-    public static StructInput create(SdkBindingData<StructValueInput> structValue) {
-      return new AutoValue_JacksonSdkTypeTest_StructInput(structValue);
-    }
-  }
-
-  @AutoValue
-  public abstract static class StructValueInput {
-    public abstract String stringValue();
-
-    public abstract Boolean boolValue();
-
-    public abstract List<Long> listValue();
-
-    @Nullable
-    public abstract StructValueInput structLevel2();
-
-    public abstract Double numberValue();
-
-    public static StructValueInput create(
-        String stringValue,
-        boolean boolValue,
-        List<Long> listValue,
-        StructValueInput structValue,
-        Double numberValue) {
-      return new AutoValue_JacksonSdkTypeTest_StructValueInput(
-          stringValue, boolValue, listValue, structValue, numberValue);
-    }
-  }
-
-  public static final class PojoInput {
-    public SdkBindingData<Long> a;
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      PojoInput pojoInput = (PojoInput) o;
-      return a == pojoInput.a;
+    public static AutoValueInput createAutoValueInput(
+            long i,
+            double f,
+            String s,
+            boolean b,
+            Instant t,
+            Duration d,
+            // Blob blob,
+            List<String> l,
+            Map<String, String> m,
+            List<List<String>> ll,
+            Map<String, List<String>> ml) {
+        return AutoValueInput.create(
+                SdkBindingData.ofInteger(i),
+                SdkBindingData.ofFloat(f),
+                SdkBindingData.ofString(s),
+                SdkBindingData.ofBoolean(b),
+                SdkBindingData.ofDatetime(t),
+                SdkBindingData.ofDuration(d),
+                SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+                (m == null) ? null : SdkBindingData.ofStringMap(m),
+                SdkBindingData.ofCollection(ll, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
+                (ml == null) ? null : SdkBindingData.ofMap(ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString))
+        );
     }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(a);
-    }
-  }
-
-  @AutoValue
-  public abstract static class InputWithCustomType {
-    public abstract CustomType customType();
-
-    public abstract CustomEnum customEnum();
-
-    public static InputWithCustomType create(CustomType customType, CustomEnum customEnum) {
-      return new AutoValue_JacksonSdkTypeTest_InputWithCustomType(customType, customEnum);
-    }
-  }
-
-  @JsonSerialize(converter = CustomType.ToString.class)
-  @JsonDeserialize(converter = CustomType.FromString.class)
-  public static final class CustomType {
-    private final int ordinal;
-
-    private CustomType(int ordinal) {
-      this.ordinal = ordinal;
+    @Test
+    public void testVariableMap() {
+        assertThat(JacksonSdkType.of(AutoValueInput.class).getVariableMap(), allOf(List.of(
+                hasEntry("i", createVar(SimpleType.INTEGER)),
+                hasEntry("f", createVar(SimpleType.FLOAT)),
+                hasEntry("s", createVar(SimpleType.STRING)),
+                hasEntry("b", createVar(SimpleType.BOOLEAN)),
+                hasEntry("t", createVar(SimpleType.DATETIME)),
+                hasEntry("d", createVar(SimpleType.DURATION)),
+                // hasEntry("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE))),
+                hasEntry("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING)))),
+                hasEntry("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING)))),
+                hasEntry("ll", createVar(LiteralType.ofCollectionType(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))))),
+                hasEntry("ml", createVar(LiteralType.ofMapValueType(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING)))))))
+        );
     }
 
-    public static final CustomType ONE = new CustomType(1);
-    public static final CustomType TWO = new CustomType(2);
-    public static final CustomType UNKNOWN = new CustomType(-1);
+    @Test
+    void testFromLiteralMap() {
+        Instant datetime = Instant.ofEpochSecond(12, 34);
+        Duration duration = Duration.ofSeconds(56, 78);
+        //    Blob blob =
+        //        Blob.builder()
+        //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+        //            .uri("file://test")
+        //            .build();
+        Map<String, Literal> literalMap = new HashMap<>();
+        literalMap.put("i", literalOf(Primitive.ofIntegerValue(123L)));
+        literalMap.put("f", literalOf(Primitive.ofFloatValue(123.0)));
+        literalMap.put("s", literalOf(Primitive.ofStringValue("123")));
+        literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
+        literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
+        literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
+        // literalMap.put("blob", literalOf(blob));
+        literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
+        // literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
+        literalMap.put("ll", Literal.ofCollection(
+                List.of(
+                        Literal.ofCollection(List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
+                        Literal.ofCollection(List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c"))))
+        ));
+/*    literalMap.put("ml", Literal.ofMap(
+            Map.of("frodo", Literal.ofCollection(
+                    List.of(literalOf(Primitive.ofStringValue("baggins")))))));*/
 
-    public static class ToString extends StdConverter<CustomType, String> {
-      @Override
-      public String convert(CustomType value) {
-        if (value == ONE) {
-          return "ONE";
-        } else if (value == TWO) {
-          return "TWO";
-        } else {
-          return "UNKNOWN";
+        AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
+
+        assertThat(
+                input,
+                equalTo(
+                        createAutoValueInput(
+                                /* i= */ 123L,
+                                /* f= */ 123.0,
+                                /* s= */ "123",
+                                /* b= */ true,
+                                /* t= */ datetime,
+                                /* d= */ duration,
+                                /// * blob= */ blob,
+                                /* l= */ List.of("123"),
+                                /* m= */ null, // Map.of("marco", "polo"),
+                                /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
+                                /* ml= */ null)));
+    }
+
+    private static Literal stringLiteralOf(String string) {
+        return literalOf(Primitive.ofStringValue(string));
+    }
+
+    @Test
+    void testToLiteralMap() {
+        //    Blob blob =
+        //        Blob.builder()
+        //            .metadata(BlobMetadata.builder().type(BLOB_TYPE).build())
+        //            .uri("file://test")
+        //            .build();
+        Map<String, Literal> literalMap =
+                JacksonSdkType.of(AutoValueInput.class)
+                        .toLiteralMap(
+                                createAutoValueInput(
+                                        /* i= */ 42L,
+                                        /* f= */ 42.0d,
+                                        /* s= */ "42",
+                                        /* b= */ false,
+                                        /* t= */ Instant.ofEpochSecond(42, 1),
+                                        /* d= */ Duration.ofSeconds(1, 42),
+                                        /// * blob= */ blob,
+                                        /* l= */ List.of("foo"),
+                                        /* m= */ Map.of("marco", "polo"),
+                                        /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
+                                        /* ml= */ Map.of("frodo", List.of("baggins"))));
+
+        assertThat(literalMap, allOf(List.of(
+                hasEntry("i", literalOf(Primitive.ofIntegerValue(42L))),
+                hasEntry("f", literalOf(Primitive.ofFloatValue(42.0d))),
+                hasEntry("s", literalOf(Primitive.ofStringValue("42"))),
+                hasEntry("b", literalOf(Primitive.ofBooleanValue(false))),
+                hasEntry("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1)))),
+                hasEntry("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42)))),
+                hasEntry("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo"))))),
+                //hasEntry("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo"))))),
+                hasEntry("ll", Literal.ofCollection(
+                        List.of(
+                                Literal.ofCollection(List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
+                                Literal.ofCollection(List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c"))))))
+                // hasEntry("ml", Literal.ofMap(
+                //        Map.of("frodo", Literal.ofCollection(
+                //                List.of(literalOf(Primitive.ofStringValue("baggins")))))))
+                // hasEntry("blob", literalOf(blob))
+                )));
+    }
+
+    @Test
+    public void testPojoToLiteralMap() {
+        PojoInput input = new PojoInput();
+        input.a = SdkBindingData.ofInteger(42);
+
+        Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
+
+        assertThat(literalMap, equalTo(Map.of("a", literalOf(Primitive.ofIntegerValue(42)))));
+    }
+
+    @Test
+    public void testPojoFromLiteralMap() {
+        PojoInput expected = new PojoInput();
+        expected.a = SdkBindingData.ofInteger(42);
+
+        PojoInput pojoInput =
+                JacksonSdkType.of(PojoInput.class)
+                        .fromLiteralMap(Map.of("a", literalOf(Primitive.ofIntegerValue(42))));
+
+        assertThat(pojoInput.a.get(), equalTo(expected.a.get()));
+    }
+
+    @Test
+    public void testPojoVariableMap() {
+        Variable expected =
+                Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
+
+        Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
+
+        assertThat(variableMap, equalTo(Map.of("a", expected)));
+    }
+
+    @Disabled("Not supported struct with the strongly types implementation.")
+    public void testStructRoundtrip() {
+        StructInput input =
+                StructInput.create(
+                        null
+                        // StructValueInput.create(
+                        //    /* stringValue= */ "nested-string",
+                        //    /* boolValue= */ false,
+                        //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
+                        //    /* structValue= */ StructValueInput.create(
+                        //        /* stringValue= */ "nested-string",
+                        //        /* boolValue= */ false,
+                        //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
+                        //        /* structValue= */ null,
+                        //        /* numberValue= */ 42.0),
+                        //    /* numberValue= */ 42.0)
+                );
+
+        SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
+        Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
+        assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
+    }
+
+    @Disabled("Not supported customType & customEnum with the strongly types implementation.")
+    public void testConverterToLiteralMap() {
+        InputWithCustomType input = InputWithCustomType.create(CustomType.ONE, CustomEnum.TWO);
+        Map<String, Literal> expected = new HashMap<>();
+        expected.put("customType", literalOf(Primitive.ofStringValue("ONE")));
+        expected.put("customEnum", literalOf(Primitive.ofStringValue("TWO")));
+
+        Map<String, Literal> literalMap =
+                JacksonSdkType.of(InputWithCustomType.class).toLiteralMap(input);
+
+        assertThat(literalMap, equalTo(expected));
+    }
+
+    @Disabled("Not supported customType & customEnum with the strongly types implementation.")
+    public void testConverterFromLiteralMap() {
+        InputWithCustomType expected = InputWithCustomType.create(CustomType.TWO, CustomEnum.ONE);
+        Map<String, Literal> literalMap = new HashMap<>();
+        literalMap.put("customType", literalOf(Primitive.ofStringValue("TWO")));
+        literalMap.put("customEnum", literalOf(Primitive.ofStringValue("ONE")));
+
+        InputWithCustomType output =
+                JacksonSdkType.of(InputWithCustomType.class).fromLiteralMap(literalMap);
+
+        assertThat(output, equalTo(expected));
+    }
+
+    @Disabled("Not supported customType & customEnum with the strongly types implementation.")
+    public void testConverterVariableMap() {
+        Map<String, Variable> expected = new HashMap<>();
+        expected.put(
+                "customType", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+        expected.put(
+                "customEnum", Variable.builder().description("").literalType(LiteralTypes.STRING).build());
+
+        Map<String, Variable> variableMap =
+                JacksonSdkType.of(InputWithCustomType.class).getVariableMap();
+
+        assertThat(variableMap, equalTo(expected));
+    }
+
+    @Test
+    void testPromiseFor() {
+        AutoValueInput autoValueInput = JacksonSdkType.of(AutoValueInput.class).promiseFor("node-id");
+
+        assertThat(
+                autoValueInput.i(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+        assertThat(
+                autoValueInput.f(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
+        assertThat(
+                autoValueInput.s(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
+        assertThat(
+                autoValueInput.b(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
+        assertThat(
+                autoValueInput.t(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
+        assertThat(
+                autoValueInput.d(),
+                equalTo(SdkBindingData.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
+        assertThat(
+                autoValueInput.l(),
+                equalTo(
+                        SdkBindingData.ofOutputReference(
+                                "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
+        assertThat(
+                autoValueInput.m(),
+                equalTo(
+                        SdkBindingData.ofOutputReference(
+                                "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
+    }
+
+    @Test
+    void testUnknownSerializer() {
+        // Serialization doesn't work because Jackson doesn't recognize empty classes as
+        // Java beans good thing that exception is thrown when constructing JacksonSdkType
+        // and not at the moment when we need to serialize.
+        //
+        // If class doesn't have creator, we can serialize, but we can't deserialize it.
+        // It isn't checked at the moment, because we don't know if JacksonSdkType is constructed
+        // for input (that needs deserialization) or output (that doesn't).
+        IllegalArgumentException e =
+                assertThrows(IllegalArgumentException.class, () -> JacksonSdkType.of(Unannotated.class));
+
+        assertThat(
+                e.getMessage(),
+                equalTo(
+                        "Failed to find serializer for [org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated]"));
+        assertThat(
+                e.getCause().getMessage(),
+                equalTo(
+                        "No serializer found for class org.flyte.flytekit.jackson.JacksonSdkTypeTest$Unannotated and no properties discovered to create BeanSerializer"));
+    }
+
+    @Test
+    void rejectDeprecatedAutoValueInput() {
+
+        UnsupportedOperationException e =
+                assertThrows(UnsupportedOperationException.class, () -> JacksonSdkType.of(AutoValueDeprecatedInput.class));
+
+        assertThat(
+                e.getMessage(),
+                equalTo(
+                        "Field 'i' from class 'org.flyte.flytekit.jackson.JacksonSdkTypeTest$AutoValueDeprecatedInput'"
+                                + " is declared as 'long' and it is not matching any of the supported types. Please make sure your variable declared type is wrapped in 'SdkBindingData<>'."));
+    }
+
+    public static class Unannotated {
+    }
+
+
+    @AutoValue
+    public abstract static class AutoValueDeprecatedInput {
+        public abstract long i();
+
+        public static AutoValueDeprecatedInput create(
+                long i) {
+            return new AutoValue_JacksonSdkTypeTest_AutoValueDeprecatedInput(i);
         }
-      }
     }
 
-    public static class FromString extends StdConverter<String, CustomType> {
-      @Override
-      public CustomType convert(String value) {
-        if (value.equals("ONE")) {
-          return ONE;
-        } else if (value.equals("TWO")) {
-          return TWO;
-        } else {
-          return UNKNOWN;
+    @AutoValue
+    public abstract static class AutoValueInput {
+        public abstract SdkBindingData<Long> i();
+
+        public abstract SdkBindingData<Double> f();
+
+        public abstract SdkBindingData<String> s();
+
+        public abstract SdkBindingData<Boolean> b();
+
+        public abstract SdkBindingData<Instant> t();
+
+        public abstract SdkBindingData<Duration> d();
+
+        // TODO add blobs to sdkbinding data
+        // public abstract SdkBindingData<Blob> blob();
+
+        public abstract SdkBindingData<List<String>> l();
+
+        @Nullable
+        public abstract SdkBindingData<Map<String, String>> m();
+
+        public abstract SdkBindingData<List<List<String>>> ll();
+
+        @Nullable
+        public abstract SdkBindingData<Map<String, List<String>>> ml();
+
+        public static AutoValueInput create(
+                SdkBindingData<Long> i,
+                SdkBindingData<Double> f,
+                SdkBindingData<String> s,
+                SdkBindingData<Boolean> b,
+                SdkBindingData<Instant> t,
+                SdkBindingData<Duration> d,
+                // Blob blob,
+                SdkBindingData<List<String>> l,
+                SdkBindingData<Map<String, String>> m,
+                SdkBindingData<List<List<String>>> ll,
+                SdkBindingData<Map<String, List<String>>> ml) {
+            return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m, ll, ml);
         }
-      }
     }
 
-    @Override
-    public String toString() {
-      return "CustomType{ordinal=" + ordinal + "}";
+    @AutoValue
+    public abstract static class StructInput {
+        public abstract SdkBindingData<StructValueInput> structLevel1();
+
+        public static StructInput create(SdkBindingData<StructValueInput> structValue) {
+            return new AutoValue_JacksonSdkTypeTest_StructInput(structValue);
+        }
     }
-  }
 
-  public enum CustomEnum {
-    ONE,
-    TWO
-  }
+    @AutoValue
+    public abstract static class StructValueInput {
+        public abstract String stringValue();
 
-  private static Variable createVar(SimpleType simpleType) {
-    return createVar(ofSimpleType(simpleType));
-  }
+        public abstract Boolean boolValue();
 
-  private static Variable createVar(LiteralType literalType) {
-    return Variable.builder().literalType(literalType).description("").build();
-  }
+        public abstract List<Long> listValue();
 
-  private static Literal literalOf(Primitive primitive) {
-    return Literal.ofScalar(Scalar.ofPrimitive(primitive));
-  }
+        @Nullable
+        public abstract StructValueInput structLevel2();
 
-  // @SuppressWarnings({"unused"})
-  // private static Literal literalOf(Blob blob) {
-  //   return Literal.ofScalar(Scalar.ofBlob(blob));
-  // }
+        public abstract Double numberValue();
+
+        public static StructValueInput create(
+                String stringValue,
+                boolean boolValue,
+                List<Long> listValue,
+                StructValueInput structValue,
+                Double numberValue) {
+            return new AutoValue_JacksonSdkTypeTest_StructValueInput(
+                    stringValue, boolValue, listValue, structValue, numberValue);
+        }
+    }
+
+    public static final class PojoInput {
+        public SdkBindingData<Long> a;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PojoInput pojoInput = (PojoInput) o;
+            return a == pojoInput.a;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(a);
+        }
+    }
+
+    @AutoValue
+    public abstract static class InputWithCustomType {
+        public abstract CustomType customType();
+
+        public abstract CustomEnum customEnum();
+
+        public static InputWithCustomType create(CustomType customType, CustomEnum customEnum) {
+            return new AutoValue_JacksonSdkTypeTest_InputWithCustomType(customType, customEnum);
+        }
+    }
+
+    @JsonSerialize(converter = CustomType.ToString.class)
+    @JsonDeserialize(converter = CustomType.FromString.class)
+    public static final class CustomType {
+        private final int ordinal;
+
+        private CustomType(int ordinal) {
+            this.ordinal = ordinal;
+        }
+
+        public static final CustomType ONE = new CustomType(1);
+        public static final CustomType TWO = new CustomType(2);
+        public static final CustomType UNKNOWN = new CustomType(-1);
+
+        public static class ToString extends StdConverter<CustomType, String> {
+            @Override
+            public String convert(CustomType value) {
+                if (value == ONE) {
+                    return "ONE";
+                } else if (value == TWO) {
+                    return "TWO";
+                } else {
+                    return "UNKNOWN";
+                }
+            }
+        }
+
+        public static class FromString extends StdConverter<String, CustomType> {
+            @Override
+            public CustomType convert(String value) {
+                if (value.equals("ONE")) {
+                    return ONE;
+                } else if (value.equals("TWO")) {
+                    return TWO;
+                } else {
+                    return UNKNOWN;
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "CustomType{ordinal=" + ordinal + "}";
+        }
+    }
+
+    public enum CustomEnum {
+        ONE,
+        TWO
+    }
+
+    private static Variable createVar(SimpleType simpleType) {
+        return createVar(ofSimpleType(simpleType));
+    }
+
+    private static Variable createVar(LiteralType literalType) {
+        return Variable.builder().literalType(literalType).description("").build();
+    }
+
+    private static Literal literalOf(Primitive primitive) {
+        return Literal.ofScalar(Scalar.ofPrimitive(primitive));
+    }
+
+    // @SuppressWarnings({"unused"})
+    // private static Literal literalOf(Blob blob) {
+    //   return Literal.ofScalar(Scalar.ofBlob(blob));
+    // }
 }

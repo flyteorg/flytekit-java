@@ -8,12 +8,11 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
 import java.io.IOException;
-import java.util.Map;
 
 public abstract class PrimitiveSerializer extends ScalarSerializer {
 
-    public PrimitiveSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public PrimitiveSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
     }
 
     @Override

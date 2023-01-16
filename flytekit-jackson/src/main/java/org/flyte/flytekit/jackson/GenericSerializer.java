@@ -5,14 +5,18 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Struct;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class GenericSerializer extends ScalarSerializer {
-    public GenericSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public GenericSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
+        if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE && literalType.simpleType() != SimpleType.STRUCT) {
+            throw new IllegalArgumentException("Literal type should be a struct literal type");
+        }
     }
 
     @Override

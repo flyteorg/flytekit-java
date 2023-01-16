@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.SimpleType;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class DurationSerializer extends PrimitiveSerializer {
-    public DurationSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public DurationSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
+        if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE && literalType.simpleType() != SimpleType.DURATION) {
+            throw new IllegalArgumentException("Literal type should be a duration literal type");
+        }
     }
 
     @Override

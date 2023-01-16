@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.Map;
 
 public class BlobSerializer extends ScalarSerializer {
-    public BlobSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public BlobSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
     }
 
     @Override

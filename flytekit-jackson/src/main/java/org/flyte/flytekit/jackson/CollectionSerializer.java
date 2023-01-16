@@ -6,35 +6,37 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class CollectionSerializer extends LiteralSerializer {
 
 
-    public CollectionSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
-        super(gen, key, value, serializerProvider, literalTypeMap);
+    public CollectionSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
+        super(gen, key, value, serializerProvider, literalType);
+        if (literalType.getKind() != LiteralType.Kind.COLLECTION_TYPE) {
+            throw new IllegalArgumentException("Literal type should be a Collection literal type");
+        }
     }
 
     @Override
     void serializeLiteral() throws IOException {
-        gen.writeFieldName("literal");
         gen.writeObject(Literal.Kind.COLLECTION);
-        gen.writeFieldName("type");
-        gen.writeObject(literalTypeMap.get(key).collectionType().simpleType());
+        LiteralType elementType = literalType.collectionType();
+        LiteralTypeSerializer.serialize(elementType, gen);
+
         gen.writeFieldName("value");
         gen.writeStartArray();
 
-        value.collection().forEach(this::writeCollectionElement);
+        value.collection().forEach(e -> writeCollectionElement(e, elementType));
 
         gen.writeEndArray();
 
     }
 
-    private void writeCollectionElement(Literal element) {
+    private void writeCollectionElement(Literal element, LiteralType elementType) {
         try {
             gen.writeStartObject();
             LiteralSerializer literalSerializer =
-                    LiteralSerializerFactory.create(key, element, gen, serializerProvider, literalTypeMap);
+                    LiteralSerializerFactory.create(key, element, gen, serializerProvider, elementType);
             literalSerializer.serialize();
             gen.writeEndObject();
         } catch (IOException e) {

@@ -5,47 +5,45 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
-import java.util.Map;
-
 public class LiteralSerializerFactory {
-    public static LiteralSerializer create(String key, Literal value, JsonGenerator gen, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
+    public static LiteralSerializer create(String key, Literal value, JsonGenerator gen, SerializerProvider serializerProvider, LiteralType literalType) {
         switch (value.kind()) {
             case SCALAR:
-                return createScalarSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return createScalarSerializer(gen, key, value, serializerProvider, literalType);
             case MAP:
-                return new MapSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new MapSerializer(gen, key, value, serializerProvider, literalType);
             case COLLECTION:
-                return new CollectionSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new CollectionSerializer(gen, key, value, serializerProvider, literalType);
         }
         throw new AssertionError("Unexpected Literal.Kind: [" + value.kind() + "]");
     }
 
-    private static ScalarSerializer createScalarSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
+    private static ScalarSerializer createScalarSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
         switch (value.scalar().kind()) {
             case PRIMITIVE:
-                return createPrimitiveSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return createPrimitiveSerializer(gen, key, value, serializerProvider, literalType);
             case GENERIC:
-                return new GenericSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new GenericSerializer(gen, key, value, serializerProvider, literalType);
             case BLOB:
-                return new BlobSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new BlobSerializer(gen, key, value, serializerProvider, literalType);
         }
         throw new AssertionError("Unexpected Literal.Kind: [" + value.scalar().kind() + "]");
     }
 
-    private static PrimitiveSerializer createPrimitiveSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, Map<String, LiteralType> literalTypeMap) {
+    private static PrimitiveSerializer createPrimitiveSerializer(JsonGenerator gen, String key, Literal value, SerializerProvider serializerProvider, LiteralType literalType) {
         switch (value.scalar().primitive().kind()) {
             case INTEGER_VALUE:
-                return new IntegerSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new IntegerSerializer(gen, key, value, serializerProvider, literalType);
             case FLOAT_VALUE:
-                return new FloatSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new FloatSerializer(gen, key, value, serializerProvider, literalType);
             case STRING_VALUE:
-                return new StringSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new StringSerializer(gen, key, value, serializerProvider, literalType);
             case BOOLEAN_VALUE:
-                return new BooleanSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new BooleanSerializer(gen, key, value, serializerProvider, literalType);
             case DATETIME:
-                return new DatetimeSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new DatetimeSerializer(gen, key, value, serializerProvider, literalType);
             case DURATION:
-                return new DurationSerializer(gen, key, value, serializerProvider, literalTypeMap);
+                return new DurationSerializer(gen, key, value, serializerProvider, literalType);
         }
         throw new AssertionError("Unexpected Primitive.Kind: [" + value.scalar().primitive().kind() + "]");
     }

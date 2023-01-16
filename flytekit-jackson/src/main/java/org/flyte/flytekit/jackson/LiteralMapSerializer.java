@@ -44,7 +44,7 @@ class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
             gen.writeStartObject();
             LiteralSerializer literalSerializer =
                      LiteralSerializerFactory.create(k, v, gen,
-                            serializers, map.getLiteralTypeMap());
+                            serializers, map.getLiteralTypeMap().get(k));
             literalSerializer.serialize();
             gen.writeEndObject();
         } catch (IOException e) {

@@ -43,6 +43,7 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -73,14 +74,24 @@ public class JacksonSdkTypeTest {
         SdkBindingData.ofBoolean(b),
         SdkBindingData.ofDatetime(t),
         SdkBindingData.ofDuration(d),
-        SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+        SdkBindingData.ofStringCollection(l),
         SdkBindingData.ofStringMap(m),
         SdkBindingData.ofCollection(
-            ll, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
-        SdkBindingData.ofCollection(lm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)),
+            ll,
+            LiteralType.ofCollectionType(LiteralTypes.STRING),
+            list -> SdkBindingData.ofStringCollection(list)),
+        SdkBindingData.ofCollection(
+                lm,
+                LiteralType.ofMapValueType(LiteralTypes.STRING),
+                map -> SdkBindingData.ofStringMap(map)),
         SdkBindingData.ofMap(
-            ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
-        SdkBindingData.ofMap(mm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)));
+            ml,
+            LiteralType.ofCollectionType(LiteralTypes.STRING),
+            list -> SdkBindingData.ofStringCollection(list)),
+    SdkBindingData.ofMap(
+            mm,
+            LiteralType.ofMapValueType(LiteralTypes.STRING),
+            map -> SdkBindingData.ofStringMap(map)));
   }
 
   @Test
@@ -128,7 +139,7 @@ public class JacksonSdkTypeTest {
     literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    //      literalMap.put("blob", literalOf(blob));
+    // literalMap.put("blob", literalOf(blob));
     literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
     literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
     literalMap.put(

@@ -51,7 +51,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
      */
     public static PhoneBookWorkflow.Output create(List<String> phoneNumbers) {
       return new AutoValue_PhoneBookWorkflow_Output(
-          SdkBindingData.ofCollection(phoneNumbers, SdkBindingData::ofString));
+          SdkBindingData.ofStringCollection(phoneNumbers));
     }
   }
 
@@ -63,8 +63,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
 
-    SdkBindingData<List<String>> searchKeys =
-        SdkBindingData.ofCollection(NAMES, SdkBindingData::ofString);
+    SdkBindingData<List<String>> searchKeys = SdkBindingData.ofStringCollection(NAMES);
 
     SdkBindingData<List<String>> phoneNumbers =
         builder

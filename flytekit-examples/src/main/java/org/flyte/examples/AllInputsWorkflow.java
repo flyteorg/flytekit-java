@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
@@ -54,8 +55,10 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
                 SdkBindingData.ofBoolean(true),
                 SdkBindingData.ofDatetime(cal.toInstant()),
                 SdkBindingData.ofDuration(Duration.ofDays(1L)),
-                SdkBindingData.ofCollection(Arrays.asList("foo", "bar"), SdkBindingData::ofString),
-                SdkBindingData.ofMap(Map.of("test", "test"), SdkBindingData::ofString)));
+                SdkBindingData.ofStringCollection(Arrays.asList("foo", "bar")),
+                SdkBindingData.ofStringMap(Map.of("test", "test")),
+                SdkBindingData.ofStringCollection(Collections.emptyList()),
+                SdkBindingData.ofIntegerMap(Collections.emptyMap())));
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 
     builder.output("i", outputs.i(), "Integer value");
@@ -66,6 +69,8 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
     builder.output("d", outputs.d(), "Duration value");
     builder.output("l", outputs.l(), "List value");
     builder.output("m", outputs.m(), "Map value");
+    builder.output("emptyList", outputs.emptyList(), "Empty list value");
+    builder.output("emptyMap", outputs.emptyMap(), "Empty map value");
   }
 
   @AutoValue
@@ -90,6 +95,10 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
 
     public abstract SdkBindingData<Map<String, String>> m();
 
+    public abstract SdkBindingData<List<String>> emptyList();
+
+    public abstract SdkBindingData<Map<String, Long>> emptyMap();
+
     public static AllInputsWorkflow.AllInputsWorkflowOutput create(
         long i,
         Double f,
@@ -98,7 +107,9 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
         Instant t,
         Duration d,
         List<String> l,
-        Map<String, String> m) {
+        Map<String, String> m,
+        List<String> emptyList,
+        Map<String, Long> emptyMap) {
       return new AutoValue_AllInputsWorkflow_AllInputsWorkflowOutput(
           SdkBindingData.ofInteger(i),
           SdkBindingData.ofFloat(f),
@@ -106,8 +117,10 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
           SdkBindingData.ofBoolean(b),
           SdkBindingData.ofDatetime(t),
           SdkBindingData.ofDuration(d),
-          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-          SdkBindingData.ofMap(m, SdkBindingData::ofString));
+          SdkBindingData.ofStringCollection(l),
+          SdkBindingData.ofStringMap(m),
+          SdkBindingData.ofStringCollection(emptyList),
+          SdkBindingData.ofIntegerMap(emptyMap));
     }
   }
 }

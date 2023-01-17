@@ -54,4 +54,3 @@ public class SimpleStructTask
     return Output.create(input.in());
   }
 }
-*/

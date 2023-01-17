@@ -17,7 +17,7 @@
 package org.flyte.flytekitscala
 
 import java.time.{Duration, Instant}
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.flyte.api.v1.{
   Literal,
   LiteralType,
@@ -29,38 +29,39 @@ import org.flyte.api.v1.{
 import org.flyte.flytekit.SdkBindingData
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import Toolkit._
 
 class SdkScalaTypeTest {
 
   case class ScalarInput(
       string: SdkBindingData[String],
-      integer: Long,
-      float: Double,
-      boolean: Boolean,
-      datetime: Instant,
-      duration: Duration
+      integer: SdkBindingData[Long],
+      float: SdkBindingData[Double],
+      boolean: SdkBindingData[Boolean],
+      datetime: SdkBindingData[Instant],
+      duration: SdkBindingData[Duration]
   )
 
   case class CollectionInput(
-      strings: List[String],
-      integers: List[Long],
-      floats: List[Double],
-      booleans: List[Boolean],
-      datetimes: List[Instant],
-      durations: List[Duration]
+      strings: SdkBindingData[List[String]],
+      integers: SdkBindingData[List[Long]],
+      floats: SdkBindingData[List[Double]],
+      booleans: SdkBindingData[List[Boolean]],
+      datetimes: SdkBindingData[List[Instant]],
+      durations: SdkBindingData[List[Duration]]
   )
 
   case class MapInput(
-      stringMap: Map[String, String],
-      integerMap: Map[String, Long],
-      floatMap: Map[String, Double],
-      booleanMap: Map[String, Boolean],
-      datetimeMap: Map[String, Instant],
-      durationMap: Map[String, Duration]
+      stringMap: SdkBindingData[Map[String, String]],
+      integerMap: SdkBindingData[Map[String, Long]],
+      floatMap: SdkBindingData[Map[String, Double]],
+      booleanMap: SdkBindingData[Map[String, Boolean]],
+      datetimeMap: SdkBindingData[Map[String, Instant]],
+      durationMap: SdkBindingData[Map[String, Duration]]
   )
 
   case class ComplexInput(
-      metadataList: List[Map[String, String]]
+      metadataList: SdkBindingData[List[Map[String, String]]]
   )
 
   @Test
@@ -75,7 +76,6 @@ class SdkScalaTypeTest {
     ).asJava
 
     val output = SdkScalaType[ScalarInput].getVariableMap
-
     assertEquals(expected, output)
   }
 
@@ -110,7 +110,7 @@ class SdkScalaTypeTest {
 
     val expected =
       ScalarInput(
-        string = SdkBindingData.ofString("string"),
+        string = "string",
         integer = 1337L,
         float = 42.0,
         boolean = true,
@@ -127,7 +127,7 @@ class SdkScalaTypeTest {
   def testScalarToLiteralMap(): Unit = {
     val input =
       ScalarInput(
-        string = SdkBindingData.ofString("string"),
+        string = "string",
         integer = 1337L,
         float = 42.0,
         boolean = true,

@@ -114,93 +114,83 @@ object SdkScalaType {
         })
       }
 
-      def promiseFor(nodeId: String): T = null.asInstanceOf[T] // TODO
+      def promiseFor(nodeId: String): T = {
+        ctx.rawConstruct(params.map { param =>
+          val paramLiteralType = getVariableMap.get(param.label)
+
+          require(
+            paramLiteralType != null,
+            s"field ${param.label} not found in variable map"
+          )
+
+          SdkBindingData.ofOutputReference(
+            nodeId,
+            param.label,
+            paramLiteralType.literalType()
+          )
+        })
+      }
     }
   }
 
   implicit def sdkBindingLiteralType[T](implicit
       sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[SdkBindingData[T]] =
+  ): SdkScalaLiteralType[SdkBindingData[T]] = {
+
+    def toBindingData(literal: Literal): BindingData = {
+      literal.kind() match {
+        case Literal.Kind.SCALAR =>
+          BindingData.ofScalar(literal.scalar())
+        case Literal.Kind.COLLECTION =>
+          BindingData.ofCollection(
+            literal.collection().asScala.map(toBindingData).toList.asJava
+          )
+        case Literal.Kind.MAP =>
+          BindingData.ofMap(
+            literal.map().asScala.mapValues(toBindingData).toMap.asJava
+          )
+      }
+    }
+
     SdkScalaLiteralType[SdkBindingData[T]](
       sdkLiteral.getLiteralType,
       value => sdkLiteral.toLiteral(value.get()),
-      literal => {
-        val value = literal.kind() match {
-          case Literal.Kind.SCALAR =>
-            val scalar = literal.scalar()
-            scalar.kind() match {
-              case Scalar.Kind.PRIMITIVE =>
-                val primitive = scalar.primitive()
-                primitive.kind() match {
-                  case Primitive.Kind.DATETIME =>
-                    SdkBindingData.ofDatetime(
-                      instantLiteralType.fromLiteral(literal)
-                    )
-                  case Primitive.Kind.DURATION =>
-                    SdkBindingData.ofDuration(
-                      durationLiteralType.fromLiteral(literal)
-                    )
-                  case Primitive.Kind.BOOLEAN_VALUE =>
-                    SdkBindingData.ofBoolean(
-                      booleanLiteralType.fromLiteral(literal)
-                    )
-                  case Primitive.Kind.FLOAT_VALUE =>
-                    SdkBindingData.ofFloat(
-                      doubleLiteralType.fromLiteral(literal)
-                    )
-                  case Primitive.Kind.INTEGER_VALUE =>
-                    SdkBindingData.ofInteger(
-                      longLiteralType.fromLiteral(literal)
-                    )
-                  case Primitive.Kind.STRING_VALUE =>
-                    SdkBindingData.ofString(
-                      stringLiteralType.fromLiteral(literal)
-                    )
-                  case _ => throw new RuntimeException("not supported")
-                }
-              case Scalar.Kind.GENERIC =>
-                throw new RuntimeException("not supported")
-              case Scalar.Kind.BLOB =>
-                throw new RuntimeException("not supported")
-
-            }
-          case Literal.Kind.MAP =>
-            throw new RuntimeException("not supported")
-          case Literal.Kind.COLLECTION =>
-            throw new RuntimeException("not supported")
-          case _ => throw new RuntimeException("not supported")
-        }
-
-        value.asInstanceOf[SdkBindingData[T]]
-      }
+      literal =>
+        SdkBindingData.create(
+          toBindingData(literal),
+          sdkLiteral.getLiteralType,
+          sdkLiteral.fromLiteral(literal)
+        )
     )
+  }
 
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
     SdkScalaLiteralType[String](
       LiteralType.ofSimpleType(SimpleType.STRING),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofString(value))),
-      _.scalar().primitive().string()
+      value =>
+        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))),
+      _.scalar().primitive().stringValue()
     )
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
     SdkScalaLiteralType[Long](
       LiteralType.ofSimpleType(SimpleType.INTEGER),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
-      _.scalar().primitive().integer()
+      _.scalar().primitive().integerValue()
     )
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
     SdkScalaLiteralType[Double](
       LiteralType.ofSimpleType(SimpleType.FLOAT),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
-      literal => literal.scalar().primitive().float_()
+      literal => literal.scalar().primitive().floatValue()
     )
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
     SdkScalaLiteralType[Boolean](
       LiteralType.ofSimpleType(SimpleType.BOOLEAN),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
-      _.scalar().primitive().boolean_()
+      _.scalar().primitive().booleanValue()
     )
 
   implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
@@ -228,21 +218,21 @@ object SdkScalaType {
     SdkScalaLiteralType[java.lang.Long](
       LiteralType.ofSimpleType(SimpleType.INTEGER),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
-      _.scalar().primitive().integer()
+      _.scalar().primitive().integerValue()
     )
 
   implicit def javaDoubleLiteralType: SdkScalaLiteralType[java.lang.Double] =
     SdkScalaLiteralType[java.lang.Double](
       LiteralType.ofSimpleType(SimpleType.FLOAT),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
-      literal => literal.scalar().primitive().float_()
+      literal => literal.scalar().primitive().floatValue()
     )
 
   implicit def javaBooleanLiteralType: SdkScalaLiteralType[java.lang.Boolean] =
     SdkScalaLiteralType[java.lang.Boolean](
       LiteralType.ofSimpleType(SimpleType.BOOLEAN),
       value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
-      _.scalar().primitive().boolean_()
+      _.scalar().primitive().booleanValue()
     )
 
   implicit def collectionLiteralType[T](implicit

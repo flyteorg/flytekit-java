@@ -18,6 +18,7 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekit.SdkBindingDataJavaConverters._
 
 case class FibonacciWorkflowOutput(fib5: SdkBindingData[Long])
 

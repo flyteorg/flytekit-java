@@ -27,10 +27,12 @@ class DynamicFibonacciWorkflow
 
   override def expand(builder: SdkWorkflowBuilder): Unit = {
     val n = builder.inputOfInteger("n")
+
     val fibonacci = builder.apply(
       "fibonacci",
       new DynamicFibonacciWorkflowTask().withInput("n", n)
     )
+
     builder.output("output", fibonacci.getOutputs.output)
   }
 

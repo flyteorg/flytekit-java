@@ -24,7 +24,7 @@ import org.flyte.flytekit.{
 import org.flyte.flytekitscala.SdkScalaType
 
 import scala.annotation.tailrec
-import org.flyte.flytekitscala.Toolkit._
+import org.flyte.flytekitscala.Implicits._
 
 case class DynamicFibonacciWorkflowTaskInput(n: SdkBindingData[Long])
 case class DynamicFibonacciWorkflowTaskOutput(output: SdkBindingData[Long])

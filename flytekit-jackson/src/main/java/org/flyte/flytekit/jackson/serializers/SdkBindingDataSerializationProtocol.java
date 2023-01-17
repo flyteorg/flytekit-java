@@ -14,9 +14,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson.util;
+package org.flyte.flytekit.jackson.serializers;
 
-public class JacksonConstants {
+public class SdkBindingDataSerializationProtocol {
   public static final String VALUE = "value";
   public static final String SCALAR = "scalar";
   public static final String LITERAL = "literal";

@@ -16,10 +16,10 @@
  */
 package org.flyte.flytekit.jackson.serializers;
 
-import static org.flyte.flytekit.jackson.util.JacksonConstants.LITERAL;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.SCALAR;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.STRUCT_TYPE;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.STRUCT_VALUE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.LITERAL;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.STRUCT_TYPE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.STRUCT_VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

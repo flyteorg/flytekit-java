@@ -454,7 +454,6 @@ public class SdkTestingExecutorTest {
 
     public static SimpleSubWorkflowInput create(SdkBindingData<Long> in) {
       return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
-
     }
   }
 

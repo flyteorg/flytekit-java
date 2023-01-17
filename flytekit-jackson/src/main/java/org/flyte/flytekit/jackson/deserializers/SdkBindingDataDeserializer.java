@@ -17,11 +17,11 @@
 package org.flyte.flytekit.jackson.deserializers;
 
 import static java.util.stream.Collectors.toList;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.KIND;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.LITERAL;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.SCALAR;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.TYPE;
-import static org.flyte.flytekit.jackson.util.JacksonConstants.VALUE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.KIND;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.LITERAL;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.TYPE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

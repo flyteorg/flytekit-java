@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit.jackson.serializers;
 
-import static org.flyte.flytekit.jackson.util.JacksonConstants.VALUE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

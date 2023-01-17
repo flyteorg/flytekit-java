@@ -16,13 +16,25 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{BindingData, LiteralType, Primitive, Scalar, SimpleType}
-import org.flyte.flytekit.SdkBindingData
+import org.flyte.api.v1.{
+  BindingData,
+  LiteralType,
+  Primitive,
+  Scalar,
+  SimpleType
+}
+import org.flyte.flytekit.{SdkBindingData, SdkTransform, SdkWorkflowBuilder}
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
 object Implicits {
+  implicit class ScalaSdkTransform[T](transform: SdkTransform[T]) {
+    def getOutputs()(implicit builder: SdkWorkflowBuilder): T = {
+      builder.apply(transform).getOutputs
+    }
+  }
+
   implicit def stringSdkBinding(string: String): SdkBindingData[String] =
     createSdkBindingData(string)
 
@@ -74,6 +86,42 @@ object Implicits {
   implicit def javaMapSdkBinding[T](
       map: Map[String, T]
   ): SdkBindingData[java.util.Map[String, T]] = createSdkBindingData(map.asJava)
+
+  def inputOfInteger(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[Long] =
+    builder
+      .inputOf[Long](name, LiteralType.ofSimpleType(SimpleType.INTEGER), help)
+
+  def inputOfBoolean(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[Boolean] =
+    builder.inputOf[Boolean](
+      name,
+      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
+      help
+    )
+
+  def inputOfFloat(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[Double] =
+    builder
+      .inputOf[Double](name, LiteralType.ofSimpleType(SimpleType.FLOAT), help)
+
+  def inputOfDatetime(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[Instant] =
+    builder.inputOfDatetime(name, help)
+
+  def inputOfDuration(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[Duration] =
+    builder.inputOfDuration(name, help)
+
+  def inputOfString(name: String, help: String = "")(implicit
+      builder: SdkWorkflowBuilder
+  ): SdkBindingData[String] =
+    builder.inputOfString(name, help)
 
   private def toBindingData(value: Any): (BindingData, LiteralType) = {
     value match {

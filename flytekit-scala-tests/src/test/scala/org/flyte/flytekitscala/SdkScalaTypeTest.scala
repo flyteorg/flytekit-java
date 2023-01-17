@@ -29,7 +29,7 @@ import org.flyte.api.v1.{
 import org.flyte.flytekit.SdkBindingData
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import Toolkit._
+import Implicits._
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
 
 import scala.collection.immutable.Map

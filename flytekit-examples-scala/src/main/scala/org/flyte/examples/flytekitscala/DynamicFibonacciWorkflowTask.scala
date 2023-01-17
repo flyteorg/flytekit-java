@@ -42,6 +42,7 @@ class DynamicFibonacciWorkflowTask
       builder: SdkWorkflowBuilder,
       input: DynamicFibonacciWorkflowTaskInput
   ): Unit = {
+    implicit val b = builder
 
     @tailrec
     def fib(
@@ -53,7 +54,7 @@ class DynamicFibonacciWorkflowTask
       else
         fib(
           n + 1,
-          builder(s"fib-${n + 1}", SumTask(value, prev)).getOutputs.c,
+          SumTask(value, prev).getOutputs.c,
           value
         )
     }

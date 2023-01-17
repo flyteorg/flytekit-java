@@ -16,7 +16,13 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{BindingData, LiteralType, Primitive, Scalar, SimpleType}
+import org.flyte.api.v1.{
+  BindingData,
+  LiteralType,
+  Primitive,
+  Scalar,
+  SimpleType
+}
 import org.flyte.flytekit.SdkBindingData
 
 import java.time.{Duration, Instant}

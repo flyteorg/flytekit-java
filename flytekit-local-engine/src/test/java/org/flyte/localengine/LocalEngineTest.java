@@ -42,7 +42,6 @@ import org.flyte.api.v1.Registrar;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -60,9 +59,7 @@ import org.flyte.localengine.examples.MapWorkflow;
 import org.flyte.localengine.examples.NestedSubWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
-import org.flyte.localengine.examples.StructWorkflow;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -152,7 +149,7 @@ class LocalEngineTest {
   }
 
   // TODO: Enable this test when the struct will be supported
-  @Disabled
+  /*@Disabled
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
 
@@ -187,7 +184,7 @@ class LocalEngineTest {
                         "someKey1", Struct.Value.ofStringValue("some_value_1-output"),
                         "someKey2", Struct.Value.ofBoolValue(true)))));
     assertEquals(expectedOutput, outputs.get("outputStructData"));
-  }
+  }*/
 
   @Test
   public void testRetryableTask_completed() {

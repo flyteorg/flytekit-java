@@ -18,9 +18,9 @@ package org.flyte.flytekit
 
 object SdkBindingDataJavaConverters {
 
-  private def converter[T, K](
-      sdkBindingData: SdkBindingData[T]
-  ): SdkBindingData[K] = {
+  implicit def longConverter(
+      sdkBindingData: SdkBindingData[java.lang.Long]
+  ): SdkBindingData[Long] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
@@ -28,22 +28,24 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def longConverter(
-      sdkBindingData: SdkBindingData[java.lang.Long]
-  ): SdkBindingData[Long] = {
-    converter[java.lang.Long, Long](sdkBindingData)
-  }
-
   implicit def booleanConverter(
       sdkBindingData: SdkBindingData[java.lang.Boolean]
   ): SdkBindingData[Boolean] = {
-    converter[java.lang.Boolean, Boolean](sdkBindingData)
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value()
+    )
   }
 
   implicit def doubleConverter(
       sdkBindingData: SdkBindingData[java.lang.Double]
   ): SdkBindingData[Double] = {
-    converter[java.lang.Double, Double](sdkBindingData)
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value()
+    )
   }
 
 }

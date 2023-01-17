@@ -16,9 +16,11 @@
  */
 package org.flyte.flytekit
 
+import scala.collection.JavaConverters._
+
 object SdkBindingDataJavaConverters {
 
-  implicit def longConverter(
+  implicit def scalaLongConverter(
       sdkBindingData: SdkBindingData[java.lang.Long]
   ): SdkBindingData[Long] = {
     SdkBindingData.create(
@@ -28,7 +30,17 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def booleanConverter(
+  implicit def javaLongConverter(
+      sdkBindingData: SdkBindingData[Long]
+  ): SdkBindingData[java.lang.Long] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value()
+    )
+  }
+
+  implicit def scalaBooleanConverter(
       sdkBindingData: SdkBindingData[java.lang.Boolean]
   ): SdkBindingData[Boolean] = {
     SdkBindingData.create(
@@ -38,13 +50,73 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def doubleConverter(
+  implicit def javaBooleanConverter(
+      sdkBindingData: SdkBindingData[Boolean]
+  ): SdkBindingData[java.lang.Boolean] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value()
+    )
+  }
+
+  implicit def scalaDoubleConverter(
       sdkBindingData: SdkBindingData[java.lang.Double]
   ): SdkBindingData[Double] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
       sdkBindingData.value()
+    )
+  }
+
+  implicit def javaDoubleConverter(
+      sdkBindingData: SdkBindingData[Double]
+  ): SdkBindingData[java.lang.Double] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value()
+    )
+  }
+
+  implicit def scalaListConverter[T](
+      sdkBindingData: SdkBindingData[java.util.List[T]]
+  ): SdkBindingData[List[T]] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value().asScala.toList
+    )
+  }
+
+  implicit def javaListConverter[T](
+      sdkBindingData: SdkBindingData[List[T]]
+  ): SdkBindingData[java.util.List[T]] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value().toList.asJava
+    )
+  }
+
+  implicit def scalaMapConverter[T](
+      sdkBindingData: SdkBindingData[java.util.Map[String, T]]
+  ): SdkBindingData[Map[String, T]] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value().asScala.toMap
+    )
+  }
+
+  implicit def javaMapConverter[T](
+      sdkBindingData: SdkBindingData[Map[String, T]]
+  ): SdkBindingData[java.util.Map[String, T]] = {
+    SdkBindingData.create(
+      sdkBindingData.idl(),
+      sdkBindingData.`type`(),
+      sdkBindingData.value().toMap.asJava
     )
   }
 

@@ -16,19 +16,65 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{
-  BindingData,
-  LiteralType,
-  Primitive,
-  Scalar,
-  SimpleType
-}
-import org.flyte.flytekit.{SdkBindingData, SdkWorkflowBuilder}
+import org.flyte.api.v1.{BindingData, LiteralType, Primitive, Scalar, SimpleType}
+import org.flyte.flytekit.SdkBindingData
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
-object Toolkit {
+object Implicits {
+  implicit def stringSdkBinding(string: String): SdkBindingData[String] =
+    createSdkBindingData(string)
+
+  implicit def longSdkBinding(long: Long): SdkBindingData[Long] =
+    createSdkBindingData(long)
+
+  implicit def doubleSdkBinding(double: Double): SdkBindingData[Double] =
+    createSdkBindingData(double)
+
+  implicit def booleanSdkBindingData(
+      boolean: Boolean
+  ): SdkBindingData[Boolean] =
+    createSdkBindingData(boolean)
+
+  implicit def instantSdkBinding(instant: Instant): SdkBindingData[Instant] =
+    createSdkBindingData(instant)
+
+  implicit def durationSdkBinding(
+      duration: Duration
+  ): SdkBindingData[Duration] = createSdkBindingData(duration)
+
+  implicit def collectionSdkBinding[T](
+      collection: List[T]
+  ): SdkBindingData[List[T]] = createSdkBindingData(collection)
+
+  implicit def mapSdkBinding[T](
+      map: Map[String, T]
+  ): SdkBindingData[Map[String, T]] = createSdkBindingData(map)
+
+  implicit def javaLongSdkBinding(
+      long: Long
+  ): SdkBindingData[java.lang.Long] =
+    createSdkBindingData(long)
+
+  implicit def javaDoubleSdkBinding(
+      double: Double
+  ): SdkBindingData[java.lang.Double] =
+    createSdkBindingData(double)
+
+  implicit def javaBooleanSdkBindingData(
+      boolean: Boolean
+  ): SdkBindingData[java.lang.Boolean] =
+    createSdkBindingData(boolean)
+
+  implicit def javaCollectionSdkBinding[T](
+      collection: List[T]
+  ): SdkBindingData[java.util.List[T]] = createSdkBindingData(collection.asJava)
+
+  implicit def javaMapSdkBinding[T](
+      map: Map[String, T]
+  ): SdkBindingData[java.util.Map[String, T]] = createSdkBindingData(map.asJava)
+
   private def toBindingData(value: Any): (BindingData, LiteralType) = {
     value match {
       case string: String =>
@@ -73,7 +119,7 @@ object Toolkit {
           ),
           LiteralType.ofSimpleType(SimpleType.DURATION)
         )
-      case list: List[_] =>
+      case list: Seq[_] =>
         val (_, innerLiteralType) = toBindingData(
           list.headOption.getOrElse(
             throw new RuntimeException(
@@ -83,7 +129,7 @@ object Toolkit {
         )
         (
           BindingData.ofCollection(
-            list.map(innerValue => toBindingData(innerValue)._1).asJava
+            list.map(innerValue => toBindingData(innerValue)._1).toList.asJava
           ),
           LiteralType.ofCollectionType(innerLiteralType)
         )
@@ -118,48 +164,4 @@ object Toolkit {
     val (bindingData, literalType) = toBindingData(value)
     SdkBindingData.create(bindingData, literalType, value)
   }
-
-  implicit def stringSdkBinding(string: String): SdkBindingData[String] =
-    createSdkBindingData(string)
-
-  implicit def longSdkBinding(long: Long): SdkBindingData[Long] =
-    createSdkBindingData(long)
-
-  implicit def doubleSdkBinding(double: Double): SdkBindingData[Double] =
-    createSdkBindingData(double)
-
-  implicit def booleanSdkBindingData(
-      boolean: Boolean
-  ): SdkBindingData[Boolean] =
-    createSdkBindingData(boolean)
-
-  implicit def instantSdkBinding(instant: Instant): SdkBindingData[Instant] =
-    createSdkBindingData(instant)
-
-  implicit def durationSdkBinding(
-      duration: Duration
-  ): SdkBindingData[Duration] = createSdkBindingData(duration)
-
-  implicit def collectionSdkBinding[T](
-      collection: List[T]
-  ): SdkBindingData[List[T]] = createSdkBindingData(collection)
-
-  implicit def mapSdkBinding[T](
-      map: Map[String, T]
-  ): SdkBindingData[Map[String, T]] = createSdkBindingData(map)
-
-  implicit def javaLongSdkBinding(
-      long: Long
-  ): SdkBindingData[java.lang.Long] =
-    createSdkBindingData(long)
-
-  implicit def javaDoubleSdkBinding(
-      double: Double
-  ): SdkBindingData[java.lang.Double] =
-    createSdkBindingData(double)
-
-  implicit def javaBooleanSdkBindingData(
-      boolean: Boolean
-  ): SdkBindingData[java.lang.Boolean] =
-    createSdkBindingData(boolean)
 }

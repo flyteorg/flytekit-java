@@ -30,6 +30,9 @@ import org.flyte.flytekit.SdkBindingData
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import Toolkit._
+import org.flyte.examples.AllInputsTask.AutoAllInputsInput
+
+import scala.collection.immutable.Map
 
 class SdkScalaTypeTest {
 
@@ -286,6 +289,94 @@ class SdkScalaTypeTest {
     )
 
     assertEquals(input, output)
+  }
+
+  @Test
+  def testCreateAutoValueUsingScalaTypes(): Unit = {
+    import org.flyte.flytekit.SdkBindingDataJavaConverters._
+
+    val list: SdkBindingData[List[String]] = List("1", "2", "3")
+    val map: SdkBindingData[Map[String, String]] = Map("a" -> "2", "b" -> "3")
+
+    val input = AutoAllInputsInput.create(
+      2L,
+      2.0,
+      "hello",
+      true,
+      Instant.parse("2023-01-01T00:00:00Z"),
+      Duration.ZERO,
+      list,
+      map
+    )
+
+    val expected = AutoAllInputsInput.create(
+      SdkBindingData.ofInteger(2L),
+      SdkBindingData.ofFloat(2.0),
+      SdkBindingData.ofString("hello"),
+      SdkBindingData.ofBoolean(true),
+      SdkBindingData.ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
+      SdkBindingData.ofDuration(Duration.ZERO),
+      SdkBindingData
+        .ofCollection(List("1", "2", "3").asJava, SdkBindingData.ofString _),
+      SdkBindingData.ofStringMap(Map("a" -> "2", "b" -> "3").asJava)
+    )
+
+    assertEquals(expected, input)
+  }
+
+  @Test
+  def testUseAutoValueAttrIntoScalaClass(): Unit = {
+    import org.flyte.flytekit.SdkBindingDataJavaConverters._
+
+    val list: SdkBindingData[List[String]] = List("1", "2", "3")
+    val map: SdkBindingData[Map[String, String]] = Map("a" -> "2", "b" -> "3")
+
+    val input = AutoAllInputsInput.create(
+      2L,
+      2.0,
+      "hello",
+      true,
+      Instant.parse("2023-01-01T00:00:00Z"),
+      Duration.ZERO,
+      list,
+      map
+    )
+
+    case class AutoAllInputsInputScala(
+        long: SdkBindingData[Long],
+        double: SdkBindingData[Double],
+        string: SdkBindingData[String],
+        boolean: SdkBindingData[Boolean],
+        instant: SdkBindingData[Instant],
+        duration: SdkBindingData[Duration],
+        list: SdkBindingData[List[String]],
+        map: SdkBindingData[Map[String, String]]
+    )
+
+    val scalaClass = AutoAllInputsInputScala(
+      input.i(),
+      input.f(),
+      input.s(),
+      input.b(),
+      input.t(),
+      input.d(),
+      input.l(),
+      input.m()
+    )
+
+    val expected = AutoAllInputsInputScala(
+      2L,
+      2.0,
+      "hello",
+      true,
+      Instant.parse("2023-01-01T00:00:00Z"),
+      Duration.ZERO,
+      List("1", "2", "3"),
+      Map("a" -> "2", "b" -> "3")
+    )
+
+    assertEquals(expected, scalaClass)
+
   }
 
   // Typed[String] doesn't compile aka illtyped

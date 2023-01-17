@@ -14,25 +14,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
-import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 
-public class BindingMapSerializer extends JsonSerializer<JacksonBindingMap> {
+public class SdkBindingDataSerializer extends StdSerializer<SdkBindingData<?>> {
+  private static final long serialVersionUID = 0L;
+
+  public SdkBindingDataSerializer() {
+    super(SdkBindingData.class, true);
+  }
+
   @Override
-  public void serialize(JacksonBindingMap value, JsonGenerator gen, SerializerProvider serializers)
+  public void serialize(
+      SdkBindingData<?> sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
-    gen.writeStartObject();
-    for (Map.Entry<String, SdkBindingData<?>> entry : value.getBindingsMap().entrySet()) {
-      String attr = entry.getKey();
-      gen.writeFieldName(attr);
-      gen.writeString(attr);
-    }
-    gen.writeEndObject();
+    gen.writeObject(sdkBindingData.get());
   }
 }

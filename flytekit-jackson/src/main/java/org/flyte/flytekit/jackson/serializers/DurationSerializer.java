@@ -14,31 +14,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.SimpleType;
 
-public abstract class ScalarSerializer extends LiteralSerializer {
-
-  public ScalarSerializer(
+public class DurationSerializer extends PrimitiveSerializer {
+  public DurationSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
+    if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
+        && literalType.simpleType() != SimpleType.DURATION) {
+      throw new IllegalArgumentException("Literal type should be a duration literal type");
+    }
   }
 
   @Override
-  final void serializeLiteral() throws IOException {
-    gen.writeObject(Literal.Kind.SCALAR);
-    gen.writeFieldName("scalar");
-    serializeScalar();
+  public void serializePrimitive() throws IOException {
+    writePrimitive(
+        Primitive.Kind.DURATION, (gen, value) -> gen.writeString(value.duration().toString()));
   }
-
-  abstract void serializeScalar() throws IOException;
 }

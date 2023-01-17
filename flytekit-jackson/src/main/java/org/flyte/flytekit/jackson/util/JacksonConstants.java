@@ -14,20 +14,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.util;
 
-import java.util.Map;
-import org.flyte.flytekit.SdkBindingData;
-
-/** Class used to register custom serializer for maps. */
-public class JacksonBindingMap {
-  private final Map<String, SdkBindingData<?>> bindingsMap;
-
-  JacksonBindingMap(Map<String, SdkBindingData<?>> bindingsMap) {
-    this.bindingsMap = bindingsMap;
-  }
-
-  public Map<String, SdkBindingData<?>> getBindingsMap() {
-    return bindingsMap;
-  }
+public class JacksonConstants {
+  public static final String VALUE = "value";
+  public static final String SCALAR = "scalar";
+  public static final String LITERAL = "literal";
+  public static final String STRUCT_TYPE = "structType";
+  public static final String STRUCT_VALUE = "structValue";
+  public static final String TYPE = "type";
+  public static final String KIND = "kind";
+  public static final String PRIMITIVE = "primitive";
 }

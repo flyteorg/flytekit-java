@@ -14,34 +14,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.util.JacksonConstants.SCALAR;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Scalar;
 
-public class BooleanSerializer extends PrimitiveSerializer {
-  public BooleanSerializer(
+public class BlobSerializer extends ScalarSerializer {
+  public BlobSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
-    if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
-        && literalType.simpleType() != SimpleType.BOOLEAN) {
-      throw new IllegalArgumentException("Literal type should be a boolean literal type");
-    }
   }
 
   @Override
-  public void serializePrimitive() throws IOException {
-    writePrimitive(
-        Primitive.Kind.BOOLEAN_VALUE,
-        (gen, primitive) -> gen.writeBoolean(primitive.booleanValue()));
+  void serializeScalar() throws IOException {
+    gen.writeFieldName(SCALAR);
+    gen.writeObject(Scalar.Kind.BLOB);
+    serializerProvider
+        .findValueSerializer(Blob.class)
+        .serialize(value.scalar().blob(), gen, serializerProvider);
   }
 }

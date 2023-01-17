@@ -14,7 +14,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.util.JacksonConstants.KIND;
+import static org.flyte.flytekit.jackson.util.JacksonConstants.TYPE;
+import static org.flyte.flytekit.jackson.util.JacksonConstants.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
@@ -22,12 +26,12 @@ import org.flyte.api.v1.LiteralType;
 
 class LiteralTypeSerializer {
   static void serialize(LiteralType literalType, JsonGenerator gen) throws IOException {
-    gen.writeFieldName("type");
+    gen.writeFieldName(TYPE);
 
     gen.writeStartObject();
-    gen.writeFieldName("kind");
+    gen.writeFieldName(KIND);
     gen.writeObject(literalType.getKind());
-    gen.writeFieldName("value");
+    gen.writeFieldName(VALUE);
     switch (literalType.getKind()) {
       case SIMPLE_TYPE:
         // {type: {kind: simple, value: string}}

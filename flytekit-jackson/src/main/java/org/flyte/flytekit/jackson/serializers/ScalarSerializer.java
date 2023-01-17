@@ -14,7 +14,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.util.JacksonConstants.SCALAR;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -22,31 +24,23 @@ import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
-abstract class LiteralSerializer {
+public abstract class ScalarSerializer extends LiteralSerializer {
 
-  protected final JsonGenerator gen;
-  protected final String key;
-  protected final Literal value;
-  protected final SerializerProvider serializerProvider;
-  protected final LiteralType literalType;
-
-  public LiteralSerializer(
+  public ScalarSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
-    this.gen = gen;
-    this.key = key;
-    this.value = value;
-    this.serializerProvider = serializerProvider;
-    this.literalType = literalType;
+    super(gen, key, value, serializerProvider, literalType);
   }
 
-  final void serialize() throws IOException {
-    gen.writeFieldName("literal");
-    serializeLiteral();
+  @Override
+  final void serializeLiteral() throws IOException {
+    gen.writeObject(Literal.Kind.SCALAR);
+    gen.writeFieldName(SCALAR);
+    serializeScalar();
   }
 
-  abstract void serializeLiteral() throws IOException;
+  abstract void serializeScalar() throws IOException;
 }

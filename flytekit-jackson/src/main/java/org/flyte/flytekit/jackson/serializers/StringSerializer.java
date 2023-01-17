@@ -14,49 +14,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.SimpleType;
 
-public class MapSerializer extends LiteralSerializer {
-  public MapSerializer(
+public class StringSerializer extends PrimitiveSerializer {
+
+  public StringSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
-    if (literalType.getKind() != LiteralType.Kind.MAP_VALUE_TYPE) {
-      throw new IllegalArgumentException("Literal type should be a Map literal type");
+    if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
+        && literalType.simpleType() != SimpleType.STRING) {
+      throw new IllegalArgumentException("Literal type should be a string literal type");
     }
   }
 
   @Override
-  void serializeLiteral() throws IOException {
-    gen.writeObject(Literal.Kind.MAP);
-    LiteralType valueType = literalType.mapValueType();
-    LiteralTypeSerializer.serialize(valueType, gen);
-    gen.writeFieldName("value");
-    gen.writeStartObject();
-
-    value.map().forEach((k, v) -> writeMapEntry(k, v, valueType));
-    gen.writeEndObject();
-  }
-
-  private void writeMapEntry(String k, Literal v, LiteralType valueType) {
-    try {
-      gen.writeFieldName(k);
-      gen.writeStartObject();
-      LiteralSerializer literalSerializer =
-          LiteralSerializerFactory.create(k, v, gen, serializerProvider, valueType);
-      literalSerializer.serialize();
-      gen.writeEndObject();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  public void serializePrimitive() throws IOException {
+    writePrimitive(
+        Primitive.Kind.STRING_VALUE, (gen, value) -> gen.writeString(value.stringValue()));
   }
 }

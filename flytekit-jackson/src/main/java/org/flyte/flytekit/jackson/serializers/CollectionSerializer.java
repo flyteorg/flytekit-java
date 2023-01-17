@@ -14,7 +14,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.util.JacksonConstants.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -42,7 +44,7 @@ public class CollectionSerializer extends LiteralSerializer {
     LiteralType elementType = literalType.collectionType();
     LiteralTypeSerializer.serialize(elementType, gen);
 
-    gen.writeFieldName("value");
+    gen.writeFieldName(VALUE);
     gen.writeStartArray();
 
     value.collection().forEach(e -> writeCollectionElement(e, elementType));

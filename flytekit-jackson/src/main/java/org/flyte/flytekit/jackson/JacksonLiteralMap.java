@@ -21,11 +21,11 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
 /** Class used to register custom serializer for maps. */
-class JacksonLiteralMap {
+public class JacksonLiteralMap {
   private final Map<String, Literal> value;
   private final Map<String, LiteralType> type;
 
-  JacksonLiteralMap(Map<String, Literal> value, Map<String, LiteralType> type) {
+  public JacksonLiteralMap(Map<String, Literal> value, Map<String, LiteralType> type) {
     this.value = value;
     this.type = type;
   }

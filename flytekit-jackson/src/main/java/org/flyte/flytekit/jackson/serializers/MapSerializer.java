@@ -14,7 +14,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -22,39 +24,37 @@ import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
-public class CollectionSerializer extends LiteralSerializer {
-
-  public CollectionSerializer(
+public class MapSerializer extends LiteralSerializer {
+  public MapSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
-    if (literalType.getKind() != LiteralType.Kind.COLLECTION_TYPE) {
-      throw new IllegalArgumentException("Literal type should be a Collection literal type");
+    if (literalType.getKind() != LiteralType.Kind.MAP_VALUE_TYPE) {
+      throw new IllegalArgumentException("Literal type should be a Map literal type");
     }
   }
 
   @Override
   void serializeLiteral() throws IOException {
-    gen.writeObject(Literal.Kind.COLLECTION);
-    LiteralType elementType = literalType.collectionType();
-    LiteralTypeSerializer.serialize(elementType, gen);
+    gen.writeObject(Literal.Kind.MAP);
+    LiteralType valueType = literalType.mapValueType();
+    LiteralTypeSerializer.serialize(valueType, gen);
+    gen.writeFieldName(VALUE);
+    gen.writeStartObject();
 
-    gen.writeFieldName("value");
-    gen.writeStartArray();
-
-    value.collection().forEach(e -> writeCollectionElement(e, elementType));
-
-    gen.writeEndArray();
+    value.map().forEach((k, v) -> writeMapEntry(k, v, valueType));
+    gen.writeEndObject();
   }
 
-  private void writeCollectionElement(Literal element, LiteralType elementType) {
+  private void writeMapEntry(String k, Literal v, LiteralType valueType) {
     try {
+      gen.writeFieldName(k);
       gen.writeStartObject();
       LiteralSerializer literalSerializer =
-          LiteralSerializerFactory.create(key, element, gen, serializerProvider, elementType);
+          LiteralSerializerFactory.create(k, v, gen, serializerProvider, valueType);
       literalSerializer.serialize();
       gen.writeEndObject();
     } catch (IOException e) {

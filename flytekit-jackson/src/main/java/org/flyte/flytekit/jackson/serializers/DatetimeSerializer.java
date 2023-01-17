@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -24,8 +24,8 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.SimpleType;
 
-public class DurationSerializer extends PrimitiveSerializer {
-  public DurationSerializer(
+public class DatetimeSerializer extends PrimitiveSerializer {
+  public DatetimeSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
@@ -33,14 +33,14 @@ public class DurationSerializer extends PrimitiveSerializer {
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
     if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
-        && literalType.simpleType() != SimpleType.DURATION) {
-      throw new IllegalArgumentException("Literal type should be a duration literal type");
+        && literalType.simpleType() != SimpleType.DATETIME) {
+      throw new IllegalArgumentException("Literal type should be a datetime literal type");
     }
   }
 
   @Override
   public void serializePrimitive() throws IOException {
     writePrimitive(
-        Primitive.Kind.DURATION, (gen, value) -> gen.writeString(value.duration().toString()));
+        Primitive.Kind.DATETIME, (gen, value) -> gen.writeString(value.datetime().toString()));
   }
 }

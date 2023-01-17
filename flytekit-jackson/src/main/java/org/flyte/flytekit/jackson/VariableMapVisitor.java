@@ -107,7 +107,6 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     return unmodifiableMap(new HashMap<>(builder));
   }
 
-
   @SuppressWarnings("AlreadyChecked")
   private LiteralType toLiteralType(
       JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {

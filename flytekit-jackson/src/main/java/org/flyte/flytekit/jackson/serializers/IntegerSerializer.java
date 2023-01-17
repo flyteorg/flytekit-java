@@ -14,39 +14,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.SimpleType;
 
-abstract class LiteralSerializer {
+public class IntegerSerializer extends PrimitiveSerializer {
 
-  protected final JsonGenerator gen;
-  protected final String key;
-  protected final Literal value;
-  protected final SerializerProvider serializerProvider;
-  protected final LiteralType literalType;
-
-  public LiteralSerializer(
+  public IntegerSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
-    this.gen = gen;
-    this.key = key;
-    this.value = value;
-    this.serializerProvider = serializerProvider;
-    this.literalType = literalType;
+    super(gen, key, value, serializerProvider, literalType);
+    if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
+        && literalType.simpleType() != SimpleType.INTEGER) {
+      throw new IllegalArgumentException("Literal type should be a integer literal type");
+    }
   }
 
-  final void serialize() throws IOException {
-    gen.writeFieldName("literal");
-    serializeLiteral();
+  @Override
+  public void serializePrimitive() throws IOException {
+    writePrimitive(
+        Primitive.Kind.INTEGER_VALUE,
+        (gen, primitive) -> gen.writeNumber(primitive.integerValue()));
   }
-
-  abstract void serializeLiteral() throws IOException;
 }

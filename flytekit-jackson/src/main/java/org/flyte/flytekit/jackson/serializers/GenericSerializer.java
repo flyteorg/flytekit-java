@@ -14,7 +14,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.LITERAL;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.STRUCT_TYPE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.STRUCT_VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -53,14 +58,14 @@ public class GenericSerializer extends ScalarSerializer {
     if (!value.kind().equals(Struct.Value.Kind.LIST_VALUE)
         && !value.kind().equals(Struct.Value.Kind.NULL_VALUE)) {
       gen.writeStartObject();
-      gen.writeFieldName("literal");
+      gen.writeFieldName(LITERAL);
       gen.writeObject(Literal.Kind.SCALAR);
-      gen.writeFieldName("scalar");
+      gen.writeFieldName(SCALAR);
       gen.writeObject(Scalar.Kind.GENERIC);
     }
 
     if (isSimpleType(value.kind())) {
-      gen.writeFieldName("structType");
+      gen.writeFieldName(STRUCT_TYPE);
     }
     switch (value.kind()) {
       case BOOL_VALUE:
@@ -116,7 +121,7 @@ public class GenericSerializer extends ScalarSerializer {
       Struct.Value.Kind kind, Struct.Value structValue, WriteGenericFunction writeTypeFunction)
       throws IOException {
     gen.writeObject(kind);
-    gen.writeFieldName("structValue");
+    gen.writeFieldName(STRUCT_VALUE);
     writeTypeFunction.write(gen, structValue);
     gen.writeEndObject();
   }

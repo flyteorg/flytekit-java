@@ -166,7 +166,6 @@ public class FibonacciWorkflowTest {
     public static FibonacciWorkflowInputs create(
         SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
       return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(fib0, fib1);
-
     }
   }
 

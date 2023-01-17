@@ -14,9 +14,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.deserializers;
 
 import static java.util.stream.Collectors.toList;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.KIND;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.LITERAL;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.TYPE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -47,24 +52,24 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   }
 
   private SdkBindingData<?> transform(JsonNode tree) {
-    Literal.Kind literalKind = Literal.Kind.valueOf(tree.get("literal").asText());
+    Literal.Kind literalKind = Literal.Kind.valueOf(tree.get(LITERAL).asText());
     switch (literalKind) {
       case SCALAR:
-        switch (Scalar.Kind.valueOf(tree.get("scalar").asText())) {
+        switch (Scalar.Kind.valueOf(tree.get(SCALAR).asText())) {
           case PRIMITIVE:
             switch (Primitive.Kind.valueOf(tree.get("primitive").asText())) {
               case INTEGER_VALUE:
-                return SdkBindingData.ofInteger(tree.get("value").longValue());
+                return SdkBindingData.ofInteger(tree.get(VALUE).longValue());
               case BOOLEAN_VALUE:
-                return SdkBindingData.ofBoolean(tree.get("value").booleanValue());
+                return SdkBindingData.ofBoolean(tree.get(VALUE).booleanValue());
               case STRING_VALUE:
-                return SdkBindingData.ofString(tree.get("value").asText());
+                return SdkBindingData.ofString(tree.get(VALUE).asText());
               case DURATION:
-                return SdkBindingData.ofDuration(Duration.parse(tree.get("value").asText()));
+                return SdkBindingData.ofDuration(Duration.parse(tree.get(VALUE).asText()));
               case DATETIME:
-                return SdkBindingData.ofDatetime(Instant.parse(tree.get("value").asText()));
+                return SdkBindingData.ofDatetime(Instant.parse(tree.get(VALUE).asText()));
               case FLOAT_VALUE:
-                return SdkBindingData.ofFloat(tree.get("value").doubleValue());
+                return SdkBindingData.ofFloat(tree.get(VALUE).doubleValue());
             }
             break;
           case GENERIC:
@@ -90,8 +95,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
-    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get("type").get("kind").asText());
-    Iterator<JsonNode> elements = tree.get("value").elements();
+    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get(TYPE).get(KIND).asText());
+    Iterator<JsonNode> elements = tree.get(VALUE).elements();
     switch (kind) {
       case SCHEMA_TYPE:
       case BLOB_TYPE:
@@ -110,8 +115,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<Map<String, T>> transformMap(JsonNode tree) {
-    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get("type").get("kind").asText());
-    JsonNode valueNode = tree.get("value");
+    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get(TYPE).get(KIND).asText());
+    JsonNode valueNode = tree.get(VALUE);
     List<Map.Entry<String, JsonNode>> entries =
         streamOf(valueNode.fieldNames())
             .map(name -> Map.entry(name, valueNode.get(name)))

@@ -14,13 +14,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import org.flyte.api.v1.Literal;
+import org.flyte.flytekit.jackson.JacksonLiteralMap;
 
 class LiteralMapSerializer extends StdSerializer<JacksonLiteralMap> {
   private static final long serialVersionUID = 0L;

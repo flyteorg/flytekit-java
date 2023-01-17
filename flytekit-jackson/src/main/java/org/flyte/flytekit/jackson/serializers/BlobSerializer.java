@@ -14,7 +14,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -36,7 +38,7 @@ public class BlobSerializer extends ScalarSerializer {
 
   @Override
   void serializeScalar() throws IOException {
-    gen.writeFieldName("scalar");
+    gen.writeFieldName(SCALAR);
     gen.writeObject(Scalar.Kind.BLOB);
     serializerProvider
         .findValueSerializer(Blob.class)

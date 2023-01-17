@@ -14,7 +14,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.PRIMITIVE;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -22,26 +25,36 @@ import java.io.IOException;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.SimpleType;
+import org.flyte.api.v1.Scalar;
 
-public class StringSerializer extends PrimitiveSerializer {
+public abstract class PrimitiveSerializer extends ScalarSerializer {
 
-  public StringSerializer(
+  public PrimitiveSerializer(
       JsonGenerator gen,
       String key,
       Literal value,
       SerializerProvider serializerProvider,
       LiteralType literalType) {
     super(gen, key, value, serializerProvider, literalType);
-    if (literalType.getKind() != LiteralType.Kind.SIMPLE_TYPE
-        && literalType.simpleType() != SimpleType.STRING) {
-      throw new IllegalArgumentException("Literal type should be a string literal type");
-    }
   }
 
   @Override
-  public void serializePrimitive() throws IOException {
-    writePrimitive(
-        Primitive.Kind.STRING_VALUE, (gen, value) -> gen.writeString(value.stringValue()));
+  public final void serializeScalar() throws IOException {
+    gen.writeObject(Scalar.Kind.PRIMITIVE);
+    serializePrimitive();
+  }
+
+  abstract void serializePrimitive() throws IOException;
+
+  protected void writePrimitive(Object kind, WritePrimitiveFunction writeValueFunction)
+      throws IOException {
+    gen.writeFieldName(PRIMITIVE);
+    gen.writeObject(kind);
+    gen.writeFieldName(VALUE);
+    writeValueFunction.write(gen, value.scalar().primitive());
+  }
+
+  interface WritePrimitiveFunction {
+    void write(JsonGenerator gen, Primitive value) throws IOException;
   }
 }

@@ -16,9 +16,12 @@
  */
 package org.flyte.localengine.examples;
 
-// TODO: enable when Structs are supported
-/*
-@AutoService(SdkRunnableTask.class)
+import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.jackson.JacksonSdkType;
+
+// @AutoService(SdkRunnableTask.class)
 public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Output> {
   private static final long serialVersionUID = -3990613929313621336L;
 
@@ -28,9 +31,11 @@ public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Out
 
   @Override
   public Output run(Input input) {
-    return Output.create(
-        CustomStruct.create(
-            input.structData().get().someKey1() + "-output", input.structData().get().someKey2()));
+    return null;
+    //    return Output.create(
+    //        CustomStruct.create(
+    //            input.structData().get().someKey1() + "-output",
+    // input.structData().get().someKey2()));
   }
 
   @AutoValue
@@ -52,7 +57,9 @@ public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Out
     public abstract SdkBindingData<CustomStruct> structData();
 
     public static Input create(String someString, CustomStruct struct) {
-      return new AutoValue_StructTask_Input(SdkBindingData.ofString(someString), SdkBindingData.ofStruct(struct));
+      return null;
+      // return new AutoValue_StructTask_Input(SdkBindingData.ofString(someString),
+      // SdkBindingData.ofStruct(struct));
     }
   }
 
@@ -66,4 +73,3 @@ public class StructTask extends SdkRunnableTask<StructTask.Input, StructTask.Out
     }
   }
 }
-*/

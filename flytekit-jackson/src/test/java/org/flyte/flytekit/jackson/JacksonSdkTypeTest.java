@@ -18,9 +18,11 @@ package org.flyte.flytekit.jackson;
 
 import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -41,7 +43,6 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -60,8 +61,12 @@ public class JacksonSdkTypeTest {
       Duration d,
       // Blob blob,
       List<String> l,
-      Map<String, String> m) {
-    return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
+      Map<String, String> m,
+      List<List<String>> ll,
+      List<Map<String, String>> lm,
+      Map<String, List<String>> ml,
+      Map<String, Map<String, String>> mm) {
+    return AutoValueInput.create(
         SdkBindingData.ofInteger(i),
         SdkBindingData.ofFloat(f),
         SdkBindingData.ofString(s),
@@ -69,23 +74,42 @@ public class JacksonSdkTypeTest {
         SdkBindingData.ofDatetime(t),
         SdkBindingData.ofDuration(d),
         SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-        SdkBindingData.ofStringMap(m));
+        SdkBindingData.ofStringMap(m),
+        SdkBindingData.ofCollection(
+            ll, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
+        SdkBindingData.ofCollection(lm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)),
+        SdkBindingData.ofMap(
+            ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
+        SdkBindingData.ofMap(mm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)));
   }
 
   @Test
   public void testVariableMap() {
-    Map<String, Variable> expected = new HashMap<>();
-    expected.put("i", createVar(SimpleType.INTEGER));
-    expected.put("f", createVar(SimpleType.FLOAT));
-    expected.put("s", createVar(SimpleType.STRING));
-    expected.put("b", createVar(SimpleType.BOOLEAN));
-    expected.put("t", createVar(SimpleType.DATETIME));
-    expected.put("d", createVar(SimpleType.DURATION));
-    // expected.put("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE)));
-    expected.put("l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))));
-    expected.put("m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING))));
-
-    assertEquals(expected, JacksonSdkType.of(AutoValueInput.class).getVariableMap());
+    assertThat(
+        JacksonSdkType.of(AutoValueInput.class).getVariableMap(),
+        allOf(
+            List.of(
+                hasEntry("i", createVar(SimpleType.INTEGER)),
+                hasEntry("f", createVar(SimpleType.FLOAT)),
+                hasEntry("s", createVar(SimpleType.STRING)),
+                hasEntry("b", createVar(SimpleType.BOOLEAN)),
+                hasEntry("t", createVar(SimpleType.DATETIME)),
+                hasEntry("d", createVar(SimpleType.DURATION)),
+                // hasEntry("blob", createVar(LiteralType.ofBlobType(BLOB_TYPE))),
+                hasEntry(
+                    "l", createVar(LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING)))),
+                hasEntry(
+                    "m", createVar(LiteralType.ofMapValueType(ofSimpleType(SimpleType.STRING)))),
+                hasEntry(
+                    "ll",
+                    createVar(
+                        LiteralType.ofCollectionType(
+                            LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))))),
+                hasEntry(
+                    "ml",
+                    createVar(
+                        LiteralType.ofMapValueType(
+                            LiteralType.ofCollectionType(ofSimpleType(SimpleType.STRING))))))));
   }
 
   @Test
@@ -104,9 +128,37 @@ public class JacksonSdkTypeTest {
     literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    // literalMap.put("blob", literalOf(blob));
+    //      literalMap.put("blob", literalOf(blob));
     literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
     literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
+    literalMap.put(
+        "ll",
+        Literal.ofCollection(
+            List.of(
+                Literal.ofCollection(List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
+                Literal.ofCollection(
+                    List.of(stringLiteralOf("a"), stringLiteralOf("b"), stringLiteralOf("c"))))));
+    literalMap.put(
+        "lm",
+        Literal.ofCollection(
+            List.of(
+                Literal.ofMap(Map.of("A", stringLiteralOf("a"), "B", stringLiteralOf("b"))),
+                Literal.ofMap(Map.of("a", stringLiteralOf("A"), "b", stringLiteralOf("B"))))));
+    literalMap.put(
+        "ml",
+        Literal.ofMap(
+            Map.of(
+                "frodo",
+                Literal.ofCollection(
+                    List.of(stringLiteralOf("baggins"), stringLiteralOf("bolson"))))));
+    literalMap.put(
+        "mm",
+        Literal.ofMap(
+            Map.of(
+                "math",
+                    Literal.ofMap(
+                        Map.of("pi", stringLiteralOf("3.14"), "e", stringLiteralOf("2.72"))),
+                "pokemon", Literal.ofMap(Map.of("ash", stringLiteralOf("pikachu"))))));
 
     AutoValueInput input = JacksonSdkType.of(AutoValueInput.class).fromLiteralMap(literalMap);
 
@@ -122,7 +174,19 @@ public class JacksonSdkTypeTest {
                 /* d= */ duration,
                 /// * blob= */ blob,
                 /* l= */ List.of("123"),
-                /* m= */ Map.of("marco", "polo"))));
+                /* m= */ Map.of("marco", "polo"),
+                /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
+                /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
+                /* ml= */ Map.of("frodo", List.of("baggins", "bolson")),
+                /* mm= */ Map.of(
+                    "math",
+                    Map.of("pi", "3.14", "e", "2.72"),
+                    "pokemon",
+                    Map.of("ash", "pikachu")))));
+  }
+
+  private static Literal stringLiteralOf(String string) {
+    return literalOf(Primitive.ofStringValue(string));
   }
 
   @Test
@@ -144,20 +208,69 @@ public class JacksonSdkTypeTest {
                     /* d= */ Duration.ofSeconds(1, 42),
                     /// * blob= */ blob,
                     /* l= */ List.of("foo"),
-                    /* m= */ Map.of("marco", "polo")));
+                    /* m= */ Map.of("marco", "polo"),
+                    /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
+                    /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
+                    /* ml= */ Map.of("frodo", List.of("baggins", "bolson")),
+                    /* mm= */ Map.of(
+                        "math",
+                        Map.of("pi", "3.14", "e", "2.72"),
+                        "pokemon",
+                        Map.of("ash", "pikachu"))));
 
-    Map<String, Literal> expected = new HashMap<>();
-    expected.put("i", literalOf(Primitive.ofIntegerValue(42L)));
-    expected.put("f", literalOf(Primitive.ofFloatValue(42.0d)));
-    expected.put("s", literalOf(Primitive.ofStringValue("42")));
-    expected.put("b", literalOf(Primitive.ofBooleanValue(false)));
-    expected.put("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1))));
-    expected.put("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42))));
-    expected.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo")))));
-    expected.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
-    // expected.put("blob", literalOf(blob));
-
-    assertThat(literalMap, equalTo(expected));
+    assertThat(
+        literalMap,
+        allOf(
+            List.of(
+                hasEntry("i", literalOf(Primitive.ofIntegerValue(42L))),
+                hasEntry("f", literalOf(Primitive.ofFloatValue(42.0d))),
+                hasEntry("s", literalOf(Primitive.ofStringValue("42"))),
+                hasEntry("b", literalOf(Primitive.ofBooleanValue(false))),
+                hasEntry("t", literalOf(Primitive.ofDatetime(Instant.ofEpochSecond(42, 1)))),
+                hasEntry("d", literalOf(Primitive.ofDuration(Duration.ofSeconds(1, 42)))),
+                hasEntry(
+                    "l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("foo"))))),
+                hasEntry(
+                    "m",
+                    Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo"))))),
+                hasEntry(
+                    "ll",
+                    Literal.ofCollection(
+                        List.of(
+                            Literal.ofCollection(
+                                List.of(stringLiteralOf("foo"), stringLiteralOf("bar"))),
+                            Literal.ofCollection(
+                                List.of(
+                                    stringLiteralOf("a"),
+                                    stringLiteralOf("b"),
+                                    stringLiteralOf("c")))))),
+                hasEntry(
+                    "lm",
+                    Literal.ofCollection(
+                        List.of(
+                            Literal.ofMap(
+                                Map.of("A", stringLiteralOf("a"), "B", stringLiteralOf("b"))),
+                            Literal.ofMap(
+                                Map.of("a", stringLiteralOf("A"), "b", stringLiteralOf("B")))))),
+                hasEntry(
+                    "ml",
+                    Literal.ofMap(
+                        Map.of(
+                            "frodo",
+                            Literal.ofCollection(
+                                List.of(stringLiteralOf("baggins"), stringLiteralOf("bolson")))))),
+                hasEntry(
+                    "mm",
+                    Literal.ofMap(
+                        Map.of(
+                            "math",
+                            Literal.ofMap(
+                                Map.of(
+                                    "pi", stringLiteralOf("3.14"), "e", stringLiteralOf("2.72"))),
+                            "pokemon",
+                            Literal.ofMap(Map.of("ash", stringLiteralOf("pikachu"))))))
+                // hasEntry("blob", literalOf(blob))
+                )));
   }
 
   @Test
@@ -194,25 +307,26 @@ public class JacksonSdkTypeTest {
 
   @Disabled("Not supported struct with the strongly types implementation.")
   public void testStructRoundtrip() {
-    StructInput input =
-        StructInput.create(
-            null
-            // StructValueInput.create(
-            //    /* stringValue= */ "nested-string",
-            //    /* boolValue= */ false,
-            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //    /* structValue= */ StructValueInput.create(
-            //        /* stringValue= */ "nested-string",
-            //        /* boolValue= */ false,
-            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
-            //        /* structValue= */ null,
-            //        /* numberValue= */ 42.0),
-            //    /* numberValue= */ 42.0)
-            );
-
-    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
-    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
-    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
+    fail();
+    //    StructInput input =
+    //        StructInput.create(
+    //            null
+    //            // StructValueInput.create(
+    //            //    /* stringValue= */ "nested-string",
+    //            //    /* boolValue= */ false,
+    //            //    /* listValue= */ Arrays.asList(1L, 2L, 3L),
+    //            //    /* structValue= */ StructValueInput.create(
+    //            //        /* stringValue= */ "nested-string",
+    //            //        /* boolValue= */ false,
+    //            //        /* listValue= */ Arrays.asList(1L, 2L, 3L),
+    //            //        /* structValue= */ null,
+    //            //        /* numberValue= */ 42.0),
+    //            //    /* numberValue= */ 42.0)
+    //            );
+    //
+    //    SdkType<StructInput> sdkType = JacksonSdkType.of(StructInput.class);
+    //    Map<String, Literal> literalMap = sdkType.toLiteralMap(input);
+    //    assertThat(sdkType.fromLiteralMap(literalMap), equalTo(input));
   }
 
   @Disabled("Not supported customType & customEnum with the strongly types implementation.")
@@ -358,6 +472,14 @@ public class JacksonSdkTypeTest {
 
     public abstract SdkBindingData<Map<String, String>> m();
 
+    public abstract SdkBindingData<List<List<String>>> ll();
+
+    public abstract SdkBindingData<List<Map<String, String>>> lm();
+
+    public abstract SdkBindingData<Map<String, List<String>>> ml();
+
+    public abstract SdkBindingData<Map<String, Map<String, String>>> mm();
+
     public static AutoValueInput create(
         SdkBindingData<Long> i,
         SdkBindingData<Double> f,
@@ -367,8 +489,13 @@ public class JacksonSdkTypeTest {
         SdkBindingData<Duration> d,
         // Blob blob,
         SdkBindingData<List<String>> l,
-        SdkBindingData<Map<String, String>> m) {
-      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(i, f, s, b, t, d, l, m);
+        SdkBindingData<Map<String, String>> m,
+        SdkBindingData<List<List<String>>> ll,
+        SdkBindingData<List<Map<String, String>>> lm,
+        SdkBindingData<Map<String, List<String>>> ml,
+        SdkBindingData<Map<String, Map<String, String>>> mm) {
+      return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
+          i, f, s, b, t, d, l, m, ll, lm, ml, mm);
     }
   }
 

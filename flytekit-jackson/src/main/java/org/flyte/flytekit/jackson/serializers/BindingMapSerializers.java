@@ -14,25 +14,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
 
 import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.deser.Deserializers;
-import org.flyte.flytekit.SdkBindingData;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.ser.Serializers;
+import org.flyte.flytekit.jackson.JacksonBindingMap;
 
-class SdkBindingDataDeserializers extends Deserializers.Base {
+public class BindingMapSerializers extends Serializers.Base {
 
   @Override
-  public JsonDeserializer<?> findBeanDeserializer(
-      JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
-    if (SdkBindingData.class.isAssignableFrom(type.getRawClass())) {
-
-      return new SdkBindingDataDeserializer();
+  public JsonSerializer<?> findSerializer(
+      SerializationConfig config, JavaType type, BeanDescription beanDesc) {
+    if (type.getRawClass().equals(JacksonBindingMap.class)) {
+      return new BindingMapSerializer();
     }
 
-    return null;
+    return super.findSerializer(config, type, beanDesc);
   }
 }

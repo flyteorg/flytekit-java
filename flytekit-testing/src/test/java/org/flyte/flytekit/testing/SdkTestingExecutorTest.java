@@ -260,7 +260,7 @@ public class SdkTestingExecutorTest {
             .withWorkflowOutput(
                 new SimpleSubWorkflow(),
                 JacksonSdkType.of(SimpleSubWorkflowInput.class),
-                SimpleSubWorkflowInput.create(7),
+                SimpleSubWorkflowInput.create(SdkBindingData.ofInteger(7)),
                 JacksonSdkType.of(TestUnaryIntegerOutput.class),
                 TestUnaryIntegerOutput.create(5))
             .execute();
@@ -452,9 +452,8 @@ public class SdkTestingExecutorTest {
   abstract static class SimpleSubWorkflowInput {
     abstract SdkBindingData<Long> in();
 
-    public static SimpleSubWorkflowInput create(long in) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(
-          SdkBindingData.ofInteger(in));
+    public static SimpleSubWorkflowInput create(SdkBindingData<Long> in) {
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
     }
   }
 

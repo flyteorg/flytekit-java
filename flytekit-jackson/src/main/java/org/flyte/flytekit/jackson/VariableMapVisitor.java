@@ -112,17 +112,15 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {
     Class<?> type = javaType.getRawClass();
 
-    if (rootLevel && !SdkBindingData.class.isAssignableFrom(type)) {
+    if (SdkBindingData.class.isAssignableFrom(type)) {
+      return toLiteralType(
+          javaType.getBindings().getBoundType(0), false, propName, declaringClassName);
+    } else if (rootLevel) {
       throw new UnsupportedOperationException(
           String.format(
               "Field '%s' from class '%s' is declared as '%s' and it is not matching any of the supported types. "
                   + "Please make sure your variable declared type is wrapped in 'SdkBindingData<>'.",
               propName, declaringClassName, type));
-    }
-
-    if (SdkBindingData.class.isAssignableFrom(type)) {
-      return toLiteralType(
-          javaType.getBindings().getBoundType(0), false, propName, declaringClassName);
     } else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {

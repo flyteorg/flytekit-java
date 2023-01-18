@@ -19,6 +19,8 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
+import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
@@ -37,7 +39,7 @@ public class MapWorkflow extends SdkWorkflow<MapWorkflow.Output> {
     public abstract SdkBindingData<Map<String, String>> map();
 
     public static MapWorkflow.Output create(Map<String, String> map) {
-      return new AutoValue_MapWorkflow_Output(SdkBindingData.ofMap(map, SdkBindingData::ofString));
+      return new AutoValue_MapWorkflow_Output(SdkBindingData.ofStringMap(map));
     }
   }
 
@@ -50,7 +52,9 @@ public class MapWorkflow extends SdkWorkflow<MapWorkflow.Output> {
         builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4)).getOutputs().o();
 
     SdkBindingData<Map<String, Long>> map =
-        SdkBindingData.ofBindingMap(Map.of("e", sum1, "f", sum2));
+        SdkBindingData.ofBindingMap(
+            LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+            Map.of("e", sum1, "f", sum2));
 
     SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask().withInput("map", map));
 

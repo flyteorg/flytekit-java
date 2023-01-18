@@ -16,6 +16,9 @@
  */
 package org.flyte.examples;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
@@ -43,16 +46,20 @@ public class AllInputsTask
       SdkBindingData<Instant> t,
       SdkBindingData<Duration> d,
       SdkBindingData<List<String>> l,
-      SdkBindingData<Map<String, String>> m) {
+      SdkBindingData<Map<String, String>> m,
+      SdkBindingData<List<String>> emptyList,
+      SdkBindingData<Map<String, Long>> emptyMap) {
     return new AllInputsTask()
-        .withInput("i", i) // this still sucks
+        .withInput("i", i)
         .withInput("f", f)
         .withInput("s", s)
         .withInput("b", b)
         .withInput("t", t)
         .withInput("d", d)
         .withInput("l", l)
-        .withInput("m", m);
+        .withInput("m", m)
+        .withInput("emptyList", emptyList)
+        .withInput("emptyMap", emptyMap);
   }
 
   @AutoValue
@@ -76,6 +83,10 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Map<String, String>> m();
 
+    public abstract SdkBindingData<List<String>> emptyList();
+
+    public abstract SdkBindingData<Map<String, Long>> emptyMap();
+
     public static AutoAllInputsInput create(
         SdkBindingData<Long> i,
         SdkBindingData<Double> f,
@@ -85,8 +96,11 @@ public class AllInputsTask
         SdkBindingData<Duration> d,
         // Blob blob,
         SdkBindingData<List<String>> l,
-        SdkBindingData<Map<String, String>> m) {
-      return new AutoValue_AllInputsTask_AutoAllInputsInput(i, f, s, b, t, d, l, m);
+        SdkBindingData<Map<String, String>> m,
+        SdkBindingData<List<String>> emptyList,
+        SdkBindingData<Map<String, Long>> emptyMap) {
+      return new AutoValue_AllInputsTask_AutoAllInputsInput(
+          i, f, s, b, t, d, l, m, emptyList, emptyMap);
     }
   }
 
@@ -112,6 +126,10 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Map<String, String>> m();
 
+    public abstract SdkBindingData<List<String>> emptyList();
+
+    public abstract SdkBindingData<Map<String, Long>> emptyMap();
+
     public static AutoAllInputsOutput create(
         long i,
         Double f,
@@ -120,7 +138,9 @@ public class AllInputsTask
         Instant t,
         Duration d,
         List<String> l,
-        Map<String, String> m) {
+        Map<String, String> m,
+        List<String> emptyList,
+        Map<String, Long> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
           SdkBindingData.ofInteger(i),
           SdkBindingData.ofFloat(f),
@@ -128,8 +148,10 @@ public class AllInputsTask
           SdkBindingData.ofBoolean(b),
           SdkBindingData.ofDatetime(t),
           SdkBindingData.ofDuration(d),
-          SdkBindingData.ofCollection(l, SdkBindingData::ofString),
-          SdkBindingData.ofMap(m, SdkBindingData::ofString));
+          SdkBindingData.ofStringCollection(l),
+          SdkBindingData.ofStringMap(m),
+          SdkBindingData.ofStringCollection(emptyList),
+          SdkBindingData.ofIntegerMap(emptyMap));
     }
   }
 
@@ -143,7 +165,9 @@ public class AllInputsTask
         input.t().get(),
         input.d().get(),
         input.l().get(),
-        input.m().get());
+        input.m().get(),
+        input.emptyList().get(),
+        input.emptyMap().get());
   }
 
   @Override

@@ -88,63 +88,134 @@ public abstract class SdkBindingData<T> {
   }
 
   public static <T> SdkBindingData<List<T>> ofCollection(
-      List<T> collection, Function<T, SdkBindingData<T>> function) {
+      List<T> collection, LiteralType literalType, Function<T, SdkBindingData<T>> function) {
     return SdkBindingData.ofBindingCollection(
-        collection.stream().map(function).collect(Collectors.toList()));
+        literalType, collection.stream().map(function).collect(Collectors.toList()));
+  }
+
+  private static <T> SdkBindingData<List<T>> createCollection(
+      List<T> collection, LiteralType literalType, Function<T, BindingData> bindingDataFn) {
+    return create(
+        BindingData.ofCollection(
+            collection.stream().map(bindingDataFn).collect(Collectors.toList())),
+        literalType,
+        collection);
+  }
+
+  public static SdkBindingData<List<String>> ofStringCollection(List<String> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.STRING)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))));
+  }
+
+  public static SdkBindingData<List<Double>> ofFloatCollection(List<Double> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.FLOAT)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value))));
+  }
+
+  public static SdkBindingData<List<Long>> ofIntegerCollection(List<Long> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value))));
+  }
+
+  public static SdkBindingData<List<Boolean>> ofBooleanCollection(List<Boolean> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value))));
+  }
+
+  public static SdkBindingData<List<Duration>> ofDurationCollection(List<Duration> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))));
+  }
+
+  public static SdkBindingData<List<Instant>> ofDatetimeCollection(List<Instant> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.DATETIME)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))));
   }
 
   public static <T> SdkBindingData<Map<String, T>> ofMap(
-      Map<String, T> map, Function<T, SdkBindingData<T>> bindingFunction) {
+      Map<String, T> map, LiteralType literalType, Function<T, SdkBindingData<T>> bindingFunction) {
     return SdkBindingData.ofBindingMap(
+        literalType,
         map.entrySet().stream()
             .map(e -> Map.entry(e.getKey(), bindingFunction.apply(e.getValue())))
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
-  public static SdkBindingData<Map<String, Double>> ofFloatMap(Map<String, Double> map) {
-    return ofMap(map, SdkBindingData::ofFloat);
-  }
-
-  public static SdkBindingData<Map<String, Long>> ofIntegerMap(Map<String, Long> map) {
-    return ofMap(map, SdkBindingData::ofInteger);
+  private static <T> SdkBindingData<Map<String, T>> createMap(
+      Map<String, T> map, LiteralType literalType, Function<T, BindingData> bindingDataFn) {
+    return create(
+        BindingData.ofMap(
+            map.entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), bindingDataFn.apply(entry.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))),
+        literalType,
+        map);
   }
 
   public static SdkBindingData<Map<String, String>> ofStringMap(Map<String, String> map) {
-    return ofMap(map, SdkBindingData::ofString);
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Double>> ofFloatMap(Map<String, Double> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.FLOAT)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Long>> ofIntegerMap(Map<String, Long> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value))));
   }
 
   public static SdkBindingData<Map<String, Boolean>> ofBooleanMap(Map<String, Boolean> map) {
-    return ofMap(map, SdkBindingData::ofBoolean);
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value))));
   }
 
   public static SdkBindingData<Map<String, Duration>> ofDurationMap(Map<String, Duration> map) {
-    return ofMap(map, SdkBindingData::ofDuration);
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.DURATION)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))));
   }
 
   public static SdkBindingData<Map<String, Instant>> ofDatetimeMap(Map<String, Instant> map) {
-    return ofMap(map, SdkBindingData::ofDatetime);
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.DATETIME)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))));
   }
 
-  public static <T> SdkBindingData<List<T>> ofBindingCollection(List<SdkBindingData<T>> elements) {
-    // TODO we can fix that by introducing "top type" into type system and
-    // implementing type casting in SDK, for now, we fail
-
-    if (elements.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Can't create binding for an empty list without knowing the type, "
-              + "to create an empty map use `of<type>Collection` instead");
-    }
-
+  public static <T> SdkBindingData<List<T>> ofBindingCollection(
+      LiteralType literalType, List<SdkBindingData<T>> elements) {
     List<BindingData> bindings = elements.stream().map(SdkBindingData::idl).collect(toList());
     BindingData bindingData = BindingData.ofCollection(bindings);
 
-    LiteralType elementType = elements.get(0).type();
-    LiteralType collectionType = LiteralType.ofCollectionType(elementType);
     boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
     List<T> unwrappedElements =
         hasPromise ? null : elements.stream().map(SdkBindingData::get).collect(toList());
 
-    return SdkBindingData.create(bindingData, collectionType, unwrappedElements);
+    return SdkBindingData.create(bindingData, literalType, unwrappedElements);
   }
 
   private static boolean isAPromise(BindingData bindingData) {
@@ -162,15 +233,7 @@ public abstract class SdkBindingData<T> {
   }
 
   public static <T> SdkBindingData<Map<String, T>> ofBindingMap(
-      Map<String, SdkBindingData<T>> valueMap) {
-    // TODO we can fix that by introducing "top type" into type system and
-    // implementing type casting in SDK, for now, we fail
-
-    if (valueMap.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Can't create binding for an empty map without knowing the type, "
-              + "to create an empty map use `of<type>Map` instead");
-    }
+      LiteralType literalType, Map<String, SdkBindingData<T>> valueMap) {
 
     Map<String, BindingData> bindings =
         valueMap.entrySet().stream()
@@ -178,8 +241,6 @@ public abstract class SdkBindingData<T> {
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     BindingData bindingData = BindingData.ofMap(bindings);
 
-    LiteralType elementType = valueMap.values().iterator().next().type();
-    LiteralType mapType = LiteralType.ofMapValueType(elementType);
     boolean hasPromise = bindings.values().stream().anyMatch(SdkBindingData::isAPromise);
     Map<String, T> unwrappedElements =
         hasPromise
@@ -188,7 +249,7 @@ public abstract class SdkBindingData<T> {
                 .map(e -> Map.entry(e.getKey(), e.getValue().get()))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    return SdkBindingData.create(bindingData, mapType, unwrappedElements);
+    return SdkBindingData.create(bindingData, literalType, unwrappedElements);
   }
 
   public static SdkBindingData<SdkStruct> ofStruct(SdkStruct value) {

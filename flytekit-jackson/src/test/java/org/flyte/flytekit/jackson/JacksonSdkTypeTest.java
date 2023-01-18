@@ -73,14 +73,24 @@ public class JacksonSdkTypeTest {
         SdkBindingData.ofBoolean(b),
         SdkBindingData.ofDatetime(t),
         SdkBindingData.ofDuration(d),
-        SdkBindingData.ofCollection(l, SdkBindingData::ofString),
+        SdkBindingData.ofStringCollection(l),
         SdkBindingData.ofStringMap(m),
         SdkBindingData.ofCollection(
-            ll, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
-        SdkBindingData.ofCollection(lm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)),
+            ll,
+            LiteralType.ofCollectionType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringCollection),
+        SdkBindingData.ofCollection(
+            lm,
+            LiteralType.ofCollectionType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringMap),
         SdkBindingData.ofMap(
-            ml, list -> SdkBindingData.ofCollection(list, SdkBindingData::ofString)),
-        SdkBindingData.ofMap(mm, map -> SdkBindingData.ofMap(map, SdkBindingData::ofString)));
+            ml,
+            LiteralType.ofMapValueType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringCollection),
+        SdkBindingData.ofMap(
+            mm,
+            LiteralType.ofMapValueType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringMap));
   }
 
   @Test
@@ -128,7 +138,7 @@ public class JacksonSdkTypeTest {
     literalMap.put("b", literalOf(Primitive.ofBooleanValue(true)));
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
-    //      literalMap.put("blob", literalOf(blob));
+    // literalMap.put("blob", literalOf(blob));
     literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
     literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
     literalMap.put(

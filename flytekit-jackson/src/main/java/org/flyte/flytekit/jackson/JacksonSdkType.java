@@ -47,10 +47,10 @@ public class JacksonSdkType<T> extends SdkType<T> {
       new ObjectMapper()
           .registerModule(new SdkTypeModule())
           .registerModule(new JavaTimeModule())
-          .registerModule(new ParameterNamesModule())
-          // TODO: Think about this, this is necessary right now because we are adding literal and
-          // scalar inside the JSONode in the case of GENERIC
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+          .registerModule(new ParameterNamesModule());
+      // TODO: Think about this, this is necessary right now because we are adding literal and
+      // scalar inside the JSONode in the case of GENERIC
+
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;

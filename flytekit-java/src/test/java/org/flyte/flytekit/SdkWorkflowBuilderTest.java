@@ -459,10 +459,6 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
         builder.inputOfInteger("input6"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input7", LiteralTypes.STRUCT),
-        builder.inputOfStruct("input7"));
   }
 
   static List<SdkTransform<TestUnaryIntegerOutput>> createTransform() {

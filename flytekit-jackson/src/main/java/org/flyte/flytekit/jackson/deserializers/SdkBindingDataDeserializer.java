@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
@@ -51,33 +52,18 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
     super(SdkBindingData.class);
   }
 
+  @Override
+  public SdkBindingData<?> deserialize(
+      JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+    JsonNode tree = jsonParser.readValueAsTree();
+    return transform(tree);
+  }
+
   private SdkBindingData<?> transform(JsonNode tree) {
     Literal.Kind literalKind = Literal.Kind.valueOf(tree.get(LITERAL).asText());
     switch (literalKind) {
       case SCALAR:
-        switch (Scalar.Kind.valueOf(tree.get(SCALAR).asText())) {
-          case PRIMITIVE:
-            switch (Primitive.Kind.valueOf(tree.get("primitive").asText())) {
-              case INTEGER_VALUE:
-                return SdkBindingData.ofInteger(tree.get(VALUE).longValue());
-              case BOOLEAN_VALUE:
-                return SdkBindingData.ofBoolean(tree.get(VALUE).booleanValue());
-              case STRING_VALUE:
-                return SdkBindingData.ofString(tree.get(VALUE).asText());
-              case DURATION:
-                return SdkBindingData.ofDuration(Duration.parse(tree.get(VALUE).asText()));
-              case DATETIME:
-                return SdkBindingData.ofDatetime(Instant.parse(tree.get(VALUE).asText()));
-              case FLOAT_VALUE:
-                return SdkBindingData.ofFloat(tree.get(VALUE).doubleValue());
-            }
-            break;
-          case GENERIC:
-          case BLOB:
-            // TODO: We need to implement this
-            throw new RuntimeException("not supported");
-        }
-        break;
+        return transformScalar(tree);
       case COLLECTION:
         return transformCollection(tree);
 
@@ -88,9 +74,36 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         throw new UnsupportedOperationException(
             String.format("Not supported literal type %s", literalKind.name()));
     }
+  }
 
-    // TODO: Think about it
-    throw new IllegalStateException("");
+  private static SdkBindingData<? extends Serializable> transformScalar(JsonNode tree) {
+    Scalar.Kind scalarKind = Scalar.Kind.valueOf(tree.get(SCALAR).asText());
+    switch (scalarKind) {
+      case PRIMITIVE:
+        Primitive.Kind primitiveKind = Primitive.Kind.valueOf(tree.get("primitive").asText());
+        switch (primitiveKind) {
+          case INTEGER_VALUE:
+            return SdkBindingData.ofInteger(tree.get(VALUE).longValue());
+          case BOOLEAN_VALUE:
+            return SdkBindingData.ofBoolean(tree.get(VALUE).booleanValue());
+          case STRING_VALUE:
+            return SdkBindingData.ofString(tree.get(VALUE).asText());
+          case DURATION:
+            return SdkBindingData.ofDuration(Duration.parse(tree.get(VALUE).asText()));
+          case DATETIME:
+            return SdkBindingData.ofDatetime(Instant.parse(tree.get(VALUE).asText()));
+          case FLOAT_VALUE:
+            return SdkBindingData.ofFloat(tree.get(VALUE).doubleValue());
+        }
+        throw new UnsupportedOperationException(
+            "Type contains an unsupported primitive: " + primitiveKind);
+
+      case GENERIC:
+      case BLOB:
+      default:
+        throw new UnsupportedOperationException(
+            "Type contains an unsupported scalar: " + scalarKind);
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -98,10 +111,6 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
     LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get(TYPE).get(KIND).asText());
     Iterator<JsonNode> elements = tree.get(VALUE).elements();
     switch (kind) {
-      case SCHEMA_TYPE:
-      case BLOB_TYPE:
-        // TODO: We need to implement this
-        throw new RuntimeException("not supported");
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
@@ -109,8 +118,13 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             streamOf(elements).map(this::transform).collect(toList());
 
         return SdkBindingData.ofBindingCollection((List<SdkBindingData<T>>) x);
+
+      case SCHEMA_TYPE:
+      case BLOB_TYPE:
+      default:
+        throw new UnsupportedOperationException(
+            "Type contains a collection of an supported literal type: " + kind.name());
     }
-    return null; // TODO throw exception
   }
 
   @SuppressWarnings("unchecked")
@@ -122,14 +136,9 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             .map(name -> Map.entry(name, valueNode.get(name)))
             .collect(toList());
     switch (kind) {
-      case SCHEMA_TYPE:
-      case BLOB_TYPE:
-        // TODO: We need to implement this
-        throw new RuntimeException("not supported");
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
-        // TODO code similar to generateMapFromNode
         Map<String, SdkBindingData<T>> bindingDataMap =
             entries.stream()
                 .map(
@@ -137,19 +146,17 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
                         Map.entry(entry.getKey(), (SdkBindingData<T>) transform(entry.getValue())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return SdkBindingData.ofBindingMap(bindingDataMap);
+
+      case SCHEMA_TYPE:
+      case BLOB_TYPE:
+      default:
+        throw new UnsupportedOperationException(
+            "Type contains a map of an supported literal type: " + kind.name());
     }
-    return null; // TODO throw exception
   }
 
   private <T> Stream<T> streamOf(Iterator<T> nodes) {
     return StreamSupport.stream(
         Spliterators.spliteratorUnknownSize(nodes, Spliterator.ORDERED), false);
-  }
-
-  @Override
-  public SdkBindingData<?> deserialize(
-      JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-    JsonNode tree = jsonParser.readValueAsTree();
-    return transform(tree);
   }
 }

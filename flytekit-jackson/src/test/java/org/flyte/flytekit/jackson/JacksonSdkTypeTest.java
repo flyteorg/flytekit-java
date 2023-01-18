@@ -43,7 +43,6 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -78,20 +77,20 @@ public class JacksonSdkTypeTest {
         SdkBindingData.ofStringMap(m),
         SdkBindingData.ofCollection(
             ll,
-            LiteralType.ofCollectionType(LiteralTypes.STRING),
-            list -> SdkBindingData.ofStringCollection(list)),
+            LiteralType.ofCollectionType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringCollection),
         SdkBindingData.ofCollection(
-                lm,
-                LiteralType.ofMapValueType(LiteralTypes.STRING),
-                map -> SdkBindingData.ofStringMap(map)),
+            lm,
+            LiteralType.ofCollectionType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringMap),
         SdkBindingData.ofMap(
             ml,
-            LiteralType.ofCollectionType(LiteralTypes.STRING),
-            list -> SdkBindingData.ofStringCollection(list)),
-    SdkBindingData.ofMap(
+            LiteralType.ofMapValueType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringCollection),
+        SdkBindingData.ofMap(
             mm,
-            LiteralType.ofMapValueType(LiteralTypes.STRING),
-            map -> SdkBindingData.ofStringMap(map)));
+            LiteralType.ofMapValueType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
+            SdkBindingData::ofStringMap));
   }
 
   @Test

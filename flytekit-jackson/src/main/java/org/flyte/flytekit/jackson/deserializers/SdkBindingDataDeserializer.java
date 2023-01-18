@@ -43,6 +43,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 
 class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
@@ -108,34 +109,35 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
-    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get(TYPE).get(KIND).asText());
+    LiteralType literalType = readLiteralType(tree.get(TYPE));
     Iterator<JsonNode> elements = tree.get(VALUE).elements();
-    switch (kind) {
+
+    switch (literalType.getKind()) {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
-        List<? extends SdkBindingData<?>> x =
+        List<? extends SdkBindingData<?>> collection =
             streamOf(elements).map(this::transform).collect(toList());
-
-        return SdkBindingData.ofBindingCollection((List<SdkBindingData<T>>) x);
+        return SdkBindingData.ofBindingCollection(
+            LiteralType.ofCollectionType(literalType), (List<SdkBindingData<T>>) collection);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
-            "Type contains a collection of an supported literal type: " + kind.name());
+            "Type contains a collection of an supported literal type: " + literalType.getKind());
     }
   }
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<Map<String, T>> transformMap(JsonNode tree) {
-    LiteralType.Kind kind = LiteralType.Kind.valueOf(tree.get(TYPE).get(KIND).asText());
+    LiteralType literalType = readLiteralType(tree.get(TYPE));
     JsonNode valueNode = tree.get(VALUE);
     List<Map.Entry<String, JsonNode>> entries =
         streamOf(valueNode.fieldNames())
             .map(name -> Map.entry(name, valueNode.get(name)))
             .collect(toList());
-    switch (kind) {
+    switch (literalType.getKind()) {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
@@ -145,13 +147,31 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
                     entry ->
                         Map.entry(entry.getKey(), (SdkBindingData<T>) transform(entry.getValue())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return SdkBindingData.ofBindingMap(bindingDataMap);
+        return SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(literalType), bindingDataMap);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
-            "Type contains a map of an supported literal type: " + kind.name());
+            "Type contains a map of an supported literal type: " + literalType.getKind());
+    }
+  }
+
+  private LiteralType readLiteralType(JsonNode typeNode) {
+    LiteralType.Kind kind = LiteralType.Kind.valueOf(typeNode.get(KIND).asText());
+    switch (kind) {
+      case SIMPLE_TYPE:
+        return LiteralType.ofSimpleType(SimpleType.valueOf(typeNode.get(VALUE).asText()));
+      case MAP_VALUE_TYPE:
+        return LiteralType.ofMapValueType(readLiteralType(typeNode.get(VALUE).get(TYPE)));
+      case COLLECTION_TYPE:
+        return LiteralType.ofCollectionType(readLiteralType(typeNode.get(VALUE).get(TYPE)));
+
+      case SCHEMA_TYPE:
+      case BLOB_TYPE:
+      default:
+        throw new UnsupportedOperationException(
+            "Type contains a collection/map of an supported literal type: " + kind);
     }
   }
 

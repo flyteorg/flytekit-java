@@ -88,9 +88,9 @@ public abstract class SdkBindingData<T> {
   }
 
   public static <T> SdkBindingData<List<T>> ofCollection(
-      List<T> collection, LiteralType literalType, Function<T, SdkBindingData<T>> function) {
+      List<T> collection, LiteralType literalType, Function<T, SdkBindingData<T>> mapper) {
     return SdkBindingData.ofBindingCollection(
-        literalType, collection.stream().map(function).collect(Collectors.toList()));
+        literalType, collection.stream().map(mapper).collect(Collectors.toList()));
   }
 
   private static <T> SdkBindingData<List<T>> createCollection(
@@ -211,11 +211,28 @@ public abstract class SdkBindingData<T> {
     List<BindingData> bindings = elements.stream().map(SdkBindingData::idl).collect(toList());
     BindingData bindingData = BindingData.ofCollection(bindings);
 
+    checkIncompatibleTypes(literalType, elements);
     boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
     List<T> unwrappedElements =
         hasPromise ? null : elements.stream().map(SdkBindingData::get).collect(toList());
 
     return SdkBindingData.create(bindingData, literalType, unwrappedElements);
+  }
+
+  private static <T> void checkIncompatibleTypes(final LiteralType literalType,
+                                    final List<SdkBindingData<T>> elements) {
+    List<LiteralType> incompatibleTypes = elements.stream()
+        .map(SdkBindingData::type)
+        .distinct()
+        .filter(type -> !type.equals(literalType))
+        .collect(toList());
+    if (!incompatibleTypes.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Type mismatch: expected all elements of type %s but found some elements of type: %s",
+              literalType, incompatibleTypes)
+      );
+    }
   }
 
   private static boolean isAPromise(BindingData bindingData) {

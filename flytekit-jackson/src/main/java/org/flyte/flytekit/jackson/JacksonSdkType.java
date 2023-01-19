@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -42,7 +41,6 @@ import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializer
 import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
 
 public class JacksonSdkType<T> extends SdkType<T> {
-
 
   private static final ObjectMapper OBJECT_MAPPER = createObjectMapper(new SdkTypeModule());
 

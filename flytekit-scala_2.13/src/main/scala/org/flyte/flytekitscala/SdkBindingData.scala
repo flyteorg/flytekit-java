@@ -54,11 +54,160 @@ object SdkBindingData {
       collection: List[T]
   ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
 
+  def ofCollection[T](
+      collection: List[T],
+      literalType: LiteralType
+  ): SdkJavaBindinigData[List[T]] =
+    createSdkBindingData(collection, Option(literalType))
+
+  def ofStringCollection(
+      collection: List[String]
+  ): SdkJavaBindinigData[List[String]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(
+          LiteralType.ofSimpleType(SimpleType.STRING)
+        )
+      )
+    )
+
+  def ofIntegerCollection(
+      collection: List[Long]
+  ): SdkJavaBindinigData[List[Long]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(
+          LiteralType.ofSimpleType(SimpleType.INTEGER)
+        )
+      )
+    )
+
+  def ofBooleanCollection(
+      collection: List[Boolean]
+  ): SdkJavaBindinigData[List[Boolean]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(
+          LiteralType.ofSimpleType(SimpleType.BOOLEAN)
+        )
+      )
+    )
+
+  def ofFloatCollection(
+      collection: List[Double]
+  ): SdkJavaBindinigData[List[Double]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.FLOAT))
+      )
+    )
+
+  def ofInstantCollection(
+      collection: List[Instant]
+  ): SdkJavaBindinigData[List[Instant]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(
+          LiteralType.ofSimpleType(SimpleType.DATETIME)
+        )
+      )
+    )
+
+  def ofDurationCollection(
+      collection: List[Duration]
+  ): SdkJavaBindinigData[List[Duration]] =
+    createSdkBindingData(
+      collection,
+      Option(
+        LiteralType.ofCollectionType(
+          LiteralType.ofSimpleType(SimpleType.DURATION)
+        )
+      )
+    )
+
   def ofMap[T](
       map: Map[String, T]
   ): SdkJavaBindinigData[Map[String, T]] = createSdkBindingData(map)
 
-  private def toBindingData(value: Any): (BindingData, LiteralType) = {
+  def ofStringMap(
+      map: Map[String, String]
+  ): SdkJavaBindinigData[Map[String, String]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING))
+      )
+    )
+
+  def ofIntegerMap(
+      map: Map[String, Long]
+  ): SdkJavaBindinigData[Map[String, Long]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER))
+      )
+    )
+
+  def ofBooleanMap(
+      map: Map[String, Boolean]
+  ): SdkJavaBindinigData[Map[String, Boolean]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.BOOLEAN))
+      )
+    )
+
+  def ofFloatMap(
+      map: Map[String, Double]
+  ): SdkJavaBindinigData[Map[String, Double]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.FLOAT))
+      )
+    )
+
+  def ofInstantMap(
+      map: Map[String, Instant]
+  ): SdkJavaBindinigData[Map[String, Instant]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(
+          LiteralType.ofSimpleType(SimpleType.DATETIME)
+        )
+      )
+    )
+
+  def ofDurationMap(
+      map: Map[String, Duration]
+  ): SdkJavaBindinigData[Map[String, Duration]] =
+    createSdkBindingData(
+      map,
+      Option(
+        LiteralType.ofMapValueType(
+          LiteralType.ofSimpleType(SimpleType.DURATION)
+        )
+      )
+    )
+
+  def ofMap[T](
+      map: Map[String, T],
+      literalType: LiteralType
+  ): SdkJavaBindinigData[Map[String, T]] =
+    createSdkBindingData(map, Option(literalType))
+
+  private def toBindingData(
+      value: Any,
+      literalTypeOpt: Option[LiteralType]
+  ): (BindingData, LiteralType) = {
     value match {
       case string: String =>
         (
@@ -103,38 +252,57 @@ object SdkBindingData {
           LiteralType.ofSimpleType(SimpleType.DURATION)
         )
       case list: Seq[_] =>
-        val (_, innerLiteralType) = toBindingData(
-          list.headOption.getOrElse(
-            throw new RuntimeException(
-              "Can't create binding for an empty list without knowing the type, use SdkBindingData.create(...)"
-            )
+        val literalType = literalTypeOpt.getOrElse {
+          val (_, innerLiteralType) = toBindingData(
+            list.headOption.getOrElse(
+              throw new RuntimeException(
+                "Can't create binding for an empty list without knowing the type, use SdkBindingData.of<type>Collection(...)"
+              )
+            ),
+            literalTypeOpt = None
           )
-        )
+
+          LiteralType.ofCollectionType(innerLiteralType)
+        }
+
         (
           BindingData.ofCollection(
-            list.map(innerValue => toBindingData(innerValue)._1).toList.asJava
+            list
+              .map { innerValue =>
+                val (bindingData, _) = toBindingData(innerValue, literalTypeOpt)
+                bindingData
+              }
+              .toList
+              .asJava
           ),
-          LiteralType.ofCollectionType(innerLiteralType)
+          literalType
         )
       case map: Map[String, _] =>
-        val (_, innerLiteralType) = toBindingData(
-          map.headOption
-            .map(_._2)
-            .getOrElse(
-              throw new RuntimeException(
-                "Can't create binding for an empty map without knowing the type, use SdkBindingData.create(...)"
-              )
-            )
-        )
+        val literalType = literalTypeOpt.getOrElse {
+          val (_, innerLiteralType) = toBindingData(
+            map.headOption
+              .map(_._2)
+              .getOrElse(
+                throw new RuntimeException(
+                  "Can't create binding for an empty map without knowing the type, use SdkBindingData.of<type>Map(...)"
+                )
+              ),
+            literalTypeOpt = None
+          )
 
+          LiteralType.ofMapValueType(innerLiteralType)
+        }
         (
           BindingData.ofMap(
             map
-              .mapValues(innerValue => toBindingData(innerValue)._1)
+              .mapValues { innerValue =>
+                val (bindingData, _) = toBindingData(innerValue, literalTypeOpt)
+                bindingData
+              }
               .toMap
               .asJava
           ),
-          LiteralType.ofMapValueType(innerLiteralType)
+          literalType
         )
       case other =>
         throw new IllegalStateException(
@@ -143,8 +311,11 @@ object SdkBindingData {
     }
   }
 
-  private def createSdkBindingData[T](value: T): SdkJavaBindinigData[T] = {
-    val (bindingData, literalType) = toBindingData(value)
+  private def createSdkBindingData[T](
+      value: T,
+      literalTypeOpt: Option[LiteralType] = None
+  ): SdkJavaBindinigData[T] = {
+    val (bindingData, literalType) = toBindingData(value, literalTypeOpt)
     SdkJavaBindinigData.create(bindingData, literalType, value)
   }
 }

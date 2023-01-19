@@ -19,6 +19,7 @@ package org.flyte.flytekitscala
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import org.flyte.api.v1.{
+  BindingData,
   Literal,
   LiteralType,
   Primitive,
@@ -344,6 +345,30 @@ class SdkScalaTypeTest {
 
     assertEquals(expected, scalaClass)
 
+  }
+
+  @Test
+  def testEmptyCollection: Unit = {
+    val emptyList = ofStringCollection(List.empty[String])
+    val expected = SdkBindingData.create(
+      BindingData.ofCollection(List.empty[BindingData].asJava),
+      LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.STRING)),
+      List.empty[String]
+    )
+
+    assertEquals(emptyList, expected)
+  }
+
+  @Test
+  def testEmptyMap: Unit = {
+    val emptyMap = ofStringMap(Map.empty[String, String])
+    val expected = SdkBindingData.create(
+      BindingData.ofMap(Map.empty[String, BindingData].asJava),
+      LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING)),
+      Map.empty[String, String]
+    )
+
+    assertEquals(emptyMap, expected)
   }
 
   // Typed[String] doesn't compile aka illtyped

@@ -18,9 +18,9 @@ package org.flyte.flytekit
 
 import scala.collection.JavaConverters._
 
-object SdkBindingDataJavaConverters {
+object SdkBindingDataConverters {
 
-  implicit def scalaLongConverter(
+  def toScalaLong(
       sdkBindingData: SdkBindingData[java.lang.Long]
   ): SdkBindingData[Long] = {
     SdkBindingData.create(
@@ -30,7 +30,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def javaLongConverter(
+  def toJavaLong(
       sdkBindingData: SdkBindingData[Long]
   ): SdkBindingData[java.lang.Long] = {
     SdkBindingData.create(
@@ -40,7 +40,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def scalaBooleanConverter(
+  def toScalaBoolean(
       sdkBindingData: SdkBindingData[java.lang.Boolean]
   ): SdkBindingData[Boolean] = {
     SdkBindingData.create(
@@ -50,7 +50,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def javaBooleanConverter(
+  def toJavaBoolean(
       sdkBindingData: SdkBindingData[Boolean]
   ): SdkBindingData[java.lang.Boolean] = {
     SdkBindingData.create(
@@ -60,7 +60,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def scalaDoubleConverter(
+  def toScalaDouble(
       sdkBindingData: SdkBindingData[java.lang.Double]
   ): SdkBindingData[Double] = {
     SdkBindingData.create(
@@ -70,7 +70,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def javaDoubleConverter(
+  def toJavaDouble(
       sdkBindingData: SdkBindingData[Double]
   ): SdkBindingData[java.lang.Double] = {
     SdkBindingData.create(
@@ -80,7 +80,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def scalaListConverter[T](
+  def toScalaList[T](
       sdkBindingData: SdkBindingData[java.util.List[T]]
   ): SdkBindingData[List[T]] = {
     SdkBindingData.create(
@@ -90,7 +90,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def javaListConverter[T](
+  def toJavaList[T](
       sdkBindingData: SdkBindingData[List[T]]
   ): SdkBindingData[java.util.List[T]] = {
     SdkBindingData.create(
@@ -100,7 +100,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def scalaMapConverter[T](
+  def toScalaMap[T](
       sdkBindingData: SdkBindingData[java.util.Map[String, T]]
   ): SdkBindingData[Map[String, T]] = {
     SdkBindingData.create(
@@ -110,7 +110,7 @@ object SdkBindingDataJavaConverters {
     )
   }
 
-  implicit def javaMapConverter[T](
+  def toJavaMap[T](
       sdkBindingData: SdkBindingData[Map[String, T]]
   ): SdkBindingData[java.util.Map[String, T]] = {
     SdkBindingData.create(

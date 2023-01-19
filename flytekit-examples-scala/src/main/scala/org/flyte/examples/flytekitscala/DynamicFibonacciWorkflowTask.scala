@@ -24,7 +24,7 @@ import org.flyte.flytekit.{
 import org.flyte.flytekitscala.SdkScalaType
 
 import scala.annotation.tailrec
-import org.flyte.flytekitscala.Implicits._
+import org.flyte.flytekitscala.SdkBindingData._
 
 case class DynamicFibonacciWorkflowTaskInput(n: SdkBindingData[Long])
 case class DynamicFibonacciWorkflowTaskOutput(output: SdkBindingData[Long])
@@ -60,9 +60,9 @@ class DynamicFibonacciWorkflowTask
 
     require(input.n.get() > 0, "n < 0")
     val value = if (input.n.get() == 0) {
-      longSdkBinding(0)
+      ofInteger(0)
     } else {
-      fib(1, 1, 0)
+      fib(1, ofInteger(1), ofInteger(0))
     }
     builder.output("output", value)
   }

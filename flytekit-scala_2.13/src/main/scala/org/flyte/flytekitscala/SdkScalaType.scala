@@ -20,7 +20,7 @@ import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
-import org.flyte.flytekit.{SdkBindingData, SdkType}
+import org.flyte.flytekit.{SdkBindingData => SdkJavaBindinigData, SdkType}
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
@@ -123,7 +123,7 @@ object SdkScalaType {
             s"field ${param.label} not found in variable map"
           )
 
-          SdkBindingData.ofOutputReference(
+          SdkJavaBindinigData.ofOutputReference(
             nodeId,
             param.label,
             paramLiteralType.literalType()
@@ -135,7 +135,7 @@ object SdkScalaType {
 
   implicit def sdkBindingLiteralType[T](implicit
       sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[SdkBindingData[T]] = {
+  ): SdkScalaLiteralType[SdkJavaBindinigData[T]] = {
 
     def toBindingData(literal: Literal): BindingData = {
       literal.kind() match {
@@ -152,11 +152,11 @@ object SdkScalaType {
       }
     }
 
-    SdkScalaLiteralType[SdkBindingData[T]](
+    SdkScalaLiteralType[SdkJavaBindinigData[T]](
       sdkLiteral.getLiteralType,
       value => sdkLiteral.toLiteral(value.get()),
       literal =>
-        SdkBindingData.create(
+        SdkJavaBindinigData.create(
           toBindingData(literal),
           sdkLiteral.getLiteralType,
           sdkLiteral.fromLiteral(literal)

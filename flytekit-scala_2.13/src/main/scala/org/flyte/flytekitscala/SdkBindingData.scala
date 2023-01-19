@@ -23,63 +23,40 @@ import org.flyte.api.v1.{
   Scalar,
   SimpleType
 }
-import org.flyte.flytekit.SdkBindingData
+import org.flyte.flytekit.{SdkBindingData => SdkJavaBindinigData}
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
-object Implicits {
-  implicit def stringSdkBinding(string: String): SdkBindingData[String] =
+object SdkBindingData {
+  def ofString(string: String): SdkJavaBindinigData[String] =
     createSdkBindingData(string)
 
-  implicit def longSdkBinding(long: Long): SdkBindingData[Long] =
+  def ofInteger(long: Long): SdkJavaBindinigData[Long] =
     createSdkBindingData(long)
 
-  implicit def doubleSdkBinding(double: Double): SdkBindingData[Double] =
+  def ofFloat(double: Double): SdkJavaBindinigData[Double] =
     createSdkBindingData(double)
 
-  implicit def booleanSdkBindingData(
+  def ofBoolean(
       boolean: Boolean
-  ): SdkBindingData[Boolean] =
+  ): SdkJavaBindinigData[Boolean] =
     createSdkBindingData(boolean)
 
-  implicit def instantSdkBinding(instant: Instant): SdkBindingData[Instant] =
+  def ofDateTime(instant: Instant): SdkJavaBindinigData[Instant] =
     createSdkBindingData(instant)
 
-  implicit def durationSdkBinding(
+  def ofDuration(
       duration: Duration
-  ): SdkBindingData[Duration] = createSdkBindingData(duration)
+  ): SdkJavaBindinigData[Duration] = createSdkBindingData(duration)
 
-  implicit def collectionSdkBinding[T](
+  def ofCollection[T](
       collection: List[T]
-  ): SdkBindingData[List[T]] = createSdkBindingData(collection)
+  ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
 
-  implicit def mapSdkBinding[T](
+  def ofMap[T](
       map: Map[String, T]
-  ): SdkBindingData[Map[String, T]] = createSdkBindingData(map)
-
-  implicit def javaLongSdkBinding(
-      long: Long
-  ): SdkBindingData[java.lang.Long] =
-    createSdkBindingData(long)
-
-  implicit def javaDoubleSdkBinding(
-      double: Double
-  ): SdkBindingData[java.lang.Double] =
-    createSdkBindingData(double)
-
-  implicit def javaBooleanSdkBindingData(
-      boolean: Boolean
-  ): SdkBindingData[java.lang.Boolean] =
-    createSdkBindingData(boolean)
-
-  implicit def javaCollectionSdkBinding[T](
-      collection: List[T]
-  ): SdkBindingData[java.util.List[T]] = createSdkBindingData(collection.asJava)
-
-  implicit def javaMapSdkBinding[T](
-      map: Map[String, T]
-  ): SdkBindingData[java.util.Map[String, T]] = createSdkBindingData(map.asJava)
+  ): SdkJavaBindinigData[Map[String, T]] = createSdkBindingData(map)
 
   private def toBindingData(value: Any): (BindingData, LiteralType) = {
     value match {
@@ -166,8 +143,8 @@ object Implicits {
     }
   }
 
-  private def createSdkBindingData[T](value: T): SdkBindingData[T] = {
+  private def createSdkBindingData[T](value: T): SdkJavaBindinigData[T] = {
     val (bindingData, literalType) = toBindingData(value)
-    SdkBindingData.create(bindingData, literalType, value)
+    SdkJavaBindinigData.create(bindingData, literalType, value)
   }
 }

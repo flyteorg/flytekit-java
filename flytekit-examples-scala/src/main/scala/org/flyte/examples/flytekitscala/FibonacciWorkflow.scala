@@ -17,17 +17,20 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
-import org.flyte.flytekitscala.SdkScalaType
-import org.flyte.flytekit.SdkBindingDataJavaConverters._
+import org.flyte.flytekitscala.{
+  SdkScalaWorkflowBuilder,
+  SdkScalaType,
+  SdkScalaWorkflow
+}
 
 case class FibonacciWorkflowOutput(fib5: SdkBindingData[Long])
 
 class FibonacciWorkflow
-    extends SdkWorkflow[FibonacciWorkflowOutput](
+    extends SdkScalaWorkflow[FibonacciWorkflowOutput](
       SdkScalaType[FibonacciWorkflowOutput]
     ) {
 
-  def expand(builder: SdkWorkflowBuilder): Unit = {
+  override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
     val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")
     val fib1 = builder.inputOfInteger("fib1", "Value for Fib1")
 

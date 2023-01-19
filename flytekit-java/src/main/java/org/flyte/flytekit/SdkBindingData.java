@@ -252,12 +252,6 @@ public abstract class SdkBindingData<T> {
     return SdkBindingData.create(bindingData, literalType, unwrappedElements);
   }
 
-  public static SdkBindingData<SdkStruct> ofStruct(SdkStruct value) {
-    BindingData bindingData = BindingData.ofScalar(Scalar.ofGeneric(value.struct()));
-    LiteralType literalType = LiteralType.ofSimpleType(SimpleType.STRUCT);
-    return SdkBindingData.create(bindingData, literalType, value);
-  }
-
   public static <T> SdkBindingData<T> ofOutputReference(
       String nodeId, String nodeVar, LiteralType type) {
     BindingData idl =

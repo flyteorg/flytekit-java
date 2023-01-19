@@ -62,14 +62,6 @@ public abstract class SdkTransform<T> {
     return withInput(name, SdkBindingData.ofFloat(value));
   }
 
-  // TODO SdkStruct is not strongly typed. We need to decide if we make this a SdkTransform<?>, a
-  // SdkTransform<SdkStruct>
-  //     or even better SdkTransform<T> withInput(String name, SdkType<T> type, T value)
-  public SdkTransform<?> withInput(String name, SdkStruct value) {
-    return null;
-    // return withInput(name, SdkBindingData.ofStruct(value));
-  }
-
   public SdkTransform<T> withInput(String name, SdkBindingData<?> value) {
     return SdkPartialTransform.of(this, singletonMap(name, value));
   }

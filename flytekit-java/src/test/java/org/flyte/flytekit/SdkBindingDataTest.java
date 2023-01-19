@@ -26,7 +26,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.BindingData;
@@ -34,7 +33,6 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Struct;
 import org.junit.jupiter.api.Test;
 
 public class SdkBindingDataTest {
@@ -336,32 +334,5 @@ public class SdkBindingDataTest {
     SdkBindingData<Map<String, Instant>> output = SdkBindingData.ofDatetimeMap(expectedValue);
 
     assertThat(output, equalTo(expected));
-  }
-
-  @Test
-  public void testOfStruct() {
-    Map<String, Struct.Value> structFields = new LinkedHashMap<>();
-    Map<String, Struct.Value> structFieldsNested = new LinkedHashMap<>();
-    structFields.put("a", Struct.Value.ofBoolValue(true));
-    structFields.put("b", Struct.Value.ofStructValue(Struct.of(structFieldsNested)));
-    structFieldsNested.put("b_nested", Struct.Value.ofNumberValue(42));
-
-    Struct expected = Struct.of(structFields);
-
-    SdkStruct input =
-        SdkStruct.builder()
-            .addBooleanField("a", true)
-            .addStructField("b", SdkStruct.builder().addIntegerField("b_nested", 42L).build())
-            .build();
-
-    SdkBindingData<SdkStruct> output = SdkBindingData.ofStruct(input);
-
-    assertThat(
-        output,
-        equalTo(
-            SdkBindingData.create(
-                BindingData.ofScalar(Scalar.ofGeneric(expected)),
-                LiteralType.ofSimpleType(SimpleType.STRUCT),
-                input)));
   }
 }

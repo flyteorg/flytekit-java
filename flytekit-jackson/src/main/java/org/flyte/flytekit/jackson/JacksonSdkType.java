@@ -43,11 +43,8 @@ import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
 
 public class JacksonSdkType<T> extends SdkType<T> {
 
-  private static final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .registerModule(new SdkTypeModule())
-          .registerModule(new JavaTimeModule())
-          .registerModule(new ParameterNamesModule());
+
+  private static final ObjectMapper OBJECT_MAPPER = createObjectMapper(new SdkTypeModule());
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;
@@ -153,16 +150,20 @@ public class JacksonSdkType<T> extends SdkType<T> {
                               nodeId, x.getKey(), x.getValue().literalType())));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
-      ObjectMapper mapper =
-          new ObjectMapper()
-              .registerModule(new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap)))
-              .registerModule(new JavaTimeModule())
-              .registerModule(new ParameterNamesModule())
-              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+      SdkTypeModule sdkTypeModule =
+          new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap));
+      ObjectMapper mapper = createObjectMapper(sdkTypeModule);
       return mapper.treeToValue(tree, clazz);
     } catch (JsonProcessingException e) {
       throw new RuntimeException("promiseFor failed for [" + clazz.getName() + "]", e);
     }
+  }
+
+  private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {
+    return new ObjectMapper()
+        .registerModule(bindingMap)
+        .registerModule(new JavaTimeModule())
+        .registerModule(new ParameterNamesModule());
   }
 }

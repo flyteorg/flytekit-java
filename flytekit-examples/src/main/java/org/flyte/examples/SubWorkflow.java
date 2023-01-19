@@ -38,7 +38,7 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
     builder.output("result", result);
   }
 
-  // TODO verify why this was here. It is not used
+  // Used in testing to mock this workflow
   @AutoValue
   public abstract static class Input {
     abstract SdkBindingData<Long> left();

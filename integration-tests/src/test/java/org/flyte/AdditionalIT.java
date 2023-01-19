@@ -67,7 +67,7 @@ public class AdditionalIT {
     "table-exists,true",
     "non-existent,false",
   })
-  @Disabled
+  @Disabled("Not supporting struct with the strongly typed implementation.")
   public void testStructs(String name, boolean expected) {
     Literals.LiteralMap output =
         CLIENT.createExecution(

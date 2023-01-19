@@ -384,13 +384,13 @@ class SdkWorkflowBuilderTest {
   void testNodeMetadataOverrides(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<?> el0 = builder.inputOfInteger("el0");
-    SdkBindingData<?> el1 = builder.inputOfInteger("el1");
+    SdkBindingData<Long> el0 = builder.inputOfInteger("el0");
+    SdkBindingData<Long> el1 = builder.inputOfInteger("el1");
 
     SdkNode<TestUnaryIntegerOutput> el2 =
         builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode<?> el3 =
+    SdkNode<TestUnaryIntegerOutput> el3 =
         builder.apply(
             "el3",
             transform
@@ -410,8 +410,8 @@ class SdkWorkflowBuilderTest {
   void testNodeMetadataOverrides_duplicate(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<?> el0 = builder.inputOfInteger("el0");
-    SdkBindingData<?> el1 = builder.inputOfInteger("el1");
+    SdkBindingData<Long> el0 = builder.inputOfInteger("el0");
+    SdkBindingData<Long> el1 = builder.inputOfInteger("el1");
 
     SdkNode<TestUnaryIntegerOutput> el2 =
         builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));

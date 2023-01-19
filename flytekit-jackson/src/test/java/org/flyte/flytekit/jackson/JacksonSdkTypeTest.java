@@ -522,14 +522,14 @@ public class JacksonSdkTypeTest {
   public abstract static class StructValueInput {
     public abstract String stringValue();
 
-    public abstract Boolean boolValue();
+    public abstract boolean boolValue();
 
     public abstract List<Long> listValue();
 
     @Nullable
-    public abstract StructValueInput structLevel2();
+    public abstract StructValueInput structLevel();
 
-    public abstract Double numberValue();
+    public abstract double numberValue();
 
     public static StructValueInput create(
         String stringValue,

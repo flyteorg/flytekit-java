@@ -21,7 +21,6 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,7 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
   @Override
   public void expand(SdkWorkflowBuilder builder) {
 
-    Calendar cal = Calendar.getInstance();
-    cal.set(2023, Calendar.JANUARY, 16);
+    Instant someInstant = Instant.parse("2023-01-16T00:00:00Z");
 
     SdkNode<AutoAllInputsOutput> apply =
         builder.apply(
@@ -53,7 +51,7 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
                 SdkBindingData.ofFloat(2),
                 SdkBindingData.ofString("test"),
                 SdkBindingData.ofBoolean(true),
-                SdkBindingData.ofDatetime(cal.toInstant()),
+                SdkBindingData.ofDatetime(someInstant),
                 SdkBindingData.ofDuration(Duration.ofDays(1L)),
                 SdkBindingData.ofStringCollection(Arrays.asList("foo", "bar")),
                 SdkBindingData.ofStringMap(Map.of("test", "test")),

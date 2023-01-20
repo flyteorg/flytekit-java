@@ -53,7 +53,8 @@ public class FibonacciWorkflowTest {
         SdkTestingExecutor.of(new FibonacciWorkflow())
             .withFixedInputs(
                 JacksonSdkType.of(FibonacciWorkflowInputs.class),
-                FibonacciWorkflowInputs.create(1, 1))
+                FibonacciWorkflowInputs.create(
+                    SdkBindingData.ofInteger(1), SdkBindingData.ofInteger(1)))
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));
@@ -162,9 +163,9 @@ public class FibonacciWorkflowTest {
 
     public abstract SdkBindingData<Long> fib1();
 
-    public static FibonacciWorkflowInputs create(long fib0, long fib1) {
-      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(
-          SdkBindingData.ofInteger(fib0), SdkBindingData.ofInteger(fib1));
+    public static FibonacciWorkflowInputs create(
+        SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
+      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowInputs(fib0, fib1);
     }
   }
 

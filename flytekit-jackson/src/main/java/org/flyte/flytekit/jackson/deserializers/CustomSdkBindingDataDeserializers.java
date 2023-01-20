@@ -14,29 +14,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.deserializers;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.node.TextNode;
-import java.io.IOException;
+import com.fasterxml.jackson.databind.deser.Deserializers;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 
-class CustomSdkBindingDataDeserializer extends JsonDeserializer<SdkBindingData<?>> {
+// TODO find a better name
+public class CustomSdkBindingDataDeserializers extends Deserializers.Base {
   private final Map<String, SdkBindingData<?>> bindingsMap;
 
-  public CustomSdkBindingDataDeserializer(Map<String, SdkBindingData<?>> bindingsMap) {
+  public CustomSdkBindingDataDeserializers(Map<String, SdkBindingData<?>> bindingsMap) {
     this.bindingsMap = bindingsMap;
   }
 
   @Override
-  public SdkBindingData<?> deserialize(
-      JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-    TreeNode treeNode = jsonParser.readValueAsTree();
-    String attr = ((TextNode) treeNode).asText();
-    return bindingsMap.get(attr);
+  public JsonDeserializer<?> findBeanDeserializer(
+      JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
+    if (SdkBindingData.class.isAssignableFrom(type.getRawClass())) {
+      return new CustomSdkBindingDataDeserializer(bindingsMap);
+    }
+
+    return null;
   }
 }

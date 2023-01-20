@@ -38,17 +38,12 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
+import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializers;
+import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
 
 public class JacksonSdkType<T> extends SdkType<T> {
 
-  private static final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .registerModule(new SdkTypeModule())
-          .registerModule(new JavaTimeModule())
-          .registerModule(new ParameterNamesModule())
-          // TODO: Think about this, this is necessary right now because we are adding literal and
-          // scalar inside the JSONode in the case of GENERIC
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static final ObjectMapper OBJECT_MAPPER = createObjectMapper(new SdkTypeModule());
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;
@@ -154,16 +149,21 @@ public class JacksonSdkType<T> extends SdkType<T> {
                               nodeId, x.getKey(), x.getValue().literalType())));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
-      ObjectMapper mapper =
-          new ObjectMapper()
-              .registerModule(new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap)))
-              .registerModule(new JavaTimeModule())
-              .registerModule(new ParameterNamesModule())
-              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+      SdkTypeModule sdkTypeModule =
+          new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap));
+      ObjectMapper mapper = createObjectMapper(sdkTypeModule);
       return mapper.treeToValue(tree, clazz);
     } catch (JsonProcessingException e) {
       throw new RuntimeException("promiseFor failed for [" + clazz.getName() + "]", e);
     }
+  }
+
+  private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {
+    return new ObjectMapper()
+        .registerModule(bindingMap)
+        .registerModule(new JavaTimeModule())
+        .registerModule(new ParameterNamesModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 }

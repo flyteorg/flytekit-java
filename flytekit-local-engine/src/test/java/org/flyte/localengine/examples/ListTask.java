@@ -41,8 +41,7 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
     public abstract SdkBindingData<List<Long>> list();
 
     public static Input create(List<Long> list) {
-      return new AutoValue_ListTask_Input(
-          SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
+      return new AutoValue_ListTask_Input(SdkBindingData.ofIntegerCollection(list));
     }
   }
 
@@ -51,8 +50,7 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
     public abstract SdkBindingData<List<Long>> list();
 
     public static Output create(List<Long> list) {
-      return new AutoValue_ListTask_Output(
-          SdkBindingData.ofCollection(list, SdkBindingData::ofInteger));
+      return new AutoValue_ListTask_Output(SdkBindingData.ofIntegerCollection(list));
     }
   }
 }

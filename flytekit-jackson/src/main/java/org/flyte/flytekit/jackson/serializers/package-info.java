@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Flyte Authors
+ * Copyright 2021 Flyte Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
 
-import java.util.Map;
-import org.flyte.flytekit.SdkBindingData;
-
-/** Class used to register custom serializer for maps. */
-public class JacksonBindingMap {
-  private final Map<String, SdkBindingData<?>> bindingsMap;
-
-  JacksonBindingMap(Map<String, SdkBindingData<?>> bindingsMap) {
-    this.bindingsMap = bindingsMap;
-  }
-
-  public Map<String, SdkBindingData<?>> getBindingsMap() {
-    return bindingsMap;
-  }
-}
+/** Jackson serializers used in the {@link org.flyte.flytekit.jackson.JacksonSdkType}. */
+package org.flyte.flytekit.jackson.serializers;

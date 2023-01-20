@@ -14,25 +14,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.serializers;
+
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
-import org.flyte.flytekit.SdkBindingData;
+import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 
-class SdkBindingDataSerializer extends StdSerializer<SdkBindingData<?>> {
-  private static final long serialVersionUID = 0L;
+public abstract class ScalarSerializer extends LiteralSerializer {
 
-  public SdkBindingDataSerializer() {
-    super(SdkBindingData.class, true);
+  public ScalarSerializer(
+      JsonGenerator gen,
+      String key,
+      Literal value,
+      SerializerProvider serializerProvider,
+      LiteralType literalType) {
+    super(gen, key, value, serializerProvider, literalType);
   }
 
   @Override
-  public void serialize(
-      SdkBindingData<?> sdkBindingData, JsonGenerator gen, SerializerProvider serializers)
-      throws IOException {
-    gen.writeObject(sdkBindingData.get());
+  final void serializeLiteral() throws IOException {
+    gen.writeObject(Literal.Kind.SCALAR);
+    gen.writeFieldName(SCALAR);
+    serializeScalar();
   }
+
+  abstract void serializeScalar() throws IOException;
 }

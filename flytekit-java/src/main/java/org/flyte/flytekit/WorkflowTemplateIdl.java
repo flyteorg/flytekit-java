@@ -87,7 +87,7 @@ class WorkflowTemplateIdl {
         .collect(toUnmodifiableMap());
   }
 
-  private static Binding getBinding(String var_, SdkBindingData bindingData) {
+  private static Binding getBinding(String var_, SdkBindingData<?> bindingData) {
     return Binding.builder().var_(var_).binding(bindingData.idl()).build();
   }
 }

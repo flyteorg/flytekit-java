@@ -32,14 +32,14 @@ public class PrintMessageTask extends SdkRunnableTask<PrintMessageTask.Input, Vo
     super(JacksonSdkType.of(Input.class), SdkTypes.nulls());
   }
 
-  public static SdkTransform of(SdkBindingData message) {
+  public static SdkTransform<Void> of(SdkBindingData<String> message) {
     return new PrintMessageTask().withInput("message", message);
   }
 
   /** Input for {@link PrintMessageTask}. */
   @AutoValue
   public abstract static class Input {
-    public abstract String message();
+    public abstract SdkBindingData<String> message();
   }
 
   @Override

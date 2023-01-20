@@ -17,36 +17,56 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow extends SdkWorkflow {
+public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
+
+  public FibonacciWorkflow() {
+    super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
+  }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData fib0 = builder.inputOfInteger("fib0");
-    SdkBindingData fib1 = builder.inputOfInteger("fib1");
+    SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
+    SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");
 
-    SdkNode fib2 = builder.apply("fib-2", new SumTask().withInput("a", fib0).withInput("b", fib1));
+    SdkBindingData<Long> fib2 =
+        builder
+            .apply("fib-2", new SumTask().withInput("a", fib0).withInput("b", fib1))
+            .getOutputs()
+            .o();
 
-    SdkNode fib3 =
-        builder.apply(
-            "fib-3", new SumTask().withInput("a", fib1).withInput("b", fib2.getOutput("c")));
+    SdkBindingData<Long> fib3 =
+        builder
+            .apply("fib-3", new SumTask().withInput("a", fib1).withInput("b", fib2))
+            .getOutputs()
+            .o();
 
-    SdkNode fib4 =
-        builder.apply(
-            "fib-4",
-            new SumTask().withInput("a", fib2.getOutput("c")).withInput("b", fib3.getOutput("c")));
+    SdkBindingData<Long> fib4 =
+        builder
+            .apply("fib-4", new SumTask().withInput("a", fib2).withInput("b", fib3))
+            .getOutputs()
+            .o();
 
-    SdkNode fib5 =
-        builder.apply(
-            "fib-5",
-            new SumTask().withInput("a", fib3.getOutput("c")).withInput("b", fib4.getOutput("c")));
+    SdkBindingData<Long> fib5 =
+        builder
+            .apply("fib-5", new SumTask().withInput("a", fib3).withInput("b", fib4))
+            .getOutputs()
+            .o();
 
-    builder.output("fib4", fib4.getOutput("c"));
-    builder.output("fib5", fib5.getOutput("c"));
+    builder.output("fib4", fib4);
+    builder.output("fib5", fib5);
+  }
+
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<Long> fib4();
+
+    public abstract SdkBindingData<Long> fib5();
   }
 }

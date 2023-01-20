@@ -17,27 +17,49 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow {
+public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExampleWorkflow.Output> {
+
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<String> c();
+
+    /**
+     * Wraps the constructor of the generated output value class.
+     *
+     * @param c the String literal output of {@link NodeMetadataExampleWorkflow}
+     * @return output of NodeMetadataExampleWorkflow
+     */
+    public static NodeMetadataExampleWorkflow.Output create(SdkBindingData<String> c) {
+      return new AutoValue_NodeMetadataExampleWorkflow_Output(c);
+    }
+  }
+
+  public NodeMetadataExampleWorkflow() {
+    super(JacksonSdkType.of(NodeMetadataExampleWorkflow.Output.class));
+  }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = SdkBindingData.ofInteger(0);
-    SdkBindingData b = SdkBindingData.ofInteger(1);
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(0);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(1);
 
-    SdkBindingData c =
+    SdkBindingData<Long> c =
         builder
             .apply(
                 "sum-a-b",
                 SumTask.of(a, b)
                     .withNameOverride("sum a+b")
                     .withTimeoutOverride(Duration.ofMinutes(15)))
-            .getOutput("c");
+            .getOutputs()
+            .c();
 
     builder.output("c", c, "Value of the sum");
   }

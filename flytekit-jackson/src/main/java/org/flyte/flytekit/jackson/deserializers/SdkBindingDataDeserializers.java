@@ -14,25 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.deserializers;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.Deserializers;
-import java.util.Map;
-import org.flyte.api.v1.LiteralType;
+import org.flyte.flytekit.SdkBindingData;
 
-class LiteralMapDeserializers extends Deserializers.Base {
+public class SdkBindingDataDeserializers extends Deserializers.Base {
 
   @Override
   public JsonDeserializer<?> findBeanDeserializer(
       JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
-    if (type.getRawClass().equals(JacksonLiteralMap.class)) {
-      Map<String, LiteralType> literalTypeMap = type.getValueHandler();
+    if (SdkBindingData.class.isAssignableFrom(type.getRawClass())) {
 
-      return new LiteralMapDeserializer(literalTypeMap);
+      return new SdkBindingDataDeserializer();
     }
 
     return null;

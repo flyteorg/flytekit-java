@@ -17,23 +17,41 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow extends SdkWorkflow {
+public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
+
+  public FibonacciWorkflow() {
+    super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
+  }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
-    SdkBindingData fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
+    SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
+    SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
 
-    SdkBindingData fib2 = builder.apply("fib-2", SumTask.of(fib0, fib1)).getOutput("c");
-    SdkBindingData fib3 = builder.apply("fib-3", SumTask.of(fib1, fib2)).getOutput("c");
-    SdkBindingData fib4 = builder.apply("fib-4", SumTask.of(fib2, fib3)).getOutput("c");
-    SdkBindingData fib5 = builder.apply("fib-5", SumTask.of(fib3, fib4)).getOutput("c");
+    SdkNode<SumTask.SumOutput> apply = builder.apply("fib-2", SumTask.of(fib0, fib1));
+    SumTask.SumOutput outputs = apply.getOutputs();
+    SdkBindingData<Long> fib2 = outputs.c();
+    SdkBindingData<Long> fib3 = builder.apply("fib-3", SumTask.of(fib1, fib2)).getOutputs().c();
+    SdkBindingData<Long> fib4 = builder.apply("fib-4", SumTask.of(fib2, fib3)).getOutputs().c();
+    SdkBindingData<Long> fib5 = builder.apply("fib-5", SumTask.of(fib3, fib4)).getOutputs().c();
 
     builder.output("fib5", fib5, "Value for Fib5");
+  }
+
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<Long> fib5();
+
+    public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib5) {
+      return new AutoValue_FibonacciWorkflow_Output(fib5);
+    }
   }
 }

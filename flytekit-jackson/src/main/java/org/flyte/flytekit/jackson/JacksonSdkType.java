@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit.jackson;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -30,19 +32,17 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
+import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializers;
+import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
 
 public class JacksonSdkType<T> extends SdkType<T> {
 
-  private static final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .registerModule(new SdkTypeModule())
-          .registerModule(new JavaTimeModule())
-          .registerModule(new ParameterNamesModule());
+  private static final ObjectMapper OBJECT_MAPPER = createObjectMapper(new SdkTypeModule());
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;
@@ -87,9 +87,9 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
       Map<String, LiteralType> literalTypeMap =
           getVariableMap().entrySet().stream()
-              .collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+              .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
-      // The previous trick with JavaType and withValueHandler did't work because
+      // The previous trick with JavaType and withValueHandler didn't work because
       // Jackson caches serializers, without considering valueHandler as significant part
       // of the caching key.
 
@@ -123,11 +123,55 @@ public class JacksonSdkType<T> extends SdkType<T> {
   @Override
   public T fromLiteralMap(Map<String, Literal> value) {
     try {
-      JsonNode tree = OBJECT_MAPPER.valueToTree(value);
+      Map<String, LiteralType> literalTypeMap =
+          getVariableMap().entrySet().stream()
+              .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+
+      JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonLiteralMap(value, literalTypeMap));
 
       return OBJECT_MAPPER.treeToValue(tree, clazz);
     } catch (JsonProcessingException e) {
       throw new RuntimeException("fromLiteralMap failed for [" + clazz.getName() + "]", e);
     }
+  }
+
+  /**
+   * Method used to create SdkBindingData output references/promises for SdkTransform outputs (e.g.,
+   * workflows and tasks outputs). We need to go from {@code Map<String, Variable>} to object of
+   * output class T. We leverage Jackson to help create the object of the output class T from the
+   * map. We use a the BindingMapSerializer to serialize only the keys of the map to JsonNode
+   * Instead of recreating SdkBindingData objects we pass the bindingMap to the
+   * CustomSdkBindingDataDeserializers so it can get use the keys to retrieve the objects from the
+   * map. We need to create a new object mapper to use a different deserializer for SdkBindingData
+   * than the one used in other places.
+   */
+  @Override
+  public T promiseFor(String nodeId) {
+    try {
+      Map<String, SdkBindingData<?>> bindingMap =
+          getVariableMap().entrySet().stream()
+              .collect(
+                  toMap(
+                      Map.Entry::getKey,
+                      x ->
+                          SdkBindingData.ofOutputReference(
+                              nodeId, x.getKey(), x.getValue().literalType())));
+
+      JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
+
+      SdkTypeModule sdkTypeModule =
+          new SdkTypeModule(new CustomSdkBindingDataDeserializers(bindingMap));
+      ObjectMapper mapper = createObjectMapper(sdkTypeModule);
+      return mapper.treeToValue(tree, clazz);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("promiseFor failed for [" + clazz.getName() + "]", e);
+    }
+  }
+
+  private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {
+    return new ObjectMapper()
+        .registerModule(bindingMap)
+        .registerModule(new JavaTimeModule())
+        .registerModule(new ParameterNamesModule());
   }
 }

@@ -18,6 +18,7 @@ package org.flyte.integrationtests.structs;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -34,28 +35,35 @@ public class BuildBqReference
 
   @Override
   public Output run(Input input) {
-    return Output.create(BQReference.create(input.project(), input.dataset(), input.tableName()));
+    return Output.create(
+        BQReference.create(input.project().get(), input.dataset().get(), input.tableName().get()));
   }
 
   @AutoValue
   public abstract static class Input {
-    abstract String project();
+    abstract SdkBindingData<String> project();
 
-    abstract String dataset();
+    abstract SdkBindingData<String> dataset();
 
-    abstract String tableName();
+    abstract SdkBindingData<String> tableName();
 
     public static Input create(String project, String dataset, String tableName) {
-      return new AutoValue_BuildBqReference_Input(project, dataset, tableName);
+      return new AutoValue_BuildBqReference_Input(
+          SdkBindingData.ofString(project),
+          SdkBindingData.ofString(dataset),
+          SdkBindingData.ofString(tableName));
     }
   }
 
   @AutoValue
   public abstract static class Output {
-    abstract BQReference ref();
+    abstract SdkBindingData<BQReference> ref();
 
     public static Output create(BQReference ref) {
-      return new AutoValue_BuildBqReference_Output(ref);
+      // TODO We need a way to generate SdkBindings of generic autovalues like BQReference
+      //  that would be mapped to sdkStructs. JacksonSdkType of nested autovalues are mapped as
+      // structs
+      return null;
     }
   }
 }

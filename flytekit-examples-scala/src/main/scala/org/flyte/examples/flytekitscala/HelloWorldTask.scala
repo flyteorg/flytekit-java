@@ -16,18 +16,18 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.SdkRunnableTask
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask}
 import org.flyte.flytekitscala.SdkScalaType
 
-case class HelloWorldTaskInput(message: String)
+case class HelloWorldTaskInput(message: SdkBindingData[String])
 
 class HelloWorldTask
-    extends SdkRunnableTask(
+    extends SdkRunnableTask[HelloWorldTaskInput, Unit](
       SdkScalaType[HelloWorldTaskInput],
       SdkScalaType.unit
     ) {
 
   override def run(input: HelloWorldTaskInput): Unit = {
-    println(input.message)
+    println(input.message.get)
   }
 }

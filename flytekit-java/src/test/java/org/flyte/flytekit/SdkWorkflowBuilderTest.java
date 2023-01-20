@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BooleanExpression;
@@ -38,7 +37,6 @@ import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.NodeMetadata;
@@ -119,7 +117,7 @@ class SdkWorkflowBuilderTest {
                         .var_("a")
                         .binding(
                             BindingData.ofOutputReference(
-                                OutputReference.builder().var("c").nodeId("foo-n0").build()))
+                                OutputReference.builder().var("o").nodeId("foo-n0").build()))
                         .build(),
                     Binding.builder()
                         .var_("b")
@@ -225,8 +223,8 @@ class SdkWorkflowBuilderTest {
   void testDuplicateNodeId() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
 
     builder.apply("node-1", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
@@ -245,13 +243,14 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testVariableNameNotFound_output(SdkTransform transform) {
+  void testVariableNameNotFound_output(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
 
-    SdkNode node1 = builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
+    SdkNode<TestUnaryIntegerOutput> node1 =
+        builder.apply("node-1", transform.withInput("a", a).withInput("b", b));
 
     CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
 
@@ -263,12 +262,12 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testVariableNameNotFound_input(SdkTransform transform) {
+  void testVariableNameNotFound_input(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
-    SdkBindingData foo = builder.inputOfInteger("foo");
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> foo = builder.inputOfInteger("foo");
 
     CompilerException e =
         assertThrows(
@@ -285,10 +284,10 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testParameterNotBound(SdkTransform transform) {
+  void testParameterNotBound(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData a = builder.inputOfInteger("a");
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
 
     CompilerException e =
         assertThrows(
@@ -302,11 +301,11 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void tesMismatchingTypes(SdkTransform transform) {
+  void tesMismatchingTypes(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData a = builder.inputOfString("a");
-    SdkBindingData b = builder.inputOfString("b");
+    SdkBindingData<String> a = builder.inputOfString("a");
+    SdkBindingData<String> b = builder.inputOfString("b");
 
     CompilerException e =
         assertThrows(
@@ -324,15 +323,16 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testUpstreamNode_withUpstreamNode(SdkTransform transform) {
+  void testUpstreamNode_withUpstreamNode(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData el0 = builder.inputOfInteger("el0");
-    SdkBindingData el1 = builder.inputOfInteger("el1");
+    SdkBindingData<Long> el0 = builder.inputOfInteger("el0");
+    SdkBindingData<Long> el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<TestUnaryIntegerOutput> el2 =
+        builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode el3 =
+    SdkNode<TestUnaryIntegerOutput> el3 =
         builder.apply(
             "el3", transform.withUpstreamNode(el2).withInput("a", el0).withInput("b", el1));
 
@@ -343,8 +343,8 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_apply() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
-    SdkNode node2 = node1.apply("node2", new PrintHello());
+    SdkNode<Void> node1 = builder.apply("node1", new PrintHello());
+    SdkNode<Void> node2 = node1.apply("node2", new PrintHello());
 
     assertEquals(singletonList("node1"), node2.toIdl().upstreamNodeIds());
   }
@@ -353,7 +353,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
+    SdkNode<Void> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -367,7 +367,7 @@ class SdkWorkflowBuilderTest {
   void testUpstreamNode_duplicateWithNode() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkNode node1 = builder.apply("node1", new PrintHello());
+    SdkNode<Void> node1 = builder.apply("node1", new PrintHello());
 
     IllegalArgumentException e =
         assertThrows(
@@ -381,15 +381,16 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testNodeMetadataOverrides(SdkTransform transform) {
+  void testNodeMetadataOverrides(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData el0 = builder.inputOfInteger("el0");
-    SdkBindingData el1 = builder.inputOfInteger("el1");
+    SdkBindingData<Long> el0 = builder.inputOfInteger("el0");
+    SdkBindingData<Long> el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<TestUnaryIntegerOutput> el2 =
+        builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
-    SdkNode el3 =
+    SdkNode<TestUnaryIntegerOutput> el3 =
         builder.apply(
             "el3",
             transform
@@ -406,13 +407,14 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testNodeMetadataOverrides_duplicate(SdkTransform transform) {
+  void testNodeMetadataOverrides_duplicate(SdkTransform<TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData el0 = builder.inputOfInteger("el0");
-    SdkBindingData el1 = builder.inputOfInteger("el1");
+    SdkBindingData<Long> el0 = builder.inputOfInteger("el0");
+    SdkBindingData<Long> el1 = builder.inputOfInteger("el1");
 
-    SdkNode el2 = builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
+    SdkNode<TestUnaryIntegerOutput> el2 =
+        builder.apply("el2", transform.withInput("a", el0).withInput("b", el1));
 
     IllegalArgumentException ex =
         assertThrows(
@@ -457,13 +459,9 @@ class SdkWorkflowBuilderTest {
     assertEquals(
         SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
         builder.inputOfInteger("input6"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input7", LiteralTypes.STRUCT),
-        builder.inputOfStruct("input7"));
   }
 
-  static List<SdkTransform> createTransform() {
+  static List<SdkTransform<TestUnaryIntegerOutput>> createTransform() {
     return asList(new MultiplicationTask(), new MultiplicationWorkflow());
   }
 
@@ -478,48 +476,57 @@ class SdkWorkflowBuilderTest {
                     .build()))
         .outputs(
             singletonMap(
-                "out",
-                Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
+                "o", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .build();
   }
 
   private List<Binding> expectedOutputs(String nodeId) {
     return singletonList(
         Binding.builder()
-            .var_("out")
+            .var_("o")
             .binding(
                 BindingData.ofOutputReference(
-                    OutputReference.builder().var("c").nodeId(nodeId).build()))
+                    OutputReference.builder().var("o").nodeId(nodeId).build()))
             .build());
   }
 
-  private static class Times4Workflow extends SdkWorkflow {
+  private static class Times4Workflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    protected Times4Workflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData two = literalOfInteger(2L);
-      SdkBindingData out1 =
+      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
+      SdkBindingData<Long> two = literalOfInteger(2L);
+      SdkBindingData<Long> out1 =
           builder
               .apply(new MultiplicationTask().withInput("a", in).withInput("b", two))
-              .getOutput("c");
-      SdkBindingData out2 =
+              .getOutputs()
+              .o();
+      SdkBindingData<Long> out2 =
           builder
               .apply(new MultiplicationTask().withInput("a", out1).withInput("b", two))
-              .getOutput("c");
+              .getOutputs()
+              .o();
 
-      builder.output("out", out2);
+      builder.output("o", out2);
     }
   }
 
-  private static class ConditionalWorkflow extends SdkWorkflow {
+  private static class ConditionalWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    private ConditionalWorkflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData two = literalOfInteger(2L);
+      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
+      SdkBindingData<Long> two = literalOfInteger(2L);
 
-      SdkNode out =
+      SdkNode<TestUnaryIntegerOutput> out =
           builder.apply(
               "square",
               SdkConditions.when(
@@ -527,37 +534,39 @@ class SdkWorkflowBuilderTest {
                   SdkConditions.neq(in, two),
                   new MultiplicationTask().withInput("a", in).withInput("b", two)));
 
-      builder.output("out", out.getOutput("c"));
+      builder.output("o", out.getOutputs().o());
     }
   }
 
   static class MultiplicationTask
-      extends SdkRunnableTask<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRunnableTask<TestPairIntegerInput, TestUnaryIntegerOutput> {
     private static final long serialVersionUID = -1971936360636181781L;
 
     MultiplicationTask() {
-      super(
-          TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.INTEGER),
-          TestSdkType.of("c", LiteralTypes.INTEGER));
+      super(new TestPairIntegerInput.SdkType(), new TestUnaryIntegerOutput.SdkType());
     }
 
     @Override
-    public Map<String, Literal> run(Map<String, Literal> input) {
+    public TestUnaryIntegerOutput run(TestPairIntegerInput input) {
       throw new UnsupportedOperationException();
     }
   }
 
-  static class MultiplicationWorkflow extends SdkWorkflow {
+  static class MultiplicationWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    MultiplicationWorkflow() {
+      super(new TestUnaryIntegerOutput.SdkType());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData a = builder.inputOfInteger("a");
-      SdkBindingData b = builder.inputOfInteger("b");
+      SdkBindingData<Long> a = builder.inputOfInteger("a");
+      SdkBindingData<Long> b = builder.inputOfInteger("b");
 
-      SdkNode multiply =
+      SdkNode<TestUnaryIntegerOutput> multiply =
           builder.apply("multiply", new MultiplicationTask().withInput("a", a).withInput("b", b));
 
-      builder.output("c", multiply.getOutput("c"));
+      builder.output("c", multiply.getOutputs().o());
     }
   }
 

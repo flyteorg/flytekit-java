@@ -20,15 +20,15 @@ import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.ComparisonExpression;
 
 @AutoValue
-abstract class SdkComparisonExpression {
-  abstract SdkBindingData left();
+abstract class SdkComparisonExpression<T> {
+  abstract SdkBindingData<T> left();
 
-  abstract SdkBindingData right();
+  abstract SdkBindingData<T> right();
 
   abstract ComparisonExpression.Operator operator();
 
-  static SdkComparisonExpression create(
-      SdkBindingData left, SdkBindingData right, ComparisonExpression.Operator operator) {
-    return new AutoValue_SdkComparisonExpression(left, right, operator);
+  static <T> SdkComparisonExpression<T> create(
+      SdkBindingData<T> left, SdkBindingData<T> right, ComparisonExpression.Operator operator) {
+    return new AutoValue_SdkComparisonExpression<>(left, right, operator);
   }
 }

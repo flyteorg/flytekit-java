@@ -26,17 +26,22 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class BranchNodeWorkflow extends SdkWorkflow {
+public class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
+  public BranchNodeWorkflow() {
+    super(JacksonSdkType.of(ConstStringTask.Output.class));
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
-    SdkBindingData c = builder.inputOfInteger("c");
-    SdkBindingData d = builder.inputOfInteger("d");
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> c = builder.inputOfInteger("c");
+    SdkBindingData<Long> d = builder.inputOfInteger("d");
 
-    SdkCondition condition =
+    SdkCondition<ConstStringTask.Output> condition =
         when(
                 "a-equal-b",
                 eq(a, b),
@@ -56,7 +61,7 @@ public class BranchNodeWorkflow extends SdkWorkflow {
                     .when("c-greater-d", gt(c, d), ConstStringTask.of("a > b && c > d"))
                     .when("c-less-d", lt(c, d), ConstStringTask.of("a > b && c < d")));
 
-    SdkBindingData value = builder.apply("condition", condition).getOutput("value");
+    SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 
     builder.output("value", value);
   }

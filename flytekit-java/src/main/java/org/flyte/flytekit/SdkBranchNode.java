@@ -18,7 +18,6 @@ package org.flyte.flytekit;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
@@ -36,33 +35,42 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 
-public class SdkBranchNode extends SdkNode {
+public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   private final String nodeId;
   private final SdkIfElseBlock ifElse;
   private final Map<String, LiteralType> outputTypes;
   private final List<String> upstreamNodeIds;
+
+  private final OutputT outputs;
 
   private SdkBranchNode(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
-      Map<String, LiteralType> outputTypes) {
+      Map<String, LiteralType> outputTypes,
+      OutputT outputs) {
     super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
     this.ifElse = ifElse;
     this.outputTypes = outputTypes;
+    this.outputs = outputs;
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputTypes.entrySet().stream()
         .collect(toUnmodifiableMap(Map.Entry::getKey, this::createOutput));
   }
 
-  private SdkBindingData createOutput(Map.Entry<String, LiteralType> entry) {
+  @Override
+  public OutputT getOutputs() {
+    return outputs;
+  }
+
+  private SdkBindingData<?> createOutput(Map.Entry<String, LiteralType> entry) {
     return SdkBindingData.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
   }
 
@@ -86,29 +94,32 @@ public class SdkBranchNode extends SdkNode {
     return Node.builder()
         .id(nodeId)
         .branchNode(BranchNode.builder().ifElse(ifElseBlock).build())
-        .inputs(unmodifiableList(new ArrayList<>(extraInputs.values())))
+        .inputs(List.copyOf(extraInputs.values()))
         .upstreamNodeIds(upstreamNodeIds)
         .build();
   }
 
-  static class Builder {
+  static class Builder<OutputT> {
     private final SdkWorkflowBuilder builder;
+    private final SdkType<OutputT> outputType;
 
-    private final Map<String, Map<String, SdkBindingData>> caseOutputs = new LinkedHashMap<>();
+    private final Map<String, Map<String, SdkBindingData<?>>> caseOutputs = new LinkedHashMap<>();
     private final List<SdkIfBlock> ifBlocks = new ArrayList<>();
 
-    private SdkNode elseNode;
+    private SdkNode<?> elseNode;
     private Map<String, LiteralType> outputTypes;
 
-    Builder(SdkWorkflowBuilder builder) {
+    Builder(SdkWorkflowBuilder builder, SdkType<OutputT> outputType) {
       this.builder = builder;
+      this.outputType = outputType;
     }
 
     @CanIgnoreReturnValue
-    Builder addCase(SdkConditionCase case_) {
-      SdkNode sdkNode =
+    Builder<OutputT> addCase(SdkConditionCase<OutputT> case_) {
+      SdkNode<OutputT> sdkNode =
           case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
-      Map<String, SdkBindingData> thatOutputs = sdkNode.getOutputs();
+
+      Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
       Map<String, LiteralType> thatOutputTypes =
           thatOutputs.entrySet().stream()
               .collect(toUnmodifiableMap(Map.Entry::getKey, x -> x.getValue().type()));
@@ -124,7 +135,7 @@ public class SdkBranchNode extends SdkNode {
         outputTypes = thatOutputTypes;
       }
 
-      Map<String, SdkBindingData> previous = caseOutputs.put(case_.name(), thatOutputs);
+      Map<String, SdkBindingData<?>> previous = caseOutputs.put(case_.name(), thatOutputs);
 
       if (previous != null) {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", case_.name()));
@@ -136,7 +147,7 @@ public class SdkBranchNode extends SdkNode {
     }
 
     @CanIgnoreReturnValue
-    Builder addOtherwise(String name, SdkTransform otherwise) {
+    Builder<OutputT> addOtherwise(String name, SdkTransform<OutputT> otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }
@@ -146,12 +157,12 @@ public class SdkBranchNode extends SdkNode {
       }
 
       elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap());
-      caseOutputs.put(name, elseNode.getOutputs());
+      caseOutputs.put(name, elseNode.getOutputBindings());
 
       return this;
     }
 
-    SdkBranchNode build(String nodeId, List<String> upstreamNodeIds) {
+    SdkBranchNode<OutputT> build(String nodeId, List<String> upstreamNodeIds) {
       if (ifBlocks.isEmpty()) {
         throw new IllegalArgumentException("addCase should be called at least once");
       }
@@ -163,7 +174,9 @@ public class SdkBranchNode extends SdkNode {
               .elseNode(elseNode)
               .build();
 
-      return new SdkBranchNode(builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes);
+      OutputT outputs = outputType.promiseFor(nodeId);
+      return new SdkBranchNode<>(
+          builder, nodeId, upstreamNodeIds, ifElseBlock, outputTypes, outputs);
     }
   }
 }

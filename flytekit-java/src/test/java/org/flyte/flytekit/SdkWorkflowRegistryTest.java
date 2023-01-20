@@ -19,7 +19,6 @@ package org.flyte.flytekit;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -27,33 +26,37 @@ public class SdkWorkflowRegistryTest {
 
   @Test
   public void testLoadAll() {
-    SdkWorkflow workflow1 = new TestWorkflow();
-    SdkWorkflow workflow2 = new TestWorkflow();
-    SdkWorkflow workflow3 = new TestWorkflow();
+    SdkWorkflow<Void> workflow1 = new TestWorkflow();
+    SdkWorkflow<Void> workflow2 = new TestWorkflow();
+    SdkWorkflow<Void> workflow3 = new TestWorkflow();
 
-    List<SdkWorkflow> workflows =
+    List<SdkWorkflow<?>> workflows =
         SdkWorkflowRegistry.loadAll(
-            Arrays.asList(
-                new SimpleSdkWorkflowRegistry(Arrays.asList(workflow1)),
-                new SimpleSdkWorkflowRegistry(Arrays.asList(workflow2, workflow3))));
+            List.of(
+                new SimpleSdkWorkflowRegistry(List.of(workflow1)),
+                new SimpleSdkWorkflowRegistry(List.of(workflow2, workflow3))));
 
     assertThat(workflows, containsInAnyOrder(workflow1, workflow2, workflow3));
   }
 
   static class SimpleSdkWorkflowRegistry extends SdkWorkflowRegistry {
-    private final List<SdkWorkflow> workflows;
+    private final List<SdkWorkflow<?>> workflows;
 
-    public SimpleSdkWorkflowRegistry(List<SdkWorkflow> workflows) {
+    public SimpleSdkWorkflowRegistry(List<SdkWorkflow<?>> workflows) {
       this.workflows = workflows;
     }
 
     @Override
-    public List<SdkWorkflow> getWorkflows() {
+    public List<SdkWorkflow<?>> getWorkflows() {
       return workflows;
     }
   }
 
-  private static class TestWorkflow extends SdkWorkflow {
+  private static class TestWorkflow extends SdkWorkflow<Void> {
+    private TestWorkflow() {
+      super(SdkTypes.nulls());
+    }
+
     @Override
     public void expand(SdkWorkflowBuilder builder) {}
   }

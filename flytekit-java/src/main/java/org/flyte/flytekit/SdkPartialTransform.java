@@ -31,15 +31,15 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /** {@link SdkTransform} with partially specified inputs. */
-class SdkPartialTransform extends SdkTransform {
-  private final SdkTransform transform;
-  private final Map<String, SdkBindingData> fixedInputs;
+class SdkPartialTransform<T> extends SdkTransform<T> {
+  private final SdkTransform<T> transform;
+  private final Map<String, SdkBindingData<?>> fixedInputs;
   private final List<String> extraUpstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
 
   private SdkPartialTransform(
-      SdkTransform transform,
-      Map<String, SdkBindingData> fixedInputs,
+      SdkTransform<T> transform,
+      Map<String, SdkBindingData<?>> fixedInputs,
       List<String> extraUpstreamNodeIds,
       @Nullable SdkNodeMetadata metadata) {
     this.transform = transform;
@@ -48,38 +48,40 @@ class SdkPartialTransform extends SdkTransform {
     this.metadata = metadata;
   }
 
-  static SdkTransform of(SdkTransform transform, Map<String, SdkBindingData> fixedInputs) {
-    return new SdkPartialTransform(transform, fixedInputs, emptyList(), /*metadata=*/ null);
+  static <T> SdkTransform<T> of(
+      SdkTransform<T> transform, Map<String, SdkBindingData<?>> fixedInputs) {
+    return new SdkPartialTransform<>(transform, fixedInputs, emptyList(), /*metadata=*/ null);
   }
 
-  static SdkTransform of(SdkTransform transform, List<String> extraUpstreamNodeIds) {
-    return new SdkPartialTransform(transform, emptyMap(), extraUpstreamNodeIds, /*metadata=*/ null);
+  static <T> SdkTransform<T> of(SdkTransform<T> transform, List<String> extraUpstreamNodeIds) {
+    return new SdkPartialTransform<>(
+        transform, emptyMap(), extraUpstreamNodeIds, /*metadata=*/ null);
   }
 
-  static SdkTransform of(SdkTransform transform, SdkNodeMetadata metadata) {
-    return new SdkPartialTransform(transform, emptyMap(), emptyList(), metadata);
+  static <T> SdkTransform<T> of(SdkTransform<T> transform, SdkNodeMetadata metadata) {
+    return new SdkPartialTransform<>(transform, emptyMap(), emptyList(), metadata);
   }
 
   @Override
-  public SdkTransform withInput(String name, SdkBindingData value) {
+  public SdkTransform<T> withInput(String name, SdkBindingData<?> value) {
     // isn't necessary to override, but this reduces nesting and gives better error messages
 
-    SdkBindingData existing = fixedInputs.get(name);
+    SdkBindingData<?> existing = fixedInputs.get(name);
     if (existing != null) {
       String message =
           String.format("Duplicate values for input [%s]: [%s], [%s]", name, existing, value);
       throw new IllegalArgumentException(message);
     }
 
-    Map<String, SdkBindingData> newFixedInputs = new HashMap<>(fixedInputs);
+    Map<String, SdkBindingData<?>> newFixedInputs = new HashMap<>(fixedInputs);
     newFixedInputs.put(name, value);
 
-    return new SdkPartialTransform(
+    return new SdkPartialTransform<>(
         transform, unmodifiableMap(newFixedInputs), extraUpstreamNodeIds, metadata);
   }
 
   @Override
-  public SdkTransform withUpstreamNode(SdkNode node) {
+  public <K> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
     if (extraUpstreamNodeIds.contains(node.getNodeId())) {
       throw new IllegalArgumentException(
           String.format("Duplicate upstream node id [%s]", node.getNodeId()));
@@ -88,23 +90,23 @@ class SdkPartialTransform extends SdkTransform {
     List<String> newExtraUpstreamNodeIds = new ArrayList<>(extraUpstreamNodeIds);
     newExtraUpstreamNodeIds.add(node.getNodeId());
 
-    return new SdkPartialTransform(
+    return new SdkPartialTransform<>(
         transform, fixedInputs, unmodifiableList(newExtraUpstreamNodeIds), metadata);
   }
 
   @Override
-  public SdkTransform withNameOverride(String name) {
+  public SdkTransform<T> withNameOverride(String name) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().name(name).build();
     checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::name, "name");
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
-    return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+    return new SdkPartialTransform<>(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
   }
 
   @Override
-  SdkTransform withNameOverrideIfNotSet(String name) {
+  SdkTransform<T> withNameOverrideIfNotSet(String name) {
     if (metadata != null && metadata.name() != null) {
       return this;
     }
@@ -112,14 +114,19 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
-  public SdkTransform withTimeoutOverride(Duration timeout) {
+  public SdkTransform<T> withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
     SdkNodeMetadata newMetadata = SdkNodeMetadata.builder().timeout(timeout).build();
     checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::timeout, "timeout");
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
-    return new SdkPartialTransform(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+    return new SdkPartialTransform<>(transform, fixedInputs, extraUpstreamNodeIds, mergedMetadata);
+  }
+
+  @Override
+  public SdkType<T> getOutputType() {
+    return transform.getOutputType();
   }
 
   @Override
@@ -128,13 +135,13 @@ class SdkPartialTransform extends SdkTransform {
   }
 
   @Override
-  public SdkNode apply(
+  public SdkNode<T> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
-    Map<String, SdkBindingData> allInputs = new HashMap<>(fixedInputs);
+      Map<String, SdkBindingData<?>> inputs) {
+    Map<String, SdkBindingData<?>> allInputs = new HashMap<>(fixedInputs);
 
     inputs.forEach(
         (k, v) ->

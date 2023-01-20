@@ -22,7 +22,7 @@ import java.util.Map;
 import org.flyte.api.v1.Node;
 
 /** Represent a node in the workflow DAG. */
-public abstract class SdkNode {
+public abstract class SdkNode<OutputT> {
 
   protected final SdkWorkflowBuilder builder;
 
@@ -30,10 +30,14 @@ public abstract class SdkNode {
     this.builder = builder;
   }
 
-  public abstract Map<String, SdkBindingData> getOutputs();
+  public abstract Map<String, SdkBindingData<?>> getOutputBindings();
 
-  public SdkBindingData getOutput(String name) {
-    SdkBindingData output = getOutputs().get(name);
+  public abstract OutputT getOutputs();
+
+  public SdkBindingData<?> getOutput(String name) {
+
+    @SuppressWarnings("unchecked")
+    SdkBindingData<?> output = getOutputBindings().get(name);
 
     if (output == null) {
       String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());
@@ -53,11 +57,13 @@ public abstract class SdkNode {
 
   public abstract Node toIdl();
 
-  public SdkNode apply(String id, SdkTransform transform) {
+  public SdkNode<OutputT> apply(String id, SdkTransform<OutputT> transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
-        getOutputs().isEmpty() ? Collections.singletonList(getNodeId()) : Collections.emptyList();
+        getOutputBindings().isEmpty()
+            ? Collections.singletonList(getNodeId())
+            : Collections.emptyList();
 
-    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputs());
+    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputBindings());
   }
 }

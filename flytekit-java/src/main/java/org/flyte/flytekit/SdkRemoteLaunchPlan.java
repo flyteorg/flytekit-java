@@ -27,7 +27,7 @@ import org.flyte.api.v1.WorkflowNode;
 
 /** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform {
+public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<OutputT> {
 
   @Nullable
   public abstract String domain();
@@ -42,6 +42,12 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
+
+  @Override
+  public SdkType<OutputT> getOutputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return outputs();
+  }
 
   public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
       String domain,
@@ -64,12 +70,12 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
   }
 
   @Override
-  public SdkNode apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialLaunchPlanIdentifier workflowId =
         PartialLaunchPlanIdentifier.builder()
             .name(name())
@@ -83,7 +89,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
       throw new CompilerException(errors);
     }
 
-    Map<String, SdkBindingData> outputs =
+    Map<String, SdkBindingData<?>> outputs =
         outputs().getVariableMap().entrySet().stream()
             .collect(
                 toUnmodifiableMap(
@@ -92,7 +98,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
                         SdkBindingData.ofOutputReference(
                             nodeId, entry.getKey(), entry.getValue().literalType())));
 
-    return new SdkWorkflowNode(
+    OutputT promise = getOutputType().promiseFor(nodeId);
+    return new SdkWorkflowNode<>(
         builder,
         nodeId,
         upstreamNodeIds,
@@ -101,7 +108,8 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform 
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
         inputs,
-        outputs);
+        outputs,
+        promise);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

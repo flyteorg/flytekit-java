@@ -26,6 +26,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
 @AutoService(SdkRunnableTask.class)
 public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output> {
+
   public GreetTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }
@@ -36,7 +37,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    * @param name the input name
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform of(SdkBindingData name) {
+  public static SdkTransform<Output> of(SdkBindingData<String> name) {
     return new GreetTask().withInput("name", name);
   }
 
@@ -45,7 +46,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    */
   @AutoValue
   public abstract static class Input {
-    public abstract String name();
+    public abstract SdkBindingData<String> name();
   }
 
   /**
@@ -54,7 +55,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    */
   @AutoValue
   public abstract static class Output {
-    public abstract String greeting();
+    public abstract SdkBindingData<String> greeting();
 
     /**
      * Wraps the constructor of the generated output value class.
@@ -62,7 +63,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
      * @param greeting the String literal output of {@link GreetTask}
      * @return output of GreetTask
      */
-    public static Output create(String greeting) {
+    public static Output create(SdkBindingData<String> greeting) {
       return new AutoValue_GreetTask_Output(greeting);
     }
   }
@@ -76,6 +77,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    */
   @Override
   public Output run(Input input) {
-    return Output.create(String.format("Welcome, %s!", input.name()));
+    return Output.create(
+        SdkBindingData.ofString(String.format("Welcome, %s!", input.name().get())));
   }
 }

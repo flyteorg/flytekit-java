@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -40,12 +39,13 @@ class SdkRemoteTaskTest {
 
   @Test
   void applyShouldReturnASdkTaskNode() {
-    Map<String, SdkBindingData> inputs = new HashMap<>();
+    Map<String, SdkBindingData<?>> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
-    inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> remoteTask = new TestSdkRemoteTask();
+    inputs.put("b", SdkBindingData.ofInteger(2));
+    SdkRemoteTask<TestPairIntegerInput, TestUnaryBooleanOutput> remoteTask =
+        new TestSdkRemoteTask();
 
-    SdkNode node =
+    SdkNode<TestUnaryBooleanOutput> node =
         remoteTask.apply(
             mock(SdkWorkflowBuilder.class),
             "lookup-endsong",
@@ -84,21 +84,22 @@ class SdkRemoteTaskTest {
                                     .var_("b")
                                     .binding(
                                         BindingData.ofScalar(
-                                            Scalar.ofPrimitive(Primitive.ofStringValue("2"))))
+                                            Scalar.ofPrimitive(Primitive.ofIntegerValue(2))))
                                     .build()))
                         .build())),
         () ->
             assertThat(
-                node.getOutputs(),
+                node.getOutputBindings(),
                 is(
                     singletonMap(
-                        "c",
+                        "o",
                         SdkBindingData.ofOutputReference(
-                            "lookup-endsong", "c", LiteralTypes.BOOLEAN)))));
+                            "lookup-endsong", "o", LiteralTypes.BOOLEAN)))));
   }
 
   @SuppressWarnings("ExtendsAutoValue")
-  static class TestSdkRemoteTask extends SdkRemoteTask<Map<String, Literal>, Map<String, Literal>> {
+  static class TestSdkRemoteTask
+      extends SdkRemoteTask<TestPairIntegerInput, TestUnaryBooleanOutput> {
 
     @Override
     public String domain() {
@@ -121,13 +122,13 @@ class SdkRemoteTaskTest {
     }
 
     @Override
-    public SdkType<Map<String, Literal>> inputs() {
-      return TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING);
+    public SdkType<TestPairIntegerInput> inputs() {
+      return new TestPairIntegerInput.SdkType();
     }
 
     @Override
-    public SdkType<Map<String, Literal>> outputs() {
-      return TestSdkType.of("c", LiteralTypes.BOOLEAN);
+    public SdkType<TestUnaryBooleanOutput> outputs() {
+      return new TestUnaryBooleanOutput.SdkType();
     }
   }
 }

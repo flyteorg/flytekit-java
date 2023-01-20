@@ -25,13 +25,14 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowNode;
 
-public class SdkWorkflowNode extends SdkNode {
+public class SdkWorkflowNode<T> extends SdkNode<T> {
   private final String nodeId;
   private final List<String> upstreamNodeIds;
   private final SdkNodeMetadata metadata;
   private final WorkflowNode workflowNode;
-  private final Map<String, SdkBindingData> inputs;
-  private final Map<String, SdkBindingData> outputs;
+  private final Map<String, SdkBindingData<?>> inputBindings;
+  private final Map<String, SdkBindingData<?>> outputBindings;
+  private final T outputs;
 
   SdkWorkflowNode(
       SdkWorkflowBuilder builder,
@@ -39,20 +40,27 @@ public class SdkWorkflowNode extends SdkNode {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       WorkflowNode workflowNode,
-      Map<String, SdkBindingData> inputs,
-      Map<String, SdkBindingData> outputs) {
+      Map<String, SdkBindingData<?>> inputBindings,
+      Map<String, SdkBindingData<?>> outputBindings,
+      T outputs) {
     super(builder);
 
     this.nodeId = nodeId;
     this.upstreamNodeIds = upstreamNodeIds;
     this.metadata = metadata;
     this.workflowNode = workflowNode;
-    this.inputs = inputs;
+    this.inputBindings = inputBindings;
+    this.outputBindings = outputBindings;
     this.outputs = outputs;
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
+    return outputBindings;
+  }
+
+  @Override
+  public T getOutputs() {
     return outputs;
   }
 
@@ -64,7 +72,7 @@ public class SdkWorkflowNode extends SdkNode {
   @Override
   public Node toIdl() {
     List<Binding> inputBindings =
-        inputs.entrySet().stream()
+        this.inputBindings.entrySet().stream()
             .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(toUnmodifiableList());
 
@@ -77,7 +85,7 @@ public class SdkWorkflowNode extends SdkNode {
         .build();
   }
 
-  private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
+  private static Binding toBinding(String var_, SdkBindingData<?> sdkBindingData) {
     return Binding.builder().var_(var_).binding(sdkBindingData.idl()).build();
   }
 }

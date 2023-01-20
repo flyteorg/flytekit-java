@@ -20,21 +20,27 @@ import com.google.auto.service.AutoService;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class NestedSubWorkflow extends SdkWorkflow {
+public class NestedSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+  public NestedSubWorkflow() {
+    super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+  }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData a = builder.inputOfInteger("a");
-    SdkBindingData b = builder.inputOfInteger("b");
-    SdkBindingData c = builder.inputOfInteger("c");
-    SdkBindingData result =
+    SdkBindingData<Long> a = builder.inputOfInteger("a");
+    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> c = builder.inputOfInteger("c");
+    SdkBindingData<Long> result =
         builder
             .apply(
                 "nested-workflow",
                 new OuterSubWorkflow().withInput("a", a).withInput("b", b).withInput("c", c))
-            .getOutput("result");
-    builder.output("result", result);
+            .getOutputs()
+            .o();
+    builder.output("o", result);
   }
 }

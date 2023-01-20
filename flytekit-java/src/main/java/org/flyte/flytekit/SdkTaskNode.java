@@ -29,13 +29,14 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.Variable;
 
 /** Represent a {@link org.flyte.flytekit.SdkRunnableTask} in a workflow DAG. */
-public class SdkTaskNode extends SdkNode {
+public class SdkTaskNode<T> extends SdkNode<T> {
   private final String nodeId;
   private final PartialTaskIdentifier taskId;
   private final List<String> upstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
-  private final Map<String, SdkBindingData> inputs;
-  private final Map<String, Variable> outputs;
+  private final Map<String, SdkBindingData<?>> inputs;
+  private final Map<String, Variable> outputVars;
+  private final T outputs;
 
   SdkTaskNode(
       SdkWorkflowBuilder builder,
@@ -43,8 +44,9 @@ public class SdkTaskNode extends SdkNode {
       PartialTaskIdentifier taskId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs,
-      Map<String, Variable> outputs) {
+      Map<String, SdkBindingData<?>> inputs,
+      Map<String, Variable> outputVars,
+      T outputs) {
     super(builder);
 
     this.nodeId = nodeId;
@@ -52,18 +54,24 @@ public class SdkTaskNode extends SdkNode {
     this.upstreamNodeIds = upstreamNodeIds;
     this.metadata = metadata;
     this.inputs = inputs;
+    this.outputVars = outputVars;
     this.outputs = outputs;
   }
 
   @Override
-  public Map<String, SdkBindingData> getOutputs() {
-    return outputs.entrySet().stream()
+  public Map<String, SdkBindingData<?>> getOutputBindings() {
+    return outputVars.entrySet().stream()
         .collect(
             toUnmodifiableMap(
                 Map.Entry::getKey,
                 entry ->
                     SdkBindingData.ofOutputReference(
                         nodeId, entry.getKey(), entry.getValue().literalType())));
+  }
+
+  @Override
+  public T getOutputs() {
+    return outputs;
   }
 
   @Override
@@ -89,7 +97,7 @@ public class SdkTaskNode extends SdkNode {
         .build();
   }
 
-  private static Binding toBinding(String var_, SdkBindingData sdkBindingData) {
+  private static Binding toBinding(String var_, SdkBindingData<?> sdkBindingData) {
     return Binding.builder().var_(var_).binding(sdkBindingData.idl()).build();
   }
 }

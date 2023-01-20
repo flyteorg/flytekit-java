@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.Primitive;
@@ -39,13 +38,13 @@ import org.junit.jupiter.api.Test;
 public class SdkRemoteLaunchPlanTest {
   @Test
   void applyShouldReturnASdkWorkflowNode() {
-    Map<String, SdkBindingData> inputs = new HashMap<>();
+    Map<String, SdkBindingData<?>> inputs = new HashMap<>();
     inputs.put("a", SdkBindingData.ofInteger(1));
-    inputs.put("b", SdkBindingData.ofString("2"));
-    SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> remoteLaunchPlan =
+    inputs.put("b", SdkBindingData.ofInteger(2));
+    SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 
-    SdkNode node =
+    SdkNode<TestUnaryBooleanOutput> node =
         remoteLaunchPlan.apply(
             mock(SdkWorkflowBuilder.class),
             "some-node-id",
@@ -85,22 +84,22 @@ public class SdkRemoteLaunchPlanTest {
                                     .var_("b")
                                     .binding(
                                         BindingData.ofScalar(
-                                            Scalar.ofPrimitive(Primitive.ofStringValue("2"))))
+                                            Scalar.ofPrimitive(Primitive.ofIntegerValue(2))))
                                     .build()))
                         .build())),
         () ->
             assertThat(
-                node.getOutputs(),
+                node.getOutputBindings(),
                 is(
                     singletonMap(
-                        "c",
+                        "o",
                         SdkBindingData.ofOutputReference(
-                            "some-node-id", "c", LiteralTypes.BOOLEAN)))));
+                            "some-node-id", "o", LiteralTypes.BOOLEAN)))));
   }
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteLaunchPlan
-      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> {
 
     @Override
     public String domain() {
@@ -123,13 +122,13 @@ public class SdkRemoteLaunchPlanTest {
     }
 
     @Override
-    public SdkType<Map<String, Literal>> inputs() {
-      return TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING);
+    public SdkType<TestPairIntegerInput> inputs() {
+      return new TestPairIntegerInput.SdkType();
     }
 
     @Override
-    public SdkType<Map<String, Literal>> outputs() {
-      return TestSdkType.of("c", LiteralTypes.BOOLEAN);
+    public SdkType<TestUnaryBooleanOutput> outputs() {
+      return new TestUnaryBooleanOutput.SdkType();
     }
   }
 }

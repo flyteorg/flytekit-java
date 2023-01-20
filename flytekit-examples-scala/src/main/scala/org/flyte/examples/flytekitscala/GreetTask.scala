@@ -18,15 +18,19 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekitscala.SdkBindingData._
 
-case class GreetTaskInput(name: String)
-case class GreetTaskOutput(greeting: String)
+case class GreetTaskInput(name: SdkBindingData[String])
+case class GreetTaskOutput(greeting: SdkBindingData[String])
 
 /** Example Flyte task that takes a name as the input and outputs a simple
   * greeting message.
   */
 class GreetTask
-    extends SdkRunnableTask(
+    extends SdkRunnableTask[
+      GreetTaskInput,
+      GreetTaskOutput
+    ](
       SdkScalaType[GreetTaskInput],
       SdkScalaType[GreetTaskOutput]
     ) {
@@ -40,7 +44,7 @@ class GreetTask
     *   the welcome message
     */
   override def run(input: GreetTaskInput): GreetTaskOutput =
-    GreetTaskOutput(s"Welcome, ${input.name}!")
+    GreetTaskOutput(ofString(s"Welcome, ${input.name.get()}!"))
 }
 
 object GreetTask {
@@ -52,6 +56,6 @@ object GreetTask {
     * @return
     *   a transformed instance of this class with input data
     */
-  def apply(name: SdkBindingData): SdkTransform =
+  def apply(name: SdkBindingData[String]): SdkTransform[GreetTaskOutput] =
     new GreetTask().withInput("name", name)
 }

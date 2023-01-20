@@ -16,20 +16,19 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
@@ -38,64 +37,257 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 
 @AutoValue
-public abstract class SdkBindingData {
+public abstract class SdkBindingData<T> {
 
   abstract BindingData idl();
 
   abstract LiteralType type();
 
-  public static SdkBindingData create(BindingData idl, LiteralType type) {
-    return new AutoValue_SdkBindingData(idl, type);
+  @Nullable
+  abstract T value();
+
+  public static <T> SdkBindingData<T> create(BindingData idl, LiteralType type, T value) {
+    return new AutoValue_SdkBindingData<>(idl, type, value);
   }
 
-  public static SdkBindingData ofInteger(long value) {
-    return ofPrimitive(Primitive.ofIntegerValue(value));
+  public static SdkBindingData<Long> ofInteger(long value) {
+    return ofPrimitive(Primitive::ofIntegerValue, value);
   }
 
-  public static SdkBindingData ofFloat(double value) {
-    return ofPrimitive(Primitive.ofFloatValue(value));
+  public static SdkBindingData<Double> ofFloat(double value) {
+    return ofPrimitive(Primitive::ofFloatValue, value);
   }
 
-  public static SdkBindingData ofString(String value) {
-    return ofPrimitive(Primitive.ofStringValue(value));
+  public static SdkBindingData<String> ofString(String value) {
+    return ofPrimitive(Primitive::ofStringValue, value);
   }
 
-  public static SdkBindingData ofBoolean(boolean value) {
-    return ofPrimitive(Primitive.ofBooleanValue(value));
+  public static SdkBindingData<Boolean> ofBoolean(boolean value) {
+    return ofPrimitive(Primitive::ofBooleanValue, value);
   }
 
-  public static SdkBindingData ofDatetime(int year, int month, int day) {
+  public static SdkBindingData<Instant> ofDatetime(int year, int month, int day) {
     Instant instant = LocalDate.of(year, month, day).atStartOfDay().toInstant(ZoneOffset.UTC);
     return ofDatetime(instant);
   }
 
-  public static SdkBindingData ofDatetime(Instant value) {
-    return ofPrimitive(Primitive.ofDatetime(value));
+  public static SdkBindingData<Instant> ofDatetime(Instant value) {
+    return ofPrimitive(Primitive::ofDatetime, value);
   }
 
-  public static SdkBindingData ofDuration(Duration value) {
-    return ofPrimitive(Primitive.ofDuration(value));
+  public static SdkBindingData<Duration> ofDuration(Duration value) {
+    return ofPrimitive(Primitive::ofDuration, value);
   }
 
-  public static SdkBindingData ofOutputReference(String nodeId, String nodeVar, LiteralType type) {
-    BindingData idl =
-        BindingData.ofOutputReference(
-            OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
-    return create(idl, type);
-  }
-
-  public static SdkBindingData ofPrimitive(Primitive primitive) {
+  private static <T> SdkBindingData<T> ofPrimitive(Function<T, Primitive> toPrimitive, T value) {
+    Primitive primitive = toPrimitive.apply(value);
     BindingData bindingData = BindingData.ofScalar(Scalar.ofPrimitive(primitive));
     LiteralType literalType = LiteralType.ofSimpleType(getSimpleType(primitive.kind()));
 
-    return create(bindingData, literalType);
+    return create(bindingData, literalType, value);
   }
 
-  public static SdkBindingData ofStruct(SdkStruct struct) {
-    BindingData bindingData = BindingData.ofScalar(Scalar.ofGeneric(struct.struct()));
-    LiteralType literalType = LiteralType.ofSimpleType(SimpleType.STRUCT);
+  public static <T> SdkBindingData<List<T>> ofCollection(
+      List<T> collection, LiteralType literalType, Function<T, SdkBindingData<T>> mapper) {
+    return SdkBindingData.ofBindingCollection(
+        literalType, collection.stream().map(mapper).collect(Collectors.toList()));
+  }
 
-    return create(bindingData, literalType);
+  private static <T> SdkBindingData<List<T>> createCollection(
+      List<T> collection, LiteralType literalType, Function<T, BindingData> bindingDataFn) {
+    return create(
+        BindingData.ofCollection(
+            collection.stream().map(bindingDataFn).collect(Collectors.toList())),
+        literalType,
+        collection);
+  }
+
+  public static SdkBindingData<List<String>> ofStringCollection(List<String> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.STRING)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))));
+  }
+
+  public static SdkBindingData<List<Double>> ofFloatCollection(List<Double> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.FLOAT)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value))));
+  }
+
+  public static SdkBindingData<List<Long>> ofIntegerCollection(List<Long> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value))));
+  }
+
+  public static SdkBindingData<List<Boolean>> ofBooleanCollection(List<Boolean> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value))));
+  }
+
+  public static SdkBindingData<List<Duration>> ofDurationCollection(List<Duration> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.DURATION)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))));
+  }
+
+  public static SdkBindingData<List<Instant>> ofDatetimeCollection(List<Instant> collection) {
+    return createCollection(
+        collection,
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.DATETIME)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))));
+  }
+
+  public static <T> SdkBindingData<Map<String, T>> ofMap(
+      Map<String, T> map, LiteralType literalType, Function<T, SdkBindingData<T>> bindingFunction) {
+    return SdkBindingData.ofBindingMap(
+        literalType,
+        map.entrySet().stream()
+            .map(e -> Map.entry(e.getKey(), bindingFunction.apply(e.getValue())))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+  }
+
+  private static <T> SdkBindingData<Map<String, T>> createMap(
+      Map<String, T> map, LiteralType literalType, Function<T, BindingData> bindingDataFn) {
+    return create(
+        BindingData.ofMap(
+            map.entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), bindingDataFn.apply(entry.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))),
+        literalType,
+        map);
+  }
+
+  public static SdkBindingData<Map<String, String>> ofStringMap(Map<String, String> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Double>> ofFloatMap(Map<String, Double> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.FLOAT)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Long>> ofIntegerMap(Map<String, Long> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Boolean>> ofBooleanMap(Map<String, Boolean> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value))));
+  }
+
+  public static SdkBindingData<Map<String, Duration>> ofDurationMap(Map<String, Duration> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.DURATION)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))));
+  }
+
+  public static SdkBindingData<Map<String, Instant>> ofDatetimeMap(Map<String, Instant> map) {
+    return createMap(
+        map,
+        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.DATETIME)),
+        (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))));
+  }
+
+  public static <T> SdkBindingData<List<T>> ofBindingCollection(
+      LiteralType literalType, List<SdkBindingData<T>> elements) {
+    List<BindingData> bindings = elements.stream().map(SdkBindingData::idl).collect(toList());
+    BindingData bindingData = BindingData.ofCollection(bindings);
+
+    checkIncompatibleTypes(literalType.collectionType(), elements);
+    boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
+    List<T> unwrappedElements =
+        hasPromise ? null : elements.stream().map(SdkBindingData::get).collect(toList());
+
+    return SdkBindingData.create(bindingData, literalType, unwrappedElements);
+  }
+
+  private static <T> void checkIncompatibleTypes(
+      LiteralType literalType, List<SdkBindingData<T>> elements) {
+    List<LiteralType> incompatibleTypes =
+        elements.stream()
+            .map(SdkBindingData::type)
+            .distinct()
+            .filter(type -> !type.equals(literalType))
+            .collect(toList());
+    if (!incompatibleTypes.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Type mismatch: expected all elements of type %s but found some elements of type: %s",
+              literalType, incompatibleTypes));
+    }
+  }
+
+  private static boolean isAPromise(BindingData bindingData) {
+    switch (bindingData.kind()) {
+      case SCALAR:
+        return false;
+      case PROMISE:
+        return true;
+      case COLLECTION:
+        return bindingData.collection().stream().anyMatch(SdkBindingData::isAPromise);
+      case MAP:
+        return bindingData.map().values().stream().anyMatch(SdkBindingData::isAPromise);
+    }
+    throw new IllegalArgumentException("BindingData.Kind not recognized: " + bindingData.kind());
+  }
+
+  public static <T> SdkBindingData<Map<String, T>> ofBindingMap(
+      LiteralType literalType, Map<String, SdkBindingData<T>> valueMap) {
+
+    Map<String, BindingData> bindings =
+        valueMap.entrySet().stream()
+            .map(e -> Map.entry(e.getKey(), e.getValue().idl()))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    BindingData bindingData = BindingData.ofMap(bindings);
+
+    boolean hasPromise = bindings.values().stream().anyMatch(SdkBindingData::isAPromise);
+    Map<String, T> unwrappedElements =
+        hasPromise
+            ? null
+            : valueMap.entrySet().stream()
+                .map(e -> Map.entry(e.getKey(), e.getValue().get()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    return SdkBindingData.create(bindingData, literalType, unwrappedElements);
+  }
+
+  public static <T> SdkBindingData<T> ofOutputReference(
+      String nodeId, String nodeVar, LiteralType type) {
+    BindingData idl =
+        BindingData.ofOutputReference(
+            OutputReference.builder().nodeId(nodeId).var(nodeVar).build());
+    // promises don't contain values yet
+    return create(idl, type, null);
+  }
+
+  public T get() {
+    if (idl().kind() == BindingData.Kind.PROMISE) {
+      OutputReference promise = idl().promise();
+      throw new IllegalArgumentException(
+          String.format(
+              "Value only available at workflow execution time: promise of %s[%s]",
+              promise.nodeId(), promise.var()));
+    }
+
+    return value();
   }
 
   private static SimpleType getSimpleType(Primitive.Kind kind) {
@@ -115,138 +307,5 @@ public abstract class SdkBindingData {
     }
 
     throw new AssertionError("Unexpected Primitive.Kind: " + kind);
-  }
-
-  public static SdkBindingData ofBindingCollection(List<SdkBindingData> elements) {
-    // TODO we can fix that by introducing "top type" into type system and
-    // implementing type casting in SDK, for now, we fail
-
-    if (elements.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Can't create binding for an empty list without knowing the type, "
-              + "to create an empty map use `of<type>Collection` instead");
-    }
-
-    return ofBindingCollection(elements, elements.iterator().next().type());
-  }
-
-  public static SdkBindingData ofIntegerCollection(List<Long> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofInteger, LiteralTypes.INTEGER);
-  }
-
-  public static SdkBindingData ofDoubleCollection(List<Double> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofFloat, LiteralTypes.FLOAT);
-  }
-
-  public static SdkBindingData ofStringCollection(List<String> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofString, LiteralTypes.STRING);
-  }
-
-  public static SdkBindingData ofBooleanCollection(List<Boolean> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofBoolean, LiteralTypes.BOOLEAN);
-  }
-
-  public static SdkBindingData ofDatetimeCollection(List<Instant> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofDatetime, LiteralTypes.DATETIME);
-  }
-
-  public static SdkBindingData ofDurationCollection(List<Duration> elements) {
-    return ofBindingCollection(elements, SdkBindingData::ofDuration, LiteralTypes.DURATION);
-  }
-
-  private static <T> SdkBindingData ofBindingCollection(
-      List<T> elements, Function<T, SdkBindingData> f, LiteralType literalType) {
-    List<SdkBindingData> bindings = elements.stream().map(f).collect(toUnmodifiableList());
-
-    return ofBindingCollection(bindings, literalType);
-  }
-
-  private static SdkBindingData ofBindingCollection(
-      List<SdkBindingData> elements, LiteralType elementType) {
-    List<BindingData> elementsIdl = new ArrayList<>();
-
-    for (SdkBindingData element : elements) {
-      if (!element.type().equals(elementType)) {
-        String message =
-            String.format("Type %s doesn't match expected type %s", element.type(), elementType);
-
-        throw new IllegalArgumentException(message);
-      }
-
-      elementsIdl.add(element.idl());
-    }
-
-    return create(
-        BindingData.ofCollection(unmodifiableList(elementsIdl)),
-        LiteralType.ofCollectionType(elementType));
-  }
-
-  public static SdkBindingData ofBindingMap(Map<String, SdkBindingData> map) {
-    // TODO we can fix that by introducing "top type" into type system and
-    // implementing type casting in SDK, for now, we fail
-
-    if (map.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Can't create binding for an empty map without knowing the type, "
-              + "to create an empty map use `of<type>Map` instead");
-    }
-
-    return ofBindingMap(map, map.values().iterator().next().type());
-  }
-
-  public static SdkBindingData ofIntegerMap(Map<String, Long> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofInteger, LiteralTypes.INTEGER);
-  }
-
-  public static SdkBindingData ofDoubleMap(Map<String, Double> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofFloat, LiteralTypes.FLOAT);
-  }
-
-  public static SdkBindingData ofStringMap(Map<String, String> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofString, LiteralTypes.STRING);
-  }
-
-  public static SdkBindingData ofBooleanMap(Map<String, Boolean> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofBoolean, LiteralTypes.BOOLEAN);
-  }
-
-  public static SdkBindingData ofDatetimeMap(Map<String, Instant> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofDatetime, LiteralTypes.DATETIME);
-  }
-
-  public static SdkBindingData ofDurationMap(Map<String, Duration> elementsByKey) {
-    return ofBindingMap(elementsByKey, SdkBindingData::ofDuration, LiteralTypes.DURATION);
-  }
-
-  private static <T> SdkBindingData ofBindingMap(
-      Map<String, T> elementsByKey, Function<T, SdkBindingData> f, LiteralType mapValueType) {
-    Map<String, SdkBindingData> map = new LinkedHashMap<>();
-
-    for (Map.Entry<String, T> entry : elementsByKey.entrySet()) {
-      map.put(entry.getKey(), f.apply(entry.getValue()));
-    }
-
-    return ofBindingMap(map, mapValueType);
-  }
-
-  private static SdkBindingData ofBindingMap(
-      Map<String, SdkBindingData> map, LiteralType mapValueType) {
-    Map<String, BindingData> mapIdl = new LinkedHashMap<>();
-
-    for (Map.Entry<String, SdkBindingData> entry : map.entrySet()) {
-      if (!entry.getValue().type().equals(mapValueType)) {
-        String message =
-            String.format(
-                "Key [%s] (type %s) doesn't match expected type %s",
-                entry.getKey(), entry.getValue().type(), mapValueType);
-
-        throw new IllegalArgumentException(message);
-      }
-
-      mapIdl.put(entry.getKey(), entry.getValue().idl());
-    }
-
-    return create(
-        BindingData.ofMap(unmodifiableMap(mapIdl)), LiteralType.ofMapValueType(mapValueType));
   }
 }

@@ -46,12 +46,12 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
   }
 
   Map<WorkflowIdentifier, WorkflowTemplate> load(
-      SdkConfig sdkConfig, List<SdkWorkflow> sdkWorkflows) {
+      SdkConfig sdkConfig, List<SdkWorkflow<?>> sdkWorkflows) {
     LOG.fine("Discovering SdkWorkflow");
 
     Map<WorkflowIdentifier, WorkflowTemplate> workflows = new HashMap<>();
 
-    for (SdkWorkflow sdkWorkflow : sdkWorkflows) {
+    for (SdkWorkflow<?> sdkWorkflow : sdkWorkflows) {
       String name = sdkWorkflow.getName();
       WorkflowIdentifier workflowId =
           WorkflowIdentifier.builder()

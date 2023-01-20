@@ -33,7 +33,7 @@ class SumTask
     ) {
 
   override def run(input: SumTaskInput): SumTaskOutput = {
-    val result = input.a.get() + input.b.get()
+    val result = input.a.get + input.b.get
     SumTaskOutput(ofInteger(result))
   }
 

@@ -142,16 +142,7 @@ public class AllInputsTask
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
-          i,
-          f,
-          s,
-          b,
-          t,
-          d,
-          l,
-          m,
-          emptyList,
-          emptyMap);
+          i, f, s, b, t, d, l, m, emptyList, emptyMap);
     }
   }
 

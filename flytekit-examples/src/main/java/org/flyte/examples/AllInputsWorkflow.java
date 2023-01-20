@@ -109,16 +109,7 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsWorkflow_AllInputsWorkflowOutput(
-          i,
-          f,
-          s,
-          b,
-          t,
-          d,
-          l,
-          m,
-          emptyList,
-          emptyMap);
+          i, f, s, b, t, d, l, m, emptyList, emptyMap);
     }
   }
 }

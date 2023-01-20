@@ -49,11 +49,17 @@ public class WorkflowTest {
             .withFixedInput("c", 3)
             .withFixedInput("d", 4)
             .withTaskOutput(
-                new SumTask(), SumTask.SumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)), SumTask.SumOutput.create(SdkBindingData.ofInteger(0L)))
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)),
+                SumTask.SumOutput.create(SdkBindingData.ofInteger(0L)))
             .withTaskOutput(
-                new SumTask(), SumTask.SumInput.create(SdkBindingData.ofInteger(0L), SdkBindingData.ofInteger(3L)), SumTask.SumOutput.create(SdkBindingData.ofInteger(0L)))
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingData.ofInteger(0L), SdkBindingData.ofInteger(3L)),
+                SumTask.SumOutput.create(SdkBindingData.ofInteger(0L)))
             .withTaskOutput(
-                new SumTask(), SumTask.SumInput.create(SdkBindingData.ofInteger(0L), SdkBindingData.ofInteger(4L)), SumTask.SumOutput.create(SdkBindingData.ofInteger(42L)))
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingData.ofInteger(0L), SdkBindingData.ofInteger(4L)),
+                SumTask.SumOutput.create(SdkBindingData.ofInteger(42L)))
             .execute();
 
     assertEquals(42L, result.getIntegerOutput("result"));
@@ -72,16 +78,21 @@ public class WorkflowTest {
             .withWorkflowOutput(
                 new SubWorkflow(),
                 JacksonSdkType.of(SubWorkflow.Input.class),
-                SubWorkflow.Input.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)),
+                SubWorkflow.Input.create(
+                    SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)),
                 JacksonSdkType.of(SubWorkflow.Output.class),
                 SubWorkflow.Output.create(SdkBindingData.ofInteger(5L)))
             .withWorkflowOutput(
                 new SubWorkflow(),
                 JacksonSdkType.of(SubWorkflow.Input.class),
-                SubWorkflow.Input.create(SdkBindingData.ofInteger(5L), SdkBindingData.ofInteger(3L)),
+                SubWorkflow.Input.create(
+                    SdkBindingData.ofInteger(5L), SdkBindingData.ofInteger(3L)),
                 JacksonSdkType.of(SubWorkflow.Output.class),
                 SubWorkflow.Output.create(SdkBindingData.ofInteger(10L)))
-            .withTaskOutput(new SumTask(), SumInput.create(SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(4L)), SumOutput.create(SdkBindingData.ofInteger(15L)))
+            .withTaskOutput(
+                new SumTask(),
+                SumInput.create(SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(4L)),
+                SumOutput.create(SdkBindingData.ofInteger(15L)))
             .execute();
 
     assertEquals(15L, result.getIntegerOutput("result"));

@@ -81,6 +81,7 @@ public class AddQuestionTask
    */
   @Override
   public Output run(Input input) {
-    return Output.create(SdkBindingData.ofString(String.format("%s How are you?", input.greeting())));
+    return Output.create(
+        SdkBindingData.ofString(String.format("%s How are you?", input.greeting())));
   }
 }

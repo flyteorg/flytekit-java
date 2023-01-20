@@ -30,9 +30,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   }
 
   public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask()
-        .withInput("a", a)
-        .withInput("b", b);
+    return new SumTask().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue

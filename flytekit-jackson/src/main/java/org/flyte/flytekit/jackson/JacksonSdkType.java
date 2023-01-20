@@ -135,17 +135,17 @@ public class JacksonSdkType<T> extends SdkType<T> {
       throw new RuntimeException("fromLiteralMap failed for [" + clazz.getName() + "]", e);
     }
   }
-/**
-Method used to create SdkBindingData output references/promises for SdkTransform outputs 
-(e.g., workflows and tasks outputs).
-We need to go from Map<String, Variable> to object of output class T.
-We leverage Jackson to help create the object of the output class T from the map.
-We use a the BindingMapSerializer to serialize only the keys of the map to JsonNode
-Instead of recreating SdkBindingData objects we pass the bindingMap to the 
-CustomSdkBindingDataDeserializers so it can get use the keys to retrieve the objects
-from the map. We need to create a new object mapper to use a different deserializer 
-for SdkBindingData than the one used in other places. 
-*/
+
+  /**
+   * Method used to create SdkBindingData output references/promises for SdkTransform outputs (e.g.,
+   * workflows and tasks outputs). We need to go from {@code Map<String, Variable>} to object of
+   * output class T. We leverage Jackson to help create the object of the output class T from the
+   * map. We use a the BindingMapSerializer to serialize only the keys of the map to JsonNode
+   * Instead of recreating SdkBindingData objects we pass the bindingMap to the
+   * CustomSdkBindingDataDeserializers so it can get use the keys to retrieve the objects from the
+   * map. We need to create a new object mapper to use a different deserializer for SdkBindingData
+   * than the one used in other places.
+   */
   @Override
   public T promiseFor(String nodeId) {
     try {

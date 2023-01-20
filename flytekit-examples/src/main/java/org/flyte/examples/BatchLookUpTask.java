@@ -46,7 +46,7 @@ public class BatchLookUpTask
             .map(key -> input.keyValues().get().get(key))
             .collect(Collectors.toList());
 
-    return Output.create(foundValues);
+    return Output.create(SdkBindingData.ofStringCollection(foundValues));
   }
 
   @AutoValue

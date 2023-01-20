@@ -77,6 +77,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    */
   @Override
   public Output run(Input input) {
-    return Output.create(SdkBindingData.ofString(String.format("Welcome, %s!", input.name().get())));
+    return Output.create(
+        SdkBindingData.ofString(String.format("Welcome, %s!", input.name().get())));
   }
 }

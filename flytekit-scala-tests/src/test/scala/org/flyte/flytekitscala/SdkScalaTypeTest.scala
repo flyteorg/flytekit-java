@@ -305,9 +305,10 @@ class SdkScalaTypeTest {
       SdkBindingData.ofBoolean(true),
       SdkBindingData.ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
       SdkBindingData.ofDuration(Duration.ZERO),
-      SdkBindingData
-        .ofCollection(List("1", "2", "3").asJava, SdkBindingData.ofString _),
-      SdkBindingData.ofStringMap(Map("a" -> "2", "b" -> "3").asJava)
+      SdkBindingData.ofStringCollection(List("1", "2", "3").asJava),
+      SdkBindingData.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
+      SdkBindingData.ofStringCollection(List.empty[String].asJava),
+      SdkBindingData.ofIntegerMap(Map.empty[String, java.lang.Long].asJava)
     )
 
     case class AutoAllInputsInputScala(
@@ -318,7 +319,9 @@ class SdkScalaTypeTest {
         instant: SdkBindingData[Instant],
         duration: SdkBindingData[Duration],
         list: SdkBindingData[List[String]],
-        map: SdkBindingData[Map[String, String]]
+        map: SdkBindingData[Map[String, String]],
+        emptyList: SdkBindingData[List[String]],
+        emptyMap: SdkBindingData[Map[String, Long]]
     )
 
     val scalaClass = AutoAllInputsInputScala(
@@ -329,7 +332,9 @@ class SdkScalaTypeTest {
       input.t(),
       input.d(),
       toScalaList(input.l()),
-      toScalaMap(input.m())
+      toScalaMap(input.m()),
+      toScalaList(input.emptyList()),
+      toScalaMap(input.emptyMap())
     )
 
     val expected = AutoAllInputsInputScala(
@@ -340,7 +345,9 @@ class SdkScalaTypeTest {
       ofDateTime(Instant.parse("2023-01-01T00:00:00Z")),
       ofDuration(Duration.ZERO),
       ofCollection(List("1", "2", "3")),
-      ofMap(Map("a" -> "2", "b" -> "3"))
+      ofMap(Map("a" -> "2", "b" -> "3")),
+      ofStringCollection(List.empty[String]),
+      ofIntegerMap(Map.empty[String, Long])
     )
 
     assertEquals(expected, scalaClass)

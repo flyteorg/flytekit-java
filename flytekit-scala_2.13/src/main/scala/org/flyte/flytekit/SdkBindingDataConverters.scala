@@ -80,43 +80,43 @@ object SdkBindingDataConverters {
     )
   }
 
-  def toScalaList[T](
-      sdkBindingData: SdkBindingData[java.util.List[T]]
+  def toScalaList[K, T](
+      sdkBindingData: SdkBindingData[java.util.List[K]]
   ): SdkBindingData[List[T]] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
-      sdkBindingData.value().asScala.toList
+      sdkBindingData.value().asScala.map(_.asInstanceOf[T]).toList
     )
   }
 
-  def toJavaList[T](
-      sdkBindingData: SdkBindingData[List[T]]
+  def toJavaList[K, T](
+      sdkBindingData: SdkBindingData[List[K]]
   ): SdkBindingData[java.util.List[T]] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
-      sdkBindingData.value().toList.asJava
+      sdkBindingData.value().toList.map(_.asInstanceOf[T]).asJava
     )
   }
 
-  def toScalaMap[T](
-      sdkBindingData: SdkBindingData[java.util.Map[String, T]]
+  def toScalaMap[K, T](
+      sdkBindingData: SdkBindingData[java.util.Map[String, K]]
   ): SdkBindingData[Map[String, T]] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
-      sdkBindingData.value().asScala.toMap
+      sdkBindingData.value().asScala.mapValues(_.asInstanceOf[T]).toMap
     )
   }
 
-  def toJavaMap[T](
-      sdkBindingData: SdkBindingData[Map[String, T]]
+  def toJavaMap[K, T](
+      sdkBindingData: SdkBindingData[Map[String, K]]
   ): SdkBindingData[java.util.Map[String, T]] = {
     SdkBindingData.create(
       sdkBindingData.idl(),
       sdkBindingData.`type`(),
-      sdkBindingData.value().toMap.asJava
+      sdkBindingData.value().mapValues(_.asInstanceOf[T]).toMap.asJava
     )
   }
 

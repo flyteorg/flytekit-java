@@ -18,12 +18,13 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekitscala.SdkBindingData._
 
 case class SumTaskInput(
-    a: SdkBindingData[java.lang.Long],
-    b: SdkBindingData[java.lang.Long]
+    a: SdkBindingData[Long],
+    b: SdkBindingData[Long]
 )
-case class SumTaskOutput(c: SdkBindingData[java.lang.Long])
+case class SumTaskOutput(c: SdkBindingData[Long])
 
 class SumTask
     extends SdkRunnableTask[SumTaskInput, SumTaskOutput](
@@ -33,7 +34,7 @@ class SumTask
 
   override def run(input: SumTaskInput): SumTaskOutput = {
     val result = input.a.get() + input.b.get()
-    SumTaskOutput(SdkBindingData.ofInteger(result))
+    SumTaskOutput(ofInteger(result))
   }
 
   override def isCached: Boolean = true
@@ -45,8 +46,8 @@ class SumTask
 
 object SumTask {
   def apply(
-      a: SdkBindingData[java.lang.Long],
-      b: SdkBindingData[java.lang.Long]
+      a: SdkBindingData[Long],
+      b: SdkBindingData[Long]
   ): SdkTransform[SumTaskOutput] =
     new SumTask().withInput("a", a).withInput("b", b)
 }

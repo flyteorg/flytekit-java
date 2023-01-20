@@ -17,8 +17,9 @@
 package org.flyte.flytekitscala
 
 import java.time.{Duration, Instant}
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.flyte.api.v1.{
+  BindingData,
   Literal,
   LiteralType,
   Primitive,
@@ -27,40 +28,42 @@ import org.flyte.api.v1.{
   Variable
 }
 import org.flyte.flytekit.SdkBindingData
+import org.flyte.flytekitscala.SdkBindingData._
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.flyte.examples.AllInputsTask.AutoAllInputsInput
 
 class SdkScalaTypeTest {
 
   case class ScalarInput(
       string: SdkBindingData[String],
-      integer: Long,
-      float: Double,
-      boolean: Boolean,
-      datetime: Instant,
-      duration: Duration
+      integer: SdkBindingData[Long],
+      float: SdkBindingData[Double],
+      boolean: SdkBindingData[Boolean],
+      datetime: SdkBindingData[Instant],
+      duration: SdkBindingData[Duration]
   )
 
   case class CollectionInput(
-      strings: List[String],
-      integers: List[Long],
-      floats: List[Double],
-      booleans: List[Boolean],
-      datetimes: List[Instant],
-      durations: List[Duration]
+      strings: SdkBindingData[List[String]],
+      integers: SdkBindingData[List[Long]],
+      floats: SdkBindingData[List[Double]],
+      booleans: SdkBindingData[List[Boolean]],
+      datetimes: SdkBindingData[List[Instant]],
+      durations: SdkBindingData[List[Duration]]
   )
 
   case class MapInput(
-      stringMap: Map[String, String],
-      integerMap: Map[String, Long],
-      floatMap: Map[String, Double],
-      booleanMap: Map[String, Boolean],
-      datetimeMap: Map[String, Instant],
-      durationMap: Map[String, Duration]
+      stringMap: SdkBindingData[Map[String, String]],
+      integerMap: SdkBindingData[Map[String, Long]],
+      floatMap: SdkBindingData[Map[String, Double]],
+      booleanMap: SdkBindingData[Map[String, Boolean]],
+      datetimeMap: SdkBindingData[Map[String, Instant]],
+      durationMap: SdkBindingData[Map[String, Duration]]
   )
 
   case class ComplexInput(
-      metadataList: List[Map[String, String]]
+      metadataList: SdkBindingData[List[Map[String, String]]]
   )
 
   @Test
@@ -75,7 +78,6 @@ class SdkScalaTypeTest {
     ).asJava
 
     val output = SdkScalaType[ScalarInput].getVariableMap
-
     assertEquals(expected, output)
   }
 
@@ -110,12 +112,12 @@ class SdkScalaTypeTest {
 
     val expected =
       ScalarInput(
-        string = SdkBindingData.ofString("string"),
-        integer = 1337L,
-        float = 42.0,
-        boolean = true,
-        datetime = Instant.ofEpochMilli(123456L),
-        duration = Duration.ofSeconds(123, 456)
+        string = ofString("string"),
+        integer = ofInteger(1337L),
+        float = ofFloat(42.0),
+        boolean = ofBoolean(true),
+        datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+        duration = ofDuration(Duration.ofSeconds(123, 456))
       )
 
     val output = SdkScalaType[ScalarInput].fromLiteralMap(input)
@@ -127,12 +129,12 @@ class SdkScalaTypeTest {
   def testScalarToLiteralMap(): Unit = {
     val input =
       ScalarInput(
-        string = SdkBindingData.ofString("string"),
-        integer = 1337L,
-        float = 42.0,
-        boolean = true,
-        datetime = Instant.ofEpochMilli(123456L),
-        duration = Duration.ofSeconds(123, 456)
+        string = ofString("string"),
+        integer = ofInteger(1337L),
+        float = ofFloat(42.0),
+        boolean = ofBoolean(true),
+        datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+        duration = ofDuration(Duration.ofSeconds(123, 456))
       )
 
     val expected = Map(
@@ -189,14 +191,16 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithCollections(): Unit = {
     val input =
       CollectionInput(
-        strings = List("foo", "bar"),
-        integers = List(1337L, 321L),
-        floats = List(42.0, 3.14),
-        booleans = List(true, false),
-        datetimes =
-          List(Instant.ofEpochMilli(123456L), Instant.ofEpochMilli(321L)),
-        durations =
+        strings = ofCollection(List("foo", "bar")),
+        integers = ofCollection(List(1337L, 321L)),
+        floats = ofCollection(List(42.0, 3.14)),
+        booleans = ofCollection(List(true, false)),
+        datetimes = ofCollection(
+          List(Instant.ofEpochMilli(123456L), Instant.ofEpochMilli(321L))
+        ),
+        durations = ofCollection(
           List(Duration.ofSeconds(123, 456), Duration.ofSeconds(543, 21))
+        )
       )
 
     val output = SdkScalaType[CollectionInput].fromLiteralMap(
@@ -236,12 +240,12 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithMaps(): Unit = {
     val input =
       MapInput(
-        stringMap = Map("k1" -> "foo"),
-        integerMap = Map("k2" -> 321L),
-        floatMap = Map("k3" -> 3.14),
-        booleanMap = Map("k4" -> false),
-        datetimeMap = Map("k5" -> Instant.ofEpochMilli(321L)),
-        durationMap = Map("k6" -> Duration.ofSeconds(543, 21))
+        stringMap = ofMap(Map("k1" -> "foo")),
+        integerMap = ofMap(Map("k2" -> 321L)),
+        floatMap = ofMap(Map("k3" -> 3.14)),
+        booleanMap = ofMap(Map("k4" -> false)),
+        datetimeMap = ofMap(Map("k5" -> Instant.ofEpochMilli(321L))),
+        durationMap = ofMap(Map("k6" -> Duration.ofSeconds(543, 21)))
       )
 
     val output = SdkScalaType[MapInput].fromLiteralMap(
@@ -275,9 +279,11 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithListsOfMaps(): Unit = {
     val input =
       ComplexInput(
-        metadataList = List(
-          Map("Frodo" -> "Baggins", "Sam" -> "Gamgee"),
-          Map("Clark" -> "Kent", "Loise" -> "Lane")
+        metadataList = ofCollection(
+          List(
+            Map("Frodo" -> "Baggins", "Sam" -> "Gamgee"),
+            Map("Clark" -> "Kent", "Loise" -> "Lane")
+          )
         )
       )
 
@@ -286,6 +292,83 @@ class SdkScalaTypeTest {
     )
 
     assertEquals(input, output)
+  }
+
+  @Test
+  def testUseAutoValueAttrIntoScalaClass(): Unit = {
+    import org.flyte.flytekit.SdkBindingDataConverters._
+
+    val input = AutoAllInputsInput.create(
+      SdkBindingData.ofInteger(2L),
+      SdkBindingData.ofFloat(2.0),
+      SdkBindingData.ofString("hello"),
+      SdkBindingData.ofBoolean(true),
+      SdkBindingData.ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
+      SdkBindingData.ofDuration(Duration.ZERO),
+      SdkBindingData
+        .ofCollection(List("1", "2", "3").asJava, SdkBindingData.ofString _),
+      SdkBindingData.ofStringMap(Map("a" -> "2", "b" -> "3").asJava)
+    )
+
+    case class AutoAllInputsInputScala(
+        long: SdkBindingData[Long],
+        double: SdkBindingData[Double],
+        string: SdkBindingData[String],
+        boolean: SdkBindingData[Boolean],
+        instant: SdkBindingData[Instant],
+        duration: SdkBindingData[Duration],
+        list: SdkBindingData[List[String]],
+        map: SdkBindingData[Map[String, String]]
+    )
+
+    val scalaClass = AutoAllInputsInputScala(
+      toScalaLong(input.i()),
+      toScalaDouble(input.f()),
+      input.s(),
+      toScalaBoolean(input.b()),
+      input.t(),
+      input.d(),
+      toScalaList(input.l()),
+      toScalaMap(input.m())
+    )
+
+    val expected = AutoAllInputsInputScala(
+      ofInteger(2L),
+      ofFloat(2.0),
+      ofString("hello"),
+      ofBoolean(true),
+      ofDateTime(Instant.parse("2023-01-01T00:00:00Z")),
+      ofDuration(Duration.ZERO),
+      ofCollection(List("1", "2", "3")),
+      ofMap(Map("a" -> "2", "b" -> "3"))
+    )
+
+    assertEquals(expected, scalaClass)
+
+  }
+
+  @Test
+  def testEmptyCollection: Unit = {
+    val emptyList = ofStringCollection(List.empty[String])
+    val expected = SdkBindingData.create(
+      BindingData.ofCollection(List.empty[BindingData].asJava),
+      LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.STRING)),
+      List.empty[String]
+    )
+
+    assertEquals(emptyList, expected)
+  }
+
+  @Test
+  def testEmptyMap: Unit = {
+    val emptyMap = ofStringMap(Map.empty[String, String])
+    val expected = SdkBindingData.create(
+      BindingData.ofMap(Map.empty[String, BindingData].asJava),
+      LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING)),
+      Map.empty[String, String]
+    )
+
+    assertEquals(emptyMap, expected)
   }
 
   // Typed[String] doesn't compile aka illtyped

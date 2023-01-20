@@ -55,8 +55,8 @@ object SdkBindingData {
   ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
 
   def ofCollection[T](
-      collection: List[T],
-      literalType: LiteralType
+      literalType: LiteralType,
+      collection: List[T]
   ): SdkJavaBindinigData[List[T]] =
     createSdkBindingData(collection, Option(literalType))
 
@@ -199,8 +199,8 @@ object SdkBindingData {
     )
 
   def ofMap[T](
-      map: Map[String, T],
-      literalType: LiteralType
+      literalType: LiteralType,
+      map: Map[String, T]
   ): SdkJavaBindinigData[Map[String, T]] =
     createSdkBindingData(map, Option(literalType))
 

@@ -147,7 +147,7 @@ public class SdkBindingDataTest {
 
     SdkBindingData<List<Duration>> expected =
         SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.BOOLEAN), input);
+            LiteralType.ofCollectionType(LiteralTypes.DURATION), input);
 
     SdkBindingData<List<Duration>> output = SdkBindingData.ofDurationCollection(expectedValue);
 

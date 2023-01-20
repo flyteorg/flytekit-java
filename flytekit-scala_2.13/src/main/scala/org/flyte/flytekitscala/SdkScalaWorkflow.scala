@@ -18,7 +18,7 @@ package org.flyte.flytekitscala
 
 import org.flyte.api.v1.{LiteralType, SimpleType, WorkflowTemplate}
 import org.flyte.flytekit.{
-  SdkBindingData,
+  SdkBindingData => SdkJavaBindingData,
   SdkNode,
   SdkTransform,
   SdkType,
@@ -39,17 +39,26 @@ abstract class SdkScalaWorkflow[T](outputType: SdkType[T])
 }
 
 class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
-  def inputOfInteger(name: String, help: String = ""): SdkBindingData[Long] =
+  def inputOfInteger(
+      name: String,
+      help: String = ""
+  ): SdkJavaBindingData[Long] =
     builder.inputOf[Long](
       name,
       LiteralType.ofSimpleType(SimpleType.INTEGER),
       help
     )
 
-  def inputOfString(name: String, help: String = ""): SdkBindingData[String] =
+  def inputOfString(
+      name: String,
+      help: String = ""
+  ): SdkJavaBindingData[String] =
     builder.inputOfString(name, help)
 
-  def inputOfBoolean(name: String, help: String = ""): SdkBindingData[Boolean] =
+  def inputOfBoolean(
+      name: String,
+      help: String = ""
+  ): SdkJavaBindingData[Boolean] =
     builder.inputOf[Boolean](
       name,
       LiteralType.ofSimpleType(SimpleType.BOOLEAN),
@@ -59,16 +68,19 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
   def inputOfDatetime(
       name: String,
       help: String = ""
-  ): SdkBindingData[Instant] =
+  ): SdkJavaBindingData[Instant] =
     builder.inputOfDatetime(name, help)
 
   def inputOfDuration(
       name: String,
       help: String = ""
-  ): SdkBindingData[Duration] =
+  ): SdkJavaBindingData[Duration] =
     builder.inputOfDuration(name, help)
 
-  def inputOfFloat(name: String, help: String = ""): SdkBindingData[Double] =
+  def inputOfFloat(
+      name: String,
+      help: String = ""
+  ): SdkJavaBindingData[Double] =
     builder.inputOf[Double](
       name,
       LiteralType.ofSimpleType(SimpleType.FLOAT),
@@ -79,11 +91,11 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
       name: String,
       literalType: LiteralType,
       help: String = ""
-  ): SdkBindingData[T] = builder.inputOf(name, literalType, help)
+  ): SdkJavaBindingData[T] = builder.inputOf(name, literalType, help)
 
   def getNodes: Map[String, SdkNode[_]] = builder.getNodes.asScala.toMap
 
-  def getInputs: Map[String, SdkBindingData[_]] =
+  def getInputs: Map[String, SdkJavaBindingData[_]] =
     builder.getInputs.asScala.toMap
 
   def getInputDescription(name: String): String =
@@ -92,7 +104,7 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
   def getOutputDescription(name: String): String =
     builder.getOutputDescription(name)
 
-  def output(name: String, value: SdkBindingData[_], help: String = "") =
+  def output(name: String, value: SdkJavaBindingData[_], help: String = "") =
     builder.output(name, value, help)
 
   def toIdlTemplate: WorkflowTemplate = builder.toIdlTemplate
@@ -103,7 +115,7 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
   def apply[T](
       nodeId: String,
       transform: SdkTransform[T],
-      inputs: Map[String, SdkBindingData[_]]
+      inputs: Map[String, SdkJavaBindingData[_]]
   ): SdkNode[T] = builder.apply(nodeId, transform, inputs.asJava)
 
   def apply[T](transform: SdkTransform[T]): SdkNode[T] =
@@ -111,7 +123,7 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
 
   def apply[T](
       transform: SdkTransform[T],
-      inputs: Map[String, SdkBindingData[_]]
+      inputs: Map[String, SdkJavaBindingData[_]]
   ): SdkNode[T] = builder.apply(transform, inputs.asJava)
 
 }

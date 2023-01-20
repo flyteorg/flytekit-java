@@ -133,7 +133,7 @@ public abstract class SdkBindingData<T> {
   public static SdkBindingData<List<Duration>> ofDurationCollection(List<Duration> collection) {
     return createCollection(
         collection,
-        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.BOOLEAN)),
+        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.DURATION)),
         (value) -> BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))));
   }
 
@@ -211,7 +211,7 @@ public abstract class SdkBindingData<T> {
     List<BindingData> bindings = elements.stream().map(SdkBindingData::idl).collect(toList());
     BindingData bindingData = BindingData.ofCollection(bindings);
 
-    checkIncompatibleTypes(literalType, elements);
+    checkIncompatibleTypes(literalType.collectionType(), elements);
     boolean hasPromise = bindings.stream().anyMatch(SdkBindingData::isAPromise);
     List<T> unwrappedElements =
         hasPromise ? null : elements.stream().map(SdkBindingData::get).collect(toList());
@@ -219,19 +219,19 @@ public abstract class SdkBindingData<T> {
     return SdkBindingData.create(bindingData, literalType, unwrappedElements);
   }
 
-  private static <T> void checkIncompatibleTypes(LiteralType literalType,
-                                    List<SdkBindingData<T>> elements) {
-    List<LiteralType> incompatibleTypes = elements.stream()
-        .map(SdkBindingData::type)
-        .distinct()
-        .filter(type -> !type.equals(literalType))
-        .collect(toList());
+  private static <T> void checkIncompatibleTypes(
+      LiteralType literalType, List<SdkBindingData<T>> elements) {
+    List<LiteralType> incompatibleTypes =
+        elements.stream()
+            .map(SdkBindingData::type)
+            .distinct()
+            .filter(type -> !type.equals(literalType))
+            .collect(toList());
     if (!incompatibleTypes.isEmpty()) {
       throw new IllegalArgumentException(
           String.format(
               "Type mismatch: expected all elements of type %s but found some elements of type: %s",
-              literalType, incompatibleTypes)
-      );
+              literalType, incompatibleTypes));
     }
   }
 

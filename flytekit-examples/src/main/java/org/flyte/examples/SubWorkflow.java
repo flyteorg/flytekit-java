@@ -45,9 +45,8 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
 
     abstract SdkBindingData<Long> right();
 
-    public static Input create(long left, long right) {
-      return new AutoValue_SubWorkflow_Input(
-          SdkBindingData.ofInteger(left), SdkBindingData.ofInteger(right));
+    public static Input create(SdkBindingData<Long> left, SdkBindingData<Long> right) {
+      return new AutoValue_SubWorkflow_Input(left, right);
     }
   }
 
@@ -55,8 +54,8 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
   public abstract static class Output {
     abstract SdkBindingData<Long> result();
 
-    public static Output create(long result) {
-      return new AutoValue_SubWorkflow_Output(SdkBindingData.ofInteger(result));
+    public static Output create(SdkBindingData<Long> result) {
+      return new AutoValue_SubWorkflow_Output(result);
     }
   }
 }

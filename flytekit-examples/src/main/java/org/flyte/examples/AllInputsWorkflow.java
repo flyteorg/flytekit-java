@@ -98,27 +98,27 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
     public abstract SdkBindingData<Map<String, Long>> emptyMap();
 
     public static AllInputsWorkflow.AllInputsWorkflowOutput create(
-        long i,
-        Double f,
-        String s,
-        boolean b,
-        Instant t,
-        Duration d,
-        List<String> l,
-        Map<String, String> m,
-        List<String> emptyList,
-        Map<String, Long> emptyMap) {
+        SdkBindingData<Long> i,
+        SdkBindingData<Double> f,
+        SdkBindingData<String> s,
+        SdkBindingData<Boolean> b,
+        SdkBindingData<Instant> t,
+        SdkBindingData<Duration> d,
+        SdkBindingData<List<String>> l,
+        SdkBindingData<Map<String, String>> m,
+        SdkBindingData<List<String>> emptyList,
+        SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsWorkflow_AllInputsWorkflowOutput(
-          SdkBindingData.ofInteger(i),
-          SdkBindingData.ofFloat(f),
-          SdkBindingData.ofString(s),
-          SdkBindingData.ofBoolean(b),
-          SdkBindingData.ofDatetime(t),
-          SdkBindingData.ofDuration(d),
-          SdkBindingData.ofStringCollection(l),
-          SdkBindingData.ofStringMap(m),
-          SdkBindingData.ofStringCollection(emptyList),
-          SdkBindingData.ofIntegerMap(emptyMap));
+          i,
+          f,
+          s,
+          b,
+          t,
+          d,
+          l,
+          m,
+          emptyList,
+          emptyMap);
     }
   }
 }

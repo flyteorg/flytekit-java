@@ -37,7 +37,7 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    * @param name the input name
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform<Output> of(SdkBindingData<?> name) {
+  public static SdkTransform<Output> of(SdkBindingData<String> name) {
     return new GreetTask().withInput("name", name);
   }
 
@@ -63,8 +63,8 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
      * @param greeting the String literal output of {@link GreetTask}
      * @return output of GreetTask
      */
-    public static Output create(String greeting) {
-      return new AutoValue_GreetTask_Output(SdkBindingData.ofString(greeting));
+    public static Output create(SdkBindingData<String> greeting) {
+      return new AutoValue_GreetTask_Output(greeting);
     }
   }
 
@@ -77,6 +77,6 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
    */
   @Override
   public Output run(Input input) {
-    return Output.create(String.format("Welcome, %s!", input.name().get()));
+    return Output.create(SdkBindingData.ofString(String.format("Welcome, %s!", input.name().get())));
   }
 }

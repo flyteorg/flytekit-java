@@ -37,8 +37,8 @@ public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExample
      * @param c the String literal output of {@link NodeMetadataExampleWorkflow}
      * @return output of NodeMetadataExampleWorkflow
      */
-    public static NodeMetadataExampleWorkflow.Output create(String c) {
-      return new AutoValue_NodeMetadataExampleWorkflow_Output(SdkBindingData.ofString(c));
+    public static NodeMetadataExampleWorkflow.Output create(SdkBindingData<String>  c) {
+      return new AutoValue_NodeMetadataExampleWorkflow_Output(c);
     }
   }
 

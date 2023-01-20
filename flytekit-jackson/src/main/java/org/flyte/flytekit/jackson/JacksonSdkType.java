@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -173,7 +172,6 @@ public class JacksonSdkType<T> extends SdkType<T> {
     return new ObjectMapper()
         .registerModule(bindingMap)
         .registerModule(new JavaTimeModule())
-        .registerModule(new ParameterNamesModule())
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        .registerModule(new ParameterNamesModule());
   }
 }

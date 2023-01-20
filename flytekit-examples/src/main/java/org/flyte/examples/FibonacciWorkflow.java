@@ -50,8 +50,8 @@ public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
   public abstract static class Output {
     public abstract SdkBindingData<Long> fib5();
 
-    public static FibonacciWorkflow.Output create(Long fib5) {
-      return new AutoValue_FibonacciWorkflow_Output(SdkBindingData.ofInteger(fib5));
+    public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib5) {
+      return new AutoValue_FibonacciWorkflow_Output(fib5);
     }
   }
 }

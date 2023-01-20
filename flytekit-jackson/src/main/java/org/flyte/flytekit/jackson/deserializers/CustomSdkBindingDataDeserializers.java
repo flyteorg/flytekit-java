@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.deser.Deserializers;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 
-// TODO find a better name
 public class CustomSdkBindingDataDeserializers extends Deserializers.Base {
   private final Map<String, SdkBindingData<?>> bindingsMap;
 

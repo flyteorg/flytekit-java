@@ -49,7 +49,7 @@ class DynamicFibonacciWorkflowTask
         value: SdkBindingData[Long],
         prev: SdkBindingData[Long]
     ): SdkBindingData[Long] = {
-      if (n == input.n.get()) value
+      if (n == input.n.get) value
       else
         fib(
           n + 1,
@@ -58,8 +58,8 @@ class DynamicFibonacciWorkflowTask
         )
     }
 
-    require(input.n.get() > 0, "n < 0")
-    val value = if (input.n.get() == 0) {
+    require(input.n.get > 0, "n < 0")
+    val value = if (input.n.get == 0) {
       ofInteger(0)
     } else {
       fib(1, ofInteger(1), ofInteger(0))

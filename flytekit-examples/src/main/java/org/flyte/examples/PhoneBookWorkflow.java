@@ -49,9 +49,8 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
      * @param phoneNumbers the String literal output of {@link NodeMetadataExampleWorkflow}
      * @return output of NodeMetadataExampleWorkflow
      */
-    public static PhoneBookWorkflow.Output create(List<String> phoneNumbers) {
-      return new AutoValue_PhoneBookWorkflow_Output(
-          SdkBindingData.ofStringCollection(phoneNumbers));
+    public static PhoneBookWorkflow.Output create(SdkBindingData<List<String>> phoneNumbers) {
+      return new AutoValue_PhoneBookWorkflow_Output(phoneNumbers);
     }
   }
 

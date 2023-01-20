@@ -40,13 +40,7 @@ public abstract class CompilerError implements Serializable {
     PARAMETER_NOT_BOUND,
 
     /** An Id existed twice. */
-    DUPLICATE_NODE_ID,
-
-    /** Try to use a typed output without specific a typed output class. */
-    USED_OUTPUT_TRANSFORMER_WITHOUT_SPECIFIC_CLASS,
-
-    /** Some error occurs during the typed output reflection. */
-    OUTPUT_TRANSFORMER_CLASS_REFLECTION_ERROR,
+    DUPLICATE_NODE_ID
   }
 
   /**

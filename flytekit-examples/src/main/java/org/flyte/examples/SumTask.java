@@ -30,22 +30,17 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   }
 
   public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask()
-        .withInput("a", a) // this still sucks
-        .withInput("b", b);
+    return new SumTask().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue
   public abstract static class SumInput {
-    // SdkBindingData<Long> vs long
     public abstract SdkBindingData<Long> a();
 
     public abstract SdkBindingData<Long> b();
 
-    // we haven't decided if this are longs or sdkbinding data too
-    public static SumInput create(long a, long b) {
-      return new AutoValue_SumTask_SumInput(
-          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
+    public static SumInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {
+      return new AutoValue_SumTask_SumInput(a, b);
     }
   }
 
@@ -54,14 +49,14 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
     public abstract SdkBindingData<Long> c();
 
-    public static SumOutput create(long c) {
-      return new AutoValue_SumTask_SumOutput(SdkBindingData.ofInteger(c));
+    public static SumOutput create(SdkBindingData<Long> c) {
+      return new AutoValue_SumTask_SumOutput(c);
     }
   }
 
   @Override
   public SumOutput run(SumInput input) {
-    return SumOutput.create(input.a().get() + input.b().get());
+    return SumOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
   }
 
   @Override

@@ -40,7 +40,7 @@ public class AddQuestionTask
    * @param greeting the input greeting message
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<?> greeting) {
+  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<String> greeting) {
     return new AddQuestionTask().withInput("greeting", greeting);
   }
 
@@ -67,8 +67,8 @@ public class AddQuestionTask
      * @param greeting the String literal output of {@link AddQuestionTask}
      * @return output of AddQuestionTask
      */
-    public static Output create(String greeting) {
-      return new AutoValue_AddQuestionTask_Output(SdkBindingData.ofString(greeting));
+    public static Output create(SdkBindingData<String> greeting) {
+      return new AutoValue_AddQuestionTask_Output(greeting);
     }
   }
 
@@ -81,6 +81,7 @@ public class AddQuestionTask
    */
   @Override
   public Output run(Input input) {
-    return Output.create(String.format("%s How are you?", input.greeting()));
+    return Output.create(
+        SdkBindingData.ofString(String.format("%s How are you?", input.greeting())));
   }
 }

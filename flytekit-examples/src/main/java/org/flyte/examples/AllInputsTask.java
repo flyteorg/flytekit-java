@@ -131,43 +131,34 @@ public class AllInputsTask
     public abstract SdkBindingData<Map<String, Long>> emptyMap();
 
     public static AutoAllInputsOutput create(
-        long i,
-        Double f,
-        String s,
-        boolean b,
-        Instant t,
-        Duration d,
-        List<String> l,
-        Map<String, String> m,
-        List<String> emptyList,
-        Map<String, Long> emptyMap) {
+        SdkBindingData<Long> i,
+        SdkBindingData<Double> f,
+        SdkBindingData<String> s,
+        SdkBindingData<Boolean> b,
+        SdkBindingData<Instant> t,
+        SdkBindingData<Duration> d,
+        SdkBindingData<List<String>> l,
+        SdkBindingData<Map<String, String>> m,
+        SdkBindingData<List<String>> emptyList,
+        SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
-          SdkBindingData.ofInteger(i),
-          SdkBindingData.ofFloat(f),
-          SdkBindingData.ofString(s),
-          SdkBindingData.ofBoolean(b),
-          SdkBindingData.ofDatetime(t),
-          SdkBindingData.ofDuration(d),
-          SdkBindingData.ofStringCollection(l),
-          SdkBindingData.ofStringMap(m),
-          SdkBindingData.ofStringCollection(emptyList),
-          SdkBindingData.ofIntegerMap(emptyMap));
+          i, f, s, b, t, d, l, m, emptyList, emptyMap);
     }
   }
 
   @Override
   public AutoAllInputsOutput run(AutoAllInputsInput input) {
     return AutoAllInputsOutput.create(
-        input.i().get(),
-        input.f().get(),
-        input.s().get(),
-        input.b().get(),
-        input.t().get(),
-        input.d().get(),
-        input.l().get(),
-        input.m().get(),
-        input.emptyList().get(),
-        input.emptyMap().get());
+        input.i(),
+        input.f(),
+        input.s(),
+        input.b(),
+        input.t(),
+        input.d(),
+        input.l(),
+        input.m(),
+        input.emptyList(),
+        input.emptyMap());
   }
 
   @Override

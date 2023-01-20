@@ -53,11 +53,11 @@ public class RemoteLaunchPlanExample extends SdkWorkflow<Void> {
 
   @AutoValue
   public abstract static class Input {
-    abstract long fib0();
+    abstract SdkBindingData<Long> fib0();
 
-    abstract long fib1();
+    abstract SdkBindingData<Long> fib1();
 
-    public static Input create(long fib0, long fib1) {
+    public static Input create(SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
       return new AutoValue_RemoteLaunchPlanExample_Input(fib0, fib1);
     }
   }

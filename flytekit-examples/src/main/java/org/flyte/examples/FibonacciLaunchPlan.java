@@ -35,7 +35,9 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
     registerLaunchPlan(
         SdkLaunchPlan.of(new FibonacciWorkflow())
             .withName("FibonacciWorkflowLaunchPlan")
-            .withFixedInputs(JacksonSdkType.of(Input.class), Input.create(0, 1)));
+            .withFixedInputs(
+                JacksonSdkType.of(Input.class),
+                Input.create(SdkBindingData.ofInteger(0), SdkBindingData.ofInteger(1))));
 
     // Register launch plan with fixed inputs specified directly
     registerLaunchPlan(
@@ -58,9 +60,8 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
 
     abstract SdkBindingData<Long> fib1();
 
-    public static Input create(long fib0, long fib1) {
-      return new AutoValue_FibonacciLaunchPlan_Input(
-          SdkBindingData.ofInteger(fib0), SdkBindingData.ofInteger(fib1));
+    public static Input create(SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
+      return new AutoValue_FibonacciLaunchPlan_Input(fib0, fib1);
     }
   }
 }

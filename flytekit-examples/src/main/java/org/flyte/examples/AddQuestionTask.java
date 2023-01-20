@@ -40,7 +40,7 @@ public class AddQuestionTask
    * @param greeting the input greeting message
    * @return a transformed instance of this class with input data
    */
-  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<?> greeting) {
+  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<String> greeting) {
     return new AddQuestionTask().withInput("greeting", greeting);
   }
 

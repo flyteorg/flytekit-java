@@ -219,8 +219,8 @@ public abstract class SdkBindingData<T> {
     return SdkBindingData.create(bindingData, literalType, unwrappedElements);
   }
 
-  private static <T> void checkIncompatibleTypes(final LiteralType literalType,
-                                    final List<SdkBindingData<T>> elements) {
+  private static <T> void checkIncompatibleTypes(LiteralType literalType,
+                                    List<SdkBindingData<T>> elements) {
     List<LiteralType> incompatibleTypes = elements.stream()
         .map(SdkBindingData::type)
         .distinct()

@@ -353,6 +353,19 @@ class SdkLaunchPlanTest {
             Map.entry(A, Variable.builder().literalType(LiteralTypes.INTEGER).build()),
             Map.entry(B, Variable.builder().literalType(LiteralTypes.INTEGER).build()));
       }
+
+      @Override
+      public Map<String, SdkBindingData<?>> toSdkBindingMap(TestWorkflowInput value) {
+        return Map.ofEntries(
+            Map.entry(INTEGER, value.integer()),
+            Map.entry(FLOAT, value._float()),
+            Map.entry(STRING, value.string()),
+            Map.entry(BOOLEAN, value._boolean()),
+            Map.entry(DATETIME, value.datetime()),
+            Map.entry(DURATION, value.duration()),
+            Map.entry(A, value.a()),
+            Map.entry(B, value.b()));
+      }
     }
   }
 

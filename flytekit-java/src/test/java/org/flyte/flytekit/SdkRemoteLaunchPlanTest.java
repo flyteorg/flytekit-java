@@ -24,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Node;
@@ -38,9 +36,8 @@ import org.junit.jupiter.api.Test;
 public class SdkRemoteLaunchPlanTest {
   @Test
   void applyShouldReturnASdkWorkflowNode() {
-    Map<String, SdkBindingData<?>> inputs = new HashMap<>();
-    inputs.put("a", SdkBindingData.ofInteger(1));
-    inputs.put("b", SdkBindingData.ofInteger(2));
+    var inputs =
+        TestPairIntegerInput.create(SdkBindingData.ofInteger(1), SdkBindingData.ofInteger(2));
     SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 

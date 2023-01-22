@@ -16,8 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
@@ -99,7 +97,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
         .build();
   }
 
-  static class Builder<OutputT> {
+  static class Builder<InputT, OutputT> {
     private final SdkWorkflowBuilder builder;
     private final SdkType<OutputT> outputType;
 
@@ -115,9 +113,11 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     }
 
     @CanIgnoreReturnValue
-    Builder<OutputT> addCase(SdkConditionCase<OutputT> case_) {
+    Builder<InputT, OutputT> addCase(SdkConditionCase<InputT, OutputT> case_) {
       SdkNode<OutputT> sdkNode =
-          case_.then().apply(builder, case_.name(), emptyList(), /*metadata=*/ null, emptyMap());
+          case_
+              .then()
+              .apply(builder, case_.name(), List.of(), /*metadata=*/ null, /*inputs=*/ null);
 
       Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
       Map<String, LiteralType> thatOutputTypes =
@@ -147,7 +147,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     }
 
     @CanIgnoreReturnValue
-    Builder<OutputT> addOtherwise(String name, SdkTransform<OutputT> otherwise) {
+    Builder<InputT, OutputT> addOtherwise(String name, SdkTransform<InputT, OutputT> otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }
@@ -156,7 +156,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", name));
       }
 
-      elseNode = otherwise.apply(builder, name, emptyList(), /*metadata=*/ null, emptyMap());
+      elseNode = otherwise.apply(builder, name, List.of(), /*metadata=*/ null, null);
       caseOutputs.put(name, elseNode.getOutputBindings());
 
       return this;

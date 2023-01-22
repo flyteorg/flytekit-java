@@ -26,7 +26,7 @@ import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
-class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
+class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
@@ -34,7 +34,7 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<OutputT> {
   private final Map<String, Literal> outputLiterals;
 
   TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
-    super(outputType);
+    super(inputType, outputType);
     this.inputType = inputType;
     this.outputType = outputType;
     this.output = output;

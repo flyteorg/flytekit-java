@@ -27,7 +27,7 @@ import org.flyte.api.v1.WorkflowNode;
 
 /** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<OutputT> {
+public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
   @Nullable
   public abstract String domain();
@@ -42,6 +42,12 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
+
+  @Override
+  public SdkType<InputT> getInputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return inputs();
+  }
 
   @Override
   public SdkType<OutputT> getOutputType() {
@@ -75,7 +81,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
+      InputT inputs) {
     PartialLaunchPlanIdentifier workflowId =
         PartialLaunchPlanIdentifier.builder()
             .name(name())
@@ -83,7 +89,9 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
             .domain(domain())
             .version(version())
             .build();
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
+    List<CompilerError> errors =
+        Compiler.validateApply(nodeId, inputsBindings, inputs().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -107,7 +115,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
         WorkflowNode.builder()
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
-        inputs,
+        inputsBindings,
         outputs,
         promise);
   }

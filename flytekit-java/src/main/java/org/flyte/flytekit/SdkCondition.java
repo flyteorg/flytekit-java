@@ -18,40 +18,52 @@ package org.flyte.flytekit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
+public class SdkCondition<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
+  private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
-  private final List<SdkConditionCase<OutputT>> cases;
+  private final List<SdkConditionCase<InputT, OutputT>> cases;
   private final String otherwiseName;
-  private final SdkTransform<OutputT> otherwise;
+  private final SdkTransform<InputT, OutputT> otherwise;
 
   SdkCondition(
-      List<SdkConditionCase<OutputT>> cases,
+      List<SdkConditionCase<InputT, OutputT>> cases,
       String otherwiseName,
-      SdkTransform<OutputT> otherwise) {
-    this.cases = cases;
+      SdkTransform<InputT, OutputT> otherwise) {
+    if (cases.isEmpty()) {
+      throw new IllegalArgumentException("Empty cases on SdkCondition");
+    }
+    this.cases = List.copyOf(cases);
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
-    this.outputType = cases.get(0).then().getOutputType();
+
+    var firstCase = cases.get(0);
+    this.inputType = firstCase.then().getInputType();
+    this.outputType = firstCase.then().getOutputType();
   }
 
-  public SdkCondition<OutputT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
+  public SdkCondition<InputT, OutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<InputT, OutputT> then) {
 
-    List<SdkConditionCase<OutputT>> newCases = new ArrayList<>(cases);
+    List<SdkConditionCase<InputT, OutputT>> newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition<OutputT> otherwise(String name, SdkTransform<OutputT> otherwise) {
+  public SdkCondition<InputT, OutputT> otherwise(
+      String name, SdkTransform<InputT, OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
 
     return new SdkCondition<>(this.cases, name, otherwise);
+  }
+
+  @Override
+  public SdkType<InputT> getInputType() {
+    return inputType;
   }
 
   @Override
@@ -65,10 +77,11 @@ public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
-    SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder, outputType);
+      @Nullable InputT inputs) {
+    SdkBranchNode.Builder<InputT, OutputT> nodeBuilder =
+        new SdkBranchNode.Builder<>(builder, outputType);
 
-    for (SdkConditionCase<OutputT> case_ : cases) {
+    for (SdkConditionCase<InputT, OutputT> case_ : cases) {
       nodeBuilder.addCase(case_);
     }
 

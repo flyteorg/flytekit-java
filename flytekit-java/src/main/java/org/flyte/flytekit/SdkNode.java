@@ -36,7 +36,6 @@ public abstract class SdkNode<OutputT> {
 
   public SdkBindingData<?> getOutput(String name) {
 
-    @SuppressWarnings("unchecked")
     SdkBindingData<?> output = getOutputBindings().get(name);
 
     if (output == null) {
@@ -57,13 +56,15 @@ public abstract class SdkNode<OutputT> {
 
   public abstract Node toIdl();
 
-  public SdkNode<OutputT> apply(String id, SdkTransform<OutputT> transform) {
+  // TODO we need a version with no nodeId for consistency with builder
+  public <NewOutputT> SdkNode<NewOutputT> apply(
+      String nodeId, SdkTransform<OutputT, NewOutputT> transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order
     List<String> upstreamNodeIds =
         getOutputBindings().isEmpty()
             ? Collections.singletonList(getNodeId())
             : Collections.emptyList();
 
-    return builder.applyInternal(id, transform, upstreamNodeIds, getOutputBindings());
+    return builder.applyInternal(nodeId, transform, upstreamNodeIds, getOutputs());
   }
 }

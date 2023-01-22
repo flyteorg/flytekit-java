@@ -24,7 +24,7 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Variable;
 
 /** Building block for tasks that execute Java code. */
-public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<OutputT>
+public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     implements Serializable {
 
   private static final long serialVersionUID = 42L;
@@ -51,6 +51,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
     return "java-task";
   }
 
+  @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
@@ -79,7 +80,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
   }
 
   /**
-   * Indicates whether the system should attempt to lookup this task's output to avoid duplication
+   * Indicates whether the system should attempt to look up this task's output to avoid duplication
    * of work.
    */
   public boolean isCached() {
@@ -105,10 +106,11 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
+      InputT inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -117,7 +119,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
     Map<String, Variable> variableMap = outputType.getVariableMap();
     OutputT output = outputType.promiseFor(nodeId);
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputsBindings, variableMap, output);
   }
 
   public abstract OutputT run(InputT input);

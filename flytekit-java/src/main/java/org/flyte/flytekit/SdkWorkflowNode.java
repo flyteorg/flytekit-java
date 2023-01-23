@@ -71,8 +71,10 @@ public class SdkWorkflowNode<T> extends SdkNode<T> {
 
   @Override
   public Node toIdl() {
+    // inputs in var order for predictability
     List<Binding> inputBindings =
         this.inputBindings.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
             .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(toUnmodifiableList());
 

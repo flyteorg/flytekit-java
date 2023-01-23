@@ -33,7 +33,8 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class AllInputsWorkflow extends SdkWorkflow<Void, AllInputsWorkflow.AllInputsWorkflowOutput> {
+public class AllInputsWorkflow
+    extends SdkWorkflow<Void, AllInputsWorkflow.AllInputsWorkflowOutput> {
 
   public AllInputsWorkflow() {
     super(SdkTypes.nulls(), JacksonSdkType.of(AllInputsWorkflow.AllInputsWorkflowOutput.class));
@@ -47,7 +48,8 @@ public class AllInputsWorkflow extends SdkWorkflow<Void, AllInputsWorkflow.AllIn
     SdkNode<AutoAllInputsOutput> apply =
         builder.apply(
             "all-inputs",
-            new AllInputsTask(), AllInputsTask.AutoAllInputsInput.create(
+            new AllInputsTask(),
+            AllInputsTask.AutoAllInputsInput.create(
                 SdkBindingData.ofInteger(1L),
                 SdkBindingData.ofFloat(2),
                 SdkBindingData.ofString("test"),
@@ -57,8 +59,7 @@ public class AllInputsWorkflow extends SdkWorkflow<Void, AllInputsWorkflow.AllIn
                 SdkBindingData.ofStringCollection(Arrays.asList("foo", "bar")),
                 SdkBindingData.ofStringMap(Map.of("test", "test")),
                 SdkBindingData.ofStringCollection(Collections.emptyList()),
-                SdkBindingData.ofIntegerMap(Collections.emptyMap()))
-            );
+                SdkBindingData.ofIntegerMap(Collections.emptyMap())));
 
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 

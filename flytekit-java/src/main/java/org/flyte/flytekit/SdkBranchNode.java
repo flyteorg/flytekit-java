@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.IfElseBlock;
@@ -89,15 +90,21 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
       ifElseBlock = ifElseBlock.toBuilder().error(nodeError).build();
     }
 
+    // inputs in var order for predictability
+    List<Binding> inputs =
+        extraInputs.entrySet().stream()
+            .sorted(Entry.comparingByKey())
+            .map(Entry::getValue)
+            .collect(toUnmodifiableList());
     return Node.builder()
         .id(nodeId)
         .branchNode(BranchNode.builder().ifElse(ifElseBlock).build())
-        .inputs(List.copyOf(extraInputs.values()))
+        .inputs(inputs)
         .upstreamNodeIds(upstreamNodeIds)
         .build();
   }
 
-  static class Builder<InputT, OutputT> {
+  static class Builder<OutputT> {
     private final SdkWorkflowBuilder builder;
     private final SdkType<OutputT> outputType;
 
@@ -113,7 +120,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     }
 
     @CanIgnoreReturnValue
-    Builder<InputT, OutputT> addCase(SdkConditionCase<InputT, OutputT> case_) {
+    Builder<OutputT> addCase(SdkConditionCase<OutputT> case_) {
       SdkNode<OutputT> sdkNode =
           case_
               .then()
@@ -147,7 +154,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     }
 
     @CanIgnoreReturnValue
-    Builder<InputT, OutputT> addOtherwise(String name, SdkTransform<InputT, OutputT> otherwise) {
+    Builder<OutputT> addOtherwise(String name, SdkTransform<Void, OutputT> otherwise) {
       if (elseNode != null) {
         throw new IllegalArgumentException("Duplicate otherwise clause");
       }

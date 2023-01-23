@@ -16,19 +16,30 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.singletonList;
 import static org.flyte.flytekit.SdkBooleanExpression.ofComparison;
 
+import java.util.List;
 import org.flyte.api.v1.ComparisonExpression;
 
 public class SdkConditions {
   private SdkConditions() {}
 
-  public static <InputT, OutputT> SdkCondition<InputT, OutputT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<InputT, OutputT> then) {
-    SdkConditionCase<InputT, OutputT> case_ = SdkConditionCase.create(name, condition, then);
+  public static <OutputT> SdkCondition<OutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<Void, OutputT> then) {
+    SdkConditionCase<OutputT> case_ = SdkConditionCase.create(name, condition, then);
 
-    return new SdkCondition<>(singletonList(case_), null, null);
+    return new SdkCondition<>(List.of(case_), null, null);
+  }
+
+  public static <InputT, OutputT> SdkCondition<OutputT> when(
+      String name,
+      SdkBooleanExpression condition,
+      SdkTransform<InputT, OutputT> then,
+      InputT inputs) {
+    SdkConditionCase<OutputT> case_ =
+        SdkConditionCase.create(name, condition, new SdkAppliedTransform<>(then, inputs));
+
+    return new SdkCondition<>(List.of(case_), null, null);
   }
 
   public static <T> SdkBooleanExpression eq(SdkBindingData<T> left, SdkBindingData<T> right) {

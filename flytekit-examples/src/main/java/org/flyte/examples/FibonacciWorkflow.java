@@ -25,10 +25,13 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Input, FibonacciWorkflow.Output> {
+public class FibonacciWorkflow
+    extends SdkWorkflow<FibonacciWorkflow.Input, FibonacciWorkflow.Output> {
 
   public FibonacciWorkflow() {
-    super(JacksonSdkType.of(FibonacciWorkflow.Input.class), JacksonSdkType.of(FibonacciWorkflow.Output.class));
+    super(
+        JacksonSdkType.of(FibonacciWorkflow.Input.class),
+        JacksonSdkType.of(FibonacciWorkflow.Output.class));
   }
 
   @Override
@@ -36,12 +39,16 @@ public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Input, Fibo
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
 
-    SdkNode<SumTask.SumOutput> apply = builder.apply("fib-2", new SumTask(), SumTask.SumInput.create(fib1, fib0));
+    SdkNode<SumTask.SumOutput> apply =
+        builder.apply("fib-2", new SumTask(), SumTask.SumInput.create(fib1, fib0));
     SumTask.SumOutput outputs = apply.getOutputs();
     SdkBindingData<Long> fib2 = outputs.c();
-    SdkBindingData<Long> fib3 = builder.apply("fib-3", new SumTask(), SumTask.SumInput.create(fib1, fib2)).getOutputs().c();
-    SdkBindingData<Long> fib4 = builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs().c();
-    SdkBindingData<Long> fib5 = builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs().c();
+    SdkBindingData<Long> fib3 =
+        builder.apply("fib-3", new SumTask(), SumTask.SumInput.create(fib1, fib2)).getOutputs().c();
+    SdkBindingData<Long> fib4 =
+        builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs().c();
+    SdkBindingData<Long> fib5 =
+        builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs().c();
 
     builder.output("fib5", fib5, "Value for Fib5");
   }
@@ -52,7 +59,8 @@ public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Input, Fibo
 
     public abstract SdkBindingData<Long> fib1();
 
-    public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
+    public static FibonacciWorkflow.Output create(
+        SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
       return new AutoValue_FibonacciWorkflow_Input(fib0, fib1);
     }
   }

@@ -135,7 +135,14 @@ class SdkWorkflowBuilderTest {
             .nodes(List.of(node0, node1))
             .build();
 
-    assertEquals(expected, builder.toIdlTemplate());
+    WorkflowTemplate actual = builder.toIdlTemplate();
+    assertEquals(expected.interface_(), actual.interface_());
+    assertEquals(expected.metadata(), actual.metadata());
+    assertEquals(expected.outputs(), actual.outputs());
+    assertEquals(expected.nodes().get(0), actual.nodes().get(0));
+    assertEquals(expected.nodes().get(1), actual.nodes().get(1));
+    assertEquals(expected.nodes(), actual.nodes());
+    assertEquals(expected, actual);
   }
 
   @Test
@@ -471,8 +478,11 @@ class SdkWorkflowBuilderTest {
       SdkNode<TestUnaryIntegerOutput> out =
           builder.apply(
               "square",
-              SdkConditions.when("neq", SdkConditions.neq(in, two), new MultiplicationTask()),
-              TestPairIntegerInput.create(in, two));
+              SdkConditions.when(
+                  "neq",
+                  SdkConditions.neq(in, two),
+                  new MultiplicationTask(),
+                  TestPairIntegerInput.create(in, two)));
 
       builder.output("o", out.getOutputs().o());
     }

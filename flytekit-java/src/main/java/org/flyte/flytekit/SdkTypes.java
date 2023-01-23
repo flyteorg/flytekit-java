@@ -22,10 +22,13 @@ import org.flyte.api.v1.Variable;
 
 /** A utility class for creating {@link SdkType} objects for different types. */
 public class SdkTypes {
+
+  private static final VoidSdkType VOID_SDK_TYPE = new VoidSdkType();
+
   private SdkTypes() {}
 
   public static SdkType<Void> nulls() {
-    return new VoidSdkType();
+    return VOID_SDK_TYPE;
   }
 
   private static class VoidSdkType extends SdkType<Void> {
@@ -53,11 +56,6 @@ public class SdkTypes {
     @Override
     public Map<String, SdkBindingData<?>> toSdkBindingMap(Void value) {
       return Map.of();
-    }
-
-    @Override
-    public Map<String, SdkBindingData<?>> toSdkBindingMap(Void value) {
-      return Collections.emptyMap();
     }
   }
 }

@@ -81,6 +81,7 @@ public class SdkWorkflowBuilder {
       SdkTransform<InputT, OutputT> transform,
       List<String> upstreamNodeIds,
       @Nullable InputT inputs) {
+    SdkAppliedTransform.checkNotNull(transform, inputs);
 
     String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);
 

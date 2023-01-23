@@ -16,9 +16,6 @@
  */
 package org.flyte.examples;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
@@ -27,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)

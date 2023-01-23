@@ -17,7 +17,6 @@
 package org.flyte.flytekit;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -25,8 +24,8 @@ import java.util.regex.Pattern;
 /**
  * Controls the default node id and node name policy when applying {@link SdkTransform} to {@link
  * SdkWorkflowBuilder}. When using {@link SdkWorkflowBuilder#apply(SdkTransform)} or {@link
- * SdkWorkflowBuilder#apply(SdkTransform, Map)} then the node id used would be the one returned by
- * {@link #nextNodeId()}. Also, if a node name haven't been set by the user, then {@link
+ * SdkWorkflowBuilder#apply(SdkTransform, Object)} then the node id used would be the one returned
+ * by {@link #nextNodeId()}. Also, if a node name haven't been set by the user, then {@link
  * #toNodeName(String)} would be used.
  */
 class SdkNodeNamePolicy {

@@ -40,7 +40,10 @@ public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Input, Gr
             .apply(
                 "decide",
                 SdkConditions.when(
-                        "when-empty", eq(name, ofString("")), new GreetTask(), GreetTask.Input.create(ofString("World")))
+                        "when-empty",
+                        eq(name, ofString("")),
+                        new GreetTask(),
+                        GreetTask.Input.create(ofString("World")))
                     .otherwise("when-not-empty", new GreetTask(), GreetTask.Input.create(name)))
             .getOutputs()
             .greeting();

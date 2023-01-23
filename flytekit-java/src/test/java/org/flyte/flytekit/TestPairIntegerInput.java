@@ -35,7 +35,7 @@ abstract class TestPairIntegerInput {
 
     private static final String A = "a";
     private static final String B = "b";
-    
+
     @Override
     public Map<String, Literal> toLiteralMap(TestPairIntegerInput value) {
       return Map.of(

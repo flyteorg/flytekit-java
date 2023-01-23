@@ -131,7 +131,9 @@ object SdkScalaType {
         })
       }
 
-      override def toSdkBindingMap(value: T): ju.Map[String, SdkJavaBindinigData[_]] = {
+      override def toSdkBindingMap(
+          value: T
+      ): ju.Map[String, SdkJavaBindinigData[_]] = {
         value match {
           case product: Product =>
             value.getClass.getDeclaredFields
@@ -140,12 +142,17 @@ object SdkScalaType {
               .toMap
               .mapValues {
                 case value: SdkJavaBindinigData[_] => value
-                case _ => throw new IllegalStateException(s"All the fields of the case class ${value.getClass.getSimpleName} must be SdkBindingData[_]")
+                case _ =>
+                  throw new IllegalStateException(
+                    s"All the fields of the case class ${value.getClass.getSimpleName} must be SdkBindingData[_]"
+                  )
               }
               .toMap
               .asJava
           case _ =>
-            throw new IllegalStateException(s"The class ${value.getClass.getSimpleName} must be a case class")
+            throw new IllegalStateException(
+              s"The class ${value.getClass.getSimpleName} must be a case class"
+            )
         }
       }
     }
@@ -318,7 +325,8 @@ object SdkScalaType {
 }
 
 private object SdkUnitType extends SdkScalaProductType[Unit] {
-  def getVariableMap: ju.Map[String, Variable] = Map.empty[String, Variable].asJava
+  def getVariableMap: ju.Map[String, Variable] =
+    Map.empty[String, Variable].asJava
 
   def toLiteralMap(value: Unit): ju.Map[String, Literal] =
     Map.empty[String, Literal].asJava
@@ -327,5 +335,8 @@ private object SdkUnitType extends SdkScalaProductType[Unit] {
 
   def promiseFor(nodeId: String): Unit = ()
 
-  override def toSdkBindingMap(value: Unit): ju.Map[String, SdkJavaBindinigData[_]] = Map.empty[String, SdkJavaBindinigData[_]].asJava
+  override def toSdkBindingMap(
+      value: Unit
+  ): ju.Map[String, SdkJavaBindinigData[_]] =
+    Map.empty[String, SdkJavaBindinigData[_]].asJava
 }

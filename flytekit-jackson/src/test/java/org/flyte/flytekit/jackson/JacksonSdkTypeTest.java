@@ -21,7 +21,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -34,7 +33,6 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -328,15 +326,15 @@ public class JacksonSdkTypeTest {
   }
 
   @Test
-
   public void testToSdkBindingDataMapJsonProperties() {
 
-    JsonPropertyClassInput input = new JsonPropertyClassInput(SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
+    JsonPropertyClassInput input =
+        new JsonPropertyClassInput(
+            SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
     System.out.println(JacksonSdkType.of(JsonPropertyClassInput.class).getVariableMap());
 
     Map<String, SdkBindingData<?>> sdkBindingDataMap =
         JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
-
 
     Map<String, SdkBindingData<?>> expected = new HashMap<>();
     expected.put("test", input.test);
@@ -345,17 +343,16 @@ public class JacksonSdkTypeTest {
     assertEquals(expected, sdkBindingDataMap);
   }
 
-  public class JsonPropertyClassInput {
-    @JsonProperty
-    SdkBindingData<String> test;
+  public static class JsonPropertyClassInput {
+    @JsonProperty SdkBindingData<String> test;
 
     @JsonProperty("name")
     SdkBindingData<String> otherTest;
 
     @JsonCreator
     public JsonPropertyClassInput(SdkBindingData<String> test, SdkBindingData<String> otherTest) {
-      this.test=test;
-      this.otherTest=otherTest;
+      this.test = test;
+      this.otherTest = otherTest;
     }
   }
 

@@ -50,7 +50,8 @@ public class JacksonSdkType<T> extends SdkType<T> {
   private final Map<String, Variable> variableMap;
   private final Map<String, AnnotatedMember> membersMap;
 
-  private JacksonSdkType(Class<T> clazz, Map<String, Variable> variableMap, Map<String, AnnotatedMember> membersMap) {
+  private JacksonSdkType(
+      Class<T> clazz, Map<String, Variable> variableMap, Map<String, AnnotatedMember> membersMap) {
     this.clazz = Objects.requireNonNull(clazz);
     this.variableMap = Objects.requireNonNull(variableMap);
     this.membersMap = Objects.requireNonNull(membersMap);
@@ -178,15 +179,14 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
   @Override
   public Map<String, SdkBindingData<?>> toSdkBindingMap(T value) {
-    return
-        getMembersMap().entrySet().stream()
-            .map(
-                entry -> {
-                  String attrName = entry.getKey();
-                  AnnotatedMember member = entry.getValue();
-                  return Map.entry(attrName, (SdkBindingData<?>) member.getValue(value));
-                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+    return getMembersMap().entrySet().stream()
+        .map(
+            entry -> {
+              String attrName = entry.getKey();
+              AnnotatedMember member = entry.getValue();
+              return Map.entry(attrName, (SdkBindingData<?>) member.getValue(value));
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {

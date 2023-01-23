@@ -32,6 +32,7 @@ import org.flyte.flytekitscala.SdkBindingData._
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
+import org.junit.jupiter.api.Assertions.assertThrows
 
 class SdkScalaTypeTest {
 
@@ -175,6 +176,49 @@ class SdkScalaTypeTest {
     val output = SdkScalaType[CollectionInput].getVariableMap
 
     assertEquals(expected, output)
+  }
+
+  @Test
+  def testToSdkBindingMap(): Unit = {
+    val input = ScalarInput(
+      string = ofString("string"),
+      integer = ofInteger(1337L),
+      float = ofFloat(42.0),
+      boolean = ofBoolean(true),
+      datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+      duration = ofDuration(Duration.ofSeconds(123, 456))
+    )
+
+    val output = SdkScalaType[ScalarInput].toSdkBindingMap(input)
+
+    val expected = Map(
+      "string" -> ofString("string"),
+      "integer" -> ofInteger(1337L),
+      "float" -> ofFloat(42.0),
+      "boolean" -> ofBoolean(true),
+      "datetime" -> ofDateTime(Instant.ofEpochMilli(123456L)),
+      "duration" -> ofDuration(Duration.ofSeconds(123, 456))
+    ).asJava
+
+    assertEquals(expected, output)
+  }
+
+  case class InputWithoutSdkBinding(notSdkBinding: String)
+  @Test
+  def testCaseClassWithoutSdkBindingData(): Unit = {
+    val exception = assertThrows(
+      classOf[IllegalStateException],
+      () => {
+        SdkScalaType[InputWithoutSdkBinding].toSdkBindingMap(
+          InputWithoutSdkBinding("test")
+        )
+      }
+    )
+
+    assertEquals(
+      "All the fields of the case class InputWithoutSdkBinding must be SdkBindingData[_]",
+      exception.getMessage
+    )
   }
 
   private def createCollectionVar(simpleType: SimpleType) = {

@@ -35,11 +35,19 @@ public class DynamicFibonacciWorkflowTask
   @AutoValue
   abstract static class Input {
     public abstract SdkBindingData<Long> n();
+
+    public static DynamicFibonacciWorkflowTask.Input create(SdkBindingData<Long> n) {
+      return new AutoValue_DynamicFibonacciWorkflowTask_Input(n);
+    }
   }
 
   @AutoValue
   abstract static class Output {
     public abstract SdkBindingData<Long> output();
+
+    public static DynamicFibonacciWorkflowTask.Output create(SdkBindingData<Long> output) {
+      return new AutoValue_DynamicFibonacciWorkflowTask_Output(output);
+    }
   }
 
   @Override

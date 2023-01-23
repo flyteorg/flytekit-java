@@ -29,10 +29,6 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
     super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
   }
 
-  public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask().withInput("a", a).withInput("b", b);
-  }
-
   @AutoValue
   public abstract static class SumInput {
     public abstract SdkBindingData<Long> a();

@@ -20,7 +20,6 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
@@ -32,21 +31,15 @@ public class GreetTask extends SdkRunnableTask<GreetTask.Input, GreetTask.Output
   }
 
   /**
-   * Binds input data to this task.
-   *
-   * @param name the input name
-   * @return a transformed instance of this class with input data
-   */
-  public static SdkTransform<Output> of(SdkBindingData<String> name) {
-    return new GreetTask().withInput("name", name);
-  }
-
-  /**
    * Generate an immutable value class that represents {@link GreetTask}'s input, which is a String.
    */
   @AutoValue
   public abstract static class Input {
     public abstract SdkBindingData<String> name();
+
+    public static Input create(SdkBindingData<String> greeting) {
+      return new AutoValue_GreetTask_Input(greeting);
+    }
   }
 
   /**

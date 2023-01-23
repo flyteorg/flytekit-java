@@ -38,30 +38,6 @@ public class AllInputsTask
         JacksonSdkType.of(AutoAllInputsInput.class), JacksonSdkType.of(AutoAllInputsOutput.class));
   }
 
-  public static SdkTransform<AllInputsTask.AutoAllInputsOutput> of(
-      SdkBindingData<Long> i,
-      SdkBindingData<Double> f,
-      SdkBindingData<String> s,
-      SdkBindingData<Boolean> b,
-      SdkBindingData<Instant> t,
-      SdkBindingData<Duration> d,
-      SdkBindingData<List<String>> l,
-      SdkBindingData<Map<String, String>> m,
-      SdkBindingData<List<String>> emptyList,
-      SdkBindingData<Map<String, Long>> emptyMap) {
-    return new AllInputsTask()
-        .withInput("i", i)
-        .withInput("f", f)
-        .withInput("s", s)
-        .withInput("b", b)
-        .withInput("t", t)
-        .withInput("d", d)
-        .withInput("l", l)
-        .withInput("m", m)
-        .withInput("emptyList", emptyList)
-        .withInput("emptyMap", emptyMap);
-  }
-
   @AutoValue
   public abstract static class AutoAllInputsInput {
     public abstract SdkBindingData<Long> i();

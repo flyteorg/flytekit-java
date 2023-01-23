@@ -27,15 +27,16 @@ import java.util.Map;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWorkflowOutput> {
+public class AllInputsWorkflow extends SdkWorkflow<Void, AllInputsWorkflow.AllInputsWorkflowOutput> {
 
   public AllInputsWorkflow() {
-    super(JacksonSdkType.of(AllInputsWorkflow.AllInputsWorkflowOutput.class));
+    super(SdkTypes.nulls(), JacksonSdkType.of(AllInputsWorkflow.AllInputsWorkflowOutput.class));
   }
 
   @Override
@@ -46,7 +47,7 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
     SdkNode<AutoAllInputsOutput> apply =
         builder.apply(
             "all-inputs",
-            AllInputsTask.of(
+            new AllInputsTask(), AllInputsTask.AutoAllInputsInput.create(
                 SdkBindingData.ofInteger(1L),
                 SdkBindingData.ofFloat(2),
                 SdkBindingData.ofString("test"),
@@ -56,7 +57,9 @@ public class AllInputsWorkflow extends SdkWorkflow<AllInputsWorkflow.AllInputsWo
                 SdkBindingData.ofStringCollection(Arrays.asList("foo", "bar")),
                 SdkBindingData.ofStringMap(Map.of("test", "test")),
                 SdkBindingData.ofStringCollection(Collections.emptyList()),
-                SdkBindingData.ofIntegerMap(Collections.emptyMap())));
+                SdkBindingData.ofIntegerMap(Collections.emptyMap()))
+            );
+
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 
     builder.output("i", outputs.i(), "Integer value");

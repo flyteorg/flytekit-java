@@ -35,22 +35,16 @@ public class AddQuestionTask
   }
 
   /**
-   * Binds input data to this task.
-   *
-   * @param greeting the input greeting message
-   * @return a transformed instance of this class with input data
-   */
-  public static SdkTransform<AddQuestionTask.Output> of(SdkBindingData<String> greeting) {
-    return new AddQuestionTask().withInput("greeting", greeting);
-  }
-
-  /**
    * Generate an immutable value class that represents {@link AddQuestionTask}'s input, which is a
    * String.
    */
   @AutoValue
   public abstract static class Input {
     public abstract SdkBindingData<String> greeting();
+
+    public static Input create(SdkBindingData<String> greeting) {
+      return new AutoValue_AddQuestionTask_Input(greeting);
+    }
   }
 
   /**

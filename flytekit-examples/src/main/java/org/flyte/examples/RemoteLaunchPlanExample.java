@@ -17,6 +17,7 @@
 package org.flyte.examples;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.examples.RemoteLaunchPlanExample.Input;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
@@ -29,17 +30,17 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 // launchplan to be registered already.
 // The order that we register objects in jflyte is: task, workflows and launchplans
 // @AutoService(SdkWorkflow.class)
-public class RemoteLaunchPlanExample extends SdkWorkflow<Void> {
+public class RemoteLaunchPlanExample extends SdkWorkflow<Input, Void> {
 
   public RemoteLaunchPlanExample() {
-    super(SdkTypes.nulls());
+    super(JacksonSdkType.of(Input.class), SdkTypes.nulls());
   }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");
-    builder.apply("remote-launch-plan", create().withInput("fib0", fib0).withInput("fib1", fib1));
+    builder.apply("remote-launch-plan", create(), Input.create(fib0, fib1));
   }
 
   public static SdkRemoteLaunchPlan<Input, Void> create() {

@@ -23,10 +23,10 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 
 /** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
-public class ContainerWorkflow extends SdkWorkflow<Void> {
+public class ContainerWorkflow extends SdkWorkflow<Void, Void> {
 
   public ContainerWorkflow() {
-    super(SdkTypes.nulls());
+    super(SdkTypes.nulls(), SdkTypes.nulls());
   }
 
   @Override

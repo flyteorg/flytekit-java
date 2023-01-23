@@ -27,9 +27,9 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Output> {
+public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Input, GreetTask.Output> {
   public ConditionalGreetingWorkflow() {
-    super(JacksonSdkType.of(GreetTask.Output.class));
+    super(JacksonSdkType.of(GreetTask.Input.class), JacksonSdkType.of(GreetTask.Output.class));
   }
 
   @Override
@@ -40,8 +40,8 @@ public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Output> {
             .apply(
                 "decide",
                 SdkConditions.when(
-                        "when-empty", eq(name, ofString("")), GreetTask.of(ofString("World")))
-                    .otherwise("when-not-empty", GreetTask.of(name)))
+                        "when-empty", eq(name, ofString("")), new GreetTask(), GreetTask.Input.create(ofString("World")))
+                    .otherwise("when-not-empty", new GreetTask(), GreetTask.Input.create(name)))
             .getOutputs()
             .greeting();
 

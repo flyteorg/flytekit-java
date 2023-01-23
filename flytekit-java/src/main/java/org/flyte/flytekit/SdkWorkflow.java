@@ -25,17 +25,22 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-public abstract class SdkWorkflow extends SdkTransform {
+public abstract class SdkWorkflow<OutputT> extends SdkTransform<OutputT> {
+  private final SdkType<OutputT> outputType;
+
+  protected SdkWorkflow(SdkType<OutputT> outputType) {
+    this.outputType = outputType;
+  }
 
   public abstract void expand(SdkWorkflowBuilder builder);
 
   @Override
-  public SdkNode apply(
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
 
     PartialWorkflowIdentifier workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
@@ -55,7 +60,7 @@ public abstract class SdkWorkflow extends SdkTransform {
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(workflowId))
             .build();
 
-    Map<String, SdkBindingData> outputs =
+    Map<String, SdkBindingData<?>> outputs =
         innerBuilder.getOutputs().entrySet().stream()
             .collect(
                 Collectors.toMap(
@@ -63,8 +68,14 @@ public abstract class SdkWorkflow extends SdkTransform {
                     e ->
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
-    return new SdkWorkflowNode(
-        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs);
+    OutputT promise = getOutputType().promiseFor(nodeId);
+    return new SdkWorkflowNode<>(
+        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
+  }
+
+  @Override
+  public SdkType<OutputT> getOutputType() {
+    return outputType;
   }
 
   public WorkflowTemplate toIdlTemplate() {

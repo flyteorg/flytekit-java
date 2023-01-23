@@ -42,6 +42,11 @@ public class SdkTypes {
     }
 
     @Override
+    public Void promiseFor(String nodeId) {
+      return null;
+    }
+
+    @Override
     public Map<String, Variable> getVariableMap() {
       return Collections.emptyMap();
     }

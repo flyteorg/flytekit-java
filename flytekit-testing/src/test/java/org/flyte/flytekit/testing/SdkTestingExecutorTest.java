@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -35,43 +36,79 @@ import org.junit.jupiter.api.Test;
 
 public class SdkTestingExecutorTest {
 
+  @AutoValue
+  public abstract static class TestWorkflowOutput {
+
+    public abstract SdkBindingData<Boolean> b();
+
+    public abstract SdkBindingData<Instant> datetime();
+
+    public abstract SdkBindingData<Duration> duration();
+
+    public abstract SdkBindingData<Double> f();
+
+    public abstract SdkBindingData<Long> i();
+
+    public abstract SdkBindingData<String> s();
+  }
+
+  @AutoValue
+  public abstract static class TestUnaryStringOutput {
+    public abstract SdkBindingData<String> string();
+
+    public static TestUnaryStringOutput create(String string) {
+      return new AutoValue_SdkTestingExecutorTest_TestUnaryStringOutput(
+          SdkBindingData.ofString(string));
+    }
+  }
+
+  @AutoValue
+  public abstract static class TestUnaryIntegerOutput {
+    public abstract SdkBindingData<Long> o();
+
+    public static TestUnaryIntegerOutput create(long l) {
+      return new AutoValue_SdkTestingExecutorTest_TestUnaryIntegerOutput(
+          SdkBindingData.ofInteger(l));
+    }
+  }
+
   @Test
   public void testPrimitiveTypes() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestWorkflowOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestWorkflowOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            builder.output("boolean", builder.inputOfBoolean("boolean"));
+            builder.output("b", builder.inputOfBoolean("b"));
             builder.output("datetime", builder.inputOfDatetime("datetime"));
             builder.output("duration", builder.inputOfDuration("duration"));
-            builder.output("float", builder.inputOfFloat("float"));
-            builder.output("integer", builder.inputOfInteger("integer"));
-            builder.output("string", builder.inputOfString("string"));
+            builder.output("f", builder.inputOfFloat("f"));
+            builder.output("i", builder.inputOfInteger("i"));
+            builder.output("s", builder.inputOfString("s"));
           }
         };
 
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(workflow)
-            .withFixedInput("boolean", true)
+            .withFixedInput("b", true)
             .withFixedInput("datetime", Instant.ofEpochSecond(1337))
             .withFixedInput("duration", Duration.ofDays(1))
-            .withFixedInput("float", 1337.0)
-            .withFixedInput("integer", 42)
-            .withFixedInput("string", "forty two")
+            .withFixedInput("f", 1337.0)
+            .withFixedInput("i", 42)
+            .withFixedInput("s", "forty two")
             .execute();
 
-    assertThat(result.getBooleanOutput("boolean"), equalTo(true));
+    assertThat(result.getBooleanOutput("b"), equalTo(true));
     assertThat(result.getDatetimeOutput("datetime"), equalTo(Instant.ofEpochSecond(1337)));
     assertThat(result.getDurationOutput("duration"), equalTo(Duration.ofDays(1)));
-    assertThat(result.getFloatOutput("float"), equalTo(1337.0));
-    assertThat(result.getIntegerOutput("integer"), equalTo(42L));
-    assertThat(result.getStringOutput("string"), equalTo("forty two"));
+    assertThat(result.getFloatOutput("f"), equalTo(1337.0));
+    assertThat(result.getIntegerOutput("i"), equalTo(42L));
+    assertThat(result.getStringOutput("s"), equalTo("forty two"));
   }
 
   @Test
   public void testGetOutput_doesntExist() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("integer", builder.inputOfInteger("integer"));
@@ -89,8 +126,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testGetOutput_illegalType() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryStringOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -110,8 +147,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_missing() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryStringOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -130,8 +167,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_illegalType() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryStringOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -150,8 +187,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTask() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
@@ -171,8 +208,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTaskOutput() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
@@ -193,14 +230,13 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=1, b=2} for remote task [remote_sum_task] across known "
-                + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
   public void testWithTask_nullOutput() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.apply("void", RemoteVoidOutputTask.create().withInput("ignore", ""));
@@ -224,54 +260,12 @@ public class SdkTestingExecutorTest {
             .withWorkflowOutput(
                 new SimpleSubWorkflow(),
                 JacksonSdkType.of(SimpleSubWorkflowInput.class),
-                SimpleSubWorkflowInput.create(7),
-                JacksonSdkType.of(SimpleSubWorkflowOutput.class),
-                SimpleSubWorkflowOutput.create(5))
+                SimpleSubWorkflowInput.create(SdkBindingData.ofInteger(7)),
+                JacksonSdkType.of(TestUnaryIntegerOutput.class),
+                TestUnaryIntegerOutput.create(5))
             .execute();
 
-    assertThat(result.getIntegerOutput("result"), equalTo(5L));
-  }
-
-  @Test
-  public void withWorkflowOutput_mismatchInputTypeThrowsException() {
-    IllegalArgumentException ex =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SdkTestingExecutor.of(new SimpleUberWorkflow())
-                    .withFixedInput("n", 7)
-                    .withWorkflowOutput(
-                        new SimpleSubWorkflow(),
-                        // using output type wrongly as input type
-                        JacksonSdkType.of(SimpleSubWorkflowOutput.class),
-                        SimpleSubWorkflowOutput.create(7),
-                        JacksonSdkType.of(SimpleSubWorkflowOutput.class),
-                        SimpleSubWorkflowOutput.create(5)));
-
-    assertThat(
-        ex.getMessage(),
-        equalTo("Input type { out=INTEGER } doesn't match expected type { in=INTEGER }"));
-  }
-
-  @Test
-  public void withWorkflowOutput_mismatchOutputTypeThrowsException() {
-    IllegalArgumentException ex =
-        assertThrows(
-            IllegalArgumentException.class,
-            () ->
-                SdkTestingExecutor.of(new SimpleUberWorkflow())
-                    .withFixedInput("n", 7)
-                    .withWorkflowOutput(
-                        new SimpleSubWorkflow(),
-                        JacksonSdkType.of(SimpleSubWorkflowInput.class),
-                        SimpleSubWorkflowInput.create(7),
-                        // using input type wrongly as output type
-                        JacksonSdkType.of(SimpleSubWorkflowInput.class),
-                        SimpleSubWorkflowInput.create(5)));
-
-    assertThat(
-        ex.getMessage(),
-        equalTo("Output type { in=INTEGER } doesn't match expected type { out=INTEGER }"));
+    assertThat(result.getIntegerOutput("o"), equalTo(5L));
   }
 
   @Test
@@ -284,20 +278,21 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryIntegerOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c =
+            SdkBindingData<Long> c =
                 builder
                     .apply(
                         "launchplanref",
                         launchplanRef
                             .withInput("a", builder.inputOfInteger("a"))
                             .withInput("b", builder.inputOfInteger("b")))
-                    .getOutput("c");
+                    .getOutputs()
+                    .c();
 
-            builder.output("result", c);
+            builder.output("o", c);
           }
         };
 
@@ -309,7 +304,7 @@ public class SdkTestingExecutorTest {
                 launchplanRef, SumLaunchPlanInput.create(3L, 5L), SumLaunchPlanOutput.create(8L))
             .execute();
 
-    assertThat(result.getIntegerOutput("result"), equalTo(8L));
+    assertThat(result.getIntegerOutput("o"), equalTo(8L));
   }
 
   @Test
@@ -322,20 +317,21 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryIntegerOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c =
+            SdkBindingData<Long> c =
                 builder
                     .apply(
                         "launchplanref",
                         launchplanRef
                             .withInput("a", builder.inputOfInteger("a"))
                             .withInput("b", builder.inputOfInteger("b")))
-                    .getOutput("c");
+                    .getOutputs()
+                    .c();
 
-            builder.output("result", c);
+            builder.output("o", c);
           }
         };
 
@@ -356,10 +352,7 @@ public class SdkTestingExecutorTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input SumLaunchPlanInput{a=3, b=5} for remote launch plan "
-                + "[SumWorkflow] across known launch plan inputs, "
-                + "use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan"
-                + " to provide a test double"));
+            "Can't find input SumLaunchPlanInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=3}}}, type=LiteralType{simpleType=INTEGER}, value=3}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=5}}}, type=LiteralType{simpleType=INTEGER}, value=5}} for remote launch plan [SumWorkflow] across known launch plan inputs, use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test
@@ -372,20 +365,21 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<TestUnaryIntegerOutput> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            SdkBindingData c =
+            SdkBindingData<Long> c =
                 builder
                     .apply(
                         "launchplanref",
                         launchplanRef
                             .withInput("a", builder.inputOfInteger("a"))
                             .withInput("b", builder.inputOfInteger("b")))
-                    .getOutput("c");
+                    .getOutputs()
+                    .c();
 
-            builder.output("result", c);
+            builder.output("o", c);
           }
         };
 
@@ -393,16 +387,17 @@ public class SdkTestingExecutorTest {
         SdkTestingExecutor.of(workflow)
             .withFixedInput("a", 30L)
             .withFixedInput("b", 5L)
-            .withLaunchPlan(launchplanRef, in -> SumLaunchPlanOutput.create(in.a() + in.b()))
+            .withLaunchPlan(
+                launchplanRef, in -> SumLaunchPlanOutput.create(in.a().get() + in.b().get()))
             .execute();
 
-    assertThat(result.getIntegerOutput("result"), equalTo(35L));
+    assertThat(result.getIntegerOutput("o"), equalTo(35L));
   }
 
   @Test
   public void testWithLaunchPlan_missingRemoteTaskOutput() {
-    SdkWorkflow workflow =
-        new SdkWorkflow() {
+    SdkWorkflow<Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
@@ -423,64 +418,73 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=1, b=2} for remote task [remote_sum_task] across known "
-                + "task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
-  public static class SimpleUberWorkflow extends SdkWorkflow {
+  public static class SimpleUberWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    public SimpleUberWorkflow() {
+      super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData input = builder.inputOfInteger("n", "");
-      SdkBindingData output =
-          builder.apply("void", new SimpleSubWorkflow().withInput("in", input)).getOutput("out");
-      builder.output("result", output);
+      SdkBindingData<Long> input = builder.inputOfInteger("n", "");
+      SdkBindingData<Long> output =
+          builder.apply("void", new SimpleSubWorkflow().withInput("in", input)).getOutputs().o();
+      builder.output("o", output);
     }
   }
 
-  public static class SimpleSubWorkflow extends SdkWorkflow {
+  public static class SimpleSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+
+    public SimpleSubWorkflow() {
+      super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      builder.output("out", builder.inputOfInteger("in"));
+      builder.output("o", builder.inputOfInteger("in"));
     }
   }
 
   @AutoValue
   abstract static class SimpleSubWorkflowInput {
-    abstract long in();
+    abstract SdkBindingData<Long> in();
 
-    public static SimpleSubWorkflowInput create(long in) {
+    public static SimpleSubWorkflowInput create(SdkBindingData<Long> in) {
       return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
     }
   }
 
   @AutoValue
   abstract static class SimpleSubWorkflowOutput {
-    abstract long out();
+    abstract SdkBindingData<Long> out();
 
     public static SimpleSubWorkflowOutput create(long out) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(out);
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(
+          SdkBindingData.ofInteger(out));
     }
   }
 
   @AutoValue
   abstract static class SumLaunchPlanInput {
-    abstract long a();
+    abstract SdkBindingData<Long> a();
 
-    abstract long b();
+    abstract SdkBindingData<Long> b();
 
     public static SumLaunchPlanInput create(long a, long b) {
-      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(a, b);
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(
+          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
     }
   }
 
   @AutoValue
   abstract static class SumLaunchPlanOutput {
-    abstract long c();
+    abstract SdkBindingData<Long> c();
 
     public static SumLaunchPlanOutput create(long c) {
-      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(c);
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(SdkBindingData.ofInteger(c));
     }
   }
 }

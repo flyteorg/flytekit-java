@@ -17,27 +17,47 @@
 package org.flyte.localengine.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
+import java.util.Map;
+import org.flyte.api.v1.LiteralType;
+import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
-import org.flyte.localengine.ImmutableMap;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class MapWorkflow extends SdkWorkflow {
+public class MapWorkflow extends SdkWorkflow<MapWorkflow.Output> {
+  public MapWorkflow() {
+    super(JacksonSdkType.of(MapWorkflow.Output.class));
+  }
+
+  @AutoValue
+  public abstract static class Output {
+
+    public abstract SdkBindingData<Map<String, String>> map();
+
+    public static MapWorkflow.Output create(Map<String, String> map) {
+      return new AutoValue_MapWorkflow_Output(SdkBindingData.ofStringMap(map));
+    }
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkNode sum1 = builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2));
-    SdkNode sum2 = builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4));
+    SdkBindingData<Long> sum1 =
+        builder.apply("sum-1", new SumTask().withInput("a", 1).withInput("b", 2)).getOutputs().o();
 
-    SdkBindingData map =
+    SdkBindingData<Long> sum2 =
+        builder.apply("sum-2", new SumTask().withInput("a", 3).withInput("b", 4)).getOutputs().o();
+
+    SdkBindingData<Map<String, Long>> map =
         SdkBindingData.ofBindingMap(
-            ImmutableMap.of(
-                "e", sum1.getOutput("c"),
-                "f", sum2.getOutput("c")));
+            LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+            Map.of("e", sum1, "f", sum2));
 
-    SdkNode map1 = builder.apply("map-1", new MapTask().withInput("map", map));
+    SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask().withInput("map", map));
 
-    builder.output("map", map1.getOutput("map"));
+    builder.output("map", map1.getOutputs().map());
   }
 }

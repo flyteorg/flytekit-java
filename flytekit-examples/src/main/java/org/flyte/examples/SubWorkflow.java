@@ -21,34 +21,40 @@ import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class SubWorkflow extends SdkWorkflow {
+public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
+
+  public SubWorkflow() {
+    super(JacksonSdkType.of(SubWorkflow.Output.class));
+  }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData left = builder.inputOfInteger("left");
-    SdkBindingData right = builder.inputOfInteger("right");
-    SdkBindingData result = builder.apply("sum", SumTask.of(left, right)).getOutput("c");
+    SdkBindingData<Long> left = builder.inputOfInteger("left");
+    SdkBindingData<Long> right = builder.inputOfInteger("right");
+    SdkBindingData<Long> result = builder.apply("sum", SumTask.of(left, right)).getOutputs().c();
     builder.output("result", result);
   }
 
+  // Used in testing to mock this workflow
   @AutoValue
   public abstract static class Input {
-    abstract long left();
+    abstract SdkBindingData<Long> left();
 
-    abstract long right();
+    abstract SdkBindingData<Long> right();
 
-    public static Input create(long left, long right) {
+    public static Input create(SdkBindingData<Long> left, SdkBindingData<Long> right) {
       return new AutoValue_SubWorkflow_Input(left, right);
     }
   }
 
   @AutoValue
   public abstract static class Output {
-    abstract long result();
+    abstract SdkBindingData<Long> result();
 
-    public static Output create(long result) {
+    public static Output create(SdkBindingData<Long> result) {
       return new AutoValue_SubWorkflow_Output(result);
     }
   }

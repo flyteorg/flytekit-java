@@ -37,6 +37,7 @@ import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkBindingData;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
@@ -65,7 +66,12 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   @Override
   public void property(BeanProperty prop) {
     JavaType handledType = getHandledType(prop);
-    LiteralType literalType = toLiteralType(handledType);
+    LiteralType literalType =
+        toLiteralType(
+            handledType,
+            /*rootLevel=*/ true,
+            prop.getName(),
+            prop.getMember().getMember().getDeclaringClass().getName());
     Variable variable = Variable.builder().description("").literalType(literalType).build();
 
     builder.put(prop.getName(), variable);
@@ -101,14 +107,25 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     return unmodifiableMap(new HashMap<>(builder));
   }
 
-  private LiteralType toLiteralType(JavaType javaType) {
+  @SuppressWarnings("AlreadyChecked")
+  private LiteralType toLiteralType(
+      JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {
     Class<?> type = javaType.getRawClass();
 
-    if (isPrimitiveAssignableFrom(Long.class, type)) {
+    if (SdkBindingData.class.isAssignableFrom(type)) {
+      return toLiteralType(
+          javaType.getBindings().getBoundType(0), false, propName, declaringClassName);
+    } else if (rootLevel) {
+      throw new UnsupportedOperationException(
+          String.format(
+              "Field '%s' from class '%s' is declared as '%s' and it is not matching any of the supported types. "
+                  + "Please make sure your variable declared type is wrapped in 'SdkBindingData<>'.",
+              propName, declaringClassName, type));
+    } else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return LiteralTypes.INTEGER;
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
       return LiteralTypes.FLOAT;
-    } else if (String.class == type || javaType.isEnumType()) {
+    } else if (String.class.equals(type) || javaType.isEnumType()) {
       return LiteralTypes.STRING;
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
       return LiteralTypes.BOOLEAN;
@@ -119,7 +136,8 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     } else if (List.class.isAssignableFrom(type)) {
       JavaType elementType = javaType.getBindings().getBoundType(0);
 
-      return LiteralType.ofCollectionType(toLiteralType(elementType));
+      return LiteralType.ofCollectionType(
+          toLiteralType(elementType, false, propName, declaringClassName));
     } else if (Map.class.isAssignableFrom(type)) {
       JavaType keyType = javaType.getBindings().getBoundType(0);
       JavaType valueType = javaType.getBindings().getBoundType(1);
@@ -129,7 +147,8 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             "Only Map<String, ?> is supported, got [" + javaType.getGenericSignature() + "]");
       }
 
-      return LiteralType.ofMapValueType(toLiteralType(valueType));
+      return LiteralType.ofMapValueType(
+          toLiteralType(valueType, false, propName, declaringClassName));
     } else if (Blob.class.isAssignableFrom(type)) {
       // TODO add annotation to specify dimensionality and format
       BlobType blobType =

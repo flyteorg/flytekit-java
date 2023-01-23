@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.3.28-SNAPSHOT</version>
+    <version>0.3.29-SNAPSHOT</version>
   </parent>
 
   <artifactId>integration-tests</artifactId>
@@ -41,6 +41,12 @@
         <version>1.15.3</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>5.8.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

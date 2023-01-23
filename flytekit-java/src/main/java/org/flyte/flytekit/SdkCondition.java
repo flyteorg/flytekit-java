@@ -21,42 +21,54 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition extends SdkTransform {
-  private final List<SdkConditionCase> cases;
+public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
+  private final SdkType<OutputT> outputType;
+  private final List<SdkConditionCase<OutputT>> cases;
   private final String otherwiseName;
-  private final SdkTransform otherwise;
+  private final SdkTransform<OutputT> otherwise;
 
-  SdkCondition(List<SdkConditionCase> cases, String otherwiseName, SdkTransform otherwise) {
+  SdkCondition(
+      List<SdkConditionCase<OutputT>> cases,
+      String otherwiseName,
+      SdkTransform<OutputT> otherwise) {
     this.cases = cases;
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
+    this.outputType = cases.get(0).then().getOutputType();
   }
 
-  public SdkCondition when(String name, SdkBooleanExpression condition, SdkTransform then) {
-    List<SdkConditionCase> newCases = new ArrayList<>(cases);
+  public SdkCondition<OutputT> when(
+      String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
+
+    List<SdkConditionCase<OutputT>> newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
-    return new SdkCondition(newCases, this.otherwiseName, this.otherwise);
+    return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition otherwise(String name, SdkTransform otherwise) {
+  public SdkCondition<OutputT> otherwise(String name, SdkTransform<OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
 
-    return new SdkCondition(this.cases, name, otherwise);
+    return new SdkCondition<>(this.cases, name, otherwise);
   }
 
   @Override
-  public SdkBranchNode apply(
+  public SdkType<OutputT> getOutputType() {
+    return outputType;
+  }
+
+  @Override
+  public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData> inputs) {
-    SdkBranchNode.Builder nodeBuilder = new SdkBranchNode.Builder(builder);
+      Map<String, SdkBindingData<?>> inputs) {
+    SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder, outputType);
 
-    for (SdkConditionCase case_ : cases) {
+    for (SdkConditionCase<OutputT> case_ : cases) {
       nodeBuilder.addCase(case_);
     }
 

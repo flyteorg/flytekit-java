@@ -19,6 +19,7 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -32,24 +33,24 @@ public class MapTask extends SdkRunnableTask<MapTask.Input, MapTask.Output> {
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.map());
+    return Output.create(input.map().get());
   }
 
   @AutoValue
   public abstract static class Input {
-    public abstract Map<String, Long> map();
+    public abstract SdkBindingData<Map<String, Long>> map();
 
     public static Input create(Map<String, Long> map) {
-      return new AutoValue_MapTask_Input(map);
+      return new AutoValue_MapTask_Input(SdkBindingData.ofIntegerMap(map));
     }
   }
 
   @AutoValue
   public abstract static class Output {
-    public abstract Map<String, Long> map();
+    public abstract SdkBindingData<Map<String, Long>> map();
 
     public static Output create(Map<String, Long> map) {
-      return new AutoValue_MapTask_Output(map);
+      return new AutoValue_MapTask_Output(SdkBindingData.ofIntegerMap(map));
     }
   }
 }

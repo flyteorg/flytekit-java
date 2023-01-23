@@ -17,6 +17,7 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +25,10 @@ import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class PhoneBookWorkflow extends SdkWorkflow {
+public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
 
   private static final List<String> NAMES = Arrays.asList("frodo", "bilbo");
   private static final Map<String, String> PHONE_BOOK = new HashMap<>();
@@ -37,19 +39,40 @@ public class PhoneBookWorkflow extends SdkWorkflow {
     PHONE_BOOK.put("gandalf", "789");
   }
 
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<List<String>> phoneNumbers();
+
+    /**
+     * Wraps the constructor of the generated output value class.
+     *
+     * @param phoneNumbers the String literal output of {@link NodeMetadataExampleWorkflow}
+     * @return output of NodeMetadataExampleWorkflow
+     */
+    public static PhoneBookWorkflow.Output create(SdkBindingData<List<String>> phoneNumbers) {
+      return new AutoValue_PhoneBookWorkflow_Output(phoneNumbers);
+    }
+  }
+
+  public PhoneBookWorkflow() {
+    super(JacksonSdkType.of(PhoneBookWorkflow.Output.class));
+  }
+
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
-    SdkBindingData searchKeys = SdkBindingData.ofStringCollection(NAMES);
+    SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
 
-    SdkBindingData phoneNumbers =
+    SdkBindingData<List<String>> searchKeys = SdkBindingData.ofStringCollection(NAMES);
+
+    SdkBindingData<List<String>> phoneNumbers =
         builder
             .apply(
                 "search",
                 new BatchLookUpTask()
                     .withInput("keyValues", phoneBook)
                     .withInput("searchKeys", searchKeys))
-            .getOutput("values");
+            .getOutputs()
+            .values();
 
     builder.output("phoneNumbers", phoneNumbers);
   }

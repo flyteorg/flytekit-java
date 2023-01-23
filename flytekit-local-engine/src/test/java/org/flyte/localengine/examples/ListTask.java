@@ -19,6 +19,7 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -32,24 +33,24 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.list());
+    return Output.create(input.list().get());
   }
 
   @AutoValue
   public abstract static class Input {
-    public abstract List<Long> list();
+    public abstract SdkBindingData<List<Long>> list();
 
     public static Input create(List<Long> list) {
-      return new AutoValue_ListTask_Input(list);
+      return new AutoValue_ListTask_Input(SdkBindingData.ofIntegerCollection(list));
     }
   }
 
   @AutoValue
   public abstract static class Output {
-    public abstract List<Long> list();
+    public abstract SdkBindingData<List<Long>> list();
 
     public static Output create(List<Long> list) {
-      return new AutoValue_ListTask_Output(list);
+      return new AutoValue_ListTask_Output(SdkBindingData.ofIntegerCollection(list));
     }
   }
 }

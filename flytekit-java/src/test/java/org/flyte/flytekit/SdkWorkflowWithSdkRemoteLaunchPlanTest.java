@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeMetadata;
 import org.flyte.api.v1.OutputReference;
@@ -91,42 +90,46 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
   private TypedInterface expectedInterface() {
     Map<String, Variable> inputs = new HashMap<>();
     inputs.put("a", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build());
-    inputs.put("b", Variable.builder().literalType(LiteralTypes.STRING).description("").build());
+    inputs.put("b", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build());
     return TypedInterface.builder()
         .inputs(inputs)
         .outputs(
             singletonMap(
-                "c", Variable.builder().literalType(LiteralTypes.BOOLEAN).description("").build()))
+                "o", Variable.builder().literalType(LiteralTypes.BOOLEAN).description("").build()))
         .build();
   }
 
   private List<Binding> expectedOutputs() {
     return singletonList(
         Binding.builder()
-            .var_("c")
+            .var_("o")
             .binding(
                 BindingData.ofOutputReference(
-                    OutputReference.builder().var("c").nodeId("some-node-id").build()))
+                    OutputReference.builder().var("o").nodeId("some-node-id").build()))
             .build());
   }
 
-  public static class WorkflowExample extends SdkWorkflow {
+  public static class WorkflowExample extends SdkWorkflow<TestUnaryBooleanOutput> {
+    public WorkflowExample() {
+      super(new TestUnaryBooleanOutput.SdkType());
+    }
+
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData a = builder.inputOfInteger("a");
-      SdkBindingData b = builder.inputOfString("b");
+      SdkBindingData<Long> a = builder.inputOfInteger("a");
+      SdkBindingData<Long> b = builder.inputOfInteger("b");
 
-      SdkNode node1 =
+      SdkNode<TestUnaryBooleanOutput> node1 =
           builder.apply(
               "some-node-id", new TestSdkRemoteLaunchPlan().withInput("a", a).withInput("b", b));
 
-      builder.output("c", node1.getOutput("c"));
+      builder.output("o", node1.getOutputs().o());
     }
   }
 
   @SuppressWarnings("ExtendsAutoValue")
   static class TestSdkRemoteLaunchPlan
-      extends SdkRemoteLaunchPlan<Map<String, Literal>, Map<String, Literal>> {
+      extends SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> {
 
     @Override
     public String domain() {
@@ -149,13 +152,25 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
     }
 
     @Override
-    public SdkType<Map<String, Literal>> inputs() {
-      return TestSdkType.of("a", LiteralTypes.INTEGER, "b", LiteralTypes.STRING);
+    public SdkType<TestPairIntegerInput> inputs() {
+      return new TestPairIntegerInput.SdkType();
     }
 
     @Override
-    public SdkType<Map<String, Literal>> outputs() {
-      return TestSdkType.of("c", LiteralTypes.BOOLEAN);
+    public SdkType<TestUnaryBooleanOutput> outputs() {
+      return new TestUnaryBooleanOutput.SdkType();
+    }
+
+    static class Output {
+      private final boolean c;
+
+      public Output(boolean c) {
+        this.c = c;
+      }
+
+      public boolean c() {
+        return c;
+      }
     }
   }
 }

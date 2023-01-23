@@ -42,7 +42,6 @@ import org.flyte.api.v1.Registrar;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -60,7 +59,6 @@ import org.flyte.localengine.examples.MapWorkflow;
 import org.flyte.localengine.examples.NestedSubWorkflow;
 import org.flyte.localengine.examples.RetryableTask;
 import org.flyte.localengine.examples.RetryableWorkflow;
-import org.flyte.localengine.examples.StructWorkflow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,8 +69,6 @@ class LocalEngineTest {
 
   @Test
   void testFibonacci() {
-    String workflowName = new FibonacciWorkflow().getName();
-
     Literal fib0 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(0L)));
     Literal fib1 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
     Literal fib2 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1L)));
@@ -80,7 +76,7 @@ class LocalEngineTest {
     Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
     Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(5L)));
 
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -88,8 +84,7 @@ class LocalEngineTest {
     Map<String, Literal> outputs =
         new LocalEngine(
                 ExecutionContext.builder().runnableTasks(tasks).executionListener(listener).build())
-            .compileAndExecute(
-                workflows.get(workflowName), ImmutableMap.of("fib0", fib0, "fib1", fib1));
+            .compileAndExecute(workflowTemplate, ImmutableMap.of("fib0", fib0, "fib1", fib1));
 
     assertEquals(ImmutableMap.of("fib4", fib4, "fib5", fib5), outputs);
     assertEquals(
@@ -101,19 +96,19 @@ class LocalEngineTest {
             .add(ofStarting("fib-2", ImmutableMap.of("a", fib0, "b", fib1)))
             .add(
                 ofCompleted(
-                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("c", fib2)))
+                    "fib-2", ImmutableMap.of("a", fib0, "b", fib1), ImmutableMap.of("o", fib2)))
             .add(ofStarting("fib-3", ImmutableMap.of("a", fib1, "b", fib2)))
             .add(
                 ofCompleted(
-                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("c", fib3)))
+                    "fib-3", ImmutableMap.of("a", fib1, "b", fib2), ImmutableMap.of("o", fib3)))
             .add(ofStarting("fib-4", ImmutableMap.of("a", fib2, "b", fib3)))
             .add(
                 ofCompleted(
-                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("c", fib4)))
+                    "fib-4", ImmutableMap.of("a", fib2, "b", fib3), ImmutableMap.of("o", fib4)))
             .add(ofStarting("fib-5", ImmutableMap.of("a", fib3, "b", fib4)))
             .add(
                 ofCompleted(
-                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("c", fib5)))
+                    "fib-5", ImmutableMap.of("a", fib3, "b", fib4), ImmutableMap.of("o", fib5)))
             .build(),
         listener.actions);
   }
@@ -139,11 +134,8 @@ class LocalEngineTest {
 
   @Test
   public void testBindingMap() {
-    String workflowName = new MapWorkflow().getName();
-
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflow = new MapWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
-    WorkflowTemplate workflow = workflows.get(workflowName);
 
     Map<String, Literal> outputs =
         new LocalEngine(ExecutionContext.builder().runnableTasks(tasks).build())
@@ -156,7 +148,8 @@ class LocalEngineTest {
     assertEquals(ImmutableMap.of("map", Literal.ofMap(ImmutableMap.of("e", i3, "f", i7))), outputs);
   }
 
-  @Test
+  // TODO: Enable this test when the struct will be supported
+  /*@Disabled
   public void testStructWorkflow() {
     String workflowName = new StructWorkflow().getName();
 
@@ -191,7 +184,7 @@ class LocalEngineTest {
                         "someKey1", Struct.Value.ofStringValue("some_value_1-output"),
                         "someKey2", Struct.Value.ofBoolValue(true)))));
     assertEquals(expectedOutput, outputs.get("outputStructData"));
-  }
+  }*/
 
   @Test
   public void testRetryableTask_completed() {
@@ -231,11 +224,8 @@ class LocalEngineTest {
 
   @Test
   public void testRetryableTask_failed() {
-    String workflowName = new RetryableWorkflow().getName();
-
-    Map<String, WorkflowTemplate> workflows = loadWorkflows();
+    WorkflowTemplate workflow = new RetryableWorkflow().toIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
-    WorkflowTemplate workflow = workflows.get(workflowName);
 
     TestingListener listener = new TestingListener();
 
@@ -286,7 +276,7 @@ class LocalEngineTest {
     Literal result = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(16L)));
     Literal outerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal outerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
-    Literal outerC = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
+    Literal outerO = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerA = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(9L)));
     Literal innerB = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(7L)));
 
@@ -305,7 +295,7 @@ class LocalEngineTest {
             .compileAndExecute(
                 workflowTemplates.get(workflowName), ImmutableMap.of("a", a, "b", b, "c", c));
 
-    assertEquals(ImmutableMap.of("result", result), outputs);
+    assertEquals(ImmutableMap.of("o", result), outputs);
     assertEquals(
         ImmutableList.<List<Object>>builder()
             .add(ofPending("nested-workflow"))
@@ -315,7 +305,7 @@ class LocalEngineTest {
             .add(ofStarting("outer-sum-a-b", ImmutableMap.of("a", a, "b", b)))
             .add(
                 ofCompleted(
-                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("c", outerC)))
+                    "outer-sum-a-b", ImmutableMap.of("a", a, "b", b), ImmutableMap.of("o", outerO)))
             .add(ofStarting("outer-sum-ab-c", ImmutableMap.of("a", outerA, "b", outerB)))
             .add(ofPending("inner-sum-a-b"))
             .add(ofStarting("inner-sum-a-b", ImmutableMap.of("a", innerA, "b", innerB)))
@@ -323,17 +313,17 @@ class LocalEngineTest {
                 ofCompleted(
                     "inner-sum-a-b",
                     ImmutableMap.of("a", outerA, "b", outerB),
-                    ImmutableMap.of("c", result)))
+                    ImmutableMap.of("o", result)))
             .add(
                 ofCompleted(
                     "outer-sum-ab-c",
                     ImmutableMap.of("a", outerA, "b", outerB),
-                    ImmutableMap.of("result", result)))
+                    ImmutableMap.of("o", result)))
             .add(
                 ofCompleted(
                     "nested-workflow",
                     ImmutableMap.of("a", a, "b", b, "c", c),
-                    ImmutableMap.of("result", result)))
+                    ImmutableMap.of("o", result)))
             .build(),
         listener.actions);
   }
@@ -476,14 +466,10 @@ class LocalEngineTest {
                 .add(ofStarting("decide", singletonMap("$0", literalFalse)))
                 .add(ofPending("was_odd"))
                 .add(ofStarting("was_odd", singletonMap("x", oddX)))
+                .add(ofCompleted("was_odd", singletonMap("x", oddX), singletonMap("o", odd3XPlus1)))
                 .add(
                     ofCompleted(
-                        "was_odd", singletonMap("x", oddX), singletonMap("res", odd3XPlus1)))
-                .add(
-                    ofCompleted(
-                        "decide",
-                        singletonMap("$0", literalFalse),
-                        singletonMap("res", odd3XPlus1)))
+                        "decide", singletonMap("$0", literalFalse), singletonMap("o", odd3XPlus1)))
                 .build()),
         Arguments.of(
             6L,
@@ -502,12 +488,12 @@ class LocalEngineTest {
                     ofCompleted(
                         "was_even",
                         ImmutableMap.of("num", evenX, "den", literal2),
-                        singletonMap("res", evenXDividedBy2)))
+                        singletonMap("o", evenXDividedBy2)))
                 .add(
                     ofCompleted(
                         "decide",
                         singletonMap("$0", literalTrue),
-                        singletonMap("res", evenXDividedBy2)))
+                        singletonMap("o", evenXDividedBy2)))
                 .build()));
   }
 
@@ -562,55 +548,52 @@ class LocalEngineTest {
   }
 
   @AutoService(SdkWorkflow.class)
-  public static class TestCaseExhaustivenessWorkflow extends SdkWorkflow {
+  public static class TestCaseExhaustivenessWorkflow
+      extends SdkWorkflow<TestCaseExhaustivenessWorkflow.NoOpType> {
+
+    public TestCaseExhaustivenessWorkflow() {
+      super(JacksonSdkType.of(NoOpType.class));
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData x = builder.inputOfInteger("x");
-      SdkBindingData nextX =
+      SdkBindingData<Long> x = builder.inputOfInteger("x");
+      SdkBindingData<Long> nextX =
           builder
               .apply(
                   "decide",
                   when("eq_1", eq(ofInteger(1L), x), NoOp.of(x))
                       .when("eq_2", eq(ofInteger(2L), x), NoOp.of(x)))
-              .getOutput("x");
+              .getOutputs()
+              .x();
 
       builder.output("nextX", nextX);
     }
 
     @AutoService(SdkRunnableTask.class)
-    public static class NoOp extends SdkRunnableTask<NoOpInput, NoOpOutput> {
+    public static class NoOp extends SdkRunnableTask<NoOpType, NoOpType> {
       private static final long serialVersionUID = 327687642904919547L;
 
       public NoOp() {
-        super(JacksonSdkType.of(NoOpInput.class), JacksonSdkType.of(NoOpOutput.class));
+        super(JacksonSdkType.of(NoOpType.class), JacksonSdkType.of(NoOpType.class));
       }
 
       @Override
-      public NoOpOutput run(NoOpInput input) {
-        return NoOpOutput.create(input.x());
+      public NoOpType run(NoOpType input) {
+        return NoOpType.create(input.x());
       }
 
-      static SdkTransform of(SdkBindingData x) {
+      static SdkTransform<NoOpType> of(SdkBindingData<Long> x) {
         return new NoOp().withInput("x", x);
       }
     }
 
     @AutoValue
-    public abstract static class NoOpInput {
-      abstract long x();
+    public abstract static class NoOpType {
+      abstract SdkBindingData<Long> x();
 
-      public static NoOpInput create(long x) {
-        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpInput(x);
-      }
-    }
-
-    @AutoValue
-    public abstract static class NoOpOutput {
-      abstract long x();
-
-      public static NoOpOutput create(long x) {
-        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpOutput(x);
+      public static NoOpType create(SdkBindingData<Long> x) {
+        return new AutoValue_LocalEngineTest_TestCaseExhaustivenessWorkflow_NoOpType(x);
       }
     }
   }

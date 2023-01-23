@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson;
+package org.flyte.flytekit.jackson.deserializers;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
@@ -40,8 +40,9 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Struct;
+import org.flyte.flytekit.jackson.JacksonLiteralMap;
 
-class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
+public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
   private static final long serialVersionUID = 0L;
 
   private final transient Map<String, LiteralType> literalTypeMap;
@@ -76,7 +77,7 @@ class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       p.nextToken();
     }
 
-    return new JacksonLiteralMap(unmodifiableMap(literalMap));
+    return new JacksonLiteralMap(unmodifiableMap(literalMap), unmodifiableMap(literalTypeMap));
   }
 
   private static Literal deserialize(

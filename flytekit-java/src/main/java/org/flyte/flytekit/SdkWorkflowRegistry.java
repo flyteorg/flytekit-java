@@ -24,14 +24,14 @@ import java.util.ServiceLoader;
 
 public abstract class SdkWorkflowRegistry {
 
-  public abstract List<SdkWorkflow> getWorkflows();
+  public abstract List<SdkWorkflow<?>> getWorkflows();
 
-  public static List<SdkWorkflow> loadAll() {
+  public static List<SdkWorkflow<?>> loadAll() {
     return loadAll(ServiceLoader.load(SdkWorkflowRegistry.class));
   }
 
-  static List<SdkWorkflow> loadAll(Iterable<SdkWorkflowRegistry> loader) {
-    List<SdkWorkflow> workflows = new ArrayList<>();
+  static List<SdkWorkflow<?>> loadAll(Iterable<SdkWorkflowRegistry> loader) {
+    List<SdkWorkflow<?>> workflows = new ArrayList<>();
 
     for (SdkWorkflowRegistry registry : loader) {
       workflows.addAll(registry.getWorkflows());

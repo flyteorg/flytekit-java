@@ -26,5 +26,7 @@ public abstract class SdkType<T> {
 
   public abstract T fromLiteralMap(Map<String, Literal> value);
 
+  public abstract T promiseFor(String nodeId);
+
   public abstract Map<String, Variable> getVariableMap();
 }

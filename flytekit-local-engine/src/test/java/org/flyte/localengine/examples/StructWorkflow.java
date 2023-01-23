@@ -16,19 +16,18 @@
  */
 package org.flyte.localengine.examples;
 
-import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkNode;
-import org.flyte.flytekit.SdkWorkflow;
-import org.flyte.flytekit.SdkWorkflowBuilder;
+// @AutoService(SdkWorkflow.class) TODO fix, enable when Structs are supported
+/*
+public class StructWorkflow extends SdkWorkflow<StructTask.Output> {
+  public StructWorkflow() {
+    super(JacksonSdkType.of(StructTask.Output.class));
+  }
 
-@AutoService(SdkWorkflow.class)
-public class StructWorkflow extends SdkWorkflow {
   @Override
   public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData someString = builder.inputOfString("someString");
-    SdkBindingData someStruct = builder.inputOfStruct("someStruct");
-    SdkNode structNode =
+    SdkBindingData<String> someString = builder.inputOfString("someString");
+    SdkBindingData<SdkStruct> someStruct = builder.inputOfStruct("someStruct");
+    SdkNode<StructTask.Output> structNode =
         builder.apply(
             "node-struct-1",
             new StructTask()
@@ -37,3 +36,4 @@ public class StructWorkflow extends SdkWorkflow {
     builder.output("outputStructData", structNode.getOutput("outputStructData"));
   }
 }
+*/

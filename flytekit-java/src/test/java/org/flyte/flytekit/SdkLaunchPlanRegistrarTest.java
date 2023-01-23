@@ -257,7 +257,11 @@ class SdkLaunchPlanRegistrarTest {
     }
   }
 
-  public static class TestWorkflow extends SdkWorkflow {
+  public static class TestWorkflow extends SdkWorkflow<Void> {
+
+    public TestWorkflow() {
+      super(SdkTypes.nulls());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
@@ -266,7 +270,11 @@ class SdkLaunchPlanRegistrarTest {
     }
   }
 
-  public static class OtherTestWorkflow extends SdkWorkflow {
+  public static class OtherTestWorkflow extends SdkWorkflow<Void> {
+
+    public OtherTestWorkflow() {
+      super(SdkTypes.nulls());
+    }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {

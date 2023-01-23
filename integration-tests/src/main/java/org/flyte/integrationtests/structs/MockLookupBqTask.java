@@ -18,6 +18,7 @@ package org.flyte.integrationtests.structs;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -32,26 +33,26 @@ public class MockLookupBqTask
 
   @AutoValue
   public abstract static class Input {
-    public abstract BQReference ref();
+    public abstract SdkBindingData<BQReference> ref();
 
-    public abstract boolean checkIfExists();
+    public abstract SdkBindingData<Boolean> checkIfExists();
 
     public static Input create(BQReference ref, boolean checkIfExists) {
-      return new AutoValue_MockLookupBqTask_Input(ref, checkIfExists);
+      return null; // TODO
     }
   }
 
   @AutoValue
   public abstract static class Output {
-    public abstract boolean exists();
+    public abstract SdkBindingData<Boolean> exists();
 
     public static Output create(boolean exists) {
-      return new AutoValue_MockLookupBqTask_Output(exists);
+      return new AutoValue_MockLookupBqTask_Output(SdkBindingData.ofBoolean(exists));
     }
   }
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.ref().tableName().contains("table-exists"));
+    return Output.create(input.ref().get().tableName().contains("table-exists"));
   }
 }

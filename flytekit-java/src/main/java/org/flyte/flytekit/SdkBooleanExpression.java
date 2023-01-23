@@ -28,7 +28,7 @@ public abstract class SdkBooleanExpression {
 
   abstract Kind kind();
 
-  abstract SdkComparisonExpression comparison();
+  abstract SdkComparisonExpression<?> comparison();
 
   abstract SdkConjunctionExpression conjunction();
 
@@ -42,7 +42,7 @@ public abstract class SdkBooleanExpression {
         SdkConjunctionExpression.create(ConjunctionExpression.LogicalOperator.OR, this, other));
   }
 
-  static SdkBooleanExpression ofComparison(SdkComparisonExpression comparison) {
+  static SdkBooleanExpression ofComparison(SdkComparisonExpression<?> comparison) {
     return AutoOneOf_SdkBooleanExpression.comparison(comparison);
   }
 

@@ -50,5 +50,10 @@ public class SdkTypes {
     public Map<String, Variable> getVariableMap() {
       return Collections.emptyMap();
     }
+
+    @Override
+    public Map<String, SdkBindingData<?>> toSdkBindingMap(Void value) {
+      return Collections.emptyMap();
+    }
   }
 }

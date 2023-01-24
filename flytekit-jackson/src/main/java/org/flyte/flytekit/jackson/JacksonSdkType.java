@@ -26,12 +26,14 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
@@ -46,10 +48,13 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;
+  private final Map<String, AnnotatedMember> membersMap;
 
-  private JacksonSdkType(Class<T> clazz, Map<String, Variable> variableMap) {
+  private JacksonSdkType(
+      Class<T> clazz, Map<String, Variable> variableMap, Map<String, AnnotatedMember> membersMap) {
     this.clazz = Objects.requireNonNull(clazz);
     this.variableMap = Objects.requireNonNull(variableMap);
+    this.membersMap = Objects.requireNonNull(membersMap);
   }
 
   public static <T> JacksonSdkType<T> of(Class<T> clazz) {
@@ -73,7 +78,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
       serializer.acceptJsonFormatVisitor(
           visitor, OBJECT_MAPPER.getTypeFactory().constructType(clazz));
 
-      return new JacksonSdkType<>(clazz, visitor.getVariableMap());
+      return new JacksonSdkType<>(clazz, visitor.getVariableMap(), visitor.getMembersMap());
     } catch (JsonMappingException e) {
       throw new IllegalArgumentException(
           String.format("Failed to find serializer for [%s]", clazz.getName()), e);
@@ -118,6 +123,10 @@ public class JacksonSdkType<T> extends SdkType<T> {
   @Override
   public Map<String, Variable> getVariableMap() {
     return variableMap;
+  }
+
+  private Map<String, AnnotatedMember> getMembersMap() {
+    return membersMap;
   }
 
   @Override
@@ -166,6 +175,18 @@ public class JacksonSdkType<T> extends SdkType<T> {
     } catch (JsonProcessingException e) {
       throw new RuntimeException("promiseFor failed for [" + clazz.getName() + "]", e);
     }
+  }
+
+  @Override
+  public Map<String, SdkBindingData<?>> toSdkBindingMap(T value) {
+    return getMembersMap().entrySet().stream()
+        .map(
+            entry -> {
+              String attrName = entry.getKey();
+              AnnotatedMember member = entry.getValue();
+              return Map.entry(attrName, (SdkBindingData<?>) member.getValue(value));
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {

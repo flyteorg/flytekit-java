@@ -33,32 +33,40 @@ abstract class TestPairIntegerInput {
 
   public static class SdkType extends org.flyte.flytekit.SdkType<TestPairIntegerInput> {
 
+    private static final String A = "a";
+    private static final String B = "b";
+
     @Override
     public Map<String, Literal> toLiteralMap(TestPairIntegerInput value) {
       return Map.of(
-          "a", Literals.ofInteger(value.a().get()),
-          "b", Literals.ofInteger(value.b().get()));
+          A, Literals.ofInteger(value.a().get()),
+          B, Literals.ofInteger(value.b().get()));
     }
 
     @Override
     public TestPairIntegerInput fromLiteralMap(Map<String, Literal> value) {
       return create(
-          SdkBindingData.ofInteger(value.get("a").scalar().primitive().integerValue()),
-          SdkBindingData.ofInteger(value.get("b").scalar().primitive().integerValue()));
+          SdkBindingData.ofInteger(value.get(A).scalar().primitive().integerValue()),
+          SdkBindingData.ofInteger(value.get(B).scalar().primitive().integerValue()));
     }
 
     @Override
     public TestPairIntegerInput promiseFor(String nodeId) {
       return create(
-          SdkBindingData.ofOutputReference(nodeId, "a", LiteralTypes.INTEGER),
-          SdkBindingData.ofOutputReference(nodeId, "b", LiteralTypes.INTEGER));
+          SdkBindingData.ofOutputReference(nodeId, A, LiteralTypes.INTEGER),
+          SdkBindingData.ofOutputReference(nodeId, B, LiteralTypes.INTEGER));
     }
 
     @Override
     public Map<String, Variable> getVariableMap() {
       return Map.of(
-          "a", Variable.builder().literalType(LiteralTypes.INTEGER).build(),
-          "b", Variable.builder().literalType(LiteralTypes.INTEGER).build());
+          A, Variable.builder().literalType(LiteralTypes.INTEGER).build(),
+          B, Variable.builder().literalType(LiteralTypes.INTEGER).build());
+    }
+
+    @Override
+    public Map<String, SdkBindingData<?>> toSdkBindingMap(TestPairIntegerInput value) {
+      return Map.of(A, value.a(), B, value.b());
     }
   }
 }

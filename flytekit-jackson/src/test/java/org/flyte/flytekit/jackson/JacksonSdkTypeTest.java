@@ -21,9 +21,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -281,6 +284,73 @@ public class JacksonSdkTypeTest {
                             Literal.ofMap(Map.of("ash", stringLiteralOf("pikachu"))))))
                 // hasEntry("blob", literalOf(blob))
                 )));
+  }
+
+  @Test
+  public void testToSdkBindingDataMap() {
+    AutoValueInput input =
+        createAutoValueInput(
+            /* i= */ 42L,
+            /* f= */ 42.0d,
+            /* s= */ "42",
+            /* b= */ false,
+            /* t= */ Instant.ofEpochSecond(42, 1),
+            /* d= */ Duration.ofSeconds(1, 42),
+            /// * blob= */ blob,
+            /* l= */ List.of("foo"),
+            /* m= */ Map.of("marco", "polo"),
+            /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
+            /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
+            /* ml= */ Map.of("frodo", List.of("baggins", "bolson")),
+            /* mm= */ Map.of(
+                "math", Map.of("pi", "3.14", "e", "2.72"), "pokemon", Map.of("ash", "pikachu")));
+
+    Map<String, SdkBindingData<?>> sdkBindingDataMap =
+        JacksonSdkType.of(AutoValueInput.class).toSdkBindingMap(input);
+
+    Map<String, SdkBindingData<?>> expected = new HashMap<>();
+    expected.put("i", input.i());
+    expected.put("f", input.f());
+    expected.put("s", input.s());
+    expected.put("b", input.b());
+    expected.put("t", input.t());
+    expected.put("d", input.d());
+    expected.put("l", input.l());
+    expected.put("m", input.m());
+    expected.put("ll", input.ll());
+    expected.put("lm", input.lm());
+    expected.put("ml", input.ml());
+    expected.put("mm", input.mm());
+
+    assertEquals(expected, sdkBindingDataMap);
+  }
+
+  @Test
+  public void testToSdkBindingDataMapJsonProperties() {
+
+    JsonPropertyClassInput input =
+        new JsonPropertyClassInput(
+            SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
+
+    Map<String, SdkBindingData<?>> sdkBindingDataMap =
+        JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
+
+    var expected = Map.of("test", input.test, "name", input.otherTest);
+
+    assertEquals(expected, sdkBindingDataMap);
+  }
+
+  public static class JsonPropertyClassInput {
+    @JsonProperty SdkBindingData<String> test;
+
+    @JsonProperty("name")
+    SdkBindingData<String> otherTest;
+
+    @JsonCreator
+    public JsonPropertyClassInput(SdkBindingData<String> test, SdkBindingData<String> otherTest) {
+      this.test = test;
+      this.otherTest = otherTest;
+    }
   }
 
   @Test

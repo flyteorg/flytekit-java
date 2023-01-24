@@ -37,7 +37,8 @@ public class MockLookupBqTask
 
     public abstract SdkBindingData<Boolean> checkIfExists();
 
-    public static Input create(SdkBindingData<BQReference> ref, SdkBindingData<Boolean> checkIfExists) {
+    public static Input create(
+        SdkBindingData<BQReference> ref, SdkBindingData<Boolean> checkIfExists) {
       return null; // TODO
     }
   }

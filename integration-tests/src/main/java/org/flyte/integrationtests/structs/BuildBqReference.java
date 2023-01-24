@@ -47,11 +47,11 @@ public class BuildBqReference
 
     abstract SdkBindingData<String> tableName();
 
-    public static Input create(SdkBindingData<String> project, SdkBindingData<String> dataset, SdkBindingData<String> tableName) {
-      return new AutoValue_BuildBqReference_Input(
-          project,
-          dataset,
-          tableName);
+    public static Input create(
+        SdkBindingData<String> project,
+        SdkBindingData<String> dataset,
+        SdkBindingData<String> tableName) {
+      return new AutoValue_BuildBqReference_Input(project, dataset, tableName);
     }
   }
 

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.time.Duration;
@@ -62,6 +63,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   }
 
   private final Map<String, Variable> builder = new LinkedHashMap<>();
+  private final Map<String, AnnotatedMember> builderMembers = new LinkedHashMap<>();
 
   @Override
   public void property(BeanProperty prop) {
@@ -74,6 +76,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             prop.getMember().getMember().getDeclaringClass().getName());
     Variable variable = Variable.builder().description("").literalType(literalType).build();
 
+    builderMembers.put(prop.getName(), prop.getMember());
     builder.put(prop.getName(), variable);
   }
 
@@ -105,6 +108,10 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   public Map<String, Variable> getVariableMap() {
     return unmodifiableMap(new HashMap<>(builder));
+  }
+
+  public Map<String, AnnotatedMember> getMembersMap() {
+    return unmodifiableMap(new HashMap<>(builderMembers));
   }
 
   @SuppressWarnings("AlreadyChecked")

@@ -29,4 +29,6 @@ public abstract class SdkType<T> {
   public abstract T promiseFor(String nodeId);
 
   public abstract Map<String, Variable> getVariableMap();
+
+  public abstract Map<String, SdkBindingData<?>> toSdkBindingMap(T value);
 }

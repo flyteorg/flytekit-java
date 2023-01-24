@@ -18,6 +18,7 @@ package org.flyte.flytekit.jackson;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.util.Map;
@@ -43,5 +44,13 @@ class RootFormatVisitor extends JsonFormatVisitorWrapper.Base {
     }
 
     return builder.getVariableMap();
+  }
+
+  public Map<String, AnnotatedMember> getMembersMap() {
+    if (builder == null) {
+      throw new IllegalStateException("invariant failed: membersMap not set");
+    }
+
+    return builder.getMembersMap();
   }
 }

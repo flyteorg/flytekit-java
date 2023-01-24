@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
@@ -36,7 +37,7 @@ public abstract class SdkTransform<InputT, OutputT> {
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       @Nullable InputT inputs) {
-    SdkAppliedTransform.checkNotNull(this, inputs);
+    checkNullOnlyVoid(inputs);
     var inputsBindings = getInputType().toSdkBindingMap(inputs);
     return apply(builder, nodeId, upstreamNodeIds, metadata, inputsBindings);
   }
@@ -72,5 +73,17 @@ public abstract class SdkTransform<InputT, OutputT> {
 
   public String getName() {
     return getClass().getName();
+  }
+
+  void checkNullOnlyVoid(@Nullable InputT inputs) {
+    Set<String> variableNames = getInputType().variableNames();
+    boolean hasProperties = !variableNames.isEmpty();
+    if (inputs == null && hasProperties) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Null supplied as input for a transform with %s properties", variableNames));
+    } else if (inputs != null && !hasProperties) {
+      throw new IllegalArgumentException("Null input expected for a transform with no properties");
+    }
   }
 }

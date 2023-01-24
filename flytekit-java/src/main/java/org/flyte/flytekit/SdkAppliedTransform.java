@@ -18,7 +18,6 @@ package org.flyte.flytekit;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 class SdkAppliedTransform<OriginalInputT, OutputT> extends SdkTransform<Void, OutputT> {
@@ -27,20 +26,9 @@ class SdkAppliedTransform<OriginalInputT, OutputT> extends SdkTransform<Void, Ou
 
   SdkAppliedTransform(
       SdkTransform<OriginalInputT, OutputT> transform, @Nullable OriginalInputT appliedInputs) {
-    checkNotNull(transform, appliedInputs);
+    transform.checkNullOnlyVoid(appliedInputs);
     this.transform = transform;
     this.appliedInputs = appliedInputs;
-  }
-
-  static <InputT> void checkNotNull(SdkTransform<InputT, ?> transform, @Nullable InputT inputs) {
-    Set<String> variableNames = transform.getInputType().variableNames();
-    if (inputs == null && !variableNames.isEmpty()) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Null supplied as input for a transform with %s properties", variableNames));
-    } else if (variableNames.isEmpty() && inputs != null) {
-      throw new IllegalArgumentException("Null input expected for a transform with no properties");
-    }
   }
 
   @Override

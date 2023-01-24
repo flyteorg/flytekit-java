@@ -19,6 +19,7 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
+import org.flyte.examples.SumTask.SumInput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkDynamicWorkflowTask;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -61,7 +62,7 @@ public class DynamicFibonacciWorkflowTask
       @Var SdkBindingData<Long> value = SdkBindingData.ofInteger(1);
       for (int i = 2; i <= input.n().get(); i++) {
         SdkBindingData<Long> next =
-            builder.apply("fib-" + i, SumTask.of(value, prev)).getOutputs().c();
+            builder.apply("fib-" + i, new SumTask(), SumInput.create(value, prev)).getOutputs().c();
         prev = value;
         value = next;
       }

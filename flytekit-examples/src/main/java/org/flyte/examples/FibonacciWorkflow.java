@@ -59,7 +59,7 @@ public class FibonacciWorkflow
 
     public abstract SdkBindingData<Long> fib1();
 
-    public static FibonacciWorkflow.Output create(
+    public static FibonacciWorkflow.Input create(
         SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
       return new AutoValue_FibonacciWorkflow_Input(fib0, fib1);
     }

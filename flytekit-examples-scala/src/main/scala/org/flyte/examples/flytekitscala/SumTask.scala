@@ -43,11 +43,3 @@ class SumTask
 
   override def isCacheSerializable: Boolean = true
 }
-
-object SumTask {
-  def apply(
-      a: SdkBindingData[Long],
-      b: SdkBindingData[Long]
-  ): SdkTransform[SumTaskOutput] =
-    new SumTask().withInput("a", a).withInput("b", b)
-}

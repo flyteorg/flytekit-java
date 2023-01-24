@@ -16,7 +16,7 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.SdkBindingData
 import org.flyte.flytekitscala.{
   SdkScalaType,
   SdkScalaWorkflow,
@@ -49,10 +49,12 @@ import org.flyte.flytekitscala.{
   * | output: greeting(string) |
   */
 
+case class WelcomeWorkflowInput(name: SdkBindingData[String])
 case class WelcomeWorkflowOutput(greeting: SdkBindingData[String])
 
 class WelcomeWorkflow
-    extends SdkScalaWorkflow[WelcomeWorkflowOutput](
+    extends SdkScalaWorkflow[WelcomeWorkflowInput, WelcomeWorkflowOutput](
+      SdkScalaType[WelcomeWorkflowInput],
       SdkScalaType[WelcomeWorkflowOutput]
     ) {
 
@@ -61,11 +63,18 @@ class WelcomeWorkflow
     val name = builder.inputOfString("name", "The name for the welcome message")
 
     // uses the workflow input as the task input of the GreetTask
-    val greeting = builder.apply("greet", GreetTask(name)).getOutputs.greeting
+    val greeting = builder
+      .apply("greet", new GreetTask(), GreetTaskInput(name))
+      .getOutputs
+      .greeting
 
     // uses the output of the GreetTask as the task input of the AddQuestionTask
     val greetingWithQuestion = builder
-      .apply("add-question", AddQuestionTask(greeting))
+      .apply(
+        "add-question",
+        new AddQuestionTask(),
+        AddQuestionTaskInput(greeting)
+      )
       .getOutputs
       .greeting
 

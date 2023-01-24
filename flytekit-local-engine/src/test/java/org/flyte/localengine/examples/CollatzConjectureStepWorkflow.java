@@ -30,27 +30,36 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 // if x is even, then x/2 else 3x+1
 @AutoService(SdkWorkflow.class)
-public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+public class CollatzConjectureStepWorkflow
+    extends SdkWorkflow<CollatzConjectureStepWorkflow.Input, TestUnaryIntegerOutput> {
 
   public CollatzConjectureStepWorkflow() {
-    super(new TestUnaryIntegerOutput.SdkType());
+    super(
+        JacksonSdkType.of(CollatzConjectureStepWorkflow.Input.class),
+        JacksonSdkType.of(TestUnaryIntegerOutput.class));
+  }
+
+  @AutoValue
+  abstract static class Input {
+    abstract SdkBindingData<Long> x();
+
+    public static Input create(SdkBindingData<Long> x) {
+      return new AutoValue_CollatzConjectureStepWorkflow_Input(x);
+    }
   }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> x = builder.inputOfInteger("x");
     SdkBindingData<Boolean> isOdd =
-        builder.apply("is_odd", new IsEvenTask().withInput("x", x)).getOutputs().res();
+        builder.apply("is_odd", new IsEvenTask(), IsEvenTask.Input.create(x)).getOutputs().res();
 
     SdkBindingData<Long> nextX =
         builder
             .apply(
                 "decide",
-                when(
-                        "was_even",
-                        isTrue(isOdd),
-                        new Divide().withInput("num", x).withInput("den", ofInteger(2L)))
-                    .otherwise("was_odd", new ThreeXPlusOne().withInput("x", x)))
+                when("was_even", isTrue(isOdd), new Divide(), Divide.Input.create(x, ofInteger(2L)))
+                    .otherwise("was_odd", new ThreeXPlusOne(), ThreeXPlusOne.Input.create(x)))
             .getOutputs()
             .o();
 
@@ -67,7 +76,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
     @Override
     public IsEvenTask.Output run(IsEvenTask.Input input) {
-      return IsEvenTask.Output.create(input.x().get() % 2 == 0);
+      return IsEvenTask.Output.create(SdkBindingData.ofBoolean(input.x().get() % 2 == 0));
     }
 
     @AutoValue
@@ -75,9 +84,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
       public abstract SdkBindingData<Long> x();
 
-      public static Input create(Long x) {
-        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Input(
-            SdkBindingData.ofInteger(x));
+      public static Input create(SdkBindingData<Long> x) {
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Input(x);
       }
     }
 
@@ -86,9 +94,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
       public abstract SdkBindingData<Boolean> res();
 
-      public static Output create(boolean res) {
-        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Output(
-            SdkBindingData.ofBoolean(res));
+      public static Output create(SdkBindingData<Boolean> res) {
+        return new AutoValue_CollatzConjectureStepWorkflow_IsEvenTask_Output(res);
       }
     }
   }
@@ -98,7 +105,7 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
     private static final long serialVersionUID = -526903889896397227L;
 
     public Divide() {
-      super(JacksonSdkType.of(Divide.Input.class), new TestUnaryIntegerOutput.SdkType());
+      super(JacksonSdkType.of(Divide.Input.class), JacksonSdkType.of(TestUnaryIntegerOutput.class));
     }
 
     @Override
@@ -113,9 +120,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
       public abstract SdkBindingData<Long> den();
 
-      public static Input create(long num, long den) {
-        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Input(
-            SdkBindingData.ofInteger(num), SdkBindingData.ofInteger(den));
+      public static Input create(SdkBindingData<Long> num, SdkBindingData<Long> den) {
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Input(num, den);
       }
     }
 
@@ -124,9 +130,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
 
       public abstract SdkBindingData<Long> res();
 
-      public static Output create(long res) {
-        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Output(
-            SdkBindingData.ofInteger(res));
+      public static Output create(SdkBindingData<Long> res) {
+        return new AutoValue_CollatzConjectureStepWorkflow_Divide_Output(res);
       }
     }
   }
@@ -138,7 +143,9 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
     private static final long serialVersionUID = 932934331328064751L;
 
     public ThreeXPlusOne() {
-      super(JacksonSdkType.of(ThreeXPlusOne.Input.class), new TestUnaryIntegerOutput.SdkType());
+      super(
+          JacksonSdkType.of(ThreeXPlusOne.Input.class),
+          JacksonSdkType.of(TestUnaryIntegerOutput.class));
     }
 
     @Override
@@ -150,9 +157,8 @@ public class CollatzConjectureStepWorkflow extends SdkWorkflow<TestUnaryIntegerO
     public abstract static class Input {
       public abstract SdkBindingData<Long> x();
 
-      public static Input create(long x) {
-        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Input(
-            SdkBindingData.ofInteger(x));
+      public static Input create(SdkBindingData<Long> x) {
+        return new AutoValue_CollatzConjectureStepWorkflow_ThreeXPlusOne_Input(x);
       }
     }
   }

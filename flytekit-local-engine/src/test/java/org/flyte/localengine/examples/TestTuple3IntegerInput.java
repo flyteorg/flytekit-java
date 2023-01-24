@@ -16,19 +16,19 @@
  */
 package org.flyte.localengine.examples;
 
-import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkTypes;
-import org.flyte.flytekit.SdkWorkflow;
-import org.flyte.flytekit.SdkWorkflowBuilder;
+import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 
-@AutoService(SdkWorkflow.class)
-public class RetryableWorkflow extends SdkWorkflow<Void, Void> {
-  public RetryableWorkflow() {
-    super(SdkTypes.nulls(), SdkTypes.nulls());
-  }
+@AutoValue
+public abstract class TestTuple3IntegerInput {
+  public abstract SdkBindingData<Long> a();
 
-  @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    builder.apply("node-1", new RetryableTask());
+  public abstract SdkBindingData<Long> b();
+
+  public abstract SdkBindingData<Long> c();
+
+  public static TestTuple3IntegerInput create(
+      SdkBindingData<Long> a, SdkBindingData<Long> b, SdkBindingData<Long> c) {
+    return new AutoValue_TestTuple3IntegerInput(a, b, c);
   }
 }

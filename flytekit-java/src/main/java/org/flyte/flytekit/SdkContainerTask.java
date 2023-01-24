@@ -91,11 +91,10 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      @Nullable InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
-    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -107,7 +106,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
         taskId,
         upstreamNodeIds,
         metadata,
-        inputsBindings,
+        inputs,
         outputType.getVariableMap(),
         outputType.promiseFor(nodeId));
   }

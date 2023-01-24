@@ -106,11 +106,10 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Inpu
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
-    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -119,7 +118,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Inpu
     Map<String, Variable> variableMap = outputType.getVariableMap();
     OutputT output = outputType.promiseFor(nodeId);
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputsBindings, variableMap, output);
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
   }
 
   public abstract OutputT run(InputT input);

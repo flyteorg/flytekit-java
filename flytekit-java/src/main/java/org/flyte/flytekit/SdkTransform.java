@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
@@ -29,12 +30,23 @@ public abstract class SdkTransform<InputT, OutputT> {
 
   public abstract SdkType<OutputT> getOutputType();
 
-  public abstract SdkNode<OutputT> apply(
+  public final SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      @Nullable InputT inputs);
+      @Nullable InputT inputs) {
+    SdkAppliedTransform.checkNotNull(this, inputs);
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
+    return apply(builder, nodeId, upstreamNodeIds, metadata, inputsBindings);
+  }
+
+  abstract SdkNode<OutputT> apply(
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
+      Map<String, SdkBindingData<?>> inputs);
 
   public SdkTransform<InputT, OutputT> withUpstreamNode(SdkNode<?> node) {
     return SdkPartialTransform.of(this, List.of(node.getNodeId()));

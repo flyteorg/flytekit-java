@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
@@ -86,7 +87,7 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      @Nullable Void noInputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     SdkBranchNode.Builder<OutputT> nodeBuilder = new SdkBranchNode.Builder<>(builder, outputType);
 
     for (SdkConditionCase<OutputT> case_ : cases) {

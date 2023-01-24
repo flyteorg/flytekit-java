@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
@@ -52,11 +53,10 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
-    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -68,7 +68,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
         taskId,
         upstreamNodeIds,
         metadata,
-        inputsBindings,
+        inputs,
         outputType.getVariableMap(),
         outputType.promiseFor(nodeId));
   }

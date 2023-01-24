@@ -84,7 +84,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      @Nullable InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialTaskIdentifier taskId =
         PartialTaskIdentifier.builder()
             .name(name())
@@ -92,9 +92,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
             .domain(domain())
             .version(version())
             .build();
-    var inputsBindings = getInputType().toSdkBindingMap(inputs);
-    List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputsBindings, inputs().getVariableMap());
+    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -103,7 +101,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
     Map<String, Variable> variableMap = outputs().getVariableMap();
     OutputT output = outputs().promiseFor(nodeId);
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputsBindings, variableMap, output);
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

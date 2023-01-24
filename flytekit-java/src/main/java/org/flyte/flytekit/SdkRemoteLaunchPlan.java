@@ -81,7 +81,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     PartialLaunchPlanIdentifier workflowId =
         PartialLaunchPlanIdentifier.builder()
             .name(name())
@@ -89,9 +89,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
             .domain(domain())
             .version(version())
             .build();
-    var inputsBindings = getInputType().toSdkBindingMap(inputs);
-    List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputsBindings, inputs().getVariableMap());
+    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -115,7 +113,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
         WorkflowNode.builder()
             .reference(WorkflowNode.Reference.ofLaunchPlanRef(workflowId))
             .build(),
-        inputsBindings,
+        inputs,
         outputs,
         promise);
   }

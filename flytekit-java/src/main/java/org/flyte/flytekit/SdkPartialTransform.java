@@ -22,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -115,7 +116,7 @@ class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT>
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
 
     List<String> duplicates = new ArrayList<>(upstreamNodeIds);
     duplicates.retainAll(extraUpstreamNodeIds);

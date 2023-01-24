@@ -122,9 +122,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     @CanIgnoreReturnValue
     Builder<OutputT> addCase(SdkConditionCase<OutputT> case_) {
       SdkNode<OutputT> sdkNode =
-          case_
-              .then()
-              .apply(builder, case_.name(), List.of(), /*metadata=*/ null, /*inputs=*/ null);
+          case_.then().apply(builder, case_.name(), List.of(), /*metadata=*/ null, Map.of());
 
       Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
       Map<String, LiteralType> thatOutputTypes =
@@ -163,7 +161,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
         throw new IllegalArgumentException(String.format("Duplicate case name [%s]", name));
       }
 
-      elseNode = otherwise.apply(builder, name, List.of(), /*metadata=*/ null, null);
+      elseNode = otherwise.apply(builder, name, List.of(), /*metadata=*/ null, Map.of());
       caseOutputs.put(name, elseNode.getOutputBindings());
 
       return this;

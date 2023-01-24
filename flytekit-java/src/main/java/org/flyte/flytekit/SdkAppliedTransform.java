@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -37,6 +38,8 @@ class SdkAppliedTransform<OriginalInputT, OutputT> extends SdkTransform<Void, Ou
       throw new IllegalArgumentException(
           String.format(
               "Null supplied as input for a transform with %s properties", variableNames));
+    } else if (variableNames.isEmpty() && inputs != null) {
+      throw new IllegalArgumentException("Null input expected for a transform with no properties");
     }
   }
 
@@ -61,7 +64,7 @@ class SdkAppliedTransform<OriginalInputT, OutputT> extends SdkTransform<Void, Ou
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      @Nullable Void inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
     return transform.apply(builder, nodeId, upstreamNodeIds, metadata, appliedInputs);
   }
 }

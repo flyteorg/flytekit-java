@@ -42,7 +42,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      InputT inputs) {
+      Map<String, SdkBindingData<?>> inputs) {
 
     PartialWorkflowIdentifier workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
@@ -51,8 +51,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     expand(innerBuilder);
 
     Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
-    Map<String, SdkBindingData<?>> inputsBindings = getInputType().toSdkBindingMap(inputs);
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputsBindings, inputVariableMap);
+    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -73,7 +72,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
     OutputT promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(
-        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputsBindings, outputs, promise);
+        builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }
 
   @Override

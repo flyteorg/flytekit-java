@@ -331,14 +331,11 @@ public class JacksonSdkTypeTest {
     JsonPropertyClassInput input =
         new JsonPropertyClassInput(
             SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
-    System.out.println(JacksonSdkType.of(JsonPropertyClassInput.class).getVariableMap());
 
     Map<String, SdkBindingData<?>> sdkBindingDataMap =
         JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
 
-    Map<String, SdkBindingData<?>> expected = new HashMap<>();
-    expected.put("test", input.test);
-    expected.put("name", input.otherTest);
+    var expected = Map.of("test", input.test, "name", input.otherTest);
 
     assertEquals(expected, sdkBindingDataMap);
   }

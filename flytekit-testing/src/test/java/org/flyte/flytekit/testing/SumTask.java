@@ -36,9 +36,8 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
     public abstract SdkBindingData<Long> b();
 
-    public static SumInput create(long a, long b) {
-      return new AutoValue_SumTask_SumInput(
-          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
+    public static SumInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {
+      return new AutoValue_SumTask_SumInput(a, b);
     }
   }
 
@@ -46,13 +45,13 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   public abstract static class SumOutput {
     public abstract SdkBindingData<Long> c();
 
-    public static SumOutput create(long c) {
-      return new AutoValue_SumTask_SumOutput(SdkBindingData.ofInteger(c));
+    public static SumOutput create(SdkBindingData<Long> c) {
+      return new AutoValue_SumTask_SumOutput(c);
     }
   }
 
   @Override
   public SumOutput run(SumInput input) {
-    return SumOutput.create(input.a().get() + input.b().get());
+    return SumOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
   }
 }

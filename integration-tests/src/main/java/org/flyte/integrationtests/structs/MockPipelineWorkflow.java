@@ -19,14 +19,16 @@ package org.flyte.integrationtests.structs;
 import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofString;
 
-import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkWorkflow.class)
+// This workflow relays on SdkBinding<BQReference> that should be serialized
+// as Struct. By going to typed inputs and outputs, we have de-scoped the support
+// of structs.
+// @AutoService(SdkWorkflow.class)
 public class MockPipelineWorkflow
     extends SdkWorkflow<MockPipelineWorkflow.Input, MockPipelineWorkflow.Output> {
   public MockPipelineWorkflow() {

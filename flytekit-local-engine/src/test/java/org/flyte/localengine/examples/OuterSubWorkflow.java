@@ -21,12 +21,15 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
+import org.flyte.localengine.examples.SumTask.Input;
 
 @AutoService(SdkWorkflow.class)
-public class OuterSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+public class OuterSubWorkflow extends SdkWorkflow<TestTuple3IntegerInput, TestUnaryIntegerOutput> {
 
   public OuterSubWorkflow() {
-    super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+    super(
+        JacksonSdkType.of(TestTuple3IntegerInput.class),
+        JacksonSdkType.of(TestUnaryIntegerOutput.class));
   }
 
   @Override
@@ -35,13 +38,10 @@ public class OuterSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
     SdkBindingData<Long> b = builder.inputOfInteger("b");
     SdkBindingData<Long> c = builder.inputOfInteger("c");
     SdkBindingData<Long> ab =
-        builder
-            .apply("outer-sum-a-b", new SumTask().withInput("a", a).withInput("b", b))
-            .getOutputs()
-            .o();
+        builder.apply("outer-sum-a-b", new SumTask(), Input.create(a, b)).getOutputs().o();
     SdkBindingData<Long> res =
         builder
-            .apply("outer-sum-ab-c", new InnerSubWorkflow().withInput("a", ab).withInput("b", c))
+            .apply("outer-sum-ab-c", new InnerSubWorkflow(), SumTask.Input.create(ab, c))
             .getOutputs()
             .o();
     builder.output("o", res);

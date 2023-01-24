@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
 /** Building block for tasks that execute arbitrary containers. */
-public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<OutputT>
+public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     implements Serializable {
 
   private static final long serialVersionUID = 42L;
@@ -54,6 +54,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Out
   }
 
   /** Specifies task input type. */
+  @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
@@ -90,10 +91,11 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Out
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
+      @Nullable InputT inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -105,7 +107,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Out
         taskId,
         upstreamNodeIds,
         metadata,
-        inputs,
+        inputsBindings,
         outputType.getVariableMap(),
         outputType.promiseFor(nodeId));
   }
@@ -129,7 +131,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Out
   }
 
   /**
-   * Indicates whether the system should attempt to lookup this task's output to avoid duplication
+   * Indicates whether the system should attempt to look up this task's output to avoid duplication
    * of work.
    */
   public boolean isCached() {

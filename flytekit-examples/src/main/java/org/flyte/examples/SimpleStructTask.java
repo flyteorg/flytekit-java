@@ -18,9 +18,7 @@ package org.flyte.examples;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.Struct;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example Flyte task that takes a name as the input and outputs a simple greeting message. */
@@ -29,10 +27,6 @@ public class SimpleStructTask
     extends SdkRunnableTask<SimpleStructTask.Input, SimpleStructTask.Output> {
   public SimpleStructTask() {
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
-  }
-
-  public static SdkTransform<?> of(SdkBindingData<?> struct) {
-    return new SimpleStructTask().withInput("struct", struct);
   }
 
   @AutoValue

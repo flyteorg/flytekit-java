@@ -24,10 +24,10 @@ abstract class SdkConditionCase<OutputT> {
 
   abstract SdkBooleanExpression condition();
 
-  abstract SdkTransform<OutputT> then();
+  abstract SdkTransform<Void, OutputT> then();
 
   static <OutputT> SdkConditionCase<OutputT> create(
-      String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
+      String name, SdkBooleanExpression condition, SdkTransform<Void, OutputT> then) {
     return new AutoValue_SdkConditionCase<>(name, condition, then);
   }
 }

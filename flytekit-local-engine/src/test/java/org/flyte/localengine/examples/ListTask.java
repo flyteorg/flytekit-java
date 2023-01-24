@@ -33,15 +33,15 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.list().get());
+    return Output.create(SdkBindingData.ofIntegerCollection(input.list().get()));
   }
 
   @AutoValue
   public abstract static class Input {
     public abstract SdkBindingData<List<Long>> list();
 
-    public static Input create(List<Long> list) {
-      return new AutoValue_ListTask_Input(SdkBindingData.ofIntegerCollection(list));
+    public static Input create(SdkBindingData<List<Long>> list) {
+      return new AutoValue_ListTask_Input(list);
     }
   }
 
@@ -49,8 +49,8 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
   public abstract static class Output {
     public abstract SdkBindingData<List<Long>> list();
 
-    public static Output create(List<Long> list) {
-      return new AutoValue_ListTask_Output(SdkBindingData.ofIntegerCollection(list));
+    public static Output create(SdkBindingData<List<Long>> list) {
+      return new AutoValue_ListTask_Output(list);
     }
   }
 }

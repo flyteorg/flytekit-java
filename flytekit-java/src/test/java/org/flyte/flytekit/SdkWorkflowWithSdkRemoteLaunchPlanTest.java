@@ -109,9 +109,10 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .build());
   }
 
-  public static class WorkflowExample extends SdkWorkflow<TestUnaryBooleanOutput> {
+  public static class WorkflowExample
+      extends SdkWorkflow<TestPairIntegerInput, TestUnaryBooleanOutput> {
     public WorkflowExample() {
-      super(new TestUnaryBooleanOutput.SdkType());
+      super(new TestPairIntegerInput.SdkType(), new TestUnaryBooleanOutput.SdkType());
     }
 
     @Override
@@ -121,7 +122,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
       SdkNode<TestUnaryBooleanOutput> node1 =
           builder.apply(
-              "some-node-id", new TestSdkRemoteLaunchPlan().withInput("a", a).withInput("b", b));
+              "some-node-id", new TestSdkRemoteLaunchPlan(), TestPairIntegerInput.create(a, b));
 
       builder.output("o", node1.getOutputs().o());
     }

@@ -24,10 +24,13 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
+public class FibonacciWorkflow
+    extends SdkWorkflow<FibonacciWorkflow.Input, FibonacciWorkflow.Output> {
 
   public FibonacciWorkflow() {
-    super(JacksonSdkType.of(FibonacciWorkflow.Output.class));
+    super(
+        JacksonSdkType.of(FibonacciWorkflow.Input.class),
+        JacksonSdkType.of(FibonacciWorkflow.Output.class));
   }
 
   @Override
@@ -36,31 +39,26 @@ public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Output> {
     SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");
 
     SdkBindingData<Long> fib2 =
-        builder
-            .apply("fib-2", new SumTask().withInput("a", fib0).withInput("b", fib1))
-            .getOutputs()
-            .o();
+        builder.apply("fib-2", new SumTask(), SumTask.Input.create(fib0, fib1)).getOutputs().o();
 
     SdkBindingData<Long> fib3 =
-        builder
-            .apply("fib-3", new SumTask().withInput("a", fib1).withInput("b", fib2))
-            .getOutputs()
-            .o();
+        builder.apply("fib-3", new SumTask(), SumTask.Input.create(fib1, fib2)).getOutputs().o();
 
     SdkBindingData<Long> fib4 =
-        builder
-            .apply("fib-4", new SumTask().withInput("a", fib2).withInput("b", fib3))
-            .getOutputs()
-            .o();
+        builder.apply("fib-4", new SumTask(), SumTask.Input.create(fib2, fib3)).getOutputs().o();
 
     SdkBindingData<Long> fib5 =
-        builder
-            .apply("fib-5", new SumTask().withInput("a", fib3).withInput("b", fib4))
-            .getOutputs()
-            .o();
+        builder.apply("fib-5", new SumTask(), SumTask.Input.create(fib3, fib4)).getOutputs().o();
 
     builder.output("fib4", fib4);
     builder.output("fib5", fib5);
+  }
+
+  @AutoValue
+  public abstract static class Input {
+    public abstract SdkBindingData<Long> fib0();
+
+    public abstract SdkBindingData<Long> fib1();
   }
 
   @AutoValue

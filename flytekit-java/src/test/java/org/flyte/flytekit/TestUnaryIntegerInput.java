@@ -23,30 +23,30 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 
 @AutoValue
-abstract class TestUnaryIntegerOutput {
-  abstract SdkBindingData<Long> o();
+abstract class TestUnaryIntegerInput {
+  abstract SdkBindingData<Long> in();
 
-  public static TestUnaryIntegerOutput create(SdkBindingData<Long> o) {
-    return new AutoValue_TestUnaryIntegerOutput(o);
+  public static TestUnaryIntegerInput create(SdkBindingData<Long> in) {
+    return new AutoValue_TestUnaryIntegerInput(in);
   }
 
-  public static class SdkType extends org.flyte.flytekit.SdkType<TestUnaryIntegerOutput> {
+  public static class SdkType extends org.flyte.flytekit.SdkType<TestUnaryIntegerInput> {
 
-    private static final String VAR = "o";
+    private static final String VAR = "in";
     private static final LiteralType LITERAL_TYPE = LiteralTypes.INTEGER;
 
     @Override
-    public Map<String, Literal> toLiteralMap(TestUnaryIntegerOutput value) {
-      return Map.of(VAR, Literals.ofInteger(value.o().get()));
+    public Map<String, Literal> toLiteralMap(TestUnaryIntegerInput value) {
+      return Map.of(VAR, Literals.ofInteger(value.in().get()));
     }
 
     @Override
-    public TestUnaryIntegerOutput fromLiteralMap(Map<String, Literal> value) {
+    public TestUnaryIntegerInput fromLiteralMap(Map<String, Literal> value) {
       return create(SdkBindingData.ofInteger(value.get(VAR).scalar().primitive().integerValue()));
     }
 
     @Override
-    public TestUnaryIntegerOutput promiseFor(String nodeId) {
+    public TestUnaryIntegerInput promiseFor(String nodeId) {
       return create(SdkBindingData.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
     }
 
@@ -56,8 +56,8 @@ abstract class TestUnaryIntegerOutput {
     }
 
     @Override
-    public Map<String, SdkBindingData<?>> toSdkBindingMap(TestUnaryIntegerOutput value) {
-      return Map.of(VAR, value.o());
+    public Map<String, SdkBindingData<?>> toSdkBindingMap(TestUnaryIntegerInput value) {
+      return Map.of(VAR, value.in());
     }
   }
 }

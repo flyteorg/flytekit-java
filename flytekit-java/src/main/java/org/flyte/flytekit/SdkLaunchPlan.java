@@ -76,7 +76,7 @@ public abstract class SdkLaunchPlan {
    * @param workflow Workflow to be reference by new {@link SdkLaunchPlan}.
    * @return the created {@link SdkLaunchPlan}.
    */
-  public static SdkLaunchPlan of(SdkWorkflow<?> workflow) {
+  public static SdkLaunchPlan of(SdkWorkflow<?, ?> workflow) {
     SdkWorkflowBuilder wfBuilder = new SdkWorkflowBuilder();
     workflow.expand(wfBuilder);
     return builder()

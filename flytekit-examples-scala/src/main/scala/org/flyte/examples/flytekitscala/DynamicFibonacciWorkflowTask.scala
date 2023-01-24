@@ -53,7 +53,11 @@ class DynamicFibonacciWorkflowTask
       else
         fib(
           n + 1,
-          builder(s"fib-${n + 1}", SumTask(value, prev)).getOutputs.c,
+          builder(
+            s"fib-${n + 1}",
+            new SumTask(),
+            SumTaskInput(value, prev)
+          ).getOutputs.c,
           value
         )
     }

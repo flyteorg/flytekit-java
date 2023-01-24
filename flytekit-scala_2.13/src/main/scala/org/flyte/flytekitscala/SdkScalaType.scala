@@ -20,7 +20,7 @@ import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
-import org.flyte.flytekit.{SdkBindingData => SdkJavaBindinigData, SdkType}
+import org.flyte.flytekit.{SdkType, SdkBindingData => SdkJavaBindinigData}
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
@@ -90,7 +90,7 @@ object SdkScalaType {
           param.label -> variable
         }.toMap
 
-        new ju.HashMap(mapAsJavaMap(scalaMap))
+        ju.Map.copyOf(mapAsJavaMap(scalaMap))
       }
 
       def toLiteralMap(value: T): ju.Map[String, Literal] = {
@@ -98,7 +98,7 @@ object SdkScalaType {
           param.label -> param.typeclass.toLiteral(param.dereference(value))
         }.toMap
 
-        new ju.HashMap(mapAsJavaMap(scalaMap))
+        ju.Map.copyOf(mapAsJavaMap(scalaMap))
       }
 
       def fromLiteralMap(literal: ju.Map[String, Literal]): T = {
@@ -129,6 +129,31 @@ object SdkScalaType {
             paramLiteralType.literalType()
           )
         })
+      }
+
+      override def toSdkBindingMap(
+          value: T
+      ): ju.Map[String, SdkJavaBindinigData[_]] = {
+        value match {
+          case product: Product =>
+            value.getClass.getDeclaredFields
+              .map(_.getName)
+              .zip(product.productIterator.toSeq)
+              .toMap
+              .mapValues {
+                case value: SdkJavaBindinigData[_] => value
+                case _ =>
+                  throw new IllegalStateException(
+                    s"All the fields of the case class ${value.getClass.getSimpleName} must be SdkBindingData[_]"
+                  )
+              }
+              .toMap
+              .asJava
+          case _ =>
+            throw new IllegalStateException(
+              s"The class ${value.getClass.getSimpleName} must be a case class"
+            )
+        }
       }
     }
   }
@@ -300,12 +325,18 @@ object SdkScalaType {
 }
 
 private object SdkUnitType extends SdkScalaProductType[Unit] {
-  def getVariableMap: ju.Map[String, Variable] = ju.Collections.emptyMap()
+  def getVariableMap: ju.Map[String, Variable] =
+    Map.empty[String, Variable].asJava
 
   def toLiteralMap(value: Unit): ju.Map[String, Literal] =
-    ju.Collections.emptyMap()
+    Map.empty[String, Literal].asJava
 
   def fromLiteralMap(literal: ju.Map[String, Literal]): Unit = ()
 
   def promiseFor(nodeId: String): Unit = ()
+
+  override def toSdkBindingMap(
+      value: Unit
+  ): ju.Map[String, SdkJavaBindinigData[_]] =
+    Map.empty[String, SdkJavaBindinigData[_]].asJava
 }

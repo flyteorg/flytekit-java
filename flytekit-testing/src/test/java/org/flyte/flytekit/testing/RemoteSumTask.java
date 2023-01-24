@@ -38,9 +38,8 @@ public class RemoteSumTask {
 
     public abstract SdkBindingData<Long> b();
 
-    public static RemoteSumInput create(long a, long b) {
-      return new AutoValue_RemoteSumTask_RemoteSumInput(
-          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
+    public static RemoteSumInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {
+      return new AutoValue_RemoteSumTask_RemoteSumInput(a, b);
     }
   }
 

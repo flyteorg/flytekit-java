@@ -22,9 +22,9 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 @AutoService(SdkWorkflow.class)
-public class RetryableWorkflow extends SdkWorkflow<Void> {
+public class RetryableWorkflow extends SdkWorkflow<Void, Void> {
   public RetryableWorkflow() {
-    super(SdkTypes.nulls());
+    super(SdkTypes.nulls(), SdkTypes.nulls());
   }
 
   @Override

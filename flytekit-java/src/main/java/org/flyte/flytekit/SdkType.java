@@ -17,6 +17,7 @@
 package org.flyte.flytekit;
 
 import java.util.Map;
+import java.util.Set;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
 
@@ -29,4 +30,10 @@ public abstract class SdkType<T> {
   public abstract T promiseFor(String nodeId);
 
   public abstract Map<String, Variable> getVariableMap();
+
+  public Set<String> variableNames() {
+    return Set.copyOf(getVariableMap().keySet());
+  }
+
+  public abstract Map<String, SdkBindingData<?>> toSdkBindingMap(T value);
 }

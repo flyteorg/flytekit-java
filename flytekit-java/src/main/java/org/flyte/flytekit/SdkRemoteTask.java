@@ -25,7 +25,7 @@ import org.flyte.api.v1.Variable;
 
 /** Reference to a task deployed in flyte, a remote Task. */
 @AutoValue
-public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<OutputT> {
+public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
   @Nullable
   public abstract String domain();
@@ -45,6 +45,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
+
+  @Override
+  public SdkType<InputT> getInputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return inputs();
+  }
 
   @Override
   public SdkType<OutputT> getOutputType() {
@@ -78,7 +84,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
+      @Nullable InputT inputs) {
     PartialTaskIdentifier taskId =
         PartialTaskIdentifier.builder()
             .name(name())
@@ -86,7 +92,9 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
             .domain(domain())
             .version(version())
             .build();
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputs().getVariableMap());
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
+    List<CompilerError> errors =
+        Compiler.validateApply(nodeId, inputsBindings, inputs().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -95,7 +103,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<Output
     Map<String, Variable> variableMap = outputs().getVariableMap();
     OutputT output = outputs().promiseFor(nodeId);
     return new SdkTaskNode<>(
-        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputsBindings, variableMap, output);
   }
 
   public static <InputT, OutputT> Builder<InputT, OutputT> builder() {

@@ -17,11 +17,11 @@
 package org.flyte.flytekit;
 
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
-public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransform<OutputT> {
+public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
+    extends SdkTransform<InputT, OutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
@@ -36,6 +36,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
     return "dynamic";
   }
 
+  @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
@@ -51,10 +52,11 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
-      Map<String, SdkBindingData<?>> inputs) {
+      InputT inputs) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(getName()).build();
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
     List<CompilerError> errors =
-        Compiler.validateApply(nodeId, inputs, getInputType().getVariableMap());
+        Compiler.validateApply(nodeId, inputsBindings, getInputType().getVariableMap());
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
@@ -66,7 +68,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT> extends SdkTransfo
         taskId,
         upstreamNodeIds,
         metadata,
-        inputs,
+        inputsBindings,
         outputType.getVariableMap(),
         outputType.promiseFor(nodeId));
   }

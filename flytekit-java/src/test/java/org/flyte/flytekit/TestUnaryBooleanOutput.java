@@ -54,5 +54,10 @@ abstract class TestUnaryBooleanOutput {
     public Map<String, Variable> getVariableMap() {
       return Map.of(VAR, Variable.builder().literalType(LITERAL_TYPE).build());
     }
+
+    @Override
+    public Map<String, SdkBindingData<?>> toSdkBindingMap(TestUnaryBooleanOutput value) {
+      return Map.of(VAR, value.o());
+    }
   }
 }

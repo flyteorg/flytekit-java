@@ -65,7 +65,7 @@ Package and run:
 $ mvn package
 $ scripts/jflyte register workflows \
   -d=development \
-  -p=spotify-flytekit-examples \
+  -p=flytesnacks \
   -v=$(git describe --always) \
   -cp=flytekit-examples/target/lib
 ```

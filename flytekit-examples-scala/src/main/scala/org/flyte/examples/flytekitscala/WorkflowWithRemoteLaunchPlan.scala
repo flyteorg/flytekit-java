@@ -16,7 +16,6 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.{
   SdkBindingData,
   SdkScalaType,

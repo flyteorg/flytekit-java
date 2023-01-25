@@ -29,8 +29,8 @@ class WorkflowWithRemoteTask
     ) {
 
   override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
-    val a = SdkBindingData.ofInteger(10L)
-    val b = SdkBindingData.ofInteger(12L)
+    val a = SdkBindingData.ofInteger(10)
+    val b = SdkBindingData.ofInteger(12)
 
     val c = builder
       .apply(new RemoteSumTask().create.withInput("a", a).withInput("b", b))

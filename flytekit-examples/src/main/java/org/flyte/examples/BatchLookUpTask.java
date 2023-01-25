@@ -54,6 +54,11 @@ public class BatchLookUpTask
     public abstract SdkBindingData<Map<String, String>> keyValues();
 
     public abstract SdkBindingData<List<String>> searchKeys();
+
+    public static Input create(
+        SdkBindingData<Map<String, String>> keyValues, SdkBindingData<List<String>> searchKeys) {
+      return new AutoValue_BatchLookUpTask_Input(keyValues, searchKeys);
+    }
   }
 
   @AutoValue

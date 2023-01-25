@@ -20,17 +20,12 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
 public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput> {
   public SumTask() {
     super(JacksonSdkType.of(SumInput.class), JacksonSdkType.of(SumOutput.class));
-  }
-
-  public static SdkTransform<SumTask.SumOutput> of(SdkBindingData<Long> a, SdkBindingData<Long> b) {
-    return new SumTask().withInput("a", a).withInput("b", b);
   }
 
   @AutoValue

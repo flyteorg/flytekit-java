@@ -27,7 +27,7 @@ import org.flyte.api.v1.WorkflowNode;
 
 /** Reference to a LaunchPlan deployed in flyte, a remote LaunchPlan. */
 @AutoValue
-public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<OutputT> {
+public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
   @Nullable
   public abstract String domain();
@@ -42,6 +42,12 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
   public abstract SdkType<InputT> inputs();
 
   public abstract SdkType<OutputT> outputs();
+
+  @Override
+  public SdkType<InputT> getInputType() {
+    // TODO consider break backward compatibility to unify the names and avoid this bridge method
+    return inputs();
+  }
 
   @Override
   public SdkType<OutputT> getOutputType() {

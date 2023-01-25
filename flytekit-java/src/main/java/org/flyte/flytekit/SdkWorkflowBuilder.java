@@ -17,7 +17,6 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.flyte.api.v1.Node.START_NODE_ID;
 
@@ -28,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.WorkflowTemplate;
@@ -57,29 +57,30 @@ public class SdkWorkflowBuilder {
     this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
 
-  public <T> SdkNode<T> apply(String nodeId, SdkTransform<T> transform) {
-    return apply(nodeId, transform, emptyMap());
+  public <OutputT> SdkNode<OutputT> apply(
+      String nodeId, SdkTransform<Void, OutputT> transformWithoutInputs) {
+    return applyInternal(nodeId, transformWithoutInputs, emptyList(), null);
   }
 
-  public <T> SdkNode<T> apply(
-      String nodeId, SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
+  public <InputT, OutputT> SdkNode<OutputT> apply(
+      String nodeId, SdkTransform<InputT, OutputT> transform, InputT inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
-  public <T> SdkNode<T> apply(SdkTransform<T> transform) {
-    return apply(/*nodeId=*/ null, transform, emptyMap());
+  public <OutputT> SdkNode<OutputT> apply(SdkTransform<Void, OutputT> transformWithoutInputs) {
+    return apply(/*nodeId=*/ (String) null, transformWithoutInputs);
   }
 
-  public <T> SdkNode<T> apply(SdkTransform<T> transform, Map<String, SdkBindingData<?>> inputs) {
-    return applyInternal(/*nodeId=*/ null, transform, emptyList(), inputs);
+  public <InputT, OutputT> SdkNode<OutputT> apply(
+      SdkTransform<InputT, OutputT> transform, InputT inputs) {
+    return apply(/*nodeId=*/ null, transform, inputs);
   }
 
-  protected <T> SdkNode<T> applyInternal(
+  protected <InputT, OutputT> SdkNode<OutputT> applyInternal(
       String nodeId,
-      SdkTransform<T> transform,
+      SdkTransform<InputT, OutputT> transform,
       List<String> upstreamNodeIds,
-      Map<String, SdkBindingData<?>> inputs) {
-
+      @Nullable InputT inputs) {
     String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);
 
     if (nodes.containsKey(actualNodeId)) {
@@ -96,7 +97,7 @@ public class SdkWorkflowBuilder {
         Objects.requireNonNullElseGet(
             nodeId, () -> sdkNodeNamePolicy.toNodeName(transform.getName()));
 
-    SdkNode<T> sdkNode =
+    SdkNode<OutputT> sdkNode =
         transform
             .withNameOverrideIfNotSet(fallbackNodeName)
             .apply(this, actualNodeId, upstreamNodeIds, null, inputs);

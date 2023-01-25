@@ -14,23 +14,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.examples;
+package org.flyte.localengine.examples;
 
-import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkTypes;
-import org.flyte.flytekit.SdkWorkflow;
-import org.flyte.flytekit.SdkWorkflowBuilder;
+import com.google.auto.value.AutoValue;
+import org.flyte.flytekit.SdkBindingData;
 
-/** Example workflow that takes a name and outputs a welcome message. */
-@AutoService(SdkWorkflow.class)
-public class ContainerWorkflow extends SdkWorkflow<Void, Void> {
+@AutoValue
+public abstract class TestTuple3IntegerInput {
+  public abstract SdkBindingData<Long> a();
 
-  public ContainerWorkflow() {
-    super(SdkTypes.nulls(), SdkTypes.nulls());
-  }
+  public abstract SdkBindingData<Long> b();
 
-  @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    builder.apply("hello-container-task", new HelloContainerTask());
+  public abstract SdkBindingData<Long> c();
+
+  public static TestTuple3IntegerInput create(
+      SdkBindingData<Long> a, SdkBindingData<Long> b, SdkBindingData<Long> c) {
+    return new AutoValue_TestTuple3IntegerInput(a, b, c);
   }
 }

@@ -48,7 +48,6 @@ import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -549,10 +548,11 @@ class LocalEngineTest {
 
   @AutoService(SdkWorkflow.class)
   public static class TestCaseExhaustivenessWorkflow
-      extends SdkWorkflow<TestCaseExhaustivenessWorkflow.NoOpType> {
+      extends SdkWorkflow<
+          TestCaseExhaustivenessWorkflow.NoOpType, TestCaseExhaustivenessWorkflow.NoOpType> {
 
     public TestCaseExhaustivenessWorkflow() {
-      super(JacksonSdkType.of(NoOpType.class));
+      super(JacksonSdkType.of(NoOpType.class), JacksonSdkType.of(NoOpType.class));
     }
 
     @Override
@@ -562,8 +562,8 @@ class LocalEngineTest {
           builder
               .apply(
                   "decide",
-                  when("eq_1", eq(ofInteger(1L), x), NoOp.of(x))
-                      .when("eq_2", eq(ofInteger(2L), x), NoOp.of(x)))
+                  when("eq_1", eq(ofInteger(1L), x), new NoOp(), NoOpType.create(x))
+                      .when("eq_2", eq(ofInteger(2L), x), new NoOp(), NoOpType.create(x)))
               .getOutputs()
               .x();
 
@@ -581,10 +581,6 @@ class LocalEngineTest {
       @Override
       public NoOpType run(NoOpType input) {
         return NoOpType.create(input.x());
-      }
-
-      static SdkTransform<NoOpType> of(SdkBindingData<Long> x) {
-        return new NoOp().withInput("x", x);
       }
     }
 

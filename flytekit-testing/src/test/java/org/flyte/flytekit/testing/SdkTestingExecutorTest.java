@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 public class SdkTestingExecutorTest {
 
   @AutoValue
-  public abstract static class TestWorkflowOutput {
+  public abstract static class TestWorkflowIO {
 
     public abstract SdkBindingData<Boolean> b();
 
@@ -50,32 +50,41 @@ public class SdkTestingExecutorTest {
     public abstract SdkBindingData<Long> i();
 
     public abstract SdkBindingData<String> s();
-  }
 
-  @AutoValue
-  public abstract static class TestUnaryStringOutput {
-    public abstract SdkBindingData<String> string();
-
-    public static TestUnaryStringOutput create(String string) {
-      return new AutoValue_SdkTestingExecutorTest_TestUnaryStringOutput(
-          SdkBindingData.ofString(string));
+    public static TestWorkflowIO create(
+        SdkBindingData<Boolean> b,
+        SdkBindingData<Instant> datetime,
+        SdkBindingData<Duration> duration,
+        SdkBindingData<Double> f,
+        SdkBindingData<Long> i,
+        SdkBindingData<String> s) {
+      return new AutoValue_SdkTestingExecutorTest_TestWorkflowIO(b, datetime, duration, f, i, s);
     }
   }
 
   @AutoValue
-  public abstract static class TestUnaryIntegerOutput {
-    public abstract SdkBindingData<Long> o();
+  public abstract static class TestUnaryStringIO {
+    public abstract SdkBindingData<String> string();
 
-    public static TestUnaryIntegerOutput create(long l) {
-      return new AutoValue_SdkTestingExecutorTest_TestUnaryIntegerOutput(
-          SdkBindingData.ofInteger(l));
+    public static TestUnaryStringIO create(SdkBindingData<String> string) {
+      return new AutoValue_SdkTestingExecutorTest_TestUnaryStringIO(string);
+    }
+  }
+
+  @AutoValue
+  public abstract static class TestUnaryIntegerIO {
+    public abstract SdkBindingData<Long> integer();
+
+    public static TestUnaryIntegerIO create(SdkBindingData<Long> integer) {
+      return new AutoValue_SdkTestingExecutorTest_TestUnaryIntegerIO(integer);
     }
   }
 
   @Test
   public void testPrimitiveTypes() {
-    SdkWorkflow<TestWorkflowOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestWorkflowOutput.class)) {
+    SdkWorkflow<TestWorkflowIO, TestWorkflowIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(TestWorkflowIO.class), JacksonSdkType.of(TestWorkflowIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("b", builder.inputOfBoolean("b"));
@@ -107,8 +116,8 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testGetOutput_doesntExist() {
-    SdkWorkflow<Void> workflow =
-        new SdkWorkflow<>(SdkTypes.nulls()) {
+    SdkWorkflow<TestUnaryIntegerIO, Void> workflow =
+        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerIO.class), SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("integer", builder.inputOfInteger("integer"));
@@ -126,8 +135,10 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testGetOutput_illegalType() {
-    SdkWorkflow<TestUnaryStringOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
+    SdkWorkflow<TestUnaryStringIO, TestUnaryStringIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(TestUnaryStringIO.class),
+            JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -147,8 +158,10 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_missing() {
-    SdkWorkflow<TestUnaryStringOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
+    SdkWorkflow<TestUnaryStringIO, TestUnaryStringIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(TestUnaryStringIO.class),
+            JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -167,8 +180,10 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithFixedInput_illegalType() {
-    SdkWorkflow<TestUnaryStringOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryStringOutput.class)) {
+    SdkWorkflow<TestUnaryStringIO, TestUnaryStringIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(TestUnaryStringIO.class),
+            JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
             builder.output("string", builder.inputOfString("string"));
@@ -187,11 +202,14 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTask() {
-    SdkWorkflow<Void> workflow =
-        new SdkWorkflow<>(SdkTypes.nulls()) {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
+            builder.apply(
+                "sum",
+                RemoteSumTask.create(),
+                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
           }
         };
 
@@ -208,11 +226,14 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_missingRemoteTaskOutput() {
-    SdkWorkflow<Void> workflow =
-        new SdkWorkflow<>(SdkTypes.nulls()) {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
+            builder.apply(
+                "sum",
+                RemoteSumTask.create(),
+                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
           }
         };
 
@@ -223,7 +244,8 @@ public class SdkTestingExecutorTest {
                 SdkTestingExecutor.of(workflow)
                     .withTaskOutput(
                         RemoteSumTask.create(),
-                        RemoteSumInput.create(10L, 20L),
+                        RemoteSumInput.create(
+                            SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 
@@ -235,11 +257,12 @@ public class SdkTestingExecutorTest {
 
   @Test
   public void testWithTask_nullOutput() {
-    SdkWorkflow<Void> workflow =
-        new SdkWorkflow<>(SdkTypes.nulls()) {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            builder.apply("void", RemoteVoidOutputTask.create().withInput("ignore", ""));
+            builder.apply(
+                "void", RemoteVoidOutputTask.create(), RemoteVoidOutputTask.Input.create(""));
           }
         };
 
@@ -256,16 +279,16 @@ public class SdkTestingExecutorTest {
   public void withWorkflowOutput_successfullyMocksWhenTypeMatches() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new SimpleUberWorkflow())
-            .withFixedInput("n", 7)
+            .withFixedInput("integer", 7)
             .withWorkflowOutput(
                 new SimpleSubWorkflow(),
-                JacksonSdkType.of(SimpleSubWorkflowInput.class),
-                SimpleSubWorkflowInput.create(SdkBindingData.ofInteger(7)),
-                JacksonSdkType.of(TestUnaryIntegerOutput.class),
-                TestUnaryIntegerOutput.create(5))
+                JacksonSdkType.of(TestUnaryIntegerIO.class),
+                TestUnaryIntegerIO.create(SdkBindingData.ofInteger(7)),
+                JacksonSdkType.of(TestUnaryIntegerIO.class),
+                TestUnaryIntegerIO.create(SdkBindingData.ofInteger(5)))
             .execute();
 
-    assertThat(result.getIntegerOutput("o"), equalTo(5L));
+    assertThat(result.getIntegerOutput("integer"), equalTo(5L));
   }
 
   @Test
@@ -278,17 +301,17 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<TestUnaryIntegerOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
+    SdkWorkflow<SumLaunchPlanInput, TestUnaryIntegerIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(TestUnaryIntegerIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData<Long> a = builder.inputOfInteger("a");
+            SdkBindingData<Long> b = builder.inputOfInteger("b");
             SdkBindingData<Long> c =
                 builder
-                    .apply(
-                        "launchplanref",
-                        launchplanRef
-                            .withInput("a", builder.inputOfInteger("a"))
-                            .withInput("b", builder.inputOfInteger("b")))
+                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(a, b))
                     .getOutputs()
                     .c();
 
@@ -301,7 +324,10 @@ public class SdkTestingExecutorTest {
             .withFixedInput("a", 3L)
             .withFixedInput("b", 5L)
             .withLaunchPlanOutput(
-                launchplanRef, SumLaunchPlanInput.create(3L, 5L), SumLaunchPlanOutput.create(8L))
+                launchplanRef,
+                SumLaunchPlanInput.create(
+                    SdkBindingData.ofInteger(3L), SdkBindingData.ofInteger(5L)),
+                SumLaunchPlanOutput.create(SdkBindingData.ofInteger(8L)))
             .execute();
 
     assertThat(result.getIntegerOutput("o"), equalTo(8L));
@@ -317,21 +343,21 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<TestUnaryIntegerOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
+    SdkWorkflow<SumLaunchPlanInput, TestUnaryIntegerIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(TestUnaryIntegerIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData<Long> a = builder.inputOfInteger("a");
+            SdkBindingData<Long> b = builder.inputOfInteger("b");
             SdkBindingData<Long> c =
                 builder
-                    .apply(
-                        "launchplanref",
-                        launchplanRef
-                            .withInput("a", builder.inputOfInteger("a"))
-                            .withInput("b", builder.inputOfInteger("b")))
+                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(a, b))
                     .getOutputs()
                     .c();
 
-            builder.output("o", c);
+            builder.output("integer", c);
           }
         };
 
@@ -345,8 +371,9 @@ public class SdkTestingExecutorTest {
                     .withLaunchPlanOutput(
                         launchplanRef,
                         // The stub values won't be matched, so exception iis throws
-                        SumLaunchPlanInput.create(100000L, 100000L),
-                        SumLaunchPlanOutput.create(8L))
+                        SumLaunchPlanInput.create(
+                            SdkBindingData.ofInteger(100000L), SdkBindingData.ofInteger(100000L)),
+                        SumLaunchPlanOutput.create(SdkBindingData.ofInteger(8L)))
                     .execute());
 
     assertThat(
@@ -365,21 +392,21 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(SumLaunchPlanInput.class),
             JacksonSdkType.of(SumLaunchPlanOutput.class));
 
-    SdkWorkflow<TestUnaryIntegerOutput> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerOutput.class)) {
+    SdkWorkflow<SumLaunchPlanInput, TestUnaryIntegerIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(TestUnaryIntegerIO.class)) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
+            SdkBindingData<Long> a = builder.inputOfInteger("a");
+            SdkBindingData<Long> b = builder.inputOfInteger("b");
             SdkBindingData<Long> c =
                 builder
-                    .apply(
-                        "launchplanref",
-                        launchplanRef
-                            .withInput("a", builder.inputOfInteger("a"))
-                            .withInput("b", builder.inputOfInteger("b")))
+                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(a, b))
                     .getOutputs()
                     .c();
 
-            builder.output("o", c);
+            builder.output("integer", c);
           }
         };
 
@@ -388,19 +415,25 @@ public class SdkTestingExecutorTest {
             .withFixedInput("a", 30L)
             .withFixedInput("b", 5L)
             .withLaunchPlan(
-                launchplanRef, in -> SumLaunchPlanOutput.create(in.a().get() + in.b().get()))
+                launchplanRef,
+                in ->
+                    SumLaunchPlanOutput.create(
+                        SdkBindingData.ofInteger(in.a().get() + in.b().get())))
             .execute();
 
-    assertThat(result.getIntegerOutput("o"), equalTo(35L));
+    assertThat(result.getIntegerOutput("integer"), equalTo(35L));
   }
 
   @Test
   public void testWithLaunchPlan_missingRemoteTaskOutput() {
-    SdkWorkflow<Void> workflow =
-        new SdkWorkflow<>(SdkTypes.nulls()) {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
           @Override
           public void expand(SdkWorkflowBuilder builder) {
-            builder.apply("sum", RemoteSumTask.create().withInput("a", 1L).withInput("b", 2L));
+            builder.apply(
+                "sum",
+                RemoteSumTask.create(),
+                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
           }
         };
 
@@ -411,7 +444,8 @@ public class SdkTestingExecutorTest {
                 SdkTestingExecutor.of(workflow)
                     .withTaskOutput(
                         RemoteSumTask.create(),
-                        RemoteSumInput.create(10L, 20L),
+                        RemoteSumInput.create(
+                            SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 
@@ -421,39 +455,37 @@ public class SdkTestingExecutorTest {
             "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
-  public static class SimpleUberWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+  public static class SimpleUberWorkflow
+      extends SdkWorkflow<TestUnaryIntegerIO, TestUnaryIntegerIO> {
 
     public SimpleUberWorkflow() {
-      super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+      super(
+          JacksonSdkType.of(TestUnaryIntegerIO.class), JacksonSdkType.of(TestUnaryIntegerIO.class));
     }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> input = builder.inputOfInteger("n", "");
+      SdkBindingData<Long> input = builder.inputOfInteger("integer", "");
       SdkBindingData<Long> output =
-          builder.apply("void", new SimpleSubWorkflow().withInput("in", input)).getOutputs().o();
-      builder.output("o", output);
+          builder
+              .apply("void", new SimpleSubWorkflow(), TestUnaryIntegerIO.create(input))
+              .getOutputs()
+              .integer();
+      builder.output("integer", output);
     }
   }
 
-  public static class SimpleSubWorkflow extends SdkWorkflow<TestUnaryIntegerOutput> {
+  public static class SimpleSubWorkflow
+      extends SdkWorkflow<TestUnaryIntegerIO, TestUnaryIntegerIO> {
 
     public SimpleSubWorkflow() {
-      super(JacksonSdkType.of(TestUnaryIntegerOutput.class));
+      super(
+          JacksonSdkType.of(TestUnaryIntegerIO.class), JacksonSdkType.of(TestUnaryIntegerIO.class));
     }
 
     @Override
     public void expand(SdkWorkflowBuilder builder) {
-      builder.output("o", builder.inputOfInteger("in"));
-    }
-  }
-
-  @AutoValue
-  abstract static class SimpleSubWorkflowInput {
-    abstract SdkBindingData<Long> in();
-
-    public static SimpleSubWorkflowInput create(SdkBindingData<Long> in) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowInput(in);
+      builder.output("integer", builder.inputOfInteger("integer"));
     }
   }
 
@@ -461,9 +493,8 @@ public class SdkTestingExecutorTest {
   abstract static class SimpleSubWorkflowOutput {
     abstract SdkBindingData<Long> out();
 
-    public static SimpleSubWorkflowOutput create(long out) {
-      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(
-          SdkBindingData.ofInteger(out));
+    public static SimpleSubWorkflowOutput create(SdkBindingData<Long> out) {
+      return new AutoValue_SdkTestingExecutorTest_SimpleSubWorkflowOutput(out);
     }
   }
 
@@ -473,9 +504,8 @@ public class SdkTestingExecutorTest {
 
     abstract SdkBindingData<Long> b();
 
-    public static SumLaunchPlanInput create(long a, long b) {
-      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(
-          SdkBindingData.ofInteger(a), SdkBindingData.ofInteger(b));
+    public static SumLaunchPlanInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanInput(a, b);
     }
   }
 
@@ -483,8 +513,8 @@ public class SdkTestingExecutorTest {
   abstract static class SumLaunchPlanOutput {
     abstract SdkBindingData<Long> c();
 
-    public static SumLaunchPlanOutput create(long c) {
-      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(SdkBindingData.ofInteger(c));
+    public static SumLaunchPlanOutput create(SdkBindingData<Long> c) {
+      return new AutoValue_SdkTestingExecutorTest_SumLaunchPlanOutput(c);
     }
   }
 }

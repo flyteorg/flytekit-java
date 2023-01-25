@@ -21,37 +21,59 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public class SdkCondition<OutputT> extends SdkTransform<OutputT> {
+public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   private final SdkType<OutputT> outputType;
   private final List<SdkConditionCase<OutputT>> cases;
   private final String otherwiseName;
-  private final SdkTransform<OutputT> otherwise;
+  private final SdkTransform<Void, OutputT> otherwise;
 
   SdkCondition(
       List<SdkConditionCase<OutputT>> cases,
       String otherwiseName,
-      SdkTransform<OutputT> otherwise) {
-    this.cases = cases;
+      SdkTransform<Void, OutputT> otherwise) {
+    if (cases.isEmpty()) {
+      throw new IllegalArgumentException("Empty cases on SdkCondition");
+    }
+    this.cases = List.copyOf(cases);
     this.otherwiseName = otherwiseName;
     this.otherwise = otherwise;
-    this.outputType = cases.get(0).then().getOutputType();
+
+    var firstCase = cases.get(0);
+    this.outputType = firstCase.then().getOutputType();
   }
 
   public SdkCondition<OutputT> when(
-      String name, SdkBooleanExpression condition, SdkTransform<OutputT> then) {
-
-    List<SdkConditionCase<OutputT>> newCases = new ArrayList<>(cases);
+      String name, SdkBooleanExpression condition, SdkTransform<Void, OutputT> then) {
+    var newCases = new ArrayList<>(cases);
     newCases.add(SdkConditionCase.create(name, condition, then));
 
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
-  public SdkCondition<OutputT> otherwise(String name, SdkTransform<OutputT> otherwise) {
+  public <InputT> SdkCondition<OutputT> when(
+      String name,
+      SdkBooleanExpression condition,
+      SdkTransform<InputT, OutputT> then,
+      InputT inputs) {
+    return when(name, condition, new SdkAppliedTransform<>(then, inputs));
+  }
+
+  public SdkCondition<OutputT> otherwise(String name, SdkTransform<Void, OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
     }
 
     return new SdkCondition<>(this.cases, name, otherwise);
+  }
+
+  public <InputT> SdkCondition<OutputT> otherwise(
+      String name, SdkTransform<InputT, OutputT> otherwise, InputT inputs) {
+    return otherwise(name, new SdkAppliedTransform<>(otherwise, inputs));
+  }
+
+  @Override
+  public SdkType<Void> getInputType() {
+    return SdkTypes.nulls();
   }
 
   @Override

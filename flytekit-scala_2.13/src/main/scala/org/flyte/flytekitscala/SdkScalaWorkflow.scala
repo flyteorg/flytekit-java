@@ -29,8 +29,10 @@ import org.flyte.flytekit.{
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
-abstract class SdkScalaWorkflow[T](outputType: SdkType[T])
-    extends SdkWorkflow[T](outputType) {
+abstract class SdkScalaWorkflow[InputT, OutputT](
+    inputType: SdkType[InputT],
+    outputType: SdkType[OutputT]
+) extends SdkWorkflow[InputT, OutputT](inputType, outputType) {
   final override def expand(builder: SdkWorkflowBuilder): Unit = {
     expand(new SdkScalaWorkflowBuilder(builder))
   }
@@ -104,26 +106,33 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
   def getOutputDescription(name: String): String =
     builder.getOutputDescription(name)
 
-  def output(name: String, value: SdkJavaBindingData[_], help: String = "") =
+  def output(
+      name: String,
+      value: SdkJavaBindingData[_],
+      help: String = ""
+  ): Unit =
     builder.output(name, value, help)
 
   def toIdlTemplate: WorkflowTemplate = builder.toIdlTemplate
 
-  def apply[T](nodeId: String, transform: SdkTransform[T]): SdkNode[T] =
-    builder.apply(nodeId, transform)
-
-  def apply[T](
+  def apply[OutputT](
       nodeId: String,
-      transform: SdkTransform[T],
-      inputs: Map[String, SdkJavaBindingData[_]]
-  ): SdkNode[T] = builder.apply(nodeId, transform, inputs.asJava)
+      transform: SdkTransform[Unit, OutputT]
+  ): SdkNode[OutputT] =
+    builder.apply(nodeId, transform, ())
 
-  def apply[T](transform: SdkTransform[T]): SdkNode[T] =
-    builder.apply(transform)
+  def apply[InputT, OutputT](
+      nodeId: String,
+      transform: SdkTransform[InputT, OutputT],
+      inputs: InputT
+  ): SdkNode[OutputT] = builder.apply(nodeId, transform, inputs)
 
-  def apply[T](
-      transform: SdkTransform[T],
-      inputs: Map[String, SdkJavaBindingData[_]]
-  ): SdkNode[T] = builder.apply(transform, inputs.asJava)
+  def apply[OutputT](transform: SdkTransform[Unit, OutputT]): SdkNode[OutputT] =
+    builder.apply(transform, ())
+
+  def apply[InputT, OutputT](
+      transform: SdkTransform[InputT, OutputT],
+      inputs: InputT
+  ): SdkNode[OutputT] = builder.apply(transform, inputs)
 
 }

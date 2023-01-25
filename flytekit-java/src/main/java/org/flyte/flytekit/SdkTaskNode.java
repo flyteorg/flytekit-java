@@ -83,8 +83,10 @@ public class SdkTaskNode<T> extends SdkNode<T> {
   public Node toIdl() {
     TaskNode taskNode = TaskNode.builder().referenceId(taskId).build();
 
+    // inputs in var order for predictability
     List<Binding> bindings =
         inputs.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
             .map(x -> toBinding(x.getKey(), x.getValue()))
             .collect(toUnmodifiableList());
 

@@ -17,16 +17,36 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class UberWorkflow extends SdkWorkflow<SubWorkflow.Output> {
+public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Output> {
+
+  @AutoValue
+  public abstract static class Input {
+    public abstract SdkBindingData<Long> a();
+
+    public abstract SdkBindingData<Long> b();
+
+    public abstract SdkBindingData<Long> c();
+
+    public abstract SdkBindingData<Long> d();
+
+    public static UberWorkflow.Input create(
+        SdkBindingData<Long> a,
+        SdkBindingData<Long> b,
+        SdkBindingData<Long> c,
+        SdkBindingData<Long> d) {
+      return new AutoValue_UberWorkflow_Input(a, b, c, d);
+    }
+  }
 
   public UberWorkflow() {
-    super(JacksonSdkType.of(SubWorkflow.Output.class));
+    super(JacksonSdkType.of(UberWorkflow.Input.class), JacksonSdkType.of(SubWorkflow.Output.class));
   }
 
   @Override
@@ -37,15 +57,16 @@ public class UberWorkflow extends SdkWorkflow<SubWorkflow.Output> {
     SdkBindingData<Long> d = builder.inputOfInteger("d");
     SdkBindingData<Long> ab =
         builder
-            .apply("sub-1", new SubWorkflow().withInput("left", a).withInput("right", b))
+            .apply("sub-1", new SubWorkflow(), SubWorkflow.Input.create(a, b))
             .getOutputs()
             .result();
     SdkBindingData<Long> abc =
         builder
-            .apply("sub-2", new SubWorkflow().withInput("left", ab).withInput("right", c))
+            .apply("sub-2", new SubWorkflow(), SubWorkflow.Input.create(ab, c))
             .getOutputs()
             .result();
-    SdkBindingData<Long> abcd = builder.apply("post-sum", SumTask.of(abc, d)).getOutputs().c();
+    SdkBindingData<Long> abcd =
+        builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs().c();
     builder.output("result", abcd);
   }
 }

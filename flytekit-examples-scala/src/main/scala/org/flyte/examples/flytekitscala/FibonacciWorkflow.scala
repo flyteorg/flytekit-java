@@ -16,17 +16,22 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.SdkBindingData
 import org.flyte.flytekitscala.{
   SdkScalaWorkflowBuilder,
   SdkScalaType,
   SdkScalaWorkflow
 }
 
+case class FibonacciWorkflowInput(
+    fib0: SdkBindingData[Long],
+    fib1: SdkBindingData[Long]
+)
 case class FibonacciWorkflowOutput(fib5: SdkBindingData[Long])
 
 class FibonacciWorkflow
-    extends SdkScalaWorkflow[FibonacciWorkflowOutput](
+    extends SdkScalaWorkflow[FibonacciWorkflowInput, FibonacciWorkflowOutput](
+      SdkScalaType[FibonacciWorkflowInput],
       SdkScalaType[FibonacciWorkflowOutput]
     ) {
 
@@ -34,10 +39,22 @@ class FibonacciWorkflow
     val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")
     val fib1 = builder.inputOfInteger("fib1", "Value for Fib1")
 
-    val fib2 = builder.apply("fib-2", SumTask(fib0, fib1)).getOutputs.c
-    val fib3 = builder.apply("fib-3", SumTask(fib1, fib2)).getOutputs.c
-    val fib4 = builder.apply("fib-4", SumTask(fib2, fib3)).getOutputs.c
-    val fib5 = builder.apply("fib-5", SumTask(fib3, fib4)).getOutputs.c
+    val fib2 = builder
+      .apply("fib-2", new SumTask(), SumTaskInput(fib0, fib1))
+      .getOutputs
+      .c
+    val fib3 = builder
+      .apply("fib-3", new SumTask(), SumTaskInput(fib1, fib2))
+      .getOutputs
+      .c
+    val fib4 = builder
+      .apply("fib-4", new SumTask(), SumTaskInput(fib2, fib3))
+      .getOutputs
+      .c
+    val fib5 = builder
+      .apply("fib-5", new SumTask(), SumTaskInput(fib3, fib4))
+      .getOutputs
+      .c
 
     builder.output("fib5", fib5, "Value for Fib5")
   }

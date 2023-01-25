@@ -16,79 +16,73 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
-public abstract class SdkTransform<T> {
+public abstract class SdkTransform<InputT, OutputT> {
 
-  public abstract SdkType<T> getOutputType();
+  public abstract SdkType<InputT> getInputType();
 
-  public abstract SdkNode<T> apply(
+  public abstract SdkType<OutputT> getOutputType();
+
+  public final SdkNode<OutputT> apply(
+      SdkWorkflowBuilder builder,
+      String nodeId,
+      List<String> upstreamNodeIds,
+      @Nullable SdkNodeMetadata metadata,
+      @Nullable InputT inputs) {
+    checkNullOnlyVoid(inputs);
+    var inputsBindings = getInputType().toSdkBindingMap(inputs);
+    return apply(builder, nodeId, upstreamNodeIds, metadata, inputsBindings);
+  }
+
+  abstract SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
       List<String> upstreamNodeIds,
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs);
 
-  public SdkTransform<T> withInput(String name, String value) {
-    return withInput(name, SdkBindingData.ofString(value));
+  public SdkTransform<InputT, OutputT> withUpstreamNode(SdkNode<?> node) {
+    return SdkMetadataDecoratorTransform.of(this, List.of(node.getNodeId()));
   }
 
-  public SdkTransform<T> withInput(String name, long value) {
-    return withInput(name, SdkBindingData.ofInteger(value));
-  }
-
-  public SdkTransform<T> withInput(String name, Instant value) {
-    return withInput(name, SdkBindingData.ofDatetime(value));
-  }
-
-  public SdkTransform<T> withInput(String name, Duration value) {
-    return withInput(name, SdkBindingData.ofDuration(value));
-  }
-
-  public SdkTransform<T> withInput(String name, boolean value) {
-    return withInput(name, SdkBindingData.ofBoolean(value));
-  }
-
-  public SdkTransform<T> withInput(String name, double value) {
-    return withInput(name, SdkBindingData.ofFloat(value));
-  }
-
-  public SdkTransform<T> withInput(String name, SdkBindingData<?> value) {
-    return SdkPartialTransform.of(this, singletonMap(name, value));
-  }
-
-  public <K> SdkTransform<T> withUpstreamNode(SdkNode<K> node) {
-    return SdkPartialTransform.of(this, singletonList(node.getNodeId()));
-  }
-
-  public SdkTransform<T> withNameOverride(String name) {
+  public SdkTransform<InputT, OutputT> withNameOverride(String name) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().name(name).build();
-    return SdkPartialTransform.of(this, metadata);
+    return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
-  SdkTransform<T> withNameOverrideIfNotSet(String name) {
+  SdkTransform<InputT, OutputT> withNameOverrideIfNotSet(String name) {
     return withNameOverride(name);
   }
 
-  public SdkTransform<T> withTimeoutOverride(Duration timeout) {
+  public SdkTransform<InputT, OutputT> withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();
-    return SdkPartialTransform.of(this, metadata);
+    return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
   public String getName() {
     return getClass().getName();
+  }
+
+  void checkNullOnlyVoid(@Nullable InputT inputs) {
+    Set<String> variableNames = getInputType().variableNames();
+    boolean hasProperties = !variableNames.isEmpty();
+    if (inputs == null && hasProperties) {
+      throw new IllegalArgumentException(
+          "Null supplied as input for a transform with variables: " + variableNames);
+    } else if (inputs != null && !hasProperties) {
+      throw new IllegalArgumentException("Null input expected for a transform with no variables");
+    }
   }
 }

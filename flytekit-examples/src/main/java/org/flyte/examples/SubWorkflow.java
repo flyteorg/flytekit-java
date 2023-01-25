@@ -24,17 +24,18 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class SubWorkflow extends SdkWorkflow<SubWorkflow.Output> {
+public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Output> {
 
   public SubWorkflow() {
-    super(JacksonSdkType.of(SubWorkflow.Output.class));
+    super(JacksonSdkType.of(SubWorkflow.Input.class), JacksonSdkType.of(SubWorkflow.Output.class));
   }
 
   @Override
   public void expand(SdkWorkflowBuilder builder) {
     SdkBindingData<Long> left = builder.inputOfInteger("left");
     SdkBindingData<Long> right = builder.inputOfInteger("right");
-    SdkBindingData<Long> result = builder.apply("sum", SumTask.of(left, right)).getOutputs().c();
+    SdkBindingData<Long> result =
+        builder.apply("sum", new SumTask(), SumTask.SumInput.create(left, right)).getOutputs().c();
     builder.output("result", result);
   }
 

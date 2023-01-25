@@ -36,10 +36,7 @@ public class SdkConditions {
       SdkBooleanExpression condition,
       SdkTransform<InputT, OutputT> then,
       InputT inputs) {
-    SdkConditionCase<OutputT> case_ =
-        SdkConditionCase.create(name, condition, new SdkAppliedTransform<>(then, inputs));
-
-    return new SdkCondition<>(List.of(case_), null, null);
+    return when(name, condition, new SdkAppliedTransform<>(then, inputs));
   }
 
   public static <T> SdkBooleanExpression eq(SdkBindingData<T> left, SdkBindingData<T> right) {

@@ -51,11 +51,8 @@ import org.junit.jupiter.api.Test;
 
 class SdkLaunchPlanRegistrarTest {
 
-  private static final Map<String, String> ENV;
-
-  static {
-    ENV = Map.of(PROJECT_ENV_VAR, "project", DOMAIN_ENV_VAR, "domain", VERSION_ENV_VAR, "version");
-  }
+  private static final Map<String, String> ENV =
+      Map.of(PROJECT_ENV_VAR, "project", DOMAIN_ENV_VAR, "domain", VERSION_ENV_VAR, "version");
 
   private final SdkLaunchPlanRegistrar registrar = new SdkLaunchPlanRegistrar();
 

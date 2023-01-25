@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-/** {@link SdkTransform} with partially specified inputs. */
-class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
+/** Decorator for {@link SdkTransform} for holding metadata. */
+class SdkMetadataDecoratorTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkTransform<InputT, OutputT> transform;
   private final List<String> extraUpstreamNodeIds;
   @Nullable private final SdkNodeMetadata metadata;
 
-  private SdkPartialTransform(
+  private SdkMetadataDecoratorTransform(
       SdkTransform<InputT, OutputT> transform,
       List<String> extraUpstreamNodeIds,
       @Nullable SdkNodeMetadata metadata) {
@@ -43,12 +43,12 @@ class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT>
 
   static <InputT, OutputT> SdkTransform<InputT, OutputT> of(
       SdkTransform<InputT, OutputT> transform, List<String> extraUpstreamNodeIds) {
-    return new SdkPartialTransform<>(transform, extraUpstreamNodeIds, /*metadata=*/ null);
+    return new SdkMetadataDecoratorTransform<>(transform, extraUpstreamNodeIds, /*metadata=*/ null);
   }
 
   static <InputT, OutputT> SdkTransform<InputT, OutputT> of(
       SdkTransform<InputT, OutputT> transform, SdkNodeMetadata metadata) {
-    return new SdkPartialTransform<>(transform, List.of(), metadata);
+    return new SdkMetadataDecoratorTransform<>(transform, List.of(), metadata);
   }
 
   @Override
@@ -61,7 +61,7 @@ class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     List<String> newExtraUpstreamNodeIds = new ArrayList<>(extraUpstreamNodeIds);
     newExtraUpstreamNodeIds.add(node.getNodeId());
 
-    return new SdkPartialTransform<>(
+    return new SdkMetadataDecoratorTransform<>(
         transform, unmodifiableList(newExtraUpstreamNodeIds), metadata);
   }
 
@@ -73,7 +73,7 @@ class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::name, "name");
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
-    return new SdkPartialTransform<>(transform, extraUpstreamNodeIds, mergedMetadata);
+    return new SdkMetadataDecoratorTransform<>(transform, extraUpstreamNodeIds, mergedMetadata);
   }
 
   @Override
@@ -92,7 +92,7 @@ class SdkPartialTransform<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     checkForDuplicateMetadata(metadata, newMetadata, SdkNodeMetadata::timeout, "timeout");
     SdkNodeMetadata mergedMetadata = mergeMetadata(metadata, newMetadata);
 
-    return new SdkPartialTransform<>(transform, extraUpstreamNodeIds, mergedMetadata);
+    return new SdkMetadataDecoratorTransform<>(transform, extraUpstreamNodeIds, mergedMetadata);
   }
 
   @Override

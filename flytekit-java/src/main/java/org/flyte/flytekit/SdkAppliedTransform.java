@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+/**
+ * A {@link SdkTransform} with its inputs applied, so converting it from {@code
+ * SdkTransform<OriginalInputT, OutputT>} to a {@code SdkTransform<Void, OutputT>}.
+ */
 class SdkAppliedTransform<OriginalInputT, OutputT> extends SdkTransform<Void, OutputT> {
   private final SdkTransform<OriginalInputT, OutputT> transform;
   private final OriginalInputT appliedInputs;

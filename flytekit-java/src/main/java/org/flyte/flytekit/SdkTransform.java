@@ -50,14 +50,14 @@ public abstract class SdkTransform<InputT, OutputT> {
       Map<String, SdkBindingData<?>> inputs);
 
   public SdkTransform<InputT, OutputT> withUpstreamNode(SdkNode<?> node) {
-    return SdkPartialTransform.of(this, List.of(node.getNodeId()));
+    return SdkMetadataDecoratorTransform.of(this, List.of(node.getNodeId()));
   }
 
   public SdkTransform<InputT, OutputT> withNameOverride(String name) {
     requireNonNull(name, "Name override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().name(name).build();
-    return SdkPartialTransform.of(this, metadata);
+    return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
   SdkTransform<InputT, OutputT> withNameOverrideIfNotSet(String name) {
@@ -68,7 +68,7 @@ public abstract class SdkTransform<InputT, OutputT> {
     requireNonNull(timeout, "Timeout override cannot be null");
 
     SdkNodeMetadata metadata = SdkNodeMetadata.builder().timeout(timeout).build();
-    return SdkPartialTransform.of(this, metadata);
+    return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
   public String getName() {
@@ -80,10 +80,9 @@ public abstract class SdkTransform<InputT, OutputT> {
     boolean hasProperties = !variableNames.isEmpty();
     if (inputs == null && hasProperties) {
       throw new IllegalArgumentException(
-          String.format(
-              "Null supplied as input for a transform with %s properties", variableNames));
+          "Null supplied as input for a transform with variables: " + variableNames);
     } else if (inputs != null && !hasProperties) {
-      throw new IllegalArgumentException("Null input expected for a transform with no properties");
+      throw new IllegalArgumentException("Null input expected for a transform with no variables");
     }
   }
 }

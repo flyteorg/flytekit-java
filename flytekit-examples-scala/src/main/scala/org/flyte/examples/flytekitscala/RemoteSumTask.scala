@@ -21,8 +21,8 @@ import org.flyte.flytekitscala.SdkScalaType
 import java.lang.Long
 
 case class RemoteSumTaskInput(
-                               a: SdkBindingData[Long],
-                               b: SdkBindingData[Long]
+    a: SdkBindingData[Long],
+    b: SdkBindingData[Long]
 )
 case class RemoteSumTaskOutput(c: SdkBindingData[Long])
 

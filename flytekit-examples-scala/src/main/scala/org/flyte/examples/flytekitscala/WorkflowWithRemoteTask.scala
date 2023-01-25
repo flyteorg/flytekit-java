@@ -24,7 +24,8 @@ import org.flyte.flytekitscala.{
 }
 
 class WorkflowWithRemoteTask
-    extends SdkScalaWorkflow[RemoteSumTaskOutput](
+    extends SdkScalaWorkflow[RemoteSumTaskInput, RemoteSumTaskOutput](
+      SdkScalaType[RemoteSumTaskInput],
       SdkScalaType[RemoteSumTaskOutput]
     ) {
 
@@ -33,7 +34,9 @@ class WorkflowWithRemoteTask
     val b = SdkBindingData.ofInteger(12)
 
     val c = builder
-      .apply(new RemoteSumTask().create.withInput("a", a).withInput("b", b))
+      .apply(
+        new RemoteSumTask().create,
+        RemoteSumTaskInput(a, b))
       .getOutputs
       .c
 

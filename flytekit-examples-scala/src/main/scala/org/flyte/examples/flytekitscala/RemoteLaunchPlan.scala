@@ -28,8 +28,8 @@ case class RemoteLaunchPlanOutput(fib5: SdkBindingData[Long])
 
 class RemoteLaunchPlan {
 
-  /** Note that there is no SdkRemoteWorkflow You need to register a launch plan
-    * for the workflow to achieve using a remote workflow
+  /** Note that there is no SdkRemoteWorkflow. You need to register a launch
+    * plan for the workflow to achieve using a remote workflow.
     */
   def create
       : SdkRemoteLaunchPlan[RemoteLaunchPlanInput, RemoteLaunchPlanOutput] = {

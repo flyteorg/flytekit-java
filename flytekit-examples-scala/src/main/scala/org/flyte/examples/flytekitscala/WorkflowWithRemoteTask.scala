@@ -16,7 +16,12 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekitscala.{SdkBindingData, SdkScalaType, SdkScalaWorkflow, SdkScalaWorkflowBuilder}
+import org.flyte.flytekitscala.{
+  SdkBindingData,
+  SdkScalaType,
+  SdkScalaWorkflow,
+  SdkScalaWorkflowBuilder
+}
 
 class WorkflowWithRemoteTask
     extends SdkScalaWorkflow[RemoteSumTaskInput, RemoteSumTaskOutput](

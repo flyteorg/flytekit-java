@@ -29,7 +29,7 @@ class RemoteSumTask {
   def create: SdkRemoteTask[RemoteSumTaskInput, RemoteSumTaskOutput] = {
     SdkRemoteTask.create(
       /* domain= */ null,
-      /* project= */ "spotify-flytekit-examples",
+      /* project= */ "flytesnacks",
       /* name= */ "org.flyte.examples.flytekitscala.SumTask",
       SdkScalaType[RemoteSumTaskInput],
       SdkScalaType[RemoteSumTaskOutput]

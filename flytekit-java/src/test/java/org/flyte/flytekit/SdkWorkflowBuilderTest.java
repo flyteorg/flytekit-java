@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +36,6 @@ import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.ComparisonExpression;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.NodeMetadata;
@@ -46,7 +44,6 @@ import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
@@ -59,7 +56,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-// TODO check the changes to these tests as I just tried to make it compile
 @ExtendWith(MockitoExtension.class)
 class SdkWorkflowBuilderTest {
 
@@ -237,8 +233,8 @@ class SdkWorkflowBuilderTest {
   void testDuplicateNodeId() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = inputOfInteger("a");
-    SdkBindingData<Long> b = inputOfInteger("b");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     builder.apply("node-1", new MultiplicationTask(), input);
@@ -260,8 +256,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = inputOfInteger("a");
-    SdkBindingData<Long> b = inputOfInteger("b");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> node1 = builder.apply("node-1", transform, input);
@@ -280,8 +276,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = inputOfInteger("el0");
-    SdkBindingData<Long> b = inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -338,9 +334,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    // TODO FIX ?
-    SdkBindingData<Long> a = inputOfInteger("el0");
-    SdkBindingData<Long> b = inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
 
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
@@ -360,23 +355,14 @@ class SdkWorkflowBuilderTest {
         equalTo(NodeMetadata.builder().name("fancy-el3").timeout(Duration.ofMinutes(15)).build()));
   }
 
-  public <T> SdkBindingData<T> inputOf(String name, LiteralType literalType) {
-    return SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
-  }
-
-  public SdkBindingData<Long> inputOfInteger(String name) {
-    return inputOf(name, LiteralType.ofSimpleType(SimpleType.INTEGER));
-  }
-
   @ParameterizedTest
   @MethodSource("createTransform")
   void testNodeMetadataOverrides_duplicate(
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    // TODO FIX?
-    SdkBindingData<Long> a = this.inputOfInteger("el0");
-    SdkBindingData<Long> b = this.inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);

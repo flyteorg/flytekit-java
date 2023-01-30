@@ -163,9 +163,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
-      return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan") // TODO FIX add inputs
-          );
+      return singletonList(SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan"));
     }
   }
 
@@ -174,10 +172,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
-      return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow())
-              // TODO add test with inputs
-              .withName("OtherTestPlan"));
+      return singletonList(SdkLaunchPlan.of(new TestWorkflow()).withName("OtherTestPlan"));
     }
   }
 

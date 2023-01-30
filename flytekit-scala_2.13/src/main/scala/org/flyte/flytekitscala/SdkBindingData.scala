@@ -39,30 +39,30 @@ object SdkBindingData {
     createSdkBindingData(double)
 
   def ofBoolean(
-                 boolean: Boolean
-               ): SdkJavaBindinigData[Boolean] =
+      boolean: Boolean
+  ): SdkJavaBindinigData[Boolean] =
     createSdkBindingData(boolean)
 
   def ofDateTime(instant: Instant): SdkJavaBindinigData[Instant] =
     createSdkBindingData(instant)
 
   def ofDuration(
-                  duration: Duration
-                ): SdkJavaBindinigData[Duration] = createSdkBindingData(duration)
+      duration: Duration
+  ): SdkJavaBindinigData[Duration] = createSdkBindingData(duration)
 
   def ofCollection[T](
-                       collection: List[T]
-                     ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
+      collection: List[T]
+  ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
 
   def ofCollection[T](
-                       literalType: LiteralType,
-                       collection: List[T]
-                     ): SdkJavaBindinigData[List[T]] =
+      literalType: LiteralType,
+      collection: List[T]
+  ): SdkJavaBindinigData[List[T]] =
     createSdkBindingData(collection, Option(literalType))
 
   def ofStringCollection(
-                          collection: List[String]
-                        ): SdkJavaBindinigData[List[String]] =
+      collection: List[String]
+  ): SdkJavaBindinigData[List[String]] =
     createSdkBindingData(
       collection,
       Option(
@@ -73,8 +73,8 @@ object SdkBindingData {
     )
 
   def ofIntegerCollection(
-                           collection: List[Long]
-                         ): SdkJavaBindinigData[List[Long]] =
+      collection: List[Long]
+  ): SdkJavaBindinigData[List[Long]] =
     createSdkBindingData(
       collection,
       Option(
@@ -85,8 +85,8 @@ object SdkBindingData {
     )
 
   def ofBooleanCollection(
-                           collection: List[Boolean]
-                         ): SdkJavaBindinigData[List[Boolean]] =
+      collection: List[Boolean]
+  ): SdkJavaBindinigData[List[Boolean]] =
     createSdkBindingData(
       collection,
       Option(
@@ -97,8 +97,8 @@ object SdkBindingData {
     )
 
   def ofFloatCollection(
-                         collection: List[Double]
-                       ): SdkJavaBindinigData[List[Double]] =
+      collection: List[Double]
+  ): SdkJavaBindinigData[List[Double]] =
     createSdkBindingData(
       collection,
       Option(
@@ -107,8 +107,8 @@ object SdkBindingData {
     )
 
   def ofInstantCollection(
-                           collection: List[Instant]
-                         ): SdkJavaBindinigData[List[Instant]] =
+      collection: List[Instant]
+  ): SdkJavaBindinigData[List[Instant]] =
     createSdkBindingData(
       collection,
       Option(
@@ -119,8 +119,8 @@ object SdkBindingData {
     )
 
   def ofDurationCollection(
-                            collection: List[Duration]
-                          ): SdkJavaBindinigData[List[Duration]] =
+      collection: List[Duration]
+  ): SdkJavaBindinigData[List[Duration]] =
     createSdkBindingData(
       collection,
       Option(
@@ -131,12 +131,12 @@ object SdkBindingData {
     )
 
   def ofMap[T](
-                map: Map[String, T]
-              ): SdkJavaBindinigData[Map[String, T]] = createSdkBindingData(map)
+      map: Map[String, T]
+  ): SdkJavaBindinigData[Map[String, T]] = createSdkBindingData(map)
 
   def ofStringMap(
-                   map: Map[String, String]
-                 ): SdkJavaBindinigData[Map[String, String]] =
+      map: Map[String, String]
+  ): SdkJavaBindinigData[Map[String, String]] =
     createSdkBindingData(
       map,
       Option(
@@ -145,8 +145,8 @@ object SdkBindingData {
     )
 
   def ofIntegerMap(
-                    map: Map[String, Long]
-                  ): SdkJavaBindinigData[Map[String, Long]] =
+      map: Map[String, Long]
+  ): SdkJavaBindinigData[Map[String, Long]] =
     createSdkBindingData(
       map,
       Option(
@@ -155,8 +155,8 @@ object SdkBindingData {
     )
 
   def ofBooleanMap(
-                    map: Map[String, Boolean]
-                  ): SdkJavaBindinigData[Map[String, Boolean]] =
+      map: Map[String, Boolean]
+  ): SdkJavaBindinigData[Map[String, Boolean]] =
     createSdkBindingData(
       map,
       Option(
@@ -165,8 +165,8 @@ object SdkBindingData {
     )
 
   def ofFloatMap(
-                  map: Map[String, Double]
-                ): SdkJavaBindinigData[Map[String, Double]] =
+      map: Map[String, Double]
+  ): SdkJavaBindinigData[Map[String, Double]] =
     createSdkBindingData(
       map,
       Option(
@@ -175,8 +175,8 @@ object SdkBindingData {
     )
 
   def ofInstantMap(
-                    map: Map[String, Instant]
-                  ): SdkJavaBindinigData[Map[String, Instant]] =
+      map: Map[String, Instant]
+  ): SdkJavaBindinigData[Map[String, Instant]] =
     createSdkBindingData(
       map,
       Option(
@@ -187,8 +187,8 @@ object SdkBindingData {
     )
 
   def ofDurationMap(
-                     map: Map[String, Duration]
-                   ): SdkJavaBindinigData[Map[String, Duration]] =
+      map: Map[String, Duration]
+  ): SdkJavaBindinigData[Map[String, Duration]] =
     createSdkBindingData(
       map,
       Option(
@@ -199,15 +199,15 @@ object SdkBindingData {
     )
 
   def ofMap[T](
-                literalType: LiteralType,
-                map: Map[String, T]
-              ): SdkJavaBindinigData[Map[String, T]] =
+      literalType: LiteralType,
+      map: Map[String, T]
+  ): SdkJavaBindinigData[Map[String, T]] =
     createSdkBindingData(map, Option(literalType))
 
   private def toBindingData(
-                             value: Any,
-                             literalTypeOpt: Option[LiteralType]
-                           ): (BindingData, LiteralType) = {
+      value: Any,
+      literalTypeOpt: Option[LiteralType]
+  ): (BindingData, LiteralType) = {
     value match {
       case string: String =>
         (
@@ -312,9 +312,9 @@ object SdkBindingData {
   }
 
   private def createSdkBindingData[T](
-                                       value: T,
-                                       literalTypeOpt: Option[LiteralType] = None
-                                     ): SdkJavaBindinigData[T] = {
+      value: T,
+      literalTypeOpt: Option[LiteralType] = None
+  ): SdkJavaBindinigData[T] = {
     val (bindingData, literalType) = toBindingData(value, literalTypeOpt)
     SdkJavaBindinigData.create(bindingData, literalType, value)
   }

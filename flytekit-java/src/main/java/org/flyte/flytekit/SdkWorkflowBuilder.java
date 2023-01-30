@@ -16,11 +16,8 @@
  */
 package org.flyte.flytekit;
 
-import org.flyte.api.v1.LiteralType;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
-import static org.flyte.api.v1.Node.START_NODE_ID;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -96,5 +93,4 @@ public class SdkWorkflowBuilder {
   public Map<String, SdkNode<?>> getNodes() {
     return unmodifiableMap(new LinkedHashMap<>(nodes));
   }
-
 }

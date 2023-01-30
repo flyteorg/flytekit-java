@@ -140,7 +140,7 @@ class SdkWorkflowBuilderTest {
             .nodes(List.of(node0, node1))
             .build();
 
-    WorkflowTemplate actual = workflow.builderToIdlTemplate(builder, workflow.getInputPromise(), output);
+    WorkflowTemplate actual = workflow.toIdlTemplate(builder, workflow.getInputPromise(), output);
     assertEquals(expected.interface_(), actual.interface_());
     assertEquals(expected.metadata(), actual.metadata());
     assertEquals(expected.outputs(), actual.outputs());
@@ -155,7 +155,7 @@ class SdkWorkflowBuilderTest {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     ConditionalWorkflow workflow = new ConditionalWorkflow();
-    workflow.expand(builder, workflow.getInputPromise());
+    TestUnaryIntegerOutput output = workflow.expand(builder, workflow.getInputPromise());
 
     Node caseNode =
         Node.builder()
@@ -229,7 +229,7 @@ class SdkWorkflowBuilderTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.toIdlTemplate());
+    assertEquals(expected, workflow.toIdlTemplate(builder, workflow.getInputPromise(), output));
   }
 
   @Test
@@ -363,7 +363,6 @@ class SdkWorkflowBuilderTest {
     return SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
   }
 
-
   public SdkBindingData<Long> inputOfInteger(String name) {
     return inputOf(name, LiteralType.ofSimpleType(SimpleType.INTEGER));
   }
@@ -404,11 +403,7 @@ class SdkWorkflowBuilderTest {
     return TypedInterface.builder()
         .inputs(
             singletonMap(
-                "in",
-                Variable.builder()
-                    .literalType(LiteralTypes.INTEGER)
-                    .description("")
-                    .build()))
+                "in", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .outputs(
             singletonMap(
                 "o", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
@@ -501,7 +496,10 @@ class SdkWorkflowBuilderTest {
     public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestPairIntegerInput input) {
 
       SdkNode<TestUnaryIntegerOutput> multiply =
-          builder.apply("multiply", new MultiplicationTask(), TestPairIntegerInput.create(input.a(), input.b()));
+          builder.apply(
+              "multiply",
+              new MultiplicationTask(),
+              TestPairIntegerInput.create(input.a(), input.b()));
 
       return TestUnaryIntegerOutput.create(multiply.getOutputs().o());
     }

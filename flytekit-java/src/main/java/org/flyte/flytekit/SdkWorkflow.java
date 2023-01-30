@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit;
 
+import static org.flyte.api.v1.Node.START_NODE_ID;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,8 +26,6 @@ import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
-
-import static org.flyte.api.v1.Node.START_NODE_ID;
 
 public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkType<InputT> inputType;
@@ -69,7 +69,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
             .build();
 
     Map<String, SdkBindingData<?>> outputs =
-            getOutputType().toSdkBindingMap(output).entrySet().stream()
+        getOutputType().toSdkBindingMap(output).entrySet().stream()
             .collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
@@ -101,18 +101,15 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
   }
 
   // what is this used for
-  public WorkflowTemplate toIdlTemplate() {
+  public WorkflowTemplate expandAndConvertToIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
     OutputT output = this.expand(builder, inputPromise);
-
-    Map<String, SdkBindingData<?>> outputs = getOutputType().toSdkBindingMap(output);
-    Map<String, SdkBindingData<?>> inputs = getInputType().toSdkBindingMap(inputPromise);
-
-    return WorkflowTemplateIdl.ofBuilder(builder, inputs, outputs);
+    return toIdlTemplate(builder, inputPromise, output);
   }
 
-  public WorkflowTemplate builderToIdlTemplate(SdkWorkflowBuilder builder, InputT inputs, OutputT outputs) {
-    return WorkflowTemplateIdl.ofBuilder(builder, getInputType().toSdkBindingMap(inputs), getOutputType().toSdkBindingMap(outputs));
+  public WorkflowTemplate toIdlTemplate(
+      SdkWorkflowBuilder builder, InputT inputs, OutputT outputs) {
+    return WorkflowTemplateIdl.ofBuilder(
+        builder, getInputType().toSdkBindingMap(inputs), getOutputType().toSdkBindingMap(outputs));
   }
-
 }

@@ -31,7 +31,10 @@ class FibonacciWorkflow
       SdkScalaType[FibonacciWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkWorkflowBuilder, input: FibonacciWorkflowInput): FibonacciWorkflowOutput = {
+  override def expand(
+      builder: SdkWorkflowBuilder,
+      input: FibonacciWorkflowInput
+  ): FibonacciWorkflowOutput = {
 
     val fib2 = builder
       .apply("fib-2", new SumTask(), SumTaskInput(input.fib0, input.fib1))

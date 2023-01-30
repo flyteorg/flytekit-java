@@ -25,7 +25,10 @@ class WorkflowWithRemoteTask
       SdkScalaType[RemoteSumTaskOutput]
     ) {
 
-  override def expand(builder: SdkWorkflowBuilder, input: RemoteSumTaskInput): RemoteSumTaskOutput = {
+  override def expand(
+      builder: SdkWorkflowBuilder,
+      input: RemoteSumTaskInput
+  ): RemoteSumTaskOutput = {
     val a = SdkBindingData.ofInteger(10)
     val b = SdkBindingData.ofInteger(12)
 

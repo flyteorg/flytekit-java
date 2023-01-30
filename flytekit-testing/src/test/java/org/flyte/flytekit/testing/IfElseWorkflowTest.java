@@ -85,10 +85,10 @@ public class IfElseWorkflowTest {
       public abstract SdkBindingData<Long> d();
 
       public static BranchNodeWorkflow.Input create(
-              SdkBindingData<Long> a,
-              SdkBindingData<Long> b,
-              SdkBindingData<Long> c,
-              SdkBindingData<Long> d) {
+          SdkBindingData<Long> a,
+          SdkBindingData<Long> b,
+          SdkBindingData<Long> c,
+          SdkBindingData<Long> d) {
         return new AutoValue_IfElseWorkflowTest_BranchNodeWorkflow_Input(a, b, c, d);
       }
     }
@@ -100,7 +100,8 @@ public class IfElseWorkflowTest {
     }
 
     @Override
-    public ConstStringTask.Output expand(SdkWorkflowBuilder builder, BranchNodeWorkflow.Input input) {
+    public ConstStringTask.Output expand(
+        SdkWorkflowBuilder builder, BranchNodeWorkflow.Input input) {
       SdkBindingData<Long> a = input.a();
       SdkBindingData<Long> b = input.b();
       SdkBindingData<Long> c = input.c();
@@ -167,8 +168,6 @@ public class IfElseWorkflowTest {
       return ConstStringTask.Output.create(value);
     }
   }
-
-
 
   static class ConstStringTask
       extends SdkRunnableTask<ConstStringTask.Input, ConstStringTask.Output> {

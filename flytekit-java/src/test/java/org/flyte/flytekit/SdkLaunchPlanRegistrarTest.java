@@ -18,7 +18,6 @@ package org.flyte.flytekit;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkConfig.DOMAIN_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.PROJECT_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.VERSION_ENV_VAR;
@@ -36,19 +35,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
-import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
-import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 
 class SdkLaunchPlanRegistrarTest {
@@ -174,9 +164,8 @@ class SdkLaunchPlanRegistrarTest {
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
       return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow())
-              .withName("TestPlan") // TODO FIX add inputs
-      );
+          SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan") // TODO FIX add inputs
+          );
     }
   }
 
@@ -187,7 +176,7 @@ class SdkLaunchPlanRegistrarTest {
     public List<SdkLaunchPlan> getLaunchPlans() {
       return singletonList(
           SdkLaunchPlan.of(new TestWorkflow())
-                  // TODO add test with inputs
+              // TODO add test with inputs
               .withName("OtherTestPlan"));
     }
   }
@@ -223,9 +212,6 @@ class SdkLaunchPlanRegistrarTest {
               .withCronSchedule(SdkCronSchedule.of("daily", Duration.ofHours(1))));
     }
   }
-
-
-
 
   public static class TestWorkflow extends SdkWorkflow<Void, Void> {
 

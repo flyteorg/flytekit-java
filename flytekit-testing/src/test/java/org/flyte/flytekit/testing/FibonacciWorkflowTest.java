@@ -19,7 +19,6 @@ package org.flyte.flytekit.testing;
 import static org.flyte.flytekit.SdkBindingData.ofInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.in;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
@@ -142,13 +141,20 @@ public class FibonacciWorkflowTest {
     }
 
     @Override
-    public FibonacciWorkflowOutputs expand(SdkWorkflowBuilder builder, FibonacciWorkflowInputs inputs) {
+    public FibonacciWorkflowOutputs expand(
+        SdkWorkflowBuilder builder, FibonacciWorkflowInputs inputs) {
 
       SdkBindingData<Long> fib2 =
-          builder.apply("fib-2", new SumTask(), SumInput.create(inputs.fib0(), inputs.fib1())).getOutputs().c();
+          builder
+              .apply("fib-2", new SumTask(), SumInput.create(inputs.fib0(), inputs.fib1()))
+              .getOutputs()
+              .c();
 
       SdkBindingData<Long> fib3 =
-          builder.apply("fib-3", new SumTask(), SumInput.create(inputs.fib1(), fib2)).getOutputs().c();
+          builder
+              .apply("fib-3", new SumTask(), SumInput.create(inputs.fib1(), fib2))
+              .getOutputs()
+              .c();
 
       SdkBindingData<Long> fib4 =
           builder.apply("fib-4", new SumTask(), SumInput.create(fib2, fib3)).getOutputs().c();
@@ -156,7 +162,7 @@ public class FibonacciWorkflowTest {
       SdkBindingData<Long> fib5 =
           builder.apply("fib-5", new SumTask(), SumInput.create(fib3, fib4)).getOutputs().c();
 
-      return FibonacciWorkflowOutputs.create(fib2,fib3,fib4,fib5);
+      return FibonacciWorkflowOutputs.create(fib2, fib3, fib4, fib5);
     }
   }
 
@@ -182,14 +188,13 @@ public class FibonacciWorkflowTest {
 
     public abstract SdkBindingData<Long> fib5();
 
-    public static FibonacciWorkflowOutputs create(SdkBindingData<Long> fib2,
-                                                  SdkBindingData<Long> fib3,
-                                                  SdkBindingData<Long> fib4,
-                                                  SdkBindingData<Long> fib5) {
-      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowOutputs(fib2,fib3,fib4,fib5);
+    public static FibonacciWorkflowOutputs create(
+        SdkBindingData<Long> fib2,
+        SdkBindingData<Long> fib3,
+        SdkBindingData<Long> fib4,
+        SdkBindingData<Long> fib5) {
+      return new AutoValue_FibonacciWorkflowTest_FibonacciWorkflowOutputs(fib2, fib3, fib4, fib5);
     }
-
-
   }
 
   /** FibonacciWorkflow, but using RemoteSumTask instead. */
@@ -202,11 +207,15 @@ public class FibonacciWorkflowTest {
     }
 
     @Override
-    public FibonacciWorkflowOutputs expand(SdkWorkflowBuilder builder, FibonacciWorkflowInputs inputs) {
+    public FibonacciWorkflowOutputs expand(
+        SdkWorkflowBuilder builder, FibonacciWorkflowInputs inputs) {
 
       SdkBindingData<Long> fib2 =
           builder
-              .apply("fib-2", RemoteSumTask.create(), RemoteSumInput.create(inputs.fib0(), inputs.fib1()))
+              .apply(
+                  "fib-2",
+                  RemoteSumTask.create(),
+                  RemoteSumInput.create(inputs.fib0(), inputs.fib1()))
               .getOutputs()
               .c();
 
@@ -228,7 +237,7 @@ public class FibonacciWorkflowTest {
               .getOutputs()
               .c();
 
-      return FibonacciWorkflowOutputs.create(fib2,fib3,fib4,fib5);
+      return FibonacciWorkflowOutputs.create(fib2, fib3, fib4, fib5);
     }
   }
 }

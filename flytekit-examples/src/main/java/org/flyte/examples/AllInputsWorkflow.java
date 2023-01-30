@@ -63,7 +63,17 @@ public class AllInputsWorkflow
 
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 
-    return AllInputsWorkflowOutput.create(outputs.i(), outputs.f(), outputs.s(), outputs.b(), outputs.t(), outputs.d(), outputs.l(), outputs.m(), outputs.emptyList(), outputs.emptyMap());
+    return AllInputsWorkflowOutput.create(
+        outputs.i(),
+        outputs.f(),
+        outputs.s(),
+        outputs.b(),
+        outputs.t(),
+        outputs.d(),
+        outputs.l(),
+        outputs.m(),
+        outputs.emptyList(),
+        outputs.emptyMap());
   }
 
   @AutoValue

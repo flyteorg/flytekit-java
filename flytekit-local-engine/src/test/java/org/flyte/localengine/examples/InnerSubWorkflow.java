@@ -31,7 +31,10 @@ public class InnerSubWorkflow extends SdkWorkflow<SumTask.Input, TestUnaryIntege
   @Override
   public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, SumTask.Input input) {
     SdkBindingData<Long> c =
-        builder.apply("inner-sum-a-b", new SumTask(), SumTask.Input.create(input.a(), input.b())).getOutputs().o();
+        builder
+            .apply("inner-sum-a-b", new SumTask(), SumTask.Input.create(input.a(), input.b()))
+            .getOutputs()
+            .o();
 
     return TestUnaryIntegerOutput.create(c);
   }

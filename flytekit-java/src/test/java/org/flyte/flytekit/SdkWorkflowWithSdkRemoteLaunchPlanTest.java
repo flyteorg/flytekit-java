@@ -86,7 +86,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.toIdlTemplate());
+    assertEquals(expected, workflow.expandAndConvertToIdlTemplate());
   }
 
   private TypedInterface expectedInterface() {
@@ -122,7 +122,9 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
       SdkNode<TestUnaryBooleanOutput> node1 =
           builder.apply(
-              "some-node-id", new TestSdkRemoteLaunchPlan(), TestPairIntegerInput.create(input.a(), input.b()));
+              "some-node-id",
+              new TestSdkRemoteLaunchPlan(),
+              TestPairIntegerInput.create(input.a(), input.b()));
 
       return TestUnaryBooleanOutput.create(node1.getOutputs().o());
     }

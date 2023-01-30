@@ -36,7 +36,9 @@ public class NestedSubWorkflow extends SdkWorkflow<TestTuple3IntegerInput, TestU
     SdkBindingData<Long> result =
         builder
             .apply(
-                "nested-workflow", new OuterSubWorkflow(), TestTuple3IntegerInput.create(input.a(), input.b(), input.c()))
+                "nested-workflow",
+                new OuterSubWorkflow(),
+                TestTuple3IntegerInput.create(input.a(), input.b(), input.c()))
             .getOutputs()
             .o();
 

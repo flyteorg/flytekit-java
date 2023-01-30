@@ -31,7 +31,10 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 class WorkflowTemplateIdl {
 
-  public static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder, Map<String, SdkBindingData<?>> inputs,  Map<String, SdkBindingData<?>> outputs ) {
+  public static WorkflowTemplate ofBuilder(
+      SdkWorkflowBuilder builder,
+      Map<String, SdkBindingData<?>> inputs,
+      Map<String, SdkBindingData<?>> outputs) {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
     List<Node> nodes =
@@ -51,7 +54,7 @@ class WorkflowTemplateIdl {
         .build();
   }
 
-  static List<Binding> getOutputBindings( Map<String, SdkBindingData<?>> outputs) {
+  static List<Binding> getOutputBindings(Map<String, SdkBindingData<?>> outputs) {
     return outputs.entrySet().stream()
         .map(entry -> getBinding(entry.getKey(), entry.getValue()))
         .collect(toUnmodifiableList());

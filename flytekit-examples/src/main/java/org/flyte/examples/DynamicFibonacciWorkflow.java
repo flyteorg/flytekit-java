@@ -42,7 +42,8 @@ public class DynamicFibonacciWorkflow
   }
 
   @Override
-  public DynamicFibonacciWorkflowTask.Output expand(SdkWorkflowBuilder builder, DynamicFibonacciWorkflow.Input input) {
+  public DynamicFibonacciWorkflowTask.Output expand(
+      SdkWorkflowBuilder builder, DynamicFibonacciWorkflow.Input input) {
 
     SdkBindingData<Long> fibOutput =
         builder

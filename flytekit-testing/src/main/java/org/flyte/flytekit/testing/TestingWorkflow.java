@@ -33,5 +33,4 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
   public OutputT expand(SdkWorkflowBuilder builder, InputT input) {
     return output;
   }
-
 }

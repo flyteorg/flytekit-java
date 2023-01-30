@@ -26,8 +26,6 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 
-import static org.flyte.api.v1.Node.START_NODE_ID;
-
 @AutoService(WorkflowTemplateRegistrar.class)
 public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
   private static final Logger LOG = Logger.getLogger(SdkWorkflowTemplateRegistrar.class.getName());
@@ -65,7 +63,7 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
 
       LOG.fine(String.format("Discovered [%s]", name));
 
-      WorkflowTemplate workflow = sdkWorkflow.toIdlTemplate();
+      WorkflowTemplate workflow = sdkWorkflow.expandAndConvertToIdlTemplate();
       WorkflowTemplate previous = workflows.put(workflowId, workflow);
 
       if (previous != null) {

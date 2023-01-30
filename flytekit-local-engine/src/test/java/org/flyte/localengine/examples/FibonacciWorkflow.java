@@ -37,10 +37,16 @@ public class FibonacciWorkflow
   public Output expand(SdkWorkflowBuilder builder, Input input) {
 
     SdkBindingData<Long> fib2 =
-        builder.apply("fib-2", new SumTask(), SumTask.Input.create(input.fib0(), input.fib1())).getOutputs().o();
+        builder
+            .apply("fib-2", new SumTask(), SumTask.Input.create(input.fib0(), input.fib1()))
+            .getOutputs()
+            .o();
 
     SdkBindingData<Long> fib3 =
-        builder.apply("fib-3", new SumTask(), SumTask.Input.create(input.fib1(), fib2)).getOutputs().o();
+        builder
+            .apply("fib-3", new SumTask(), SumTask.Input.create(input.fib1(), fib2))
+            .getOutputs()
+            .o();
 
     SdkBindingData<Long> fib4 =
         builder.apply("fib-4", new SumTask(), SumTask.Input.create(fib2, fib3)).getOutputs().o();
@@ -48,7 +54,7 @@ public class FibonacciWorkflow
     SdkBindingData<Long> fib5 =
         builder.apply("fib-5", new SumTask(), SumTask.Input.create(fib3, fib4)).getOutputs().o();
 
-    return Output.create(fib4,fib5);
+    return Output.create(fib4, fib5);
   }
 
   @AutoValue
@@ -64,7 +70,8 @@ public class FibonacciWorkflow
 
     public abstract SdkBindingData<Long> fib5();
 
-    public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib4, SdkBindingData<Long> fib5) {
+    public static FibonacciWorkflow.Output create(
+        SdkBindingData<Long> fib4, SdkBindingData<Long> fib5) {
       return new AutoValue_FibonacciWorkflow_Output(fib4, fib5);
     }
   }

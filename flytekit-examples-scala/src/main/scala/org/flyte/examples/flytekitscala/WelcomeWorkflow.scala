@@ -54,7 +54,10 @@ class WelcomeWorkflow
       SdkScalaType[WelcomeWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkWorkflowBuilder, input: WelcomeWorkflowInput): WelcomeWorkflowOutput = {
+  override def expand(
+      builder: SdkWorkflowBuilder,
+      input: WelcomeWorkflowInput
+  ): WelcomeWorkflowOutput = {
     // defines the input of the workflow
 
     // uses the workflow input as the task input of the GreetTask

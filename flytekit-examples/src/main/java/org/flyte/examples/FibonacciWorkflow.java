@@ -42,7 +42,10 @@ public class FibonacciWorkflow
     SumTask.SumOutput outputs = apply.getOutputs();
     SdkBindingData<Long> fib2 = outputs.c();
     SdkBindingData<Long> fib3 =
-        builder.apply("fib-3", new SumTask(), SumTask.SumInput.create(input.fib1(), fib2)).getOutputs().c();
+        builder
+            .apply("fib-3", new SumTask(), SumTask.SumInput.create(input.fib1(), fib2))
+            .getOutputs()
+            .c();
     SdkBindingData<Long> fib4 =
         builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs().c();
     SdkBindingData<Long> fib5 =

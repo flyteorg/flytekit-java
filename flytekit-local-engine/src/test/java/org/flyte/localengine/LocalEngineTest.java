@@ -75,7 +75,7 @@ class LocalEngineTest {
     Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
     Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(5L)));
 
-    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().toIdlTemplate();
+    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().expandAndConvertToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -133,7 +133,7 @@ class LocalEngineTest {
 
   @Test
   public void testBindingMap() {
-    WorkflowTemplate workflow = new MapWorkflow().toIdlTemplate();
+    WorkflowTemplate workflow = new MapWorkflow().expandAndConvertToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     Map<String, Literal> outputs =
@@ -223,7 +223,7 @@ class LocalEngineTest {
 
   @Test
   public void testRetryableTask_failed() {
-    WorkflowTemplate workflow = new RetryableWorkflow().toIdlTemplate();
+    WorkflowTemplate workflow = new RetryableWorkflow().expandAndConvertToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -562,7 +562,11 @@ class LocalEngineTest {
               .apply(
                   "decide",
                   when("eq_1", eq(ofInteger(1L), input.x()), new NoOp(), NoOpType.create(input.x()))
-                      .when("eq_2", eq(ofInteger(2L), input.x()), new NoOp(), NoOpType.create(input.x())))
+                      .when(
+                          "eq_2",
+                          eq(ofInteger(2L), input.x()),
+                          new NoOp(),
+                          NoOpType.create(input.x())))
               .getOutputs()
               .x();
 

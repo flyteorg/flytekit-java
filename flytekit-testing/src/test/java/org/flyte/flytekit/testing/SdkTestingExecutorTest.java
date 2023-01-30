@@ -87,8 +87,9 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow<>(
             JacksonSdkType.of(TestWorkflowIO.class), JacksonSdkType.of(TestWorkflowIO.class)) {
           @Override
-          public TestWorkflowIO expand(SdkWorkflowBuilder builder,TestWorkflowIO input) {
-            return TestWorkflowIO.create(input.b(),input.datetime(),input.duration(),input.f(),input.i(),input.s());
+          public TestWorkflowIO expand(SdkWorkflowBuilder builder, TestWorkflowIO input) {
+            return TestWorkflowIO.create(
+                input.b(), input.datetime(), input.duration(), input.f(), input.i(), input.s());
           }
         };
 
@@ -113,7 +114,9 @@ public class SdkTestingExecutorTest {
   @Test
   public void testGetOutput_doesntExist() {
     SdkWorkflow<TestUnaryIntegerIO, TestUnaryIntegerIO> workflow =
-        new SdkWorkflow<>(JacksonSdkType.of(TestUnaryIntegerIO.class), JacksonSdkType.of(TestUnaryIntegerIO.class)) {
+        new SdkWorkflow<>(
+            JacksonSdkType.of(TestUnaryIntegerIO.class),
+            JacksonSdkType.of(TestUnaryIntegerIO.class)) {
           @Override
           public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, TestUnaryIntegerIO input) {
             return TestUnaryIntegerIO.create(input.integer());
@@ -137,7 +140,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public TestUnaryStringIO expand(SdkWorkflowBuilder builder, TestUnaryStringIO input) {
-              return TestUnaryStringIO.create(input.string());
+            return TestUnaryStringIO.create(input.string());
           }
         };
 
@@ -160,7 +163,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public TestUnaryStringIO expand(SdkWorkflowBuilder builder, TestUnaryStringIO input) {
-              return TestUnaryStringIO.create(input.string());
+            return TestUnaryStringIO.create(input.string());
           }
         };
 
@@ -182,7 +185,7 @@ public class SdkTestingExecutorTest {
             JacksonSdkType.of(TestUnaryStringIO.class)) {
           @Override
           public TestUnaryStringIO expand(SdkWorkflowBuilder builder, TestUnaryStringIO input) {
-              return TestUnaryStringIO.create(input.string());
+            return TestUnaryStringIO.create(input.string());
           }
         };
 
@@ -308,10 +311,12 @@ public class SdkTestingExecutorTest {
           public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, SumLaunchPlanInput input) {
             SdkBindingData<Long> c =
                 builder
-                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(input.a(), input.b()))
+                    .apply(
+                        "launchplanref",
+                        launchplanRef,
+                        SumLaunchPlanInput.create(input.a(), input.b()))
                     .getOutputs()
                     .c();
-
 
             return TestUnaryIntegerIO.create(c);
           }
@@ -349,7 +354,10 @@ public class SdkTestingExecutorTest {
           public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, SumLaunchPlanInput input) {
             SdkBindingData<Long> c =
                 builder
-                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(input.a(), input.b()))
+                    .apply(
+                        "launchplanref",
+                        launchplanRef,
+                        SumLaunchPlanInput.create(input.a(), input.b()))
                     .getOutputs()
                     .c();
 
@@ -396,7 +404,10 @@ public class SdkTestingExecutorTest {
           public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, SumLaunchPlanInput input) {
             SdkBindingData<Long> c =
                 builder
-                    .apply("launchplanref", launchplanRef, SumLaunchPlanInput.create(input.a(), input.b()))
+                    .apply(
+                        "launchplanref",
+                        launchplanRef,
+                        SumLaunchPlanInput.create(input.a(), input.b()))
                     .getOutputs()
                     .c();
 
@@ -479,7 +490,7 @@ public class SdkTestingExecutorTest {
 
     @Override
     public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, TestUnaryIntegerIO input) {
-        return TestUnaryIntegerIO.create(input.integer());
+      return TestUnaryIntegerIO.create(input.integer());
     }
   }
 

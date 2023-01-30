@@ -25,7 +25,10 @@ class WorkflowWithRemoteLaunchPlan
       SdkScalaType[RemoteLaunchPlanOutput]
     ) {
 
-  override def expand(builder: SdkWorkflowBuilder, input: RemoteLaunchPlanInput): RemoteLaunchPlanOutput = {
+  override def expand(
+      builder: SdkWorkflowBuilder,
+      input: RemoteLaunchPlanInput
+  ): RemoteLaunchPlanOutput = {
     val fib0 = SdkBindingData.ofInteger(0L)
     val fib1 = SdkBindingData.ofInteger(1L)
 

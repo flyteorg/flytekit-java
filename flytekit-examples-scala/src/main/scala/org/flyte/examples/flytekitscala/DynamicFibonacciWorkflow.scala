@@ -17,9 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
-import org.flyte.flytekitscala.{
-  SdkScalaType,
-}
+import org.flyte.flytekitscala.{SdkScalaType}
 
 case class DynamicFibonacciWorkflowInput(n: SdkBindingData[Long])
 case class DynamicFibonacciWorkflowOutput(output: SdkBindingData[Long])
@@ -32,7 +30,10 @@ class DynamicFibonacciWorkflow
       SdkScalaType[DynamicFibonacciWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkWorkflowBuilder, input: DynamicFibonacciWorkflowInput): DynamicFibonacciWorkflowOutput = {
+  override def expand(
+      builder: SdkWorkflowBuilder,
+      input: DynamicFibonacciWorkflowInput
+  ): DynamicFibonacciWorkflowOutput = {
 
     val fibonacci = builder.apply(
       "fibonacci",

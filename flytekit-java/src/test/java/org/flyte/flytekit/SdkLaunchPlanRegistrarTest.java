@@ -256,9 +256,8 @@ class SdkLaunchPlanRegistrarTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      builder.inputOfString("foo");
-      builder.inputOfString("default-foo");
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+      return null;
     }
   }
 
@@ -269,8 +268,9 @@ class SdkLaunchPlanRegistrarTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // Do nothing
+      return null;
     }
   }
 }

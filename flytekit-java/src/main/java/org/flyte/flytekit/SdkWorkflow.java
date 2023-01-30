@@ -30,10 +30,12 @@ import static org.flyte.api.v1.Node.START_NODE_ID;
 public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
+  private final InputT inputPromise;
 
   protected SdkWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
+    this.inputPromise = getInputType().promiseFor(START_NODE_ID);
   }
 
   public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
@@ -51,9 +53,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
     SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
 
-    InputT input = getInputPromise();
-
-    OutputT output = expand(innerBuilder, input);
+    OutputT output = expand(innerBuilder, inputPromise);
 
     Map<String, Variable> inputVariableMap = getInputType().getVariableMap();
 
@@ -98,16 +98,15 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
   }
 
   protected InputT getInputPromise() {
-    return getInputType().promiseFor(START_NODE_ID);
+    return inputPromise;
   }
 
   public WorkflowTemplate toIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    InputT input = inputType.promiseFor(START_NODE_ID);
-    OutputT output = this.expand(builder, input);
+    OutputT output = this.expand(builder, inputPromise);
 
     Map<String, SdkBindingData<?>> outputs = getOutputType().toSdkBindingMap(output);
-    Map<String, SdkBindingData<?>> inputs = getInputType().toSdkBindingMap(input);
+    Map<String, SdkBindingData<?>> inputs = getInputType().toSdkBindingMap(inputPromise);
 
     return WorkflowTemplateIdl.ofBuilder(builder, inputs, outputs);
   }

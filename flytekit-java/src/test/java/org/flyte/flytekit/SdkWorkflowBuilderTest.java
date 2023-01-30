@@ -74,7 +74,7 @@ class SdkWorkflowBuilderTest {
 
     Times4Workflow workflow = new Times4Workflow();
 
-    workflow.expand(builder, workflow.getInputPromise());
+    TestUnaryIntegerOutput output = workflow.expand(builder, workflow.getInputPromise());
 
     Node node0 =
         Node.builder()
@@ -407,7 +407,7 @@ class SdkWorkflowBuilderTest {
                 "in",
                 Variable.builder()
                     .literalType(LiteralTypes.INTEGER)
-                    .description("Enter value to square")
+                    .description("")
                     .build()))
         .outputs(
             singletonMap(

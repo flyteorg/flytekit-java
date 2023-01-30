@@ -45,7 +45,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
     // TODO FIX?
     WorkflowExample workflow = new WorkflowExample();
-    TestUnaryBooleanOutput output = workflow.expand(builder, workflow.getInputPromise());
+    workflow.expand(builder, workflow.getInputPromise());
 
     Node expectedNode =
         Node.builder()

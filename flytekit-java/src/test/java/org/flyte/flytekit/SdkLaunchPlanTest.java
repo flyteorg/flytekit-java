@@ -248,15 +248,8 @@ class SdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      builder.inputOfInteger("integer");
-      builder.inputOfFloat("float");
-      builder.inputOfString("string");
-      builder.inputOfBoolean("boolean");
-      builder.inputOfDatetime("datetime");
-      builder.inputOfDuration("duration");
-      builder.inputOfInteger("a");
-      builder.inputOfInteger("b");
+    public Void expand(SdkWorkflowBuilder builder, TestWorkflowInput input) {
+      return null;
     }
   }
 
@@ -376,8 +369,9 @@ class SdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // no inputs
+      return null;
     }
   }
 }

@@ -49,21 +49,20 @@ public class CollatzConjectureStepWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> x = builder.inputOfInteger("x");
+  public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, Input input) {
     SdkBindingData<Boolean> isOdd =
-        builder.apply("is_odd", new IsEvenTask(), IsEvenTask.Input.create(x)).getOutputs().res();
+        builder.apply("is_odd", new IsEvenTask(), IsEvenTask.Input.create(input.x())).getOutputs().res();
 
     SdkBindingData<Long> nextX =
         builder
             .apply(
                 "decide",
-                when("was_even", isTrue(isOdd), new Divide(), Divide.Input.create(x, ofInteger(2L)))
-                    .otherwise("was_odd", new ThreeXPlusOne(), ThreeXPlusOne.Input.create(x)))
+                when("was_even", isTrue(isOdd), new Divide(), Divide.Input.create(input.x(), ofInteger(2L)))
+                    .otherwise("was_odd", new ThreeXPlusOne(), ThreeXPlusOne.Input.create(input.x())))
             .getOutputs()
             .o();
 
-    builder.output("nextX", nextX);
+    return TestUnaryIntegerOutput.create(nextX);
   }
 
   @AutoService(SdkRunnableTask.class)

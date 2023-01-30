@@ -236,7 +236,8 @@ public abstract class SdkLaunchPlan {
   }
 
   private <T> void verifyNonEmptyWorkflowInput(Map<String, T> newInputTypes, String inputType) {
-    if (workflowInputTypeMap().isEmpty() && !newInputTypes.isEmpty()) {
+    Map<String, LiteralType> workflowInputTypeMap = workflowInputTypeMap();
+    if (workflowInputTypeMap.isEmpty() && !newInputTypes.isEmpty()) {
       String message =
           String.format(
               "invalid launch plan %s inputs, expected none but found %s",
@@ -250,7 +251,8 @@ public abstract class SdkLaunchPlan {
       String inputName = lpInputType.getKey();
       LiteralType lpType = lpInputType.getValue();
 
-      LiteralType wfType = workflowInputTypeMap().get(inputName);
+      Map<String, LiteralType> workflowInputTypeMap = workflowInputTypeMap();
+      LiteralType wfType = workflowInputTypeMap.get(inputName);
 
       if (wfType == null) {
         String message = String.format("unexpected %s input %s", inputType, inputName);

@@ -93,14 +93,14 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
   }
 
   protected Map<String, SdkBindingData<?>> getInputSdkBindingMap() {
-    InputT input = inputType.promiseFor(START_NODE_ID);
-    return getInputType().toSdkBindingMap(input);
+    return getInputType().toSdkBindingMap(inputPromise);
   }
 
   protected InputT getInputPromise() {
     return inputPromise;
   }
 
+  // what is this used for
   public WorkflowTemplate toIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
     OutputT output = this.expand(builder, inputPromise);
@@ -110,4 +110,9 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
     return WorkflowTemplateIdl.ofBuilder(builder, inputs, outputs);
   }
+
+  public WorkflowTemplate builderToIdlTemplate(SdkWorkflowBuilder builder, InputT inputs, OutputT outputs) {
+    return WorkflowTemplateIdl.ofBuilder(builder, getInputType().toSdkBindingMap(inputs), getOutputType().toSdkBindingMap(outputs));
+  }
+
 }

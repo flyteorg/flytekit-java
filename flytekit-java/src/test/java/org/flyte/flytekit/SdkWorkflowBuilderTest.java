@@ -140,7 +140,7 @@ class SdkWorkflowBuilderTest {
             .nodes(List.of(node0, node1))
             .build();
 
-    WorkflowTemplate actual = workflow.toIdlTemplate();
+    WorkflowTemplate actual = workflow.builderToIdlTemplate(builder, workflow.getInputPromise(), output);
     assertEquals(expected.interface_(), actual.interface_());
     assertEquals(expected.metadata(), actual.metadata());
     assertEquals(expected.outputs(), actual.outputs());

@@ -350,7 +350,7 @@ class LocalEngineTest {
                     .build())
             .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
-    assertEquals(ImmutableMap.of("nextX", expectedLiteral), outputs);
+    assertEquals(ImmutableMap.of("o", expectedLiteral), outputs);
     assertEquals(expectedEvents, listener.actions);
   }
 
@@ -375,7 +375,7 @@ class LocalEngineTest {
                     .build())
             .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
-    assertEquals(ImmutableMap.of("nextX", xLiteral), outputs);
+    assertEquals(ImmutableMap.of("x", xLiteral), outputs);
     for (int i = 0; i < expectedEvents.size(); i++) {
       List<Object> expected = expectedEvents.get(i);
       List<Object> actual = listener.actions.get(i);
@@ -556,18 +556,17 @@ class LocalEngineTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> x = builder.inputOfInteger("x");
+    public NoOpType expand(SdkWorkflowBuilder builder, NoOpType input) {
       SdkBindingData<Long> nextX =
           builder
               .apply(
                   "decide",
-                  when("eq_1", eq(ofInteger(1L), x), new NoOp(), NoOpType.create(x))
-                      .when("eq_2", eq(ofInteger(2L), x), new NoOp(), NoOpType.create(x)))
+                  when("eq_1", eq(ofInteger(1L), input.x()), new NoOp(), NoOpType.create(input.x()))
+                      .when("eq_2", eq(ofInteger(2L), input.x()), new NoOp(), NoOpType.create(input.x())))
               .getOutputs()
               .x();
 
-      builder.output("nextX", nextX);
+      return NoOpType.create(nextX);
     }
 
     @AutoService(SdkRunnableTask.class)

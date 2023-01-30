@@ -19,6 +19,7 @@ package org.flyte.flytekit;
 import static java.util.Collections.singletonMap;
 import static java.util.function.UnaryOperator.identity;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
 
 import com.google.auto.value.AutoValue;
@@ -77,12 +78,10 @@ public abstract class SdkLaunchPlan {
    * @return the created {@link SdkLaunchPlan}.
    */
   public static SdkLaunchPlan of(SdkWorkflow<?, ?> workflow) {
-    SdkWorkflowBuilder wfBuilder = new SdkWorkflowBuilder();
-    workflow.expand(wfBuilder);
     return builder()
         .name(workflow.getName())
         .workflowName(workflow.getName())
-        .workflowInputTypeMap(toWorkflowInputTypeMap(wfBuilder.getInputs(), SdkBindingData::type))
+        .workflowInputTypeMap(toWorkflowInputTypeMap(workflow.getInputSdkBindingMap(), SdkBindingData::type))
         .build();
   }
 

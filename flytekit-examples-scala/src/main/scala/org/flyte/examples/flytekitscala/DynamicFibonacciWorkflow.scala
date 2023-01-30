@@ -19,14 +19,12 @@ package org.flyte.examples.flytekitscala
 import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.{
   SdkScalaType,
-  SdkScalaWorkflow,
-  SdkScalaWorkflowBuilder
 }
 
 case class DynamicFibonacciWorkflowInput(n: SdkBindingData[Long])
 case class DynamicFibonacciWorkflowOutput(output: SdkBindingData[Long])
 class DynamicFibonacciWorkflow
-    extends SdkScalaWorkflow[
+    extends SdkWorkflow[
       DynamicFibonacciWorkflowInput,
       DynamicFibonacciWorkflowOutput
     ](
@@ -34,16 +32,15 @@ class DynamicFibonacciWorkflow
       SdkScalaType[DynamicFibonacciWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
-    val n = builder.inputOfInteger("n")
+  override def expand(builder: SdkWorkflowBuilder, input: DynamicFibonacciWorkflowInput): DynamicFibonacciWorkflowOutput = {
 
     val fibonacci = builder.apply(
       "fibonacci",
       new DynamicFibonacciWorkflowTask(),
-      DynamicFibonacciWorkflowTaskInput(n)
+      DynamicFibonacciWorkflowTaskInput(input.n)
     )
 
-    builder.output("output", fibonacci.getOutputs.output)
+    DynamicFibonacciWorkflowOutput(fibonacci.getOutputs.output)
   }
 
 }

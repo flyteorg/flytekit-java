@@ -31,12 +31,10 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> left = builder.inputOfInteger("left");
-    SdkBindingData<Long> right = builder.inputOfInteger("right");
+  public Output expand(SdkWorkflowBuilder builder, Input input) {
     SdkBindingData<Long> result =
-        builder.apply("sum", new SumTask(), SumTask.SumInput.create(left, right)).getOutputs().c();
-    builder.output("result", result);
+        builder.apply("sum", new SumTask(), SumTask.SumInput.create(input.left(), input.right())).getOutputs().c();
+    return Output.create(result);
   }
 
   // Used in testing to mock this workflow

@@ -37,10 +37,9 @@ public class RemoteLaunchPlanExample extends SdkWorkflow<Input, Void> {
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0");
-    SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1");
-    builder.apply("remote-launch-plan", create(), Input.create(fib0, fib1));
+  public Void expand(SdkWorkflowBuilder builder, Input input) {
+    builder.apply("remote-launch-plan", create(), Input.create(input.fib0(), input.fib1()));
+    return null;
   }
 
   public static SdkRemoteLaunchPlan<Input, Void> create() {

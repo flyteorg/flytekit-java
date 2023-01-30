@@ -92,8 +92,9 @@ public class SimpleSdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // Do nothing
+      return null;
     }
   }
 
@@ -103,8 +104,9 @@ public class SimpleSdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // Do nothing
+      return null;
     }
   }
 }

@@ -43,7 +43,9 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
   void applyShouldReturnASdkWorkflowNode() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    new WorkflowExample().expand(builder);
+    // TODO FIX?
+    WorkflowExample workflow = new WorkflowExample();
+    TestUnaryBooleanOutput output = workflow.expand(builder, workflow.getInputPromise());
 
     Node expectedNode =
         Node.builder()
@@ -84,7 +86,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, builder.toIdlTemplate());
+    assertEquals(expected, workflow.toIdlTemplate());
   }
 
   private TypedInterface expectedInterface() {
@@ -116,15 +118,13 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> a = builder.inputOfInteger("a");
-      SdkBindingData<Long> b = builder.inputOfInteger("b");
+    public TestUnaryBooleanOutput expand(SdkWorkflowBuilder builder, TestPairIntegerInput input) {
 
       SdkNode<TestUnaryBooleanOutput> node1 =
           builder.apply(
-              "some-node-id", new TestSdkRemoteLaunchPlan(), TestPairIntegerInput.create(a, b));
+              "some-node-id", new TestSdkRemoteLaunchPlan(), TestPairIntegerInput.create(input.a(), input.b()));
 
-      builder.output("o", node1.getOutputs().o());
+      return TestUnaryBooleanOutput.create(node1.getOutputs().o());
     }
   }
 

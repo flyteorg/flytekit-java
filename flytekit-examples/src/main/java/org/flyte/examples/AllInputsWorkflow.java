@@ -41,7 +41,7 @@ public class AllInputsWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public AllInputsWorkflowOutput expand(SdkWorkflowBuilder builder, Void noInput) {
 
     Instant someInstant = Instant.parse("2023-01-16T00:00:00Z");
 
@@ -63,16 +63,7 @@ public class AllInputsWorkflow
 
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 
-    builder.output("i", outputs.i(), "Integer value");
-    builder.output("f", outputs.f(), "Double value");
-    builder.output("s", outputs.s(), "String value");
-    builder.output("b", outputs.b(), "Boolean value");
-    builder.output("t", outputs.t(), "Instant value");
-    builder.output("d", outputs.d(), "Duration value");
-    builder.output("l", outputs.l(), "List value");
-    builder.output("m", outputs.m(), "Map value");
-    builder.output("emptyList", outputs.emptyList(), "Empty list value");
-    builder.output("emptyMap", outputs.emptyMap(), "Empty map value");
+    return AllInputsWorkflowOutput.create(outputs.i(), outputs.f(), outputs.s(), outputs.b(), outputs.t(), outputs.d(), outputs.l(), outputs.m(), outputs.emptyList(), outputs.emptyMap());
   }
 
   @AutoValue

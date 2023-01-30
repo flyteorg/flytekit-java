@@ -42,18 +42,17 @@ public class DynamicFibonacciWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> n = builder.inputOfInteger("n");
+  public DynamicFibonacciWorkflowTask.Output expand(SdkWorkflowBuilder builder, DynamicFibonacciWorkflow.Input input) {
 
     SdkBindingData<Long> fibOutput =
         builder
             .apply(
                 "fibonacci",
                 new DynamicFibonacciWorkflowTask(),
-                DynamicFibonacciWorkflowTask.Input.create(n))
+                DynamicFibonacciWorkflowTask.Input.create(input.n()))
             .getOutputs()
             .output();
 
-    builder.output("output", fibOutput);
+    return DynamicFibonacciWorkflowTask.Output.create(fibOutput);
   }
 }

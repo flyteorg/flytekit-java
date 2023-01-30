@@ -16,20 +16,16 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekitscala.{
-  SdkBindingData,
-  SdkScalaType,
-  SdkScalaWorkflow,
-  SdkScalaWorkflowBuilder
-}
+import org.flyte.flytekit.{SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekitscala.{SdkBindingData, SdkScalaType}
 
 class WorkflowWithRemoteLaunchPlan
-    extends SdkScalaWorkflow[RemoteLaunchPlanInput, RemoteLaunchPlanOutput](
+    extends SdkWorkflow[RemoteLaunchPlanInput, RemoteLaunchPlanOutput](
       SdkScalaType[RemoteLaunchPlanInput],
       SdkScalaType[RemoteLaunchPlanOutput]
     ) {
 
-  override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
+  override def expand(builder: SdkWorkflowBuilder, input: RemoteLaunchPlanInput): RemoteLaunchPlanOutput = {
     val fib0 = SdkBindingData.ofInteger(0L)
     val fib1 = SdkBindingData.ofInteger(1L)
 
@@ -40,6 +36,6 @@ class WorkflowWithRemoteLaunchPlan
       )
       .getOutputs
       .fib5
-    builder.output("fib5", fib5)
+    RemoteLaunchPlanOutput(fib5)
   }
 }

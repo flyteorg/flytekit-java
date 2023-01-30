@@ -74,7 +74,7 @@ class SdkWorkflowBuilderTest {
 
     Times4Workflow workflow = new Times4Workflow();
 
-    TestUnaryIntegerOutput output = workflow.expand(builder, workflow.getInputPromise());
+    workflow.expand(builder);
 
     Node node0 =
         Node.builder()
@@ -140,7 +140,7 @@ class SdkWorkflowBuilderTest {
             .nodes(List.of(node0, node1))
             .build();
 
-    WorkflowTemplate actual = workflow.toIdlTemplate(builder, workflow.getInputPromise(), output);
+    WorkflowTemplate actual = workflow.toIdlTemplate(builder);
     assertEquals(expected.interface_(), actual.interface_());
     assertEquals(expected.metadata(), actual.metadata());
     assertEquals(expected.outputs(), actual.outputs());
@@ -155,7 +155,8 @@ class SdkWorkflowBuilderTest {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
     ConditionalWorkflow workflow = new ConditionalWorkflow();
-    TestUnaryIntegerOutput output = workflow.expand(builder, workflow.getInputPromise());
+
+    workflow.expand(builder);
 
     Node caseNode =
         Node.builder()
@@ -229,7 +230,7 @@ class SdkWorkflowBuilderTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.toIdlTemplate(builder, workflow.getInputPromise(), output));
+    assertEquals(expected, workflow.toIdlTemplate(builder));
   }
 
   @Test

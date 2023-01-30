@@ -100,7 +100,6 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     return inputPromise;
   }
 
-  // what is this used for
   public WorkflowTemplate expandAndConvertToIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
     OutputT output = this.expand(builder, inputPromise);

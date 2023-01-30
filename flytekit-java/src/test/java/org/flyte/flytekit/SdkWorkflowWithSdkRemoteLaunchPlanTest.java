@@ -43,9 +43,8 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
   void applyShouldReturnASdkWorkflowNode() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    // TODO FIX?
     WorkflowExample workflow = new WorkflowExample();
-    workflow.expand(builder, workflow.getInputPromise());
+    TestUnaryBooleanOutput output = workflow.expand(builder, workflow.getInputPromise());
 
     Node expectedNode =
         Node.builder()
@@ -86,7 +85,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.expandAndConvertToIdlTemplate());
+    assertEquals(expected, workflow.toIdlTemplate(builder, workflow.getInputPromise(), output));
   }
 
   private TypedInterface expectedInterface() {

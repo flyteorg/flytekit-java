@@ -201,9 +201,9 @@ public class SdkWorkflowBuilder {
     return inputDescriptions.getOrDefault(name, "");
   }
 
-  public Map<String, SdkBindingData<?>> getOutputs() {
+  /*public Map<String, SdkBindingData<?>> getOutputs() {
     return unmodifiableMap(new LinkedHashMap<>(outputs));
-  }
+  }*/
 
   public String getOutputDescription(String name) {
     return outputDescriptions.getOrDefault(name, "");
@@ -218,7 +218,7 @@ public class SdkWorkflowBuilder {
     outputs.put(name, value);
   }
 
-  public WorkflowTemplate toIdlTemplate() {
+  /*public WorkflowTemplate toIdlTemplate() {
     return WorkflowTemplateIdl.ofBuilder(this);
-  }
+  }*/
 }

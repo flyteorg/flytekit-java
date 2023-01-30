@@ -25,6 +25,8 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
+import static org.flyte.api.v1.Node.START_NODE_ID;
+
 public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
@@ -48,9 +50,13 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
         PartialWorkflowIdentifier.builder().name(getName()).build();
 
     SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
-    expand(innerBuilder);
 
-    Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
+    InputT input = inputType.promiseFor(START_NODE_ID);
+
+    OutputT output = expand(innerBuilder, input);
+
+    Map<String, Variable> inputVariableMap = getInputType().getVariableMap();
+
     List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
 
     if (!errors.isEmpty()) {
@@ -63,7 +69,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
             .build();
 
     Map<String, SdkBindingData<?>> outputs =
-        innerBuilder.getOutputs().entrySet().stream()
+            getOutputType().toSdkBindingMap(output).entrySet().stream()
             .collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
@@ -71,6 +77,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
     OutputT promise = getOutputType().promiseFor(nodeId);
+
     return new SdkWorkflowNode<>(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }
@@ -87,8 +94,12 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
   public WorkflowTemplate toIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    this.expand(builder);
+    InputT input = inputType.promiseFor(START_NODE_ID);
+    OutputT output = this.expand(builder, input);
 
-    return builder.toIdlTemplate();
+    Map<String, SdkBindingData<?>> outputs = getOutputType().toSdkBindingMap(output);
+    Map<String, SdkBindingData<?>> inputs = getInputType().toSdkBindingMap(input);
+
+    return WorkflowTemplateIdl.ofBuilder(builder, inputs, outputs);
   }
 }

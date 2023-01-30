@@ -43,10 +43,9 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
   public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
-  protected OutputT outerExpand(SdkWorkflowBuilder builder) {
+  protected void outerExpand(SdkWorkflowBuilder builder) {
     OutputT output = expand(builder, inputPromise);
     this.sdkBindingDataOutputs = getOutputType().toSdkBindingMap(output);
-    return output;
   }
 
   @Override
@@ -108,16 +107,10 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
   }
 
   public WorkflowTemplate toIdlTemplate(SdkWorkflowBuilder builder) {
-    /*if (output == null) {
-      throw new RuntimeException("Must call expand(builder) before converting to idl template");
-    }*/
     return WorkflowTemplateIdl.ofBuilder(builder, getSdkBindingDataInputs(), sdkBindingDataOutputs);
   }
 
   public Map<String, SdkBindingData<?>> getSdkBindingDataOutputs() {
-    /*if (sdkBindingDataInputs == null) {
-      throw new RuntimeException("Outputs are  null. Must call expand() before getting outputs.");
-    }*/
     return sdkBindingDataOutputs;
   }
 

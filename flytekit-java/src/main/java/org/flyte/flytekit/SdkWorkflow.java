@@ -34,7 +34,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     this.outputType = outputType;
   }
 
-  public abstract void expand(SdkWorkflowBuilder builder);
+  public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
   @Override
   public SdkNode<OutputT> apply(

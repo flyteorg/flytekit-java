@@ -43,14 +43,11 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    // defines the input of the workflow
-    SdkBindingData<String> name = builder.inputOfString("name", "The name for the welcome message");
-
+  public AddQuestionTask.Output expand(SdkWorkflowBuilder builder, Input input) {
     // uses the workflow input as the task input of the GreetTask
     SdkBindingData<String> greeting =
         builder
-            .apply("greet", new GreetTask(), GreetTask.Input.create(name))
+            .apply("greet", new GreetTask(), GreetTask.Input.create(input.name()))
             .getOutputs()
             .greeting();
 
@@ -61,7 +58,6 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
             .getOutputs()
             .greeting();
 
-    // uses the task output of the AddQuestionTask as the output of the workflow
-    builder.output("greeting", greetingWithQuestion, "Welcome message");
+    return AddQuestionTask.Output.create(greetingWithQuestion);
   }
 }

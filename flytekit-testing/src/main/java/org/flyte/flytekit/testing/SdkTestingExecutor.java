@@ -100,8 +100,7 @@ public abstract class SdkTestingExecutor {
         tasks.stream().collect(toMap(SdkRunnableTask::getName, TestingRunnableTask::create));
 
     Map<String, WorkflowTemplate> workflowTemplateMap =
-        workflows.stream()
-            .collect(toMap(SdkWorkflow::getName, SdkWorkflow::expandAndConvertToIdlTemplate));
+        workflows.stream().collect(toMap(SdkWorkflow::getName, SdkWorkflow::expandToIdlTemplate));
 
     return SdkTestingExecutor.builder()
         .workflow(workflow)
@@ -170,7 +169,7 @@ public abstract class SdkTestingExecutor {
   }
 
   public Result execute() {
-    WorkflowTemplate workflowTemplate = workflow().expandAndConvertToIdlTemplate();
+    WorkflowTemplate workflowTemplate = workflow().expandToIdlTemplate();
     checkInputsInFixedInputs(workflowTemplate);
     checkTestDoublesForNodes(workflowTemplate);
 
@@ -376,7 +375,7 @@ public abstract class SdkTestingExecutor {
         new TestingWorkflow<>(inputType, outputType, output);
 
     return toBuilder()
-        .putWorkflowTemplate(workflow.getName(), mockWorkflow.expandAndConvertToIdlTemplate())
+        .putWorkflowTemplate(workflow.getName(), mockWorkflow.expandToIdlTemplate())
         .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
         .build();
   }
@@ -385,7 +384,7 @@ public abstract class SdkTestingExecutor {
       SdkWorkflow<InputT, OutputT> workflow,
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType) {
-    TypedInterface intf = workflow.expandAndConvertToIdlTemplate().interface_();
+    TypedInterface intf = workflow.expandToIdlTemplate().interface_();
 
     verifyVariablesMatches("Input", intf.inputs(), inputType.getVariableMap());
     verifyVariablesMatches("Output", intf.outputs(), outputType.getVariableMap());

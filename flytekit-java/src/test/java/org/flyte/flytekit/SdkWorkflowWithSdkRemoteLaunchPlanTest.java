@@ -45,7 +45,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
     WorkflowExample workflow = new WorkflowExample();
 
-    workflow.expand(builder);
+    workflow.outerExpand(builder);
 
     Node expectedNode =
         Node.builder()

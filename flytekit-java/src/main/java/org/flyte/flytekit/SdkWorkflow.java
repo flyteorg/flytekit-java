@@ -32,7 +32,6 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
   private final SdkType<OutputT> outputType;
   private final InputT inputPromise;
   private final Map<String, SdkBindingData<?>> sdkBindingDataInputs;
-  private OutputT output;
   private Map<String, SdkBindingData<?>> sdkBindingDataOutputs;
 
   protected SdkWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
@@ -44,8 +43,8 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
   public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
-  protected OutputT expand(SdkWorkflowBuilder builder) {
-    this.output = expand(builder, inputPromise);
+  protected OutputT outerExpand(SdkWorkflowBuilder builder) {
+    OutputT output = expand(builder, inputPromise);
     this.sdkBindingDataOutputs = getOutputType().toSdkBindingMap(output);
     return output;
   }
@@ -63,7 +62,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
     SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
 
-    expand(innerBuilder);
+    outerExpand(innerBuilder);
 
     Map<String, Variable> inputVariableMap = getInputType().getVariableMap();
 
@@ -102,9 +101,9 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     return outputType;
   }
 
-  public WorkflowTemplate expandAndConvertToIdlTemplate() {
+  public WorkflowTemplate expandToIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    this.expand(builder);
+    this.outerExpand(builder);
     return toIdlTemplate(builder);
   }
 
@@ -112,8 +111,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     /*if (output == null) {
       throw new RuntimeException("Must call expand(builder) before converting to idl template");
     }*/
-    return WorkflowTemplateIdl.ofBuilder(
-        builder, getSdkBindingDataInputs(), getSdkBindingDataOutputs());
+    return WorkflowTemplateIdl.ofBuilder(builder, getSdkBindingDataInputs(), sdkBindingDataOutputs);
   }
 
   public Map<String, SdkBindingData<?>> getSdkBindingDataOutputs() {

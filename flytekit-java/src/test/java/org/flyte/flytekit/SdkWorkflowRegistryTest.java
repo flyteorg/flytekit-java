@@ -59,7 +59,7 @@ public class SdkWorkflowRegistryTest {
 
     @Override
     public Void expand(SdkWorkflowBuilder builder, Void noInput) {
-     return null;
+      return null;
     }
   }
 }

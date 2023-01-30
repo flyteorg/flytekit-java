@@ -75,7 +75,7 @@ class LocalEngineTest {
     Literal fib4 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3L)));
     Literal fib5 = Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(5L)));
 
-    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().expandAndConvertToIdlTemplate();
+    WorkflowTemplate workflowTemplate = new FibonacciWorkflow().expandToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();
@@ -133,7 +133,7 @@ class LocalEngineTest {
 
   @Test
   public void testBindingMap() {
-    WorkflowTemplate workflow = new MapWorkflow().expandAndConvertToIdlTemplate();
+    WorkflowTemplate workflow = new MapWorkflow().expandToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     Map<String, Literal> outputs =
@@ -223,7 +223,7 @@ class LocalEngineTest {
 
   @Test
   public void testRetryableTask_failed() {
-    WorkflowTemplate workflow = new RetryableWorkflow().expandAndConvertToIdlTemplate();
+    WorkflowTemplate workflow = new RetryableWorkflow().expandToIdlTemplate();
     Map<String, RunnableTask> tasks = loadTasks();
 
     TestingListener listener = new TestingListener();

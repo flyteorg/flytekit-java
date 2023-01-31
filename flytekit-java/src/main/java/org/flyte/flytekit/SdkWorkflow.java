@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
-import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
@@ -61,20 +60,20 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
 
-    PartialWorkflowIdentifier workflowId =
+    var workflowId =
         PartialWorkflowIdentifier.builder().name(getName()).build();
 
-    SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
+    var innerBuilder = new SdkWorkflowBuilder();
     expand(innerBuilder);
 
-    Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
+    var inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
+    var errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
     }
 
-    WorkflowNode workflowNode =
+    var workflowNode =
         WorkflowNode.builder()
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(workflowId))
             .build();
@@ -87,7 +86,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                     e ->
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
-    OutputT promise = getOutputType().promiseFor(nodeId);
+    var promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }

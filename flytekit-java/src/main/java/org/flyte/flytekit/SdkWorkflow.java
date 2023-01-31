@@ -38,8 +38,8 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
   public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
-  protected void expand(SdkWorkflowBuilder builder) {
-    getInputType()
+  public final void expand(SdkWorkflowBuilder builder) {
+    inputType
         .getVariableMap()
         .forEach(
             (name, variable) ->
@@ -48,9 +48,9 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                     variable.literalType(),
                     variable.description() == null ? "" : variable.description()));
 
-    OutputT output = expand(builder, getInputType().promiseFor(START_NODE_ID));
+    OutputT output = expand(builder, inputType.promiseFor(START_NODE_ID));
 
-    getOutputType().toSdkBindingMap(output).forEach(builder::output);
+    outputType.toSdkBindingMap(output).forEach(builder::output);
   }
 
   @Override

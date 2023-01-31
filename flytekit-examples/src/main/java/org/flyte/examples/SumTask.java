@@ -31,7 +31,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumInput {
-    @Description("Value to be summed")
+    @Description("First operand")
     public abstract SdkBindingData<Long> a();
 
     @Description("Second operand")

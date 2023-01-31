@@ -28,6 +28,7 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
 
   @AutoValue
   public abstract static class Input {
+
     public abstract SdkBindingData<Long> a();
 
     public abstract SdkBindingData<Long> b();

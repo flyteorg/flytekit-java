@@ -17,7 +17,11 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
-import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekitscala.{
+  SdkScalaType,
+  SdkScalaWorkflow,
+  SdkScalaWorkflowBuilder
+}
 
 /** Example workflow that takes a name and outputs a welcome message
   * |  start of workflow  |
@@ -49,13 +53,13 @@ case class WelcomeWorkflowInput(name: SdkBindingData[String])
 case class WelcomeWorkflowOutput(greeting: SdkBindingData[String])
 
 class WelcomeWorkflow
-    extends SdkWorkflow[WelcomeWorkflowInput, WelcomeWorkflowOutput](
+    extends SdkScalaWorkflow[WelcomeWorkflowInput, WelcomeWorkflowOutput](
       SdkScalaType[WelcomeWorkflowInput],
       SdkScalaType[WelcomeWorkflowOutput]
     ) {
 
   override def expand(
-      builder: SdkWorkflowBuilder,
+      builder: SdkScalaWorkflowBuilder,
       input: WelcomeWorkflowInput
   ): WelcomeWorkflowOutput = {
     // defines the input of the workflow

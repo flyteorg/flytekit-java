@@ -22,6 +22,7 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -56,8 +57,11 @@ public class FibonacciWorkflow
 
   @AutoValue
   public abstract static class Input {
+
+    @Description("Value for Fib0")
     public abstract SdkBindingData<Long> fib0();
 
+    @Description("Value for Fib1")
     public abstract SdkBindingData<Long> fib1();
 
     public static FibonacciWorkflow.Input create(
@@ -68,6 +72,7 @@ public class FibonacciWorkflow
 
   @AutoValue
   public abstract static class Output {
+    @Description("Value for Fib5")
     public abstract SdkBindingData<Long> fib5();
 
     public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib5) {

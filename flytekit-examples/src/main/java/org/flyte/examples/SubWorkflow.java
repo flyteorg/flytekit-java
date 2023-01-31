@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -43,8 +44,10 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
   // Used in testing to mock this workflow
   @AutoValue
   public abstract static class Input {
+    @Description("Value to be summed")
     abstract SdkBindingData<Long> left();
 
+    @Description("Value to be summed")
     abstract SdkBindingData<Long> right();
 
     public static Input create(SdkBindingData<Long> left, SdkBindingData<Long> right) {
@@ -54,6 +57,7 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
 
   @AutoValue
   public abstract static class Output {
+    @Description("Summed results")
     abstract SdkBindingData<Long> result();
 
     public static Output create(SdkBindingData<Long> result) {

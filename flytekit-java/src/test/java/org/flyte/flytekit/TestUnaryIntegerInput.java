@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
 import java.util.Map;
+import jdk.jfr.Description;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;

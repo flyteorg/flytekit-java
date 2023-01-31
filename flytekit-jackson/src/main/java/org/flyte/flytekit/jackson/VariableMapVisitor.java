@@ -38,7 +38,6 @@ import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.Description;
 import org.flyte.flytekit.SdkBindingData;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {

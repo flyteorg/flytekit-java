@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
@@ -49,7 +50,17 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
 
     OutputT output = expand(builder, inputType.promiseFor(START_NODE_ID));
 
-    outputType.toSdkBindingMap(output).forEach(builder::output);
+    Map<String, Variable> outputVariableMap = outputType.getVariableMap();
+    outputType
+        .toSdkBindingMap(output)
+        .forEach(
+            (name, variable) ->
+                builder.output(
+                    name,
+                    variable,
+                    outputVariableMap.get(name).description() == null
+                        ? ""
+                        : outputVariableMap.get(name).description()));
   }
 
   @Override

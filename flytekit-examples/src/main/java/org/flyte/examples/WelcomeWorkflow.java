@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example workflow that takes a name and outputs a welcome message. */
@@ -29,6 +30,7 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
 
   @AutoValue
   public abstract static class Input {
+    @Description("Name to be welcomed")
     public abstract SdkBindingData<String> name();
 
     public static WelcomeWorkflow.Input create(SdkBindingData<String> name) {

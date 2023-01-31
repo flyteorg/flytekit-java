@@ -45,7 +45,6 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.Description;
 import org.flyte.flytekit.SdkBindingData;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

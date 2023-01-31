@@ -20,6 +20,7 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
@@ -30,8 +31,10 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @AutoValue
   public abstract static class SumInput {
+    @Description("Value to be summed")
     public abstract SdkBindingData<Long> a();
 
+    @Description("Value to be summed")
     public abstract SdkBindingData<Long> b();
 
     public static SumInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {
@@ -42,6 +45,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
   @AutoValue
   public abstract static class SumOutput {
 
+    @Description("Sum of values")
     public abstract SdkBindingData<Long> c();
 
     public static SumOutput create(SdkBindingData<Long> c) {

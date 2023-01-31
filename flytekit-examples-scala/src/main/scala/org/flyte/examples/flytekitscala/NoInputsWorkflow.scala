@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Flyte Authors
+ * Copyright 2021 Flyte Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit;
+package org.flyte.examples.flytekitscala
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.flyte.flytekitscala.{
+  SdkScalaType,
+  SdkScalaWorkflow,
+  SdkScalaWorkflowBuilder
+}
 
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Description {
-  /**
-   * Returns a sentence that describes the annotated element.
-   *
-   * @return a description, not {@code null}
-   */
-  String value();
+class NoInputsWorkflow
+    extends SdkScalaWorkflow[Unit, Unit](
+      SdkScalaType.unit,
+      SdkScalaType.unit
+    ) {
+
+  override def expand(builder: SdkScalaWorkflowBuilder, unit: Unit): Unit = {
+    builder.apply(new NoInputsTask()) // compilation error
+  }
 }

@@ -24,6 +24,8 @@ import org.flyte.api.v1.Variable;
 
 @AutoValue
 abstract class TestUnaryIntegerInput {
+
+  @Description("Enter value to square")
   abstract SdkBindingData<Long> in();
 
   public static TestUnaryIntegerInput create(SdkBindingData<Long> in) {
@@ -52,7 +54,12 @@ abstract class TestUnaryIntegerInput {
 
     @Override
     public Map<String, Variable> getVariableMap() {
-      return Map.of(VAR, Variable.builder().literalType(LITERAL_TYPE).build());
+      return Map.of(
+          VAR,
+          Variable.builder()
+              .literalType(LITERAL_TYPE)
+              .description("Enter value to square")
+              .build());
     }
 
     @Override

@@ -29,6 +29,6 @@ class NoInputsWorkflow
     ) {
 
   override def expand(builder: SdkScalaWorkflowBuilder, unit: Unit): Unit = {
-    builder.apply(new NoInputsTask()) // compilation error
+    builder.apply(new NoInputsTask())
   }
 }

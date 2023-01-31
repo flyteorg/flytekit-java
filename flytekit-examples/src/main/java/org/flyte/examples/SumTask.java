@@ -34,7 +34,7 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
     @Description("Value to be summed")
     public abstract SdkBindingData<Long> a();
 
-    @Description("Value to be summed")
+    @Description("Second operand")
     public abstract SdkBindingData<Long> b();
 
     public static SumInput create(SdkBindingData<Long> a, SdkBindingData<Long> b) {

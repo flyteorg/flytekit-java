@@ -562,12 +562,8 @@ class LocalEngineTest {
           builder
               .apply(
                   "decide",
-                  when("eq_1", eq(ofInteger(1L), input.x()), new NoOp(), NoOpType.create(input.x()))
-                      .when(
-                          "eq_2",
-                          eq(ofInteger(2L), input.x()),
-                          new NoOp(),
-                          NoOpType.create(input.x())))
+                  when("eq_1", eq(ofInteger(1L), x), new NoOp(), NoOpType.create(x))
+                      .when("eq_2", eq(ofInteger(2L), x), new NoOp(), NoOpType.create(x)))
               .getOutputs()
               .x();
 

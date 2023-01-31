@@ -44,7 +44,7 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
   // Used in testing to mock this workflow
   @AutoValue
   public abstract static class Input {
-    @Description("Value to be summed")
+    @Description("First operand")
     abstract SdkBindingData<Long> left();
 
     @Description("Value to be summed")

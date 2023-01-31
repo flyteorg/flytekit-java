@@ -30,22 +30,27 @@ import org.flyte.api.v1.WorkflowTemplate;
 public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
-  private final InputT inputPromise;
-  private final Map<String, SdkBindingData<?>> sdkBindingDataInputs;
-  private Map<String, SdkBindingData<?>> sdkBindingDataOutputs;
 
   protected SdkWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
-    this.inputPromise = getInputType().promiseFor(START_NODE_ID);
-    this.sdkBindingDataInputs = getInputType().toSdkBindingMap(inputPromise);
   }
 
   public abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
-  protected void outerExpand(SdkWorkflowBuilder builder) {
-    OutputT output = expand(builder, inputPromise);
-    this.sdkBindingDataOutputs = getOutputType().toSdkBindingMap(output);
+  protected void expand(SdkWorkflowBuilder builder) {
+    getInputType()
+        .getVariableMap()
+        .forEach(
+            (name, variable) ->
+                builder.inputOf(
+                    name,
+                    variable.literalType(),
+                    variable.description() == null ? "" : variable.description()));
+
+    OutputT output = expand(builder, getInputType().promiseFor(START_NODE_ID));
+
+    getOutputType().toSdkBindingMap(output).forEach(builder::output);
   }
 
   @Override
@@ -60,11 +65,9 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
         PartialWorkflowIdentifier.builder().name(getName()).build();
 
     SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
+    expand(innerBuilder);
 
-    outerExpand(innerBuilder);
-
-    Map<String, Variable> inputVariableMap = getInputType().getVariableMap();
-
+    Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
     List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
 
     if (!errors.isEmpty()) {
@@ -77,7 +80,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
             .build();
 
     Map<String, SdkBindingData<?>> outputs =
-        getSdkBindingDataOutputs().entrySet().stream()
+        innerBuilder.getOutputs().entrySet().stream()
             .collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
@@ -85,7 +88,6 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
     OutputT promise = getOutputType().promiseFor(nodeId);
-
     return new SdkWorkflowNode<>(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }
@@ -100,21 +102,10 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     return outputType;
   }
 
-  public WorkflowTemplate expandToIdlTemplate() {
+  public WorkflowTemplate toIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-    this.outerExpand(builder);
-    return toIdlTemplate(builder);
-  }
+    this.expand(builder);
 
-  public WorkflowTemplate toIdlTemplate(SdkWorkflowBuilder builder) {
-    return WorkflowTemplateIdl.ofBuilder(builder, getSdkBindingDataInputs(), sdkBindingDataOutputs);
-  }
-
-  public Map<String, SdkBindingData<?>> getSdkBindingDataOutputs() {
-    return sdkBindingDataOutputs;
-  }
-
-  public Map<String, SdkBindingData<?>> getSdkBindingDataInputs() {
-    return sdkBindingDataInputs;
+    return builder.toIdlTemplate();
   }
 }

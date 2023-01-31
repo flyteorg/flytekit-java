@@ -63,7 +63,10 @@ public class SdkWorkflowTemplateRegistrar extends WorkflowTemplateRegistrar {
 
       LOG.fine(String.format("Discovered [%s]", name));
 
-      WorkflowTemplate workflow = sdkWorkflow.expandToIdlTemplate();
+      SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+      sdkWorkflow.expand(builder);
+
+      WorkflowTemplate workflow = WorkflowTemplateIdl.ofBuilder(builder);
       WorkflowTemplate previous = workflows.put(workflowId, workflow);
 
       if (previous != null) {

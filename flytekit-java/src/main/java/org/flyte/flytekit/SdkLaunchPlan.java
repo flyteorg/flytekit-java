@@ -77,11 +77,12 @@ public abstract class SdkLaunchPlan {
    * @return the created {@link SdkLaunchPlan}.
    */
   public static SdkLaunchPlan of(SdkWorkflow<?, ?> workflow) {
+    SdkWorkflowBuilder wfBuilder = new SdkWorkflowBuilder();
+    workflow.expand(wfBuilder);
     return builder()
         .name(workflow.getName())
         .workflowName(workflow.getName())
-        .workflowInputTypeMap(
-            toWorkflowInputTypeMap(workflow.getSdkBindingDataInputs(), SdkBindingData::type))
+        .workflowInputTypeMap(toWorkflowInputTypeMap(wfBuilder.getInputs(), SdkBindingData::type))
         .build();
   }
 

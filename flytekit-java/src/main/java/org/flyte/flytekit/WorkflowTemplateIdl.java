@@ -31,43 +31,40 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 class WorkflowTemplateIdl {
 
-  public static WorkflowTemplate ofBuilder(
-      SdkWorkflowBuilder builder,
-      Map<String, SdkBindingData<?>> inputs,
-      Map<String, SdkBindingData<?>> outputs) {
+  public static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder) {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
     List<Node> nodes =
         builder.getNodes().values().stream().map(SdkNode::toIdl).collect(toUnmodifiableList());
 
-    List<Binding> outputBindings = getOutputBindings(outputs);
+    List<Binding> outputs = getOutputBindings(builder);
 
     return WorkflowTemplate.builder()
         .metadata(metadata)
         .interface_(
             TypedInterface.builder()
-                .inputs(getInputVariableMap(inputs))
-                .outputs(getOutputVariableMap(outputs))
+                .inputs(getInputVariableMap(builder))
+                .outputs(getOutputVariableMap(builder))
                 .build())
-        .outputs(outputBindings)
+        .outputs(outputs)
         .nodes(nodes)
         .build();
   }
 
-  static List<Binding> getOutputBindings(Map<String, SdkBindingData<?>> outputs) {
-    return outputs.entrySet().stream()
+  static List<Binding> getOutputBindings(SdkWorkflowBuilder builder) {
+    return builder.getOutputs().entrySet().stream()
         .map(entry -> getBinding(entry.getKey(), entry.getValue()))
         .collect(toUnmodifiableList());
   }
 
-  static Map<String, Variable> getInputVariableMap(Map<String, SdkBindingData<?>> inputs) {
-    return inputs.entrySet().stream()
+  static Map<String, Variable> getInputVariableMap(SdkWorkflowBuilder builder) {
+    return builder.getInputs().entrySet().stream()
         .map(
             entry -> {
               Variable variable =
                   Variable.builder()
                       .literalType(entry.getValue().type())
-                      .description("") // TODO description not supported currently
+                      .description(builder.getInputDescription(entry.getKey()))
                       .build();
 
               return new SimpleImmutableEntry<>(entry.getKey(), variable);
@@ -75,14 +72,14 @@ class WorkflowTemplateIdl {
         .collect(toUnmodifiableMap());
   }
 
-  static Map<String, Variable> getOutputVariableMap(Map<String, SdkBindingData<?>> outputs) {
-    return outputs.entrySet().stream()
+  static Map<String, Variable> getOutputVariableMap(SdkWorkflowBuilder builder) {
+    return builder.getOutputs().entrySet().stream()
         .map(
             entry -> {
               Variable variable =
                   Variable.builder()
                       .literalType(entry.getValue().type())
-                      .description("") // TODO description not supported currently
+                      .description(builder.getOutputDescription(entry.getKey()))
                       .build();
 
               return new SimpleImmutableEntry<>(entry.getKey(), variable);

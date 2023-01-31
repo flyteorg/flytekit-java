@@ -70,7 +70,7 @@ class SdkWorkflowBuilderTest {
 
     Times4Workflow workflow = new Times4Workflow();
 
-    workflow.outerExpand(builder);
+    workflow.expand(builder);
 
     Node node0 =
         Node.builder()
@@ -136,7 +136,7 @@ class SdkWorkflowBuilderTest {
             .nodes(List.of(node0, node1))
             .build();
 
-    WorkflowTemplate actual = workflow.toIdlTemplate(builder);
+    WorkflowTemplate actual = builder.toIdlTemplate();
     assertEquals(expected.interface_(), actual.interface_());
     assertEquals(expected.metadata(), actual.metadata());
     assertEquals(expected.outputs(), actual.outputs());
@@ -152,7 +152,7 @@ class SdkWorkflowBuilderTest {
 
     ConditionalWorkflow workflow = new ConditionalWorkflow();
 
-    workflow.outerExpand(builder);
+    workflow.expand(builder);
 
     Node caseNode =
         Node.builder()
@@ -226,7 +226,7 @@ class SdkWorkflowBuilderTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.toIdlTemplate(builder));
+    assertEquals(expected, builder.toIdlTemplate());
   }
 
   @Test

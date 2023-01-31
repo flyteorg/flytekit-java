@@ -45,7 +45,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
 
     WorkflowExample workflow = new WorkflowExample();
 
-    workflow.outerExpand(builder);
+    workflow.expand(builder);
 
     Node expectedNode =
         Node.builder()
@@ -86,7 +86,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .nodes(singletonList(expectedNode))
             .build();
 
-    assertEquals(expected, workflow.toIdlTemplate(builder));
+    assertEquals(expected, builder.toIdlTemplate());
   }
 
   private TypedInterface expectedInterface() {

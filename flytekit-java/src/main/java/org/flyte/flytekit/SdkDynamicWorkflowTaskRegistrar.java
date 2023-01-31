@@ -72,18 +72,16 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
       InputT value = sdkDynamicWorkflow.getInputType().fromLiteralMap(inputs);
-      OutputT output = sdkDynamicWorkflow.run(builder, value);
+      sdkDynamicWorkflow.run(builder, value);
 
       List<Node> nodes =
           builder.getNodes().values().stream().map(SdkNode::toIdl).collect(toUnmodifiableList());
 
-      Map<String, SdkBindingData<?>> outputs =
-          sdkDynamicWorkflow.getOutputType().toSdkBindingMap(output);
-      List<Binding> bindingOutputs = WorkflowTemplateIdl.getOutputBindings(outputs);
+      List<Binding> outputs = WorkflowTemplateIdl.getOutputBindings(builder);
 
       return DynamicJobSpec.builder()
           .nodes(nodes)
-          .outputs(bindingOutputs)
+          .outputs(outputs)
           .subWorkflows(emptyMap())
           .tasks(emptyMap())
           .build();

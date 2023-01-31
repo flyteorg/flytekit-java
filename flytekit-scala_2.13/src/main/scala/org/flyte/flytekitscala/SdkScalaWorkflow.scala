@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{LiteralType, SimpleType, WorkflowTemplate}
+import org.flyte.api.v1.{WorkflowTemplate}
 import org.flyte.flytekit.{
   SdkBindingData => SdkJavaBindingData,
   SdkNode,
@@ -26,7 +26,6 @@ import org.flyte.flytekit.{
   SdkWorkflowBuilder
 }
 
-import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
 abstract class SdkScalaWorkflow[InputT, OutputT](
@@ -44,59 +43,6 @@ abstract class SdkScalaWorkflow[InputT, OutputT](
 }
 
 class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
-  def inputOfInteger(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[Long] =
-    builder.inputOf[Long](
-      name,
-      LiteralType.ofSimpleType(SimpleType.INTEGER),
-      help
-    )
-
-  def inputOfString(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[String] =
-    builder.inputOfString(name, help)
-
-  def inputOfBoolean(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[Boolean] =
-    builder.inputOf[Boolean](
-      name,
-      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
-      help
-    )
-
-  def inputOfDatetime(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[Instant] =
-    builder.inputOfDatetime(name, help)
-
-  def inputOfDuration(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[Duration] =
-    builder.inputOfDuration(name, help)
-
-  def inputOfFloat(
-      name: String,
-      help: String = ""
-  ): SdkJavaBindingData[Double] =
-    builder.inputOf[Double](
-      name,
-      LiteralType.ofSimpleType(SimpleType.FLOAT),
-      help
-    )
-
-  def inputOf[T](
-      name: String,
-      literalType: LiteralType,
-      help: String = ""
-  ): SdkJavaBindingData[T] = builder.inputOf(name, literalType, help)
 
   def getNodes: Map[String, SdkNode[_]] = builder.getNodes.asScala.toMap
 
@@ -108,13 +54,6 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
 
   def getOutputDescription(name: String): String =
     builder.getOutputDescription(name)
-
-  def output(
-      name: String,
-      value: SdkJavaBindingData[_],
-      help: String = ""
-  ): Unit =
-    builder.output(name, value, help)
 
   def toIdlTemplate: WorkflowTemplate = builder.toIdlTemplate
 
@@ -137,5 +76,4 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
       transform: SdkTransform[InputT, OutputT],
       inputs: InputT
   ): SdkNode[OutputT] = builder.apply(transform, inputs)
-
 }

@@ -386,11 +386,7 @@ class SdkWorkflowBuilderTest {
     return TypedInterface.builder()
         .inputs(
             singletonMap(
-                "in",
-                Variable.builder()
-                    .literalType(LiteralTypes.INTEGER)
-                    .description("Enter value to square")
-                    .build()))
+                "in", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .outputs(
             singletonMap(
                 "o", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))

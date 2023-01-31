@@ -47,7 +47,7 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
     @Description("First operand")
     abstract SdkBindingData<Long> left();
 
-    @Description("Value to be summed")
+    @Description("Second operand")
     abstract SdkBindingData<Long> right();
 
     public static Input create(SdkBindingData<Long> left, SdkBindingData<Long> right) {

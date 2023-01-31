@@ -61,6 +61,17 @@ object SdkScalaLiteralType {
     }
 }
 
+/** Applied to a case classes fields to denote the description of such field
+  * when it is used on [[SdkScalaType]].
+  *
+  * @param value
+  *   the denoted description, must be non null.
+  */
+case class Description(value: String)
+    extends scala.annotation.StaticAnnotation {
+  require(value != null, "Description should not be null")
+}
+
 object SdkScalaType {
   type Typeclass[T] = SdkScalaType[T]
 
@@ -68,23 +79,33 @@ object SdkScalaType {
     // throwing an exception will abort implicit resolution for this case
     // very dirty down casting, but we need some evidence that all parameters are TypedLiterals
     // and that's the best we can do with magnolia unless we want to play with phantom types
+    case class ParamsWithDesc(
+        param: Param[SdkScalaLiteralType, T],
+        desc: Option[String]
+    )
     val params = ctx.parameters.map { param =>
       param.typeclass match {
         case _: SdkScalaProductType[_] =>
           sys.error("nested structs aren't supported")
         case _: SdkScalaLiteralType[_] =>
-          param.asInstanceOf[Param[SdkScalaLiteralType, T]]
+          val optDesc = param.annotations.collectFirst {
+            case ann: Description => ann.value
+          }
+          ParamsWithDesc(
+            param.asInstanceOf[Param[SdkScalaLiteralType, T]],
+            optDesc
+          )
       }
     }
 
     new SdkScalaProductType[T] {
       def getVariableMap: ju.Map[String, Variable] = {
-        val scalaMap = params.map { param =>
+        val scalaMap = params.map { case ParamsWithDesc(param, desc) =>
           val variable =
             Variable
               .builder()
               .literalType(param.typeclass.getLiteralType)
-              .description("")
+              .description(desc.getOrElse(""))
               .build()
 
           param.label -> variable
@@ -94,7 +115,7 @@ object SdkScalaType {
       }
 
       def toLiteralMap(value: T): ju.Map[String, Literal] = {
-        val scalaMap = params.map { param =>
+        val scalaMap = params.map { case ParamsWithDesc(param, _) =>
           param.label -> param.typeclass.toLiteral(param.dereference(value))
         }.toMap
 
@@ -102,7 +123,7 @@ object SdkScalaType {
       }
 
       def fromLiteralMap(literal: ju.Map[String, Literal]): T = {
-        ctx.rawConstruct(params.map { param =>
+        ctx.rawConstruct(params.map { case ParamsWithDesc(param, _) =>
           val paramLiteral = literal.get(param.label)
 
           require(
@@ -115,7 +136,7 @@ object SdkScalaType {
       }
 
       def promiseFor(nodeId: String): T = {
-        ctx.rawConstruct(params.map { param =>
+        ctx.rawConstruct(params.map { case ParamsWithDesc(param, _) =>
           val paramLiteralType = getVariableMap.get(param.label)
 
           require(

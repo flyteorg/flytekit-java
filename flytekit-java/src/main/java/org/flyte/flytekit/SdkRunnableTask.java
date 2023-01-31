@@ -24,7 +24,7 @@ import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.Variable;
 
 /** Building block for tasks that execute Java code. */
-public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<OutputT>
+public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<InputT, OutputT>
     implements Serializable {
 
   private static final long serialVersionUID = 42L;
@@ -51,6 +51,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
     return "java-task";
   }
 
+  @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
@@ -79,7 +80,7 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Outp
   }
 
   /**
-   * Indicates whether the system should attempt to lookup this task's output to avoid duplication
+   * Indicates whether the system should attempt to look up this task's output to avoid duplication
    * of work.
    */
   public boolean isCached() {

@@ -16,30 +16,24 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
+import org.flyte.flytekit.{SdkBindingData, SdkRemoteTask}
 import org.flyte.flytekitscala.SdkScalaType
-import org.flyte.flytekitscala.SdkBindingData._
 
-case class SumTaskInput(
+case class RemoteSumTaskInput(
     a: SdkBindingData[Long],
     b: SdkBindingData[Long]
 )
-case class SumTaskOutput(c: SdkBindingData[Long])
+case class RemoteSumTaskOutput(c: SdkBindingData[Long])
 
-class SumTask
-    extends SdkRunnableTask[SumTaskInput, SumTaskOutput](
-      SdkScalaType[SumTaskInput],
-      SdkScalaType[SumTaskOutput]
-    ) {
-
-  override def run(input: SumTaskInput): SumTaskOutput = {
-    val result = input.a.get + input.b.get
-    SumTaskOutput(ofInteger(result))
+class RemoteSumTask {
+  def create: SdkRemoteTask[RemoteSumTaskInput, RemoteSumTaskOutput] = {
+    SdkRemoteTask.create(
+      /* domain= */ null,
+      /* project= */ "flytesnacks",
+      /* name= */ "org.flyte.examples.flytekitscala.SumTask",
+      SdkScalaType[RemoteSumTaskInput],
+      SdkScalaType[RemoteSumTaskOutput]
+    )
   }
 
-  override def isCached: Boolean = true
-
-  override def getCacheVersion: String = "1"
-
-  override def isCacheSerializable: Boolean = true
 }

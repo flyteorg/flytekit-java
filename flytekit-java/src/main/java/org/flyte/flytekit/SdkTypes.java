@@ -16,24 +16,26 @@
  */
 package org.flyte.flytekit;
 
-import java.util.Collections;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
 
-/** An utility class for creating {@link SdkType} objects for different types. */
+/** A utility class for creating {@link SdkType} objects for different types. */
 public class SdkTypes {
+
+  private static final VoidSdkType VOID_SDK_TYPE = new VoidSdkType();
+
   private SdkTypes() {}
 
   public static SdkType<Void> nulls() {
-    return new VoidSdkType();
+    return VOID_SDK_TYPE;
   }
 
   private static class VoidSdkType extends SdkType<Void> {
 
     @Override
     public Map<String, Literal> toLiteralMap(Void value) {
-      return Collections.emptyMap();
+      return Map.of();
     }
 
     @Override
@@ -48,12 +50,12 @@ public class SdkTypes {
 
     @Override
     public Map<String, Variable> getVariableMap() {
-      return Collections.emptyMap();
+      return Map.of();
     }
 
     @Override
     public Map<String, SdkBindingData<?>> toSdkBindingMap(Void value) {
-      return Collections.emptyMap();
+      return Map.of();
     }
   }
 }

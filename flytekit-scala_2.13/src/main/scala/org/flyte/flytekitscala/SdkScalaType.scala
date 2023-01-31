@@ -90,7 +90,7 @@ object SdkScalaType {
           param.label -> variable
         }.toMap
 
-        new ju.HashMap(mapAsJavaMap(scalaMap))
+        ju.Map.copyOf(mapAsJavaMap(scalaMap))
       }
 
       def toLiteralMap(value: T): ju.Map[String, Literal] = {
@@ -98,7 +98,7 @@ object SdkScalaType {
           param.label -> param.typeclass.toLiteral(param.dereference(value))
         }.toMap
 
-        new ju.HashMap(mapAsJavaMap(scalaMap))
+        ju.Map.copyOf(mapAsJavaMap(scalaMap))
       }
 
       def fromLiteralMap(literal: ju.Map[String, Literal]): T = {

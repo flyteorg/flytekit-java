@@ -19,17 +19,22 @@ package org.flyte.integrationtests.structs;
 import static org.flyte.flytekit.SdkBindingData.ofBoolean;
 import static org.flyte.flytekit.SdkBindingData.ofString;
 
-import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkWorkflow.class)
-public class MockPipelineWorkflow extends SdkWorkflow<MockPipelineWorkflow.Output> {
+// This workflow relays on SdkBinding<BQReference> that should be serialized
+// as Struct. By going to typed inputs and outputs, we have de-scoped the support
+// of structs.
+// @AutoService(SdkWorkflow.class)
+public class MockPipelineWorkflow
+    extends SdkWorkflow<MockPipelineWorkflow.Input, MockPipelineWorkflow.Output> {
   public MockPipelineWorkflow() {
-    super(JacksonSdkType.of(MockPipelineWorkflow.Output.class));
+    super(
+        JacksonSdkType.of(MockPipelineWorkflow.Input.class),
+        JacksonSdkType.of(MockPipelineWorkflow.Output.class));
   }
 
   @Override
@@ -39,30 +44,37 @@ public class MockPipelineWorkflow extends SdkWorkflow<MockPipelineWorkflow.Outpu
         builder
             .apply(
                 "build-ref",
-                new BuildBqReference()
-                    .withInput("project", ofString("styx-1265"))
-                    .withInput("dataset", ofString("styx-insights"))
-                    .withInput("tableName", tableName))
+                new BuildBqReference(),
+                BuildBqReference.Input.create(
+                    ofString("styx-1265"), ofString("styx-insights"), tableName))
             .getOutputs()
             .ref();
     SdkBindingData<Boolean> exists =
         builder
             .apply(
                 "lookup",
-                new MockLookupBqTask()
-                    .withInput("ref", ref)
-                    .withInput("checkIfExists", ofBoolean(true)))
+                new MockLookupBqTask(),
+                MockLookupBqTask.Input.create(ref, ofBoolean(true)))
             .getOutputs()
             .exists();
     builder.output("exists", exists);
   }
 
   @AutoValue
+  public abstract static class Input {
+    public abstract SdkBindingData<String> tableName();
+
+    public static Input create(SdkBindingData<String> tableName) {
+      return new AutoValue_MockPipelineWorkflow_Input(tableName);
+    }
+  }
+
+  @AutoValue
   public abstract static class Output {
     public abstract SdkBindingData<Boolean> exists();
 
-    public static Output create(Boolean exists) {
-      return new AutoValue_MockPipelineWorkflow_Output(SdkBindingData.ofBoolean(exists));
+    public static Output create(SdkBindingData<Boolean> exists) {
+      return new AutoValue_MockPipelineWorkflow_Output(exists);
     }
   }
 }

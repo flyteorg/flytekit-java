@@ -23,12 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
+public class PhoneBookWorkflow extends SdkWorkflow<Void, PhoneBookWorkflow.Output> {
 
   private static final List<String> NAMES = Arrays.asList("frodo", "bilbo");
   private static final Map<String, String> PHONE_BOOK = new HashMap<>();
@@ -55,7 +56,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
   }
 
   public PhoneBookWorkflow() {
-    super(JacksonSdkType.of(PhoneBookWorkflow.Output.class));
+    super(SdkTypes.nulls(), JacksonSdkType.of(PhoneBookWorkflow.Output.class));
   }
 
   @Override
@@ -68,9 +69,8 @@ public class PhoneBookWorkflow extends SdkWorkflow<PhoneBookWorkflow.Output> {
         builder
             .apply(
                 "search",
-                new BatchLookUpTask()
-                    .withInput("keyValues", phoneBook)
-                    .withInput("searchKeys", searchKeys))
+                new BatchLookUpTask(),
+                BatchLookUpTask.Input.create(phoneBook, searchKeys))
             .getOutputs()
             .values();
 

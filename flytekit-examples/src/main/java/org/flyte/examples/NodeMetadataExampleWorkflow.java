@@ -20,12 +20,14 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExampleWorkflow.Output> {
+public class NodeMetadataExampleWorkflow
+    extends SdkWorkflow<Void, NodeMetadataExampleWorkflow.Output> {
 
   @AutoValue
   public abstract static class Output {
@@ -43,7 +45,7 @@ public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExample
   }
 
   public NodeMetadataExampleWorkflow() {
-    super(JacksonSdkType.of(NodeMetadataExampleWorkflow.Output.class));
+    super(SdkTypes.nulls(), JacksonSdkType.of(NodeMetadataExampleWorkflow.Output.class));
   }
 
   @Override
@@ -55,9 +57,10 @@ public class NodeMetadataExampleWorkflow extends SdkWorkflow<NodeMetadataExample
         builder
             .apply(
                 "sum-a-b",
-                SumTask.of(a, b)
+                new SumTask()
                     .withNameOverride("sum a+b")
-                    .withTimeoutOverride(Duration.ofMinutes(15)))
+                    .withTimeoutOverride(Duration.ofMinutes(15)),
+                SumTask.SumInput.create(a, b))
             .getOutputs()
             .c();
 

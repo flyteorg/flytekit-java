@@ -34,7 +34,6 @@ import com.google.auto.service.AutoService;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.CronSchedule;
@@ -52,15 +51,8 @@ import org.junit.jupiter.api.Test;
 
 class SdkLaunchPlanRegistrarTest {
 
-  private static final Map<String, String> ENV;
-
-  static {
-    HashMap<String, String> env = new HashMap<>();
-    env.put(PROJECT_ENV_VAR, "project");
-    env.put(DOMAIN_ENV_VAR, "domain");
-    env.put(VERSION_ENV_VAR, "version");
-    ENV = Collections.unmodifiableMap(env);
-  }
+  private static final Map<String, String> ENV =
+      Map.of(PROJECT_ENV_VAR, "project", DOMAIN_ENV_VAR, "domain", VERSION_ENV_VAR, "version");
 
   private final SdkLaunchPlanRegistrar registrar = new SdkLaunchPlanRegistrar();
 
@@ -257,10 +249,10 @@ class SdkLaunchPlanRegistrarTest {
     }
   }
 
-  public static class TestWorkflow extends SdkWorkflow<Void> {
+  public static class TestWorkflow extends SdkWorkflow<Void, Void> {
 
     public TestWorkflow() {
-      super(SdkTypes.nulls());
+      super(SdkTypes.nulls(), SdkTypes.nulls());
     }
 
     @Override
@@ -270,10 +262,10 @@ class SdkLaunchPlanRegistrarTest {
     }
   }
 
-  public static class OtherTestWorkflow extends SdkWorkflow<Void> {
+  public static class OtherTestWorkflow extends SdkWorkflow<Void, Void> {
 
     public OtherTestWorkflow() {
-      super(SdkTypes.nulls());
+      super(SdkTypes.nulls(), SdkTypes.nulls());
     }
 
     @Override

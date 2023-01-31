@@ -16,9 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.unmodifiableList;
-
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,14 +34,14 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
   }
 
   public void registerDefaultLaunchPlans() {
-    List<SdkWorkflow<?>> workflows = SdkWorkflowRegistry.loadAll();
+    List<SdkWorkflow<?, ?>> workflows = SdkWorkflowRegistry.loadAll();
 
     registerDefaultLaunchPlans(workflows);
   }
 
   // Visible for testing
-  void registerDefaultLaunchPlans(List<SdkWorkflow<?>> workflows) {
-    for (SdkWorkflow<?> sdkWorkflow : workflows) {
+  void registerDefaultLaunchPlans(List<SdkWorkflow<?, ?>> workflows) {
+    for (SdkWorkflow<?, ?> sdkWorkflow : workflows) {
       SdkLaunchPlan defaultLaunchPlan = SdkLaunchPlan.of(sdkWorkflow);
       registerLaunchPlan(defaultLaunchPlan);
     }
@@ -52,6 +49,6 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
 
   @Override
   public List<SdkLaunchPlan> getLaunchPlans() {
-    return unmodifiableList(new ArrayList<>(launchPlans.values()));
+    return List.copyOf(launchPlans.values());
   }
 }

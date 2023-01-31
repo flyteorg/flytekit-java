@@ -22,6 +22,7 @@ import static org.flyte.flytekit.SdkConditions.lt;
 import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
+import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkCondition;
 import org.flyte.flytekit.SdkWorkflow;
@@ -29,9 +30,32 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
+public class BranchNodeWorkflow
+    extends SdkWorkflow<BranchNodeWorkflow.Input, ConstStringTask.Output> {
+
+  @AutoValue
+  abstract static class Input {
+    abstract SdkBindingData<Long> a();
+
+    abstract SdkBindingData<Long> b();
+
+    abstract SdkBindingData<Long> c();
+
+    abstract SdkBindingData<Long> d();
+
+    public static BranchNodeWorkflow.Input create(
+        SdkBindingData<Long> a,
+        SdkBindingData<Long> b,
+        SdkBindingData<Long> c,
+        SdkBindingData<Long> d) {
+      return new AutoValue_BranchNodeWorkflow_Input(a, b, c, d);
+    }
+  }
+
   public BranchNodeWorkflow() {
-    super(JacksonSdkType.of(ConstStringTask.Output.class));
+    super(
+        JacksonSdkType.of(BranchNodeWorkflow.Input.class),
+        JacksonSdkType.of(ConstStringTask.Output.class));
   }
 
   @Override
@@ -45,21 +69,57 @@ public class BranchNodeWorkflow extends SdkWorkflow<ConstStringTask.Output> {
         when(
                 "a-equal-b",
                 eq(a, b),
-                when("c-equal-d", eq(c, d), ConstStringTask.of("a == b && c == d"))
-                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a == b && c > d"))
-                    .when("c-less-d", lt(c, d), ConstStringTask.of("a == b && c < d")))
+                when(
+                        "c-equal-d",
+                        eq(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a == b && c == d")))
+                    .when(
+                        "c-greater-d",
+                        gt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a == b && c > d")))
+                    .when(
+                        "c-less-d",
+                        lt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a == b && c < d"))))
             .when(
                 "a-less-b",
                 lt(a, b),
-                when("c-equal-d", eq(c, d), ConstStringTask.of("a < b && c == d"))
-                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a < b && c > d"))
-                    .when("c-less-d", lt(c, d), ConstStringTask.of("a < b && c < d")))
+                when(
+                        "c-equal-d",
+                        eq(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a < b && c == d")))
+                    .when(
+                        "c-greater-d",
+                        gt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a < b && c > d")))
+                    .when(
+                        "c-less-d",
+                        lt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a < b && c < d"))))
             .when(
                 "a-greater-b",
                 gt(a, b),
-                when("c-equal-d", eq(c, d), ConstStringTask.of("a > b && c == d"))
-                    .when("c-greater-d", gt(c, d), ConstStringTask.of("a > b && c > d"))
-                    .when("c-less-d", lt(c, d), ConstStringTask.of("a > b && c < d")));
+                when(
+                        "c-equal-d",
+                        eq(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a > b && c == d")))
+                    .when(
+                        "c-greater-d",
+                        gt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a > b && c > d")))
+                    .when(
+                        "c-less-d",
+                        lt(c, d),
+                        new ConstStringTask(),
+                        ConstStringTask.Input.create(SdkBindingData.ofString("a > b && c < d"))));
 
     SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 

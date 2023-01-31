@@ -16,34 +16,30 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.{
+  SdkBindingData,
   SdkScalaType,
   SdkScalaWorkflow,
   SdkScalaWorkflowBuilder
 }
 
-case class DynamicFibonacciWorkflowInput(n: SdkBindingData[Long])
-case class DynamicFibonacciWorkflowOutput(output: SdkBindingData[Long])
-class DynamicFibonacciWorkflow
-    extends SdkScalaWorkflow[
-      DynamicFibonacciWorkflowInput,
-      DynamicFibonacciWorkflowOutput
-    ](
-      SdkScalaType[DynamicFibonacciWorkflowInput],
-      SdkScalaType[DynamicFibonacciWorkflowOutput]
+class WorkflowWithRemoteLaunchPlan
+    extends SdkScalaWorkflow[RemoteLaunchPlanInput, RemoteLaunchPlanOutput](
+      SdkScalaType[RemoteLaunchPlanInput],
+      SdkScalaType[RemoteLaunchPlanOutput]
     ) {
 
   override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
-    val n = builder.inputOfInteger("n")
+    val fib0 = SdkBindingData.ofInteger(0L)
+    val fib1 = SdkBindingData.ofInteger(1L)
 
-    val fibonacci = builder.apply(
-      "fibonacci",
-      new DynamicFibonacciWorkflowTask(),
-      DynamicFibonacciWorkflowTaskInput(n)
-    )
-
-    builder.output("output", fibonacci.getOutputs.output)
+    val fib5 = builder
+      .apply(
+        new RemoteLaunchPlan().create,
+        RemoteLaunchPlanInput(fib0, fib1)
+      )
+      .getOutputs
+      .fib5
+    builder.output("fib5", fib5)
   }
-
 }

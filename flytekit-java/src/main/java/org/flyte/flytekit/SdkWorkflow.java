@@ -25,10 +25,12 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-public abstract class SdkWorkflow<OutputT> extends SdkTransform<OutputT> {
+public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
+  private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
 
-  protected SdkWorkflow(SdkType<OutputT> outputType) {
+  protected SdkWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
+    this.inputType = inputType;
     this.outputType = outputType;
   }
 
@@ -71,6 +73,11 @@ public abstract class SdkWorkflow<OutputT> extends SdkTransform<OutputT> {
     OutputT promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
+  }
+
+  @Override
+  public SdkType<InputT> getInputType() {
+    return inputType;
   }
 
   @Override

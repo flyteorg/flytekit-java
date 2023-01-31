@@ -20,7 +20,6 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
@@ -31,14 +30,18 @@ public class ConstStringTask
   @AutoValue
   abstract static class Input {
     abstract SdkBindingData<String> value();
+
+    public static Input create(SdkBindingData<String> value) {
+      return new AutoValue_ConstStringTask_Input(value);
+    }
   }
 
   @AutoValue
   abstract static class Output {
     abstract SdkBindingData<String> value();
 
-    public static Output create(String value) {
-      return new AutoValue_ConstStringTask_Output(SdkBindingData.ofString(value));
+    public static Output create(SdkBindingData<String> value) {
+      return new AutoValue_ConstStringTask_Output(value);
     }
   }
 
@@ -46,12 +49,8 @@ public class ConstStringTask
     super(JacksonSdkType.of(Input.class), JacksonSdkType.of(Output.class));
   }
 
-  public static SdkTransform<Output> of(String value) {
-    return new ConstStringTask().withInput("value", SdkBindingData.ofString(value));
-  }
-
   @Override
   public Output run(Input input) {
-    return Output.create(input.value().get());
+    return Output.create(input.value());
   }
 }

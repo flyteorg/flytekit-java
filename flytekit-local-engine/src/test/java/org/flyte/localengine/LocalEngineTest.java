@@ -557,6 +557,7 @@ class LocalEngineTest {
 
     @Override
     public NoOpType expand(SdkWorkflowBuilder builder, NoOpType input) {
+      SdkBindingData<Long> x = input.x();
       SdkBindingData<Long> nextX =
           builder
               .apply(

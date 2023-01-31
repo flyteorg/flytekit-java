@@ -21,7 +21,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+/**
+ * Applied to a Jackson's json property to denote the description of such property when it is used on 
+ * {@link JacksonSdkType#of}. Notice that Autovalue methods are automatically infered as jackson's 
+ * json properties.
+ */
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
   /**

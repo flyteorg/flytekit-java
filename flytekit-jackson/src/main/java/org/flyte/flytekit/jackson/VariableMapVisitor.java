@@ -24,9 +24,13 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -38,6 +42,7 @@ import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.Description;
 import org.flyte.flytekit.SdkBindingData;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
@@ -74,7 +79,15 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             /*rootLevel=*/ true,
             prop.getName(),
             prop.getMember().getMember().getDeclaringClass().getName());
-    Variable variable = Variable.builder().description("").literalType(literalType).build();
+
+    String description =
+        getDescription(
+            handledType,
+            prop.getMember().getMember().getDeclaringClass().getName(),
+            prop.getMember());
+
+    Variable variable =
+        Variable.builder().description(description).literalType(literalType).build();
 
     builderMembers.put(prop.getName(), prop.getMember());
     builder.put(prop.getName(), variable);
@@ -112,6 +125,68 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   public Map<String, AnnotatedMember> getMembersMap() {
     return unmodifiableMap(new HashMap<>(builderMembers));
+  }
+
+  private Method getDeclaredMethod(String name, Class<?> clazz) {
+    try {
+      return clazz.getDeclaredMethod(name);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(
+          String.format("Couldn't find method=%s of class=%s", name, clazz.getName()));
+    }
+  }
+
+  private Field getDeclaredField(String name, Class<?> clazz) {
+    try {
+      return clazz.getDeclaredField(name);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(
+          String.format("Couldn't find field=%s of class=%s", name, clazz.getName()));
+    }
+  }
+
+  private Class<?> getClass(String className) {
+    try {
+      return Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(String.format("Couldn't find class=%s", className));
+    }
+  }
+
+  private String getDescription(
+      JavaType javaType, String declaringClassName, AnnotatedMember member) {
+    Class<?> type = javaType.getRawClass();
+
+    if (!SdkBindingData.class.isAssignableFrom(type)) {
+      return "";
+    }
+
+    String name = member.getName();
+    Class<Description> descriptionAnnotationClass = Description.class;
+    Class<?> clazz = getClass(declaringClassName);
+
+    Description description;
+    if (member instanceof AnnotatedMethod) {
+      description =
+          getDeclaredMethod(name, clazz).getDeclaredAnnotation(descriptionAnnotationClass);
+    } else if (member instanceof AnnotatedField) {
+      description = getDeclaredField(name, clazz).getDeclaredAnnotation(descriptionAnnotationClass);
+    } else {
+      throw new RuntimeException(
+          String.format(
+              "Member %s of class %s is not of type %s or %s for",
+              name,
+              declaringClassName,
+              AnnotatedMethod.class.getName(),
+              AnnotatedField.class.getName()));
+    }
+
+    // No description annotation present
+    if (description == null) {
+      return "";
+    }
+
+    return description.value();
   }
 
   @SuppressWarnings("AlreadyChecked")

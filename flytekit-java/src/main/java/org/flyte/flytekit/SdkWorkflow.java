@@ -60,8 +60,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
 
-    var workflowId =
-        PartialWorkflowIdentifier.builder().name(getName()).build();
+    var workflowId = PartialWorkflowIdentifier.builder().name(getName()).build();
 
     var innerBuilder = new SdkWorkflowBuilder();
     expand(innerBuilder);

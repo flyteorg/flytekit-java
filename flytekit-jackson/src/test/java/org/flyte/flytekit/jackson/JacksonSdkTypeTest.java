@@ -45,6 +45,7 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.Description;
 import org.flyte.flytekit.SdkBindingData;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -102,7 +103,7 @@ public class JacksonSdkTypeTest {
         JacksonSdkType.of(AutoValueInput.class).getVariableMap(),
         allOf(
             List.of(
-                hasEntry("i", createVar(SimpleType.INTEGER)),
+                hasEntry("i", createVar(SimpleType.INTEGER, "input i")),
                 hasEntry("f", createVar(SimpleType.FLOAT)),
                 hasEntry("s", createVar(SimpleType.STRING)),
                 hasEntry("b", createVar(SimpleType.BOOLEAN)),
@@ -327,7 +328,6 @@ public class JacksonSdkTypeTest {
 
   @Test
   public void testToSdkBindingDataMapJsonProperties() {
-
     JsonPropertyClassInput input =
         new JsonPropertyClassInput(
             SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
@@ -378,7 +378,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoVariableMap() {
     Variable expected =
-        Variable.builder().description("").literalType(LiteralTypes.INTEGER).build();
+        Variable.builder().description("a description").literalType(LiteralTypes.INTEGER).build();
 
     Map<String, Variable> variableMap = JacksonSdkType.of(PojoInput.class).getVariableMap();
 
@@ -533,6 +533,8 @@ public class JacksonSdkTypeTest {
 
   @AutoValue
   public abstract static class AutoValueInput {
+
+    @Description("input i")
     public abstract SdkBindingData<Long> i();
 
     public abstract SdkBindingData<Double> f();
@@ -613,6 +615,7 @@ public class JacksonSdkTypeTest {
   }
 
   public static final class PojoInput {
+    @Description("a description")
     public SdkBindingData<Long> a;
 
     @Override
@@ -691,11 +694,19 @@ public class JacksonSdkTypeTest {
   }
 
   private static Variable createVar(SimpleType simpleType) {
-    return createVar(ofSimpleType(simpleType));
+    return createVar(ofSimpleType(simpleType), "");
+  }
+
+  private static Variable createVar(SimpleType simpleType, String description) {
+    return createVar(ofSimpleType(simpleType), description);
   }
 
   private static Variable createVar(LiteralType literalType) {
-    return Variable.builder().literalType(literalType).description("").build();
+    return createVar(literalType, "");
+  }
+
+  private static Variable createVar(LiteralType literalType, String description) {
+    return Variable.builder().literalType(literalType).description(description).build();
   }
 
   private static Literal literalOf(Primitive primitive) {

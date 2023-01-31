@@ -68,9 +68,7 @@ class SdkWorkflowBuilderTest {
 
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder(sdkNodeNamePolicy);
 
-    Times4Workflow workflow = new Times4Workflow();
-
-    workflow.expand(builder);
+    new Times4Workflow().expand(builder);
 
     Node node0 =
         Node.builder()
@@ -150,9 +148,7 @@ class SdkWorkflowBuilderTest {
   void testConditionalWorkflowIdl() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    ConditionalWorkflow workflow = new ConditionalWorkflow();
-
-    workflow.expand(builder);
+    new ConditionalWorkflow().expand(builder);
 
     Node caseNode =
         Node.builder()

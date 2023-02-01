@@ -16,18 +16,24 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
+import org.flyte.flytekit.SdkBindingData
 import org.flyte.flytekitscala.{
+  Description,
   SdkScalaType,
   SdkScalaWorkflow,
   SdkScalaWorkflowBuilder
 }
 
 case class FibonacciWorkflowInput(
+    @Description("Value for fib0")
     fib0: SdkBindingData[Long],
+    @Description("Value for fib1")
     fib1: SdkBindingData[Long]
 )
-case class FibonacciWorkflowOutput(fib5: SdkBindingData[Long])
+case class FibonacciWorkflowOutput(
+    @Description("Computed value for fib5")
+    fib5: SdkBindingData[Long]
+)
 
 class FibonacciWorkflow
     extends SdkScalaWorkflow[FibonacciWorkflowInput, FibonacciWorkflowOutput](

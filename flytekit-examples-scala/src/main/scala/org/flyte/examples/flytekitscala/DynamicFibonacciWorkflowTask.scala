@@ -41,7 +41,7 @@ class DynamicFibonacciWorkflowTask
   override def run(
       builder: SdkWorkflowBuilder,
       input: DynamicFibonacciWorkflowTaskInput
-  ): Unit = {
+  ): DynamicFibonacciWorkflowTaskOutput = {
 
     @tailrec
     def fib(
@@ -68,7 +68,7 @@ class DynamicFibonacciWorkflowTask
     } else {
       fib(1, ofInteger(1), ofInteger(0))
     }
-    builder.output("output", value)
+    DynamicFibonacciWorkflowTaskOutput(value)
   }
 
 }

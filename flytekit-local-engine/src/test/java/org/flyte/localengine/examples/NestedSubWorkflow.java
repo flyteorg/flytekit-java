@@ -32,16 +32,16 @@ public class NestedSubWorkflow extends SdkWorkflow<TestTuple3IntegerInput, TestU
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
-    SdkBindingData<Long> c = builder.inputOfInteger("c");
+  public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestTuple3IntegerInput input) {
     SdkBindingData<Long> result =
         builder
             .apply(
-                "nested-workflow", new OuterSubWorkflow(), TestTuple3IntegerInput.create(a, b, c))
+                "nested-workflow",
+                new OuterSubWorkflow(),
+                TestTuple3IntegerInput.create(input.a(), input.b(), input.c()))
             .getOutputs()
             .o();
-    builder.output("o", result);
+
+    return TestUnaryIntegerOutput.create(result);
   }
 }

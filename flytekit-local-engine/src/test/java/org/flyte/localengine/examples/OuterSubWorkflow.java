@@ -33,17 +33,17 @@ public class OuterSubWorkflow extends SdkWorkflow<TestTuple3IntegerInput, TestUn
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
-    SdkBindingData<Long> c = builder.inputOfInteger("c");
+  public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestTuple3IntegerInput input) {
     SdkBindingData<Long> ab =
-        builder.apply("outer-sum-a-b", new SumTask(), Input.create(a, b)).getOutputs().o();
-    SdkBindingData<Long> res =
         builder
-            .apply("outer-sum-ab-c", new InnerSubWorkflow(), SumTask.Input.create(ab, c))
+            .apply("outer-sum-a-b", new SumTask(), Input.create(input.a(), input.b()))
             .getOutputs()
             .o();
-    builder.output("o", res);
+    SdkBindingData<Long> res =
+        builder
+            .apply("outer-sum-ab-c", new InnerSubWorkflow(), SumTask.Input.create(ab, input.c()))
+            .getOutputs()
+            .o();
+    return TestUnaryIntegerOutput.create(res);
   }
 }

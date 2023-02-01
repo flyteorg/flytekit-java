@@ -38,15 +38,14 @@ public class MockPipelineWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<String> tableName = builder.inputOfString("tableName");
+  public Output expand(SdkWorkflowBuilder builder, Input input) {
     SdkBindingData<BQReference> ref =
         builder
             .apply(
                 "build-ref",
                 new BuildBqReference(),
                 BuildBqReference.Input.create(
-                    ofString("styx-1265"), ofString("styx-insights"), tableName))
+                    ofString("styx-1265"), ofString("styx-insights"), input.tableName()))
             .getOutputs()
             .ref();
     SdkBindingData<Boolean> exists =
@@ -57,7 +56,7 @@ public class MockPipelineWorkflow
                 MockLookupBqTask.Input.create(ref, ofBoolean(true)))
             .getOutputs()
             .exists();
-    builder.output("exists", exists);
+    return Output.create(exists);
   }
 
   @AutoValue

@@ -60,7 +60,7 @@ public class PhoneBookWorkflow extends SdkWorkflow<Void, PhoneBookWorkflow.Outpu
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
 
     SdkBindingData<List<String>> searchKeys = SdkBindingData.ofStringCollection(NAMES);
@@ -74,6 +74,6 @@ public class PhoneBookWorkflow extends SdkWorkflow<Void, PhoneBookWorkflow.Outpu
             .getOutputs()
             .values();
 
-    builder.output("phoneNumbers", phoneNumbers);
+    return PhoneBookWorkflow.Output.create(phoneNumbers);
   }
 }

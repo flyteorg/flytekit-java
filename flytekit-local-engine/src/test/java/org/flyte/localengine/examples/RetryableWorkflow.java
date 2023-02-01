@@ -28,7 +28,8 @@ public class RetryableWorkflow extends SdkWorkflow<Void, Void> {
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public Void expand(SdkWorkflowBuilder builder, Void noInput) {
     builder.apply("node-1", new RetryableTask());
+    return null;
   }
 }

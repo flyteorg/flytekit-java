@@ -350,7 +350,7 @@ class LocalEngineTest {
                     .build())
             .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
-    assertEquals(ImmutableMap.of("nextX", expectedLiteral), outputs);
+    assertEquals(ImmutableMap.of("o", expectedLiteral), outputs);
     assertEquals(expectedEvents, listener.actions);
   }
 
@@ -375,7 +375,7 @@ class LocalEngineTest {
                     .build())
             .compileAndExecute(workflowTemplates.get(workflowName), ImmutableMap.of("x", xLiteral));
 
-    assertEquals(ImmutableMap.of("nextX", xLiteral), outputs);
+    assertEquals(ImmutableMap.of("x", xLiteral), outputs);
     for (int i = 0; i < expectedEvents.size(); i++) {
       List<Object> expected = expectedEvents.get(i);
       List<Object> actual = listener.actions.get(i);
@@ -556,8 +556,8 @@ class LocalEngineTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> x = builder.inputOfInteger("x");
+    public NoOpType expand(SdkWorkflowBuilder builder, NoOpType input) {
+      SdkBindingData<Long> x = input.x();
       SdkBindingData<Long> nextX =
           builder
               .apply(
@@ -567,7 +567,7 @@ class LocalEngineTest {
               .getOutputs()
               .x();
 
-      builder.output("nextX", nextX);
+      return NoOpType.create(nextX);
     }
 
     @AutoService(SdkRunnableTask.class)

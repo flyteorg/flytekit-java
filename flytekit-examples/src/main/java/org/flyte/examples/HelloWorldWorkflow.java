@@ -14,28 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.localengine.examples;
+package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
-import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class InnerSubWorkflow extends SdkWorkflow<SumTask.Input, TestUnaryIntegerOutput> {
-  public InnerSubWorkflow() {
-    super(JacksonSdkType.of(SumTask.Input.class), JacksonSdkType.of(TestUnaryIntegerOutput.class));
+public class HelloWorldWorkflow extends SdkWorkflow<Void, Void> {
+
+  public HelloWorldWorkflow() {
+    super(SdkTypes.nulls(), SdkTypes.nulls());
   }
 
   @Override
-  public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, SumTask.Input input) {
-    SdkBindingData<Long> c =
-        builder
-            .apply("inner-sum-a-b", new SumTask(), SumTask.Input.create(input.a(), input.b()))
-            .getOutputs()
-            .o();
-
-    return TestUnaryIntegerOutput.create(c);
+  public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+    builder.apply(new HelloWorldTask());
+    return null;
   }
 }

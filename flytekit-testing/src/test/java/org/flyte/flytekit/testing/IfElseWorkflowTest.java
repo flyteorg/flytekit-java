@@ -23,6 +23,7 @@ import static org.flyte.flytekit.SdkConditions.lt;
 import static org.flyte.flytekit.SdkConditions.when;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.in;
 
 import com.google.auto.value.AutoValue;
 import java.util.stream.Stream;
@@ -51,7 +52,7 @@ public class IfElseWorkflowTest {
             .withFixedInput("b", b)
             .withFixedInput("c", c)
             .withFixedInput("d", d)
-            .withTask(new ConstStringTask(), in -> Output.create(in.value().get()))
+            .withTask(new ConstStringTask(), in -> Output.create(in.value()))
             .execute();
 
     assertThat(output.getStringOutput("value"), equalTo(expected));
@@ -71,19 +72,40 @@ public class IfElseWorkflowTest {
   }
 
   static class BranchNodeWorkflow
-      extends SdkWorkflow<ConstStringTask.Input, ConstStringTask.Output> {
+      extends SdkWorkflow<BranchNodeWorkflow.Input, ConstStringTask.Output> {
+
+    @AutoValue
+    public abstract static class Input {
+      public abstract SdkBindingData<Long> a();
+
+      public abstract SdkBindingData<Long> b();
+
+      public abstract SdkBindingData<Long> c();
+
+      public abstract SdkBindingData<Long> d();
+
+      public static BranchNodeWorkflow.Input create(
+          SdkBindingData<Long> a,
+          SdkBindingData<Long> b,
+          SdkBindingData<Long> c,
+          SdkBindingData<Long> d) {
+        return new AutoValue_IfElseWorkflowTest_BranchNodeWorkflow_Input(a, b, c, d);
+      }
+    }
+
     BranchNodeWorkflow() {
       super(
-          JacksonSdkType.of(ConstStringTask.Input.class),
+          JacksonSdkType.of(BranchNodeWorkflow.Input.class),
           JacksonSdkType.of(ConstStringTask.Output.class));
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> a = builder.inputOfInteger("a");
-      SdkBindingData<Long> b = builder.inputOfInteger("b");
-      SdkBindingData<Long> c = builder.inputOfInteger("c");
-      SdkBindingData<Long> d = builder.inputOfInteger("d");
+    public ConstStringTask.Output expand(
+        SdkWorkflowBuilder builder, BranchNodeWorkflow.Input input) {
+      SdkBindingData<Long> a = input.a();
+      SdkBindingData<Long> b = input.b();
+      SdkBindingData<Long> c = input.c();
+      SdkBindingData<Long> d = input.d();
 
       SdkCondition<ConstStringTask.Output> condition =
           when(
@@ -143,7 +165,7 @@ public class IfElseWorkflowTest {
 
       SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 
-      builder.output("value", value);
+      return ConstStringTask.Output.create(value);
     }
   }
 
@@ -164,8 +186,8 @@ public class IfElseWorkflowTest {
     abstract static class Output {
       abstract SdkBindingData<String> value();
 
-      public static Output create(String value) {
-        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(ofString(value));
+      public static Output create(SdkBindingData<String> value) {
+        return new AutoValue_IfElseWorkflowTest_ConstStringTask_Output(value);
       }
     }
 
@@ -175,7 +197,7 @@ public class IfElseWorkflowTest {
 
     @Override
     public Output run(Input input) {
-      return Output.create(input.value().get());
+      return Output.create(input.value());
     }
   }
 }

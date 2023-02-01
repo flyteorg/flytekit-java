@@ -16,11 +16,11 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.SdkBindingData
+import org.flyte.flytekit.{SdkBindingData, SdkWorkflow, SdkWorkflowBuilder}
 import org.flyte.flytekitscala.{
-  SdkScalaWorkflowBuilder,
   SdkScalaType,
-  SdkScalaWorkflow
+  SdkScalaWorkflow,
+  SdkScalaWorkflowBuilder
 }
 
 case class FibonacciWorkflowInput(
@@ -35,16 +35,17 @@ class FibonacciWorkflow
       SdkScalaType[FibonacciWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
-    val fib0 = builder.inputOfInteger("fib0", "Value for Fib0")
-    val fib1 = builder.inputOfInteger("fib1", "Value for Fib1")
+  override def expand(
+      builder: SdkScalaWorkflowBuilder,
+      input: FibonacciWorkflowInput
+  ): FibonacciWorkflowOutput = {
 
     val fib2 = builder
-      .apply("fib-2", new SumTask(), SumTaskInput(fib0, fib1))
+      .apply("fib-2", new SumTask(), SumTaskInput(input.fib0, input.fib1))
       .getOutputs
       .c
     val fib3 = builder
-      .apply("fib-3", new SumTask(), SumTaskInput(fib1, fib2))
+      .apply("fib-3", new SumTask(), SumTaskInput(input.fib1, fib2))
       .getOutputs
       .c
     val fib4 = builder
@@ -56,6 +57,6 @@ class FibonacciWorkflow
       .getOutputs
       .c
 
-    builder.output("fib5", fib5, "Value for Fib5")
+    FibonacciWorkflowOutput(fib5)
   }
 }

@@ -31,7 +31,7 @@ public class NodeMetadataExampleWorkflow
 
   @AutoValue
   public abstract static class Output {
-    public abstract SdkBindingData<String> c();
+    public abstract SdkBindingData<Long> c();
 
     /**
      * Wraps the constructor of the generated output value class.
@@ -39,7 +39,7 @@ public class NodeMetadataExampleWorkflow
      * @param c the String literal output of {@link NodeMetadataExampleWorkflow}
      * @return output of NodeMetadataExampleWorkflow
      */
-    public static NodeMetadataExampleWorkflow.Output create(SdkBindingData<String> c) {
+    public static NodeMetadataExampleWorkflow.Output create(SdkBindingData<Long> c) {
       return new AutoValue_NodeMetadataExampleWorkflow_Output(c);
     }
   }
@@ -49,7 +49,7 @@ public class NodeMetadataExampleWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkBindingData<Long> a = SdkBindingData.ofInteger(0);
     SdkBindingData<Long> b = SdkBindingData.ofInteger(1);
 
@@ -64,6 +64,6 @@ public class NodeMetadataExampleWorkflow
             .getOutputs()
             .c();
 
-    builder.output("c", c, "Value of the sum");
+    return NodeMetadataExampleWorkflow.Output.create(c);
   }
 }

@@ -18,7 +18,6 @@ package org.flyte.flytekit;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.flyte.flytekit.SdkConfig.DOMAIN_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.PROJECT_ENV_VAR;
 import static org.flyte.flytekit.SdkConfig.VERSION_ENV_VAR;
@@ -39,14 +38,7 @@ import java.util.Map;
 import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
-import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
-import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 
 class SdkLaunchPlanRegistrarTest {
@@ -59,7 +51,6 @@ class SdkLaunchPlanRegistrarTest {
   @Test
   void shouldLoadLaunchPlansFromDiscoveredRegistries() {
     Map<LaunchPlanIdentifier, LaunchPlan> launchPlans = registrar.load(ENV);
-    Primitive defaultPrimitive = Primitive.ofStringValue("default-bar");
     LaunchPlanIdentifier expectedTestPlan =
         LaunchPlanIdentifier.builder()
             .project("project")
@@ -74,18 +65,6 @@ class SdkLaunchPlanRegistrarTest {
                 PartialWorkflowIdentifier.builder()
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
                     .build())
-            .fixedInputs(
-                singletonMap(
-                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("bar")))))
-            .defaultInputs(
-                singletonMap(
-                    "default-foo",
-                    Parameter.create(
-                        Variable.builder()
-                            .description("")
-                            .literalType(LiteralType.ofSimpleType(SimpleType.STRING))
-                            .build(),
-                        Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();
     LaunchPlanIdentifier expectedOtherTestPlan =
         LaunchPlanIdentifier.builder()
@@ -101,18 +80,6 @@ class SdkLaunchPlanRegistrarTest {
                 PartialWorkflowIdentifier.builder()
                     .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
                     .build())
-            .fixedInputs(
-                singletonMap(
-                    "foo", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue("baz")))))
-            .defaultInputs(
-                singletonMap(
-                    "default-foo",
-                    Parameter.create(
-                        Variable.builder()
-                            .description("")
-                            .literalType(LiteralType.ofSimpleType(SimpleType.STRING))
-                            .build(),
-                        Literal.ofScalar(Scalar.ofPrimitive(defaultPrimitive)))))
             .build();
 
     assertAll(
@@ -196,11 +163,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
-      return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow())
-              .withName("TestPlan")
-              .withFixedInput("foo", "bar")
-              .withDefaultInput("default-foo", "default-bar"));
+      return singletonList(SdkLaunchPlan.of(new TestWorkflow()).withName("TestPlan"));
     }
   }
 
@@ -209,11 +172,7 @@ class SdkLaunchPlanRegistrarTest {
 
     @Override
     public List<SdkLaunchPlan> getLaunchPlans() {
-      return singletonList(
-          SdkLaunchPlan.of(new TestWorkflow())
-              .withName("OtherTestPlan")
-              .withFixedInput("foo", "baz")
-              .withDefaultInput("default-foo", "default-bar"));
+      return singletonList(SdkLaunchPlan.of(new TestWorkflow()).withName("OtherTestPlan"));
     }
   }
 
@@ -256,9 +215,8 @@ class SdkLaunchPlanRegistrarTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      builder.inputOfString("foo");
-      builder.inputOfString("default-foo");
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+      return null;
     }
   }
 
@@ -269,8 +227,9 @@ class SdkLaunchPlanRegistrarTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // Do nothing
+      return null;
     }
   }
 }

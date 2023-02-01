@@ -39,15 +39,15 @@ public class MapWorkflow extends SdkWorkflow<Void, MapWorkflow.Output> {
   @AutoValue
   public abstract static class Output {
 
-    public abstract SdkBindingData<Map<String, String>> map();
+    public abstract SdkBindingData<Map<String, Long>> map();
 
-    public static MapWorkflow.Output create(Map<String, String> map) {
-      return new AutoValue_MapWorkflow_Output(SdkBindingData.ofStringMap(map));
+    public static MapWorkflow.Output create(SdkBindingData<Map<String, Long>> map) {
+      return new AutoValue_MapWorkflow_Output(map);
     }
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkBindingData<Long> sum1 =
         builder
             .apply("sum-1", new SumTask(), SumTask.Input.create(ofInteger(1), ofInteger(2)))
@@ -67,6 +67,6 @@ public class MapWorkflow extends SdkWorkflow<Void, MapWorkflow.Output> {
 
     SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask(), MapTask.Input.create(map));
 
-    builder.output("map", map1.getOutputs().map());
+    return Output.create(map1.getOutputs().map());
   }
 }

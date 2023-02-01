@@ -59,11 +59,11 @@ public class BranchNodeWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
-    SdkBindingData<Long> c = builder.inputOfInteger("c");
-    SdkBindingData<Long> d = builder.inputOfInteger("d");
+  public ConstStringTask.Output expand(SdkWorkflowBuilder builder, BranchNodeWorkflow.Input input) {
+    SdkBindingData<Long> a = input.a();
+    SdkBindingData<Long> b = input.b();
+    SdkBindingData<Long> c = input.c();
+    SdkBindingData<Long> d = input.d();
 
     SdkCondition<ConstStringTask.Output> condition =
         when(
@@ -123,6 +123,6 @@ public class BranchNodeWorkflow
 
     SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 
-    builder.output("value", value);
+    return ConstStringTask.Output.create(value);
   }
 }

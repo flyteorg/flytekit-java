@@ -102,9 +102,9 @@ class SdkLaunchPlanTest {
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
             .withFixedInput("integer", 123L)
-            .withFixedInput("float", 1.23)
+            .withFixedInput("_float", 1.23)
             .withFixedInput("string", "123")
-            .withFixedInput("boolean", true)
+            .withFixedInput("_boolean", true)
             .withFixedInput("datetime", now)
             .withFixedInput("duration", duration)
             .withFixedInputs(new TestPairIntegerInput.SdkType(), fixedInputs);
@@ -113,9 +113,9 @@ class SdkLaunchPlanTest {
         plan.fixedInputs(),
         allOf(
             hasEntry("integer", asLiteral(Primitive.ofIntegerValue(123))),
-            hasEntry("float", asLiteral(Primitive.ofFloatValue(1.23))),
+            hasEntry("_float", asLiteral(Primitive.ofFloatValue(1.23))),
             hasEntry("string", asLiteral(Primitive.ofStringValue("123"))),
-            hasEntry("boolean", asLiteral(Primitive.ofBooleanValue(true))),
+            hasEntry("_boolean", asLiteral(Primitive.ofBooleanValue(true))),
             hasEntry("datetime", asLiteral(Primitive.ofDatetime(now))),
             hasEntry("duration", asLiteral(Primitive.ofDuration(duration))),
             hasEntry("a", asLiteral(Primitive.ofIntegerValue(456))),
@@ -135,9 +135,9 @@ class SdkLaunchPlanTest {
             // 😔 this is still untyped but the whole point is to be able to partially specify
             // inputs
             .withDefaultInput("integer", 123L)
-            .withDefaultInput("float", 1.23)
+            .withDefaultInput("_float", 1.23)
             .withDefaultInput("string", "123")
-            .withDefaultInput("boolean", true)
+            .withDefaultInput("_boolean", true)
             .withDefaultInput("datetime", now)
             .withDefaultInput("duration", duration)
             .withDefaultInput(new TestPairIntegerInput.SdkType(), fixedInputs);
@@ -146,9 +146,9 @@ class SdkLaunchPlanTest {
         plan.defaultInputs(),
         allOf(
             hasEntry("integer", asParameter(Primitive.ofIntegerValue(123), SimpleType.INTEGER)),
-            hasEntry("float", asParameter(Primitive.ofFloatValue(1.23), SimpleType.FLOAT)),
+            hasEntry("_float", asParameter(Primitive.ofFloatValue(1.23), SimpleType.FLOAT)),
             hasEntry("string", asParameter(Primitive.ofStringValue("123"), SimpleType.STRING)),
-            hasEntry("boolean", asParameter(Primitive.ofBooleanValue(true), SimpleType.BOOLEAN)),
+            hasEntry("_boolean", asParameter(Primitive.ofBooleanValue(true), SimpleType.BOOLEAN)),
             hasEntry("datetime", asParameter(Primitive.ofDatetime(now), SimpleType.DATETIME)),
             hasEntry("duration", asParameter(Primitive.ofDuration(duration), SimpleType.DURATION)),
             hasEntry("a", asParameter(Primitive.ofIntegerValue(456), SimpleType.INTEGER)),
@@ -218,9 +218,9 @@ class SdkLaunchPlanTest {
   static Stream<Consumer<SdkLaunchPlan>>
       paramsForShouldTypeCheckFixedInputAgainstWorkflowInterface() {
     return Stream.of(
-        plan -> plan.withFixedInput("float", 0L),
+        plan -> plan.withFixedInput("_float", 0L),
         plan -> plan.withFixedInput("string", 0.0),
-        plan -> plan.withFixedInput("boolean", "not a boolean"),
+        plan -> plan.withFixedInput("_boolean", "not a boolean"),
         plan -> plan.withFixedInput("datetime", false),
         plan -> plan.withFixedInput("duration", Instant.now()),
         plan -> plan.withFixedInput("integer", Duration.ZERO),
@@ -248,15 +248,8 @@ class SdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      builder.inputOfInteger("integer");
-      builder.inputOfFloat("float");
-      builder.inputOfString("string");
-      builder.inputOfBoolean("boolean");
-      builder.inputOfDatetime("datetime");
-      builder.inputOfDuration("duration");
-      builder.inputOfInteger("a");
-      builder.inputOfInteger("b");
+    public Void expand(SdkWorkflowBuilder builder, TestWorkflowInput input) {
+      return null;
     }
   }
 
@@ -376,8 +369,9 @@ class SdkLaunchPlanTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
+    public Void expand(SdkWorkflowBuilder builder, Void noInput) {
       // no inputs
+      return null;
     }
   }
 }

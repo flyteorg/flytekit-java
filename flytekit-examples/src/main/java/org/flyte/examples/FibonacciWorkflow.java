@@ -22,6 +22,7 @@ import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -35,28 +36,32 @@ public class FibonacciWorkflow
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> fib0 = builder.inputOfInteger("fib0", "Value for Fib0");
-    SdkBindingData<Long> fib1 = builder.inputOfInteger("fib1", "Value for Fib1");
+  public Output expand(SdkWorkflowBuilder builder, Input input) {
 
     SdkNode<SumTask.SumOutput> apply =
-        builder.apply("fib-2", new SumTask(), SumTask.SumInput.create(fib1, fib0));
+        builder.apply("fib-2", new SumTask(), SumTask.SumInput.create(input.fib1(), input.fib0()));
     SumTask.SumOutput outputs = apply.getOutputs();
     SdkBindingData<Long> fib2 = outputs.c();
     SdkBindingData<Long> fib3 =
-        builder.apply("fib-3", new SumTask(), SumTask.SumInput.create(fib1, fib2)).getOutputs().c();
+        builder
+            .apply("fib-3", new SumTask(), SumTask.SumInput.create(input.fib1(), fib2))
+            .getOutputs()
+            .c();
     SdkBindingData<Long> fib4 =
         builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs().c();
     SdkBindingData<Long> fib5 =
         builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs().c();
 
-    builder.output("fib5", fib5, "Value for Fib5");
+    return Output.create(fib5);
   }
 
   @AutoValue
   public abstract static class Input {
+
+    @Description("Value for Fib0")
     public abstract SdkBindingData<Long> fib0();
 
+    @Description("Value for Fib1")
     public abstract SdkBindingData<Long> fib1();
 
     public static FibonacciWorkflow.Input create(
@@ -67,6 +72,7 @@ public class FibonacciWorkflow
 
   @AutoValue
   public abstract static class Output {
+    @Description("Value for Fib5")
     public abstract SdkBindingData<Long> fib5();
 
     public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib5) {

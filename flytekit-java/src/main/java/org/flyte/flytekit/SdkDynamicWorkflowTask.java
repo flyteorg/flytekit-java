@@ -73,7 +73,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
         outputType.promiseFor(nodeId));
   }
 
-  public abstract void run(SdkWorkflowBuilder builder, InputT input);
+  public abstract OutputT run(SdkWorkflowBuilder builder, InputT input);
 
   /**
    * Number of retries. Retries will be consumed when dynamic workflow fails with a recoverable

@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static org.flyte.flytekit.SdkWorkflowBuilder.literalOfInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -230,8 +229,8 @@ class SdkWorkflowBuilderTest {
   void testDuplicateNodeId() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     builder.apply("node-1", new MultiplicationTask(), input);
@@ -253,8 +252,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> node1 = builder.apply("node-1", transform, input);
@@ -273,8 +272,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = builder.inputOfInteger("el0");
-    SdkBindingData<Long> b = builder.inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -331,8 +330,9 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = builder.inputOfInteger("el0");
-    SdkBindingData<Long> b = builder.inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
+
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -357,8 +357,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = builder.inputOfInteger("el0");
-    SdkBindingData<Long> b = builder.inputOfInteger("el1");
+    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -378,35 +378,6 @@ class SdkWorkflowBuilderTest {
     assertThat(ex.getMessage(), equalTo("Duplicate values for metadata: name"));
   }
 
-  @Test
-  void testInputOf() {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input1", LiteralTypes.STRING),
-        builder.inputOfString("input1"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input2", LiteralTypes.BOOLEAN),
-        builder.inputOfBoolean("input2"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input3", LiteralTypes.DATETIME),
-        builder.inputOfDatetime("input3"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input4", LiteralTypes.DURATION),
-        builder.inputOfDuration("input4"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input5", LiteralTypes.FLOAT),
-        builder.inputOfFloat("input5"));
-
-    assertEquals(
-        SdkBindingData.ofOutputReference("start-node", "input6", LiteralTypes.INTEGER),
-        builder.inputOfInteger("input6"));
-  }
-
   static List<SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput>> createTransform() {
     return List.of(new MultiplicationTask(), new MultiplicationWorkflow());
   }
@@ -415,11 +386,7 @@ class SdkWorkflowBuilderTest {
     return TypedInterface.builder()
         .inputs(
             singletonMap(
-                "in",
-                Variable.builder()
-                    .literalType(LiteralTypes.INTEGER)
-                    .description("Enter value to square")
-                    .build()))
+                "in", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
         .outputs(
             singletonMap(
                 "o", Variable.builder().literalType(LiteralTypes.INTEGER).description("").build()))
@@ -444,13 +411,12 @@ class SdkWorkflowBuilderTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData<Long> two = literalOfInteger(2L);
+    public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestUnaryIntegerInput input) {
+      SdkBindingData<Long> two = SdkBindingData.ofInteger(2L);
 
       SdkBindingData<Long> out1 =
           builder
-              .apply(new MultiplicationTask(), TestPairIntegerInput.create(in, two))
+              .apply(new MultiplicationTask(), TestPairIntegerInput.create(input.in(), two))
               .getOutputs()
               .o();
       SdkBindingData<Long> out2 =
@@ -459,7 +425,7 @@ class SdkWorkflowBuilderTest {
               .getOutputs()
               .o();
 
-      builder.output("o", out2);
+      return TestUnaryIntegerOutput.create(out2);
     }
   }
 
@@ -471,20 +437,20 @@ class SdkWorkflowBuilderTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> in = builder.inputOfInteger("in", "Enter value to square");
-      SdkBindingData<Long> two = literalOfInteger(2L);
+    public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestUnaryIntegerInput input) {
+
+      SdkBindingData<Long> two = SdkBindingData.ofInteger(2L);
 
       SdkNode<TestUnaryIntegerOutput> out =
           builder.apply(
               "square",
               SdkConditions.when(
                   "neq",
-                  SdkConditions.neq(in, two),
+                  SdkConditions.neq(input.in(), two),
                   new MultiplicationTask(),
-                  TestPairIntegerInput.create(in, two)));
+                  TestPairIntegerInput.create(input.in(), two)));
 
-      builder.output("o", out.getOutputs().o());
+      return TestUnaryIntegerOutput.create(out.getOutputs().o());
     }
   }
 
@@ -510,14 +476,15 @@ class SdkWorkflowBuilderTest {
     }
 
     @Override
-    public void expand(SdkWorkflowBuilder builder) {
-      SdkBindingData<Long> a = builder.inputOfInteger("a");
-      SdkBindingData<Long> b = builder.inputOfInteger("b");
+    public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestPairIntegerInput input) {
 
       SdkNode<TestUnaryIntegerOutput> multiply =
-          builder.apply("multiply", new MultiplicationTask(), TestPairIntegerInput.create(a, b));
+          builder.apply(
+              "multiply",
+              new MultiplicationTask(),
+              TestPairIntegerInput.create(input.a(), input.b()));
 
-      builder.output("c", multiply.getOutputs().o());
+      return TestUnaryIntegerOutput.create(multiply.getOutputs().o());
     }
   }
 

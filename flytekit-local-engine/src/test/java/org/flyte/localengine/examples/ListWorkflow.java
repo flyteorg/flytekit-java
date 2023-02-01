@@ -36,7 +36,7 @@ public class ListWorkflow extends SdkWorkflow<Void, ListTask.Output> {
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public ListTask.Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkNode<TestUnaryIntegerOutput> sum1 =
         builder.apply("sum-1", new SumTask(), SumTask.Input.create(ofInteger(1), ofInteger(2)));
     SdkNode<TestUnaryIntegerOutput> sum2 =
@@ -50,6 +50,6 @@ public class ListWorkflow extends SdkWorkflow<Void, ListTask.Output> {
     SdkNode<ListTask.Output> list1 =
         builder.apply("list-1", new ListTask(), ListTask.Input.create(list));
 
-    builder.output("list", list1.getOutputs().list());
+    return ListTask.Output.create(list1.getOutputs().list());
   }
 }

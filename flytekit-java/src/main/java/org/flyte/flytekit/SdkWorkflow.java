@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit;
 
+import static org.flyte.api.v1.Node.START_NODE_ID;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +36,32 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
     this.outputType = outputType;
   }
 
-  public abstract void expand(SdkWorkflowBuilder builder);
+  protected abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
+
+  public final void expand(SdkWorkflowBuilder builder) {
+    inputType
+        .getVariableMap()
+        .forEach(
+            (name, variable) ->
+                builder.inputOf(
+                    name,
+                    variable.literalType(),
+                    variable.description() == null ? "" : variable.description()));
+
+    OutputT output = expand(builder, inputType.promiseFor(START_NODE_ID));
+
+    Map<String, Variable> outputVariableMap = outputType.getVariableMap();
+    outputType
+        .toSdkBindingMap(output)
+        .forEach(
+            (name, variable) ->
+                builder.output(
+                    name,
+                    variable,
+                    outputVariableMap.get(name).description() == null
+                        ? ""
+                        : outputVariableMap.get(name).description()));
+  }
 
   @Override
   public SdkNode<OutputT> apply(
@@ -44,20 +71,19 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs) {
 
-    PartialWorkflowIdentifier workflowId =
-        PartialWorkflowIdentifier.builder().name(getName()).build();
+    var workflowId = PartialWorkflowIdentifier.builder().name(getName()).build();
 
-    SdkWorkflowBuilder innerBuilder = new SdkWorkflowBuilder();
+    var innerBuilder = new SdkWorkflowBuilder();
     expand(innerBuilder);
 
-    Map<String, Variable> inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
-    List<CompilerError> errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
+    var inputVariableMap = WorkflowTemplateIdl.getInputVariableMap(innerBuilder);
+    var errors = Compiler.validateApply(nodeId, inputs, inputVariableMap);
 
     if (!errors.isEmpty()) {
       throw new CompilerException(errors);
     }
 
-    WorkflowNode workflowNode =
+    var workflowNode =
         WorkflowNode.builder()
             .reference(WorkflowNode.Reference.ofSubWorkflowRef(workflowId))
             .build();
@@ -70,7 +96,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                     e ->
                         SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
 
-    OutputT promise = getOutputType().promiseFor(nodeId);
+    var promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }

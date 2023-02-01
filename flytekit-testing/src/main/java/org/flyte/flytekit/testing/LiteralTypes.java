@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toMap;
 import static org.flyte.api.v1.LiteralType.ofSimpleType;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
@@ -39,12 +38,6 @@ class LiteralTypes {
 
   static Map<String, LiteralType> from(Map<String, Variable> vars) {
     return vars.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> from(e.getValue())));
-  }
-
-  static String toPrettyString(Map<String, LiteralType> literalTypes) {
-    return literalTypes.entrySet().stream()
-        .map(e -> String.format("%s=%s", e.getKey(), toPrettyString(e.getValue())))
-        .collect(Collectors.joining(", ", "{ ", " }"));
   }
 
   static String toPrettyString(LiteralType literalType) {

@@ -16,31 +16,13 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekitscala.{
-  SdkBindingData,
-  SdkScalaType,
-  SdkScalaWorkflow,
-  SdkScalaWorkflowBuilder
-}
+import org.flyte.flytekit.SdkRunnableTask
+import org.flyte.flytekitscala.SdkScalaType
 
-class WorkflowWithRemoteTask
-    extends SdkScalaWorkflow[RemoteSumTaskInput, RemoteSumTaskOutput](
-      SdkScalaType[RemoteSumTaskInput],
-      SdkScalaType[RemoteSumTaskOutput]
+class NoInputsTask
+    extends SdkRunnableTask[Unit, Unit](
+      SdkScalaType.unit,
+      SdkScalaType.unit
     ) {
-
-  override def expand(
-      builder: SdkScalaWorkflowBuilder,
-      input: RemoteSumTaskInput
-  ): RemoteSumTaskOutput = {
-    val a = SdkBindingData.ofInteger(10)
-    val b = SdkBindingData.ofInteger(12)
-
-    val c = builder
-      .apply(new RemoteSumTask().create, RemoteSumTaskInput(a, b))
-      .getOutputs
-      .c
-
-    RemoteSumTaskOutput(c)
-  }
+  override def run(input: Unit): Unit = println("Hello World")
 }

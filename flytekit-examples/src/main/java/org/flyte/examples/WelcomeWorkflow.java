@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example workflow that takes a name and outputs a welcome message. */
@@ -29,6 +30,7 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
 
   @AutoValue
   public abstract static class Input {
+    @Description("Name to be welcomed")
     public abstract SdkBindingData<String> name();
 
     public static WelcomeWorkflow.Input create(SdkBindingData<String> name) {
@@ -43,14 +45,11 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    // defines the input of the workflow
-    SdkBindingData<String> name = builder.inputOfString("name", "The name for the welcome message");
-
+  public AddQuestionTask.Output expand(SdkWorkflowBuilder builder, Input input) {
     // uses the workflow input as the task input of the GreetTask
     SdkBindingData<String> greeting =
         builder
-            .apply("greet", new GreetTask(), GreetTask.Input.create(name))
+            .apply("greet", new GreetTask(), GreetTask.Input.create(input.name()))
             .getOutputs()
             .greeting();
 
@@ -61,7 +60,6 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
             .getOutputs()
             .greeting();
 
-    // uses the task output of the AddQuestionTask as the output of the workflow
-    builder.output("greeting", greetingWithQuestion, "Welcome message");
+    return AddQuestionTask.Output.create(greetingWithQuestion);
   }
 }

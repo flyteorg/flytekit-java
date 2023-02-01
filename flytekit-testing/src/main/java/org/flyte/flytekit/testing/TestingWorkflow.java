@@ -16,65 +16,21 @@
  */
 package org.flyte.flytekit.testing;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.Variable;
-import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
 class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
-  private final SdkType<InputT> inputType;
-  private final SdkType<OutputT> outputType;
   private final OutputT output;
-  private final Map<String, Literal> outputLiterals;
 
   TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
     super(inputType, outputType);
-    this.inputType = inputType;
-    this.outputType = outputType;
     this.output = output;
-    this.outputLiterals = outputType.toLiteralMap(output);
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    inputType.getVariableMap().forEach((name, var) -> defineInput(builder, name, var));
-
-    outputType.getVariableMap().forEach((name, var) -> defineOutput(builder, name, var));
-  }
-
-  private static void defineInput(SdkWorkflowBuilder builder, String name, Variable var) {
-    builder.inputOf(name, var.literalType(), var.description());
-  }
-
-  private void defineOutput(SdkWorkflowBuilder builder, String name, Variable var) {
-    Literal literal = outputLiterals.get(name);
-    SdkBindingData<?> value;
-    try {
-      Method method = output.getClass().getDeclaredMethod(name);
-      method.setAccessible(true);
-      value = (SdkBindingData<?>) method.invoke(output);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(
-          String.format(
-              "Failure to define output - could not read attribute name %s from type %s",
-              name, output.getClass()),
-          e);
-    } catch (InvocationTargetException | IllegalAccessException e) {
-      throw new RuntimeException(
-          String.format(
-              "Failure to define output - could invoke method %s from type %s",
-              name, output.getClass()),
-          e);
-    }
-    SdkBindingData<?> output =
-        SdkBindingData.create(Literals.toBindingData(literal), var.literalType(), value.get());
-
-    builder.output(name, output, var.description());
+  public OutputT expand(SdkWorkflowBuilder builder, InputT input) {
+    return output;
   }
 }

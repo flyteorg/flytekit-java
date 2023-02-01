@@ -34,16 +34,18 @@ class DynamicFibonacciWorkflow
       SdkScalaType[DynamicFibonacciWorkflowOutput]
     ) {
 
-  override def expand(builder: SdkScalaWorkflowBuilder): Unit = {
-    val n = builder.inputOfInteger("n")
+  override def expand(
+      builder: SdkScalaWorkflowBuilder,
+      input: DynamicFibonacciWorkflowInput
+  ): DynamicFibonacciWorkflowOutput = {
 
     val fibonacci = builder.apply(
       "fibonacci",
       new DynamicFibonacciWorkflowTask(),
-      DynamicFibonacciWorkflowTaskInput(n)
+      DynamicFibonacciWorkflowTaskInput(input.n)
     )
 
-    builder.output("output", fibonacci.getOutputs.output)
+    DynamicFibonacciWorkflowOutput(fibonacci.getOutputs.output)
   }
 
 }

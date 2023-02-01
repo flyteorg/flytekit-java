@@ -30,7 +30,8 @@ public class ContainerWorkflow extends SdkWorkflow<Void, Void> {
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
+  public Void expand(SdkWorkflowBuilder builder, Void noInput) {
     builder.apply("hello-container-task", new HelloContainerTask());
+    return null;
   }
 }

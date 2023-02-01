@@ -74,7 +74,11 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             /*rootLevel=*/ true,
             prop.getName(),
             prop.getMember().getMember().getDeclaringClass().getName());
-    Variable variable = Variable.builder().description("").literalType(literalType).build();
+
+    String description = getDescription(prop.getMember());
+
+    Variable variable =
+        Variable.builder().description(description).literalType(literalType).build();
 
     builderMembers.put(prop.getName(), prop.getMember());
     builder.put(prop.getName(), variable);
@@ -112,6 +116,16 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   public Map<String, AnnotatedMember> getMembersMap() {
     return unmodifiableMap(new HashMap<>(builderMembers));
+  }
+
+  private String getDescription(AnnotatedMember member) {
+    var description = member.getAnnotation(Description.class);
+
+    if (description == null) {
+      return "";
+    }
+
+    return description.value();
   }
 
   @SuppressWarnings("AlreadyChecked")

@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
@@ -396,10 +397,20 @@ public abstract class SdkTestingExecutor {
       throw new IllegalArgumentException(
           String.format(
               "%s type %s doesn't match expected type %s",
-              type,
-              LiteralTypes.toPrettyString(LiteralTypes.from(variables)),
-              LiteralTypes.toPrettyString(LiteralTypes.from(actualVariables))));
+              type, toPrettyString(variables), toPrettyString(actualVariables)));
     }
+  }
+
+  static String toPrettyString(Map<String, Variable> variableMap) {
+    return variableMap.entrySet().stream()
+        .map(
+            e ->
+                String.format(
+                    "%s=%s with description=%s",
+                    e.getKey(),
+                    LiteralTypes.toPrettyString(e.getValue().literalType()),
+                    e.getValue().description()))
+        .collect(Collectors.joining(", ", "{ ", " }"));
   }
 
   private <InputT, OutputT> TestingRunnableTask<InputT, OutputT> getFixedTaskOrDefault(

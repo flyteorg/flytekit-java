@@ -28,6 +28,7 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
 
   @AutoValue
   public abstract static class Input {
+
     public abstract SdkBindingData<Long> a();
 
     public abstract SdkBindingData<Long> b();
@@ -50,11 +51,11 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
   }
 
   @Override
-  public void expand(SdkWorkflowBuilder builder) {
-    SdkBindingData<Long> a = builder.inputOfInteger("a");
-    SdkBindingData<Long> b = builder.inputOfInteger("b");
-    SdkBindingData<Long> c = builder.inputOfInteger("c");
-    SdkBindingData<Long> d = builder.inputOfInteger("d");
+  public SubWorkflow.Output expand(SdkWorkflowBuilder builder, Input input) {
+    SdkBindingData<Long> a = input.a();
+    SdkBindingData<Long> b = input.b();
+    SdkBindingData<Long> c = input.c();
+    SdkBindingData<Long> d = input.d();
     SdkBindingData<Long> ab =
         builder
             .apply("sub-1", new SubWorkflow(), SubWorkflow.Input.create(a, b))
@@ -67,6 +68,6 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
             .result();
     SdkBindingData<Long> abcd =
         builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs().c();
-    builder.output("result", abcd);
+    return SubWorkflow.Output.create(abcd);
   }
 }

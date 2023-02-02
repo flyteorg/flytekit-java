@@ -37,7 +37,8 @@ public abstract class NamedEntityIdentifier {
 
   /**
    * User provided value for the resource. The combination of project + domain + name uniquely
-   * identifies the resource. [Optional] - used in certain contexts - like 'List API', 'Launch plans'
+   * identifies the resource. [Optional] - used in certain contexts - like 'List API', 'Launch
+   * plans'
    */
   public abstract String name();
 

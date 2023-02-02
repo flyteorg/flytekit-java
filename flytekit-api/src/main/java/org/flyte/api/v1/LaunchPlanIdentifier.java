@@ -29,8 +29,8 @@ public abstract class LaunchPlanIdentifier implements Identifier {
   @AutoValue.Builder
   public abstract static class Builder {
     /**
-     * Name of the domain the launch plan belongs to. A domain can be considered as a subset within a
-     * specific project.
+     * Name of the domain the launch plan belongs to. A domain can be considered as a subset within
+     * a specific project.
      */
     public abstract Builder domain(String domain);
 

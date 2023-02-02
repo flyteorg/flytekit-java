@@ -30,6 +30,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
+/** Utility to create {@link Literal} from raw values. */
 class Literals {
 
   static Literal ofInteger(long value) {

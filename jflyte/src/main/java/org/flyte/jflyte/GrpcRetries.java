@@ -60,7 +60,7 @@ abstract class GrpcRetries {
    *
    * @param retryable The retry function.
    * @return The result of the retry.
-   * @param <T>
+   * @param <T> The type T of the return resolved object.
    */
   public <T> T retry(Retryable<T> retryable) {
     @Var int attempt = 0;

@@ -49,9 +49,9 @@ public abstract class DynamicJobSpec {
   public abstract Map<WorkflowIdentifier, WorkflowTemplate> subWorkflows();
 
   /**
-   * [Optional] A complete list of task specs referenced in nodes.
+   * Returns sub-workflows templates.
    *
-   * @return tasks
+   * @return sub-workflows
    */
   public abstract Map<TaskIdentifier, TaskTemplate> tasks();
 

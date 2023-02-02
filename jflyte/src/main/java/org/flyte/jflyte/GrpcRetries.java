@@ -55,6 +55,12 @@ abstract class GrpcRetries {
     T call();
   }
 
+  /**
+   * Configure the retry function.
+   * @param retryable The retry function.
+   * @return The result of the retry.
+   * @param <T>
+   */
   public <T> T retry(Retryable<T> retryable) {
     @Var int attempt = 0;
 

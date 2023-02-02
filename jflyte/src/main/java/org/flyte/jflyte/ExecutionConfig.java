@@ -40,6 +40,7 @@ abstract class ExecutionConfig {
         .build();
   }
 
+  /** Builder for {@link ExecutionConfig}. */
   static Builder builder() {
     return new AutoValue_ExecutionConfig.Builder();
   }

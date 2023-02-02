@@ -21,6 +21,9 @@ import java.util.Map;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 
+/**
+ * Class for Workflow specification.
+ */
 @AutoValue
 abstract class WorkflowSpec {
 

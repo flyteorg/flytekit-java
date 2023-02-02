@@ -23,12 +23,35 @@ import org.flyte.jflyte.api.FileSystem;
 @AutoValue
 abstract class Artifact {
 
+  /**
+   * Get the artifact location.
+   *
+   * @return the artifact location
+   */
   abstract String location();
 
+  /**
+   * Get the artifact name.
+   *
+   * @return the artifact name.
+   */
   abstract String name();
 
+  /**
+   * Get the artifact size.
+   *
+   * @return the artifact size.
+   */
   abstract long size();
 
+  /**
+   * Create a new artifact
+   *
+   * @param location artifact location.
+   * @param name name location.
+   * @param size size location.
+   * @return A new artifact.
+   */
   static Artifact create(String location, String name, long size) {
     return new AutoValue_Artifact(location, name, size);
   }

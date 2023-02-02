@@ -19,6 +19,9 @@ package org.flyte.jflyte;
 import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.TaskTemplate;
 
+/**
+ * Class for Task specification.
+ */
 @AutoValue
 abstract class TaskSpec {
 

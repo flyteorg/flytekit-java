@@ -30,6 +30,9 @@ import org.flyte.jflyte.api.FileSystemRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Load the available FileSystems.
+ */
 class FileSystemLoader {
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemLoader.class);
 

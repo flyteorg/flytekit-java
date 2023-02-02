@@ -25,6 +25,9 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 
+/**
+ * Utility class to load {@link WorkflowTemplate} and {@link RunnableTask}.
+ */
 public class Modules {
 
   public static Map<String, WorkflowTemplate> loadWorkflows(Map<String, String> env) {

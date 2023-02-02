@@ -33,6 +33,10 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import picocli.CommandLine;
 
+/**
+ * Util class to transform a value giving a {@link org.flyte.api.v1.LiteralType} to a {@link
+ * Literal}
+ */
 class LiteralTypeConverter implements CommandLine.ITypeConverter<Literal> {
 
   private final SimpleType simpleType;

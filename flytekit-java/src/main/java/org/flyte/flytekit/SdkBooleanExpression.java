@@ -19,6 +19,10 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoOneOf;
 import org.flyte.api.v1.ConjunctionExpression;
 
+/**
+ * Denotes either i) a conjunction between two {@code SdkComparisonExpression}, or ii) a conjunction
+ * (and/or) between two {@code SdkBooleanExpression}.
+ */
 @AutoOneOf(SdkBooleanExpression.Kind.class)
 public abstract class SdkBooleanExpression {
   enum Kind {
@@ -32,11 +36,23 @@ public abstract class SdkBooleanExpression {
 
   abstract SdkConjunctionExpression conjunction();
 
+  /**
+   * Creates an AND conjunction of this expression and the {@code other} one.
+   *
+   * @param other the second operand of the conjunction.
+   * @return the AND conjunction.
+   */
   public SdkBooleanExpression and(SdkBooleanExpression other) {
     return ofConjunction(
         SdkConjunctionExpression.create(ConjunctionExpression.LogicalOperator.AND, this, other));
   }
 
+  /**
+   * Creates an OR conjunction of this expression and the {@code other} one.
+   *
+   * @param other the second operand of the conjunction.
+   * @return the OR conjunction.
+   */
   public SdkBooleanExpression or(SdkBooleanExpression other) {
     return ofConjunction(
         SdkConjunctionExpression.create(ConjunctionExpression.LogicalOperator.OR, this, other));

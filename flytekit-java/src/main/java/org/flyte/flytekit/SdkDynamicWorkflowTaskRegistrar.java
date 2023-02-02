@@ -17,7 +17,7 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.emptyMap;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import com.google.auto.service.AutoService;
 import java.util.HashMap;

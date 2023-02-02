@@ -27,8 +27,10 @@ import javax.annotation.Nullable;
 /** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
 public abstract class SdkTransform<InputT, OutputT> {
 
+  /** Specifies the transform input type. */
   public abstract SdkType<InputT> getInputType();
 
+  /** Specifies the transform output type. */
   public abstract SdkType<OutputT> getOutputType();
 
   public final SdkNode<OutputT> apply(

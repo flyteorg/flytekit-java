@@ -19,6 +19,9 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.ConjunctionExpression;
 
+/**
+ * Represent a conjunction expression: OR/AND
+ */
 @AutoValue
 abstract class SdkConjunctionExpression {
   abstract ConjunctionExpression.LogicalOperator operator();

@@ -19,7 +19,7 @@ package org.flyte.flytekit;
 import static java.util.Collections.singletonMap;
 import static java.util.function.UnaryOperator.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;

@@ -16,8 +16,8 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.List;
 import java.util.Map;

@@ -21,6 +21,13 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+/**
+ * Denotes a conditional transformation. It contains several case clauses and a otherwise clause to
+ * be executed if non of the conditions of the case clauses was satisfied. All the case clauses and
+ * otherwise must have the same output type.
+ *
+ * @param <OutputT> The output type of the transformation.
+ */
 public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   private final SdkType<OutputT> outputType;
   private final List<SdkConditionCase<OutputT>> cases;
@@ -42,6 +49,17 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
     this.outputType = firstCase.then().getOutputType();
   }
 
+  /**
+   * Adds a case clause to this conditional transformation. The {@code then} transformation takes
+   * no inputs.
+   *
+   * @param name for the case, it should be unique among all the case clauses of the condition
+   * @param condition boolean expression that must evaluate to true to apply {@code then}
+   *     transformation.
+   * @param then the transformation to apply if {@code condition} evaluates to true. The
+   *     transformation must receive no inputs.
+   * @return this modified transformation.
+   */
   public SdkCondition<OutputT> when(
       String name, SdkBooleanExpression condition, SdkTransform<Void, OutputT> then) {
     var newCases = new ArrayList<>(cases);
@@ -50,6 +68,17 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
     return new SdkCondition<>(newCases, this.otherwiseName, this.otherwise);
   }
 
+  /**
+   * Adds a case clause to this conditional transformation. The {@code then} transformation takes
+   * {@link InputT} inputs and they are supplied as well.
+   *
+   * @param name for the case, it should be unique among all the case clauses of the condition
+   * @param condition boolean expression that must evaluate to true to apply {@code then} transformation.
+   * @param then the transformation to apply if {@code condition} evaluates to true.
+   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition} evaluates to true.
+   * @param <InputT> the input type of the {@code then} transformation
+   * @return this modified transformation.
+   */
   public <InputT> SdkCondition<OutputT> when(
       String name,
       SdkBooleanExpression condition,
@@ -58,6 +87,14 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
     return when(name, condition, new SdkAppliedTransform<>(then, inputs));
   }
 
+  /**
+   * Adds a otherwise clause to this conditional transformation. The {@code otherwise} transformation takes
+   * no inputs.
+   *
+   * @param name for the case, it should be unique among all the case clauses of the condition
+   * @param otherwise the transformation to apply if no other case in this transformation is true.
+   * @return this modified transformation.
+   */
   public SdkCondition<OutputT> otherwise(String name, SdkTransform<Void, OutputT> otherwise) {
     if (this.otherwise != null) {
       throw new IllegalStateException("Can't set 'otherwise' because it's already set");
@@ -66,21 +103,37 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
     return new SdkCondition<>(this.cases, name, otherwise);
   }
 
+  /**
+   * Adds a otherwise clause to this conditional transformation. The {@code then} transformation takes
+   * {@link InputT} inputs and they are supplied as well.
+   *
+   * @param name for the case, it should be unique among all the case clauses of the condition
+   * @param otherwise the transformation to apply if no other case in this transformation is true.
+   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition} evaluates to true.
+   * @param <InputT> the input type of the {@code then} transformation
+   * @return this modified transformation.
+   */
   public <InputT> SdkCondition<OutputT> otherwise(
       String name, SdkTransform<InputT, OutputT> otherwise, InputT inputs) {
     return otherwise(name, new SdkAppliedTransform<>(otherwise, inputs));
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<Void> getInputType() {
     return SdkTypes.nulls();
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }
 
+  /**
+   * {@inheritDoc}
+   * Returns a {@link SdkBranchNode}
+   */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,

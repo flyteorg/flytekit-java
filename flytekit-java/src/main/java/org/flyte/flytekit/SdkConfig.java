@@ -19,8 +19,12 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
 
+/**
+ * Holds project, domain and version to be use as default values for tasks, workflows and
+ * launch plans.
+ */
 @AutoValue
-public abstract class SdkConfig {
+abstract class SdkConfig {
 
   // VisibleForTesting
   static final String DOMAIN_ENV_VAR = "FLYTE_INTERNAL_DOMAIN";

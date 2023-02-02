@@ -17,7 +17,7 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.unmodifiableMap;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.time.Duration;
 import java.time.Instant;

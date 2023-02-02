@@ -21,6 +21,7 @@ import static org.flyte.api.v1.LiteralType.ofSimpleType;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 
+/** Holder for {@link LiteralType} constants for the primitive types. */
 class LiteralTypes {
   static final LiteralType INTEGER = ofSimpleType(SimpleType.INTEGER);
   static final LiteralType FLOAT = ofSimpleType(SimpleType.FLOAT);

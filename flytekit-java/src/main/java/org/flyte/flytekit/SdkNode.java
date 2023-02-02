@@ -30,33 +30,43 @@ public abstract class SdkNode<OutputT> {
     this.builder = builder;
   }
 
+  /**
+   * Returns output of this node as the bindings map.
+   *
+   * @return output binding map.
+   */
   public abstract Map<String, SdkBindingData<?>> getOutputBindings();
 
+  /**
+   * Returns output of this node as an {@link OutputT}.
+   *
+   * @return output.
+   */
   public abstract OutputT getOutputs();
 
-  public SdkBindingData<?> getOutput(String name) {
-
-    SdkBindingData<?> output = getOutputBindings().get(name);
-
-    if (output == null) {
-      String message = String.format("Variable [%s] not found on node [%s].", name, getNodeId());
-      CompilerError error =
-          CompilerError.create(
-              CompilerError.Kind.VARIABLE_NAME_NOT_FOUND,
-              /* nodeId= */ getNodeId(),
-              /* message= */ message);
-
-      throw new CompilerException(error);
-    }
-
-    return output;
-  }
-
+  /**
+   * Returns the id of this node. Nodes ids should be unique in the workflow DAG.
+   *
+   * @return the id.
+   */
   public abstract String getNodeId();
 
+  /**
+   * Returns the idl representation of this node.
+   *
+   * @return the idl representation.
+   */
   public abstract Node toIdl();
 
   // TODO we need a version with no nodeId for consistency with builder
+  /**
+   * Returns a new node resulting from applying the specified transform to this node.
+   *
+   * @param nodeId the node id for the new node
+   * @param transform the transform to apply to this node. The input o the transform should have
+   *     {@link OutputT} as input type and {@link NewOutputT} as output type
+   * @return the new node.
+   */
   public <NewOutputT> SdkNode<NewOutputT> apply(
       String nodeId, SdkTransform<OutputT, NewOutputT> transform) {
     // if there are no outputs, explicitly specify dependency to preserve execution order

@@ -17,14 +17,19 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
-import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekitscala.{Description, SdkScalaType}
 import org.flyte.flytekitscala.SdkBindingData._
 
 case class SumTaskInput(
+    @Description("First operand")
     a: SdkBindingData[Long],
+    @Description("Second operand")
     b: SdkBindingData[Long]
 )
-case class SumTaskOutput(c: SdkBindingData[Long])
+case class SumTaskOutput(
+    @Description("Computed sum")
+    c: SdkBindingData[Long]
+)
 
 class SumTask
     extends SdkRunnableTask[SumTaskInput, SumTaskOutput](

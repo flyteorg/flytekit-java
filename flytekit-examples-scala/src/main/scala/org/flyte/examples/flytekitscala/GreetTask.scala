@@ -17,10 +17,13 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
-import org.flyte.flytekitscala.SdkScalaType
+import org.flyte.flytekitscala.{Description, SdkScalaType}
 import org.flyte.flytekitscala.SdkBindingData._
 
-case class GreetTaskInput(name: SdkBindingData[String])
+case class GreetTaskInput(
+    @Description("the name of the person to be greeted")
+    name: SdkBindingData[String]
+)
 case class GreetTaskOutput(greeting: SdkBindingData[String])
 
 /** Example Flyte task that takes a name as the input and outputs a simple

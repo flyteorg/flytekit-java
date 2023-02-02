@@ -29,10 +29,9 @@ import org.flyte.api.v1.{
 }
 import org.flyte.flytekit.SdkBindingData
 import org.flyte.flytekitscala.SdkBindingData._
-import org.junit.Assert.assertEquals
+import org.junit.Assert.{assertEquals, assertThrows}
 import org.junit.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
-import org.junit.jupiter.api.Assertions.assertThrows
 
 class SdkScalaTypeTest {
 
@@ -67,6 +66,39 @@ class SdkScalaTypeTest {
       metadataList: SdkBindingData[List[Map[String, String]]]
   )
 
+  case class InputWithDescription(
+      @Description("name to greet")
+      name: String
+  )
+
+  case class InputWithNullDescription(
+      @Description(null)
+      name: String
+  )
+
+  @Test
+  def testFieldDescription(): Unit = {
+    val expected = Map(
+      "name" -> createVar(SimpleType.STRING, "name to greet")
+    ).asJava
+
+    val output = SdkScalaType[InputWithDescription].getVariableMap
+    assertEquals(expected, output)
+  }
+
+  @Test
+  def testNullFieldDescription(): Unit = {
+    val ex = assertThrows(
+      classOf[IllegalArgumentException],
+      () => SdkScalaType[InputWithNullDescription].getVariableMap
+    )
+
+    assertEquals(
+      "requirement failed: Description should not be null",
+      ex.getMessage
+    )
+  }
+
   @Test
   def testScalarInterface(): Unit = {
     val expected = Map(
@@ -82,11 +114,11 @@ class SdkScalaTypeTest {
     assertEquals(expected, output)
   }
 
-  private def createVar(simpleType: SimpleType) = {
+  private def createVar(simpleType: SimpleType, description: String = "") = {
     Variable
       .builder()
       .literalType(LiteralType.ofSimpleType(simpleType))
-      .description("")
+      .description(description)
       .build()
   }
 
@@ -399,7 +431,7 @@ class SdkScalaTypeTest {
   }
 
   @Test
-  def testEmptyCollection: Unit = {
+  def testEmptyCollection(): Unit = {
     val emptyList = ofStringCollection(List.empty[String])
     val expected = SdkBindingData.create(
       BindingData.ofCollection(List.empty[BindingData].asJava),
@@ -411,7 +443,7 @@ class SdkScalaTypeTest {
   }
 
   @Test
-  def testEmptyMap: Unit = {
+  def testEmptyMap(): Unit = {
     val emptyMap = ofStringMap(Map.empty[String, String])
     val expected = SdkBindingData.create(
       BindingData.ofMap(Map.empty[String, BindingData].asJava),

@@ -49,8 +49,7 @@ public abstract class TaskTemplate {
   public abstract Struct custom();
 
   /**
-   * Indicates whether the system should attempt to lookup this task's output to avoid duplication
-   * of work.
+   * Indicates whether the system should attempt to lookup this task's output to reuse existing data.
    */
   public abstract boolean discoverable();
 

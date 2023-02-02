@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 public abstract class Container {
 
   /**
-   * Command to be executed, if not provided, the default entrypoint in the container image will be
+   * Command to be executed. If not provided, the default entrypoint in the container image will be
    * used.
    */
   public abstract List<String> command();

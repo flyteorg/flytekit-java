@@ -19,11 +19,14 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
 
+/** A generic key value pair. */
 @AutoValue
 public abstract class KeyValuePair {
 
+  /** [Required]. */
   public abstract String key();
 
+  /** [Optional]. */
   @Nullable
   public abstract String value();
 

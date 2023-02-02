@@ -36,7 +36,7 @@ public abstract class Scalar {
 
   public abstract Blob blob();
 
-  // TODO add the rest of the cases
+  // TODO: add the rest of the cases from src/main/proto/flyteidl/core/literals.proto
 
   public static Scalar ofPrimitive(Primitive primitive) {
     return AutoOneOf_Scalar.primitive(primitive);

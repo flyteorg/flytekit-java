@@ -21,9 +21,10 @@ import com.google.auto.value.AutoValue;
 /** An input/output binding of a variable to either static value or a node output. */
 @AutoValue
 public abstract class Binding {
-
+  /** Variable name must match an input/output variable of the node. */
   public abstract String var_();
 
+  /** Data to use to bind this variable. */
   public abstract BindingData binding();
 
   public static Builder builder() {

@@ -24,6 +24,11 @@ import java.time.Instant;
 /** A simple value. Primitive can be: string, ... . */
 @AutoOneOf(Primitive.Kind.class)
 public abstract class Primitive {
+  /**
+   * Defines one of simple primitive types. These types will get translated into different
+   * programming languages as described in
+   * https://developers.google.com/protocol-buffers/docs/proto#scalar.
+   */
   public enum Kind {
     INTEGER_VALUE,
     FLOAT_VALUE,

@@ -28,13 +28,19 @@ public abstract class LaunchPlanIdentifier implements Identifier {
 
   @AutoValue.Builder
   public abstract static class Builder {
-
+    /**
+     * Name of the domain the resource belongs to. A domain can be considered as a subset within a
+     * specific project.
+     */
     public abstract Builder domain(String domain);
 
+    /** Name of the project the resource belongs to. */
     public abstract Builder project(String project);
 
+    /** User provided value for the resource. */
     public abstract Builder name(String name);
 
+    /** Specific version of the resource. */
     public abstract Builder version(String version);
 
     public abstract LaunchPlanIdentifier build();

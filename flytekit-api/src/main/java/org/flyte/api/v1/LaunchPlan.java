@@ -21,18 +21,29 @@ import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+/** User-provided launch plan definition and configuration values. */
 @AutoValue
 public abstract class LaunchPlan {
   public abstract String name();
-
+  /** Reference to the Workflow template that the launch plan references. */
   public abstract PartialWorkflowIdentifier workflowId();
 
+  /**
+   * Fixed, non-overridable inputs for the Launch Plan. These can not be overriden when an execution
+   * is created with this launch plan.
+   */
   public abstract Map<String, Literal> fixedInputs();
 
+  /**
+   * Input values to be passed for the execution. These can be overriden when an execution is
+   * created with this launch plan.
+   */
   public abstract Map<String, Parameter> defaultInputs();
 
   @Nullable
   public abstract CronSchedule cronSchedule();
+
+  // TODO: check if this should follow launch_plan.proto definitions.
 
   public static Builder builder() {
     return new AutoValue_LaunchPlan.Builder()

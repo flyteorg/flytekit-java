@@ -104,7 +104,7 @@ message TaskTemplate {
     Identifier id = 1;
 
     // A predefined yet extensible Task type identifier. This can be used to customize any of the components. If no
-    // extensions are provided in the system, Flyte will resolve the this task to its TaskCategory and default the
+    // extensions are provided in the system, Flyte will resolve this task to its TaskCategory and default the
     // implementation registered for the TaskCategory.
     string type = 2;
 

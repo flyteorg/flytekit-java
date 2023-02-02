@@ -28,6 +28,7 @@ import org.flyte.flytekit.{SdkBindingData => SdkJavaBindinigData}
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
+/** */
 object SdkBindingData {
   def ofString(string: String): SdkJavaBindinigData[String] =
     createSdkBindingData(string)

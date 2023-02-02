@@ -72,6 +72,13 @@ case class Description(value: String)
   require(value != null, "Description should not be null")
 }
 
+/** The [[SdkScalaType]] allows you to create a [[SdkType]] using a case class.
+  * Example:
+  *
+  * case class MyCaseClass(name: SdkBindingData[String])
+  *
+  * val sdkType = SdkScalaType[MyCaseClass]
+  */
 object SdkScalaType {
   type Typeclass[T] = SdkScalaType[T]
 

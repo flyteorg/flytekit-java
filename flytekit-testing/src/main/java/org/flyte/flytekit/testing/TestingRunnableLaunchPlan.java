@@ -21,9 +21,11 @@ import static java.util.Collections.emptyMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
+import org.flyte.api.v1.RunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.localengine.RunnableLaunchPlan;
 
+/** {@link RunnableLaunchPlan} that can fix output for specific input. */
 public class TestingRunnableLaunchPlan<InputT, OutputT>
     extends TestingRunnableNode<
         PartialLaunchPlanIdentifier, InputT, OutputT, TestingRunnableLaunchPlan<InputT, OutputT>>

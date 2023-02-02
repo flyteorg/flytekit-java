@@ -21,5 +21,6 @@ import java.util.List;
 /** Used to discover {@link SdkLaunchPlan}s. */
 public interface SdkLaunchPlanRegistry {
 
+  /** Returns discovered {@link SdkLaunchPlan}s. */
   List<SdkLaunchPlan> getLaunchPlans();
 }

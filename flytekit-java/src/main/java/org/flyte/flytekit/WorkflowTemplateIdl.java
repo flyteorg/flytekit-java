@@ -31,7 +31,7 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 class WorkflowTemplateIdl {
 
-  public static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder) {
+  static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder) {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
     List<Node> nodes =

@@ -33,8 +33,8 @@ import org.flyte.api.v1.TypedInterface;
 
 /**
  * Default implementation of a {@link RunnableTaskRegistrar} that discovers {@link SdkRunnableTask}s
- * implementation via {@link ServiceLoader} mechanism. Container tasks implementations must use
- * {@code @AutoService(SdkContainerTask.class)} or manually add their fully qualifies name to the
+ * implementation via {@link ServiceLoader} mechanism. Runnable tasks implementations must use
+ * {@code @AutoService(SdkRunnableTask.class)} or manually add their fully qualifies name to the
  * corresponding file.
  *
  * @see ServiceLoader

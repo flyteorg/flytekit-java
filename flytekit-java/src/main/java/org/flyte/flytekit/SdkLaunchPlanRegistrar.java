@@ -32,9 +32,10 @@ import org.flyte.api.v1.PartialWorkflowIdentifier;
 
 /**
  * Default implementation of a {@link LaunchPlanRegistrar} that discovers {@link
- * SdkLaunchPlanRegistry}s implementation via {@link ServiceLoader} mechanism. Dynamic Workflow Task
- * implementations must use {@code @AutoService(SdkLaunchPlanRegistry.class)} or manually add their
- * fully qualifies name to the corresponding file.
+ * SdkLaunchPlanRegistry}s implementation via {@link ServiceLoader} mechanism and then proceed to
+ * load {@link SdkLaunchPlan} from them. Launch plans registry implementations must use
+ * {@code @AutoService(SdkLaunchPlanRegistry.class)} or manually add their fully qualifies name to
+ * the corresponding file.
  *
  * @see ServiceLoader
  */
@@ -48,7 +49,8 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
   }
 
   /**
-   * Load {@link SdkLaunchPlanRegistry}s using {@link ServiceLoader}.
+   * Load {@link SdkLaunchPlanRegistry}s using {@link ServiceLoader} and load {@link SdkLaunchPlan}
+   * from them.
    *
    * @param env env vars in a map that would be used to pick up the project, domain and version for
    *     the discovered tasks.

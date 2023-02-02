@@ -34,11 +34,7 @@ import java.util.ServiceLoader;
 @AutoService(SdkWorkflowRegistry.class)
 public class DefaultSdkWorkflowRegistry extends SdkWorkflowRegistry {
 
-  /**
-   * Returns the {@link SdkWorkflow} discovered.
-   *
-   * @return the workflow list.
-   */
+  /** {@inheritDoc} */
   @Override
   public List<SdkWorkflow<?, ?>> getWorkflows() {
     List<SdkWorkflow<?, ?>> workflows = new ArrayList<>();

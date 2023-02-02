@@ -50,6 +50,9 @@ import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.localengine.ExecutionContext;
 import org.flyte.localengine.LocalEngine;
 
+/**
+ * Flyte executor for testing purposes.
+ */
 @AutoValue
 public abstract class SdkTestingExecutor {
 

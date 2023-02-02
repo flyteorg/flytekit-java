@@ -24,6 +24,9 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 
+/**
+ *  Utility to build {@link LiteralType}
+ */
 class LiteralTypes {
   static final LiteralType INTEGER = ofSimpleType(SimpleType.INTEGER);
   static final LiteralType FLOAT = ofSimpleType(SimpleType.FLOAT);
@@ -32,14 +35,31 @@ class LiteralTypes {
   static final LiteralType DATETIME = ofSimpleType(SimpleType.DATETIME);
   static final LiteralType DURATION = ofSimpleType(SimpleType.DURATION);
 
+  /**
+   * Create a {@link LiteralType} from {@link Variable}.
+   *
+   * @param var variable to convert.
+   * @return LiteralType value.
+   */
   static LiteralType from(Variable var) {
     return var.literalType();
   }
 
+  /**
+   * Create a {@code Map<String, LiteralType>} from {@code Map<String, Variable>}.
+   *
+   * @param vars variables to convert.
+   * @return LiteralType values.
+   */
   static Map<String, LiteralType> from(Map<String, Variable> vars) {
     return vars.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> from(e.getValue())));
   }
 
+  /**
+   * Utility to get pretty string representation from a {@link LiteralType}
+   * @param literalType
+   * @return pretty string representation
+   */
   static String toPrettyString(LiteralType literalType) {
     switch (literalType.getKind()) {
       case SIMPLE_TYPE:

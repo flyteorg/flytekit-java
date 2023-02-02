@@ -38,21 +38,21 @@ import org.flyte.api.v1.Variable;
 @AutoValue
 public abstract class SdkLaunchPlan {
 
-  /** Returns launch plan name */
+  /** Returns launch plan name. */
   public abstract String name();
 
-  /** Returns referenced workflow's project */
+  /** Returns referenced workflow's project. */
   @Nullable
   public abstract String workflowProject();
 
-  /** Returns referenced workflow's domain */
+  /** Returns referenced workflow's domain. */
   @Nullable
   public abstract String workflowDomain();
 
-  /** Returns referenced workflow's name */
+  /** Returns referenced workflow's name. */
   public abstract String workflowName();
 
-  /** Returns referenced workflow's version */
+  /** Returns referenced workflow's version. */
   @Nullable
   public abstract String workflowVersion();
 
@@ -77,7 +77,7 @@ public abstract class SdkLaunchPlan {
    */
   public abstract Map<String, Parameter> defaultInputs();
 
-  /** Returns the cron schedule of the launch plan */
+  /** Returns the cron schedule of the launch plan. */
   @Nullable
   public abstract SdkCronSchedule cronSchedule();
 
@@ -107,7 +107,7 @@ public abstract class SdkLaunchPlan {
   }
 
   /**
-   * Returns this launch plan with a new name
+   * Returns this launch plan with a new name.
    *
    * @param newName new name for the launch plan
    * @return the new launch plan

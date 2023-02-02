@@ -38,7 +38,7 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> outputDescriptions;
   private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
-  /** Creates a new builder */
+  /** Creates a new builder. */
   public SdkWorkflowBuilder() {
     this(new SdkNodeNamePolicy());
   }

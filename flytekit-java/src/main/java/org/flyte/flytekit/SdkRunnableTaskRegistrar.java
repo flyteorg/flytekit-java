@@ -113,9 +113,9 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
   }
 
   /**
-   * Load {@link SdkRunnableTask}s using {@link ServiceLoader}
+   * Load {@link SdkRunnableTask}s using {@link ServiceLoader}.
    *
-   * @param env env vars in a map that would be used to pickup the project, domain and version for
+   * @param env env vars in a map that would be used to pick up the project, domain and version for
    *     the discovered tasks.
    * @param classLoader class loader to use when discovering the task using {@link
    *     ServiceLoader#load(Class, ClassLoader)}

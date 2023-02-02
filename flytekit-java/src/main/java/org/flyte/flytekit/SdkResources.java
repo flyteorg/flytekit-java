@@ -61,20 +61,20 @@ public abstract class SdkResources {
 
   private static final SdkResources EMPTY = builder().build();
 
-  /** Returns the requests resources */
+  /** Returns the requests resources. */
   @Nullable
   public abstract Map<SdkResources.ResourceName, String> requests();
 
-  /** Returns the limits resources */
+  /** Returns the limits resources. */
   @Nullable
   public abstract Map<SdkResources.ResourceName, String> limits();
 
-  /** Returns returns a new {@link SdkResources.Builder} to create {@link SdkResources} */
+  /** Returns returns a new {@link SdkResources.Builder} to create {@link SdkResources}. */
   public static SdkResources.Builder builder() {
     return new AutoValue_SdkResources.Builder();
   }
 
-  /** Returns returns an empty {@link SdkResources}, no limits or requests for anything */
+  /** Returns returns an empty {@link SdkResources}, no limits or requests for anything. */
   public static SdkResources empty() {
     return EMPTY;
   }
@@ -127,7 +127,7 @@ public abstract class SdkResources {
 
     abstract SdkResources autoBuild();
 
-    /** Returns Builds a {@link SdkResources} */
+    /** Returns Builds a {@link SdkResources}. */
     public SdkResources build() {
       // TODO move the check about valid quantities tot he builder
       if (requests() != null) {

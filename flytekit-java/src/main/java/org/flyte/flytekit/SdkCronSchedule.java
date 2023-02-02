@@ -54,7 +54,7 @@ public abstract class SdkCronSchedule {
           + "(\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\\/([1-9]|1[0-9]|2[0-9]|3[0-1])) "
           + "(\\*|([1-9]|1[0-2])|\\*\\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\\/([0-6])))";
 
-  /** Returns the schedule */
+  /** Returns the schedule. */
   public abstract String schedule();
 
   /** Returns the offset duration. It could be null */
@@ -86,27 +86,27 @@ public abstract class SdkCronSchedule {
     return new AutoValue_SdkCronSchedule(schedule, offset);
   }
 
-  /** Returns a {@link SdkCronSchedule} with hourly alias and no offset */
+  /** Returns a {@link SdkCronSchedule} with hourly alias and no offset. */
   public static SdkCronSchedule hourly() {
     return new AutoValue_SdkCronSchedule("hourly", null);
   }
 
-  /** Returns a {@link SdkCronSchedule} with daily alias and no offset */
+  /** Returns a {@link SdkCronSchedule} with daily alias and no offset. */
   public static SdkCronSchedule daily() {
     return new AutoValue_SdkCronSchedule("daily", null);
   }
 
-  /** Returns a {@link SdkCronSchedule} with weekly alias and no offset */
+  /** Returns a {@link SdkCronSchedule} with weekly alias and no offset. */
   public static SdkCronSchedule weekly() {
     return new AutoValue_SdkCronSchedule("weekly", null);
   }
 
-  /** Returns a {@link SdkCronSchedule} with monthly alias and no offset */
+  /** Returns a {@link SdkCronSchedule} with monthly alias and no offset. */
   public static SdkCronSchedule monthly() {
     return new AutoValue_SdkCronSchedule("monthly", null);
   }
 
-  /** Returns a {@link SdkCronSchedule} with yearly alias and no offset */
+  /** Returns a {@link SdkCronSchedule} with yearly alias and no offset. */
   public static SdkCronSchedule yearly() {
     return new AutoValue_SdkCronSchedule("yearly", null);
   }

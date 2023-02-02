@@ -48,7 +48,7 @@ public abstract class SdkType<T> {
 
   /**
    * Returns a value composed of {@link SdkBindingData#ofOutputReference(String, String,
-   * LiteralType)} for thw supplied node is
+   * LiteralType)} for the supplied node is.
    *
    * @param nodeId the node id that the value is a promise for.
    * @return the value.
@@ -56,14 +56,14 @@ public abstract class SdkType<T> {
   public abstract T promiseFor(String nodeId);
 
   /**
-   * Returns a variable map for the properties for {@link T}
+   * Returns a variable map for the properties for {@link T}.
    *
    * @return the variable map
    */
   public abstract Map<String, Variable> getVariableMap();
 
   /**
-   * Returns the names for the properties for {@link T}
+   * Returns the names for the properties for {@link T}.
    *
    * @return the variable map
    */

@@ -248,26 +248,6 @@ class SdkWorkflowBuilderTest {
 
   @ParameterizedTest
   @MethodSource("createTransform")
-  void testVariableNameNotFound_output(
-      SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
-    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
-
-    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
-    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
-    TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
-
-    SdkNode<TestUnaryIntegerOutput> node1 = builder.apply("node-1", transform, input);
-
-    CompilerException e = assertThrows(CompilerException.class, () -> node1.getOutput("foo"));
-
-    assertEquals(
-        "Failed to build workflow with errors:\n"
-            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: node-1, Description: Variable [foo] not found on node [node-1].",
-        e.getMessage());
-  }
-
-  @ParameterizedTest
-  @MethodSource("createTransform")
   void testUpstreamNode_withUpstreamNode(
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();

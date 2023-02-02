@@ -31,14 +31,14 @@ import org.flyte.api.v1.WorkflowNode;
 @AutoValue
 public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
-  /** Returns the domain of the remote launch plan */
+  /** Returns the domain of the remote launch plan. */
   @Nullable
   public abstract String domain();
 
-  /** Returns the project of the remote launch plan */
+  /** Returns the project of the remote launch plan. */
   public abstract String project();
 
-  /** Returns the name of the remote launch plan */
+  /** Returns the name of the remote launch plan. */
   public abstract String name();
 
   /**

@@ -27,17 +27,17 @@ import org.flyte.api.v1.Variable;
 @AutoValue
 public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
-  /** Returns the domain of the remote task */
+  /** Returns the domain of the remote task. */
   @Nullable
   public abstract String domain();
 
-  /** Returns the project of the remote task */
+  /** Returns the project of the remote task. */
   public abstract String project();
 
-  /** Returns the name of the remote task */
+  /** Returns the name of the remote task. */
   public abstract String name();
 
-  /** Returns the version of the remote task */
+  /** Returns the version of the remote task. */
   @Nullable
   public String version() {
     return null;

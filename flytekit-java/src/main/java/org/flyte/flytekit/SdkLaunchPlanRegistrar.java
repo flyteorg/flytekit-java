@@ -48,7 +48,7 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
   }
 
   /**
-   * Load {@link SdkLaunchPlanRegistry}s using {@link ServiceLoader}
+   * Load {@link SdkLaunchPlanRegistry}s using {@link ServiceLoader}.
    *
    * @param env env vars in a map that would be used to pick up the project, domain and version for
    *     the discovered tasks.

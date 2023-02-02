@@ -45,7 +45,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
     this.outputType = outputType;
   }
 
-  /** returns {@code dynamic} */
+  /** returns {@code dynamic}. */
   public String getType() {
     return "dynamic";
   }

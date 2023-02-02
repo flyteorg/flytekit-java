@@ -55,7 +55,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     this.outputType = null;
   }
 
-  /** returns {@code raw-container} */
+  /** returns {@code raw-container}. */
   public String getType() {
     return "raw-container";
   }

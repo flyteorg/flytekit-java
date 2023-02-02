@@ -30,7 +30,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.BindingData.Kind;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
@@ -63,10 +62,6 @@ public abstract class SdkBindingData<T> {
    *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
    */
   public static <T> SdkBindingData<T> create(BindingData idl, LiteralType type, @Nullable T value) {
-    if (idl.kind().equals(Kind.PROMISE) && value == null) {
-      throw new IllegalArgumentException(
-          "SdkBindingData is not a promise and therefore value couldn't be null");
-    }
     return new AutoValue_SdkBindingData<>(idl, type, value);
   }
 

@@ -18,7 +18,7 @@ package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
 
-/** Holds a condition and the node to apply if condition is true */
+/** Holds a condition and the node to apply if condition is true. */
 @AutoValue
 abstract class SdkIfBlock {
 

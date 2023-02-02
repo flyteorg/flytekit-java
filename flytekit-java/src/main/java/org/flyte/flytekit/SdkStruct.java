@@ -37,20 +37,20 @@ public abstract class SdkStruct {
 
   abstract Struct struct();
 
-  /** Returns returns a {@link SdkStruct.Builder} from this struct */
+  /** Returns returns a {@link SdkStruct.Builder} from this struct. */
   public abstract Builder toBuilder();
 
-  /** Returns an empty struct, with no fields */
+  /** Returns an empty struct, with no fields. */
   public static SdkStruct empty() {
     return EMPTY;
   }
 
-  /** Returns returns a new {@link SdkStruct.Builder} */
+  /** Returns returns a new {@link SdkStruct.Builder}. */
   public static Builder builder() {
     return new AutoValue_SdkStruct.Builder().struct(Struct.of(Collections.emptyMap()));
   }
 
-  /** Builder for {@link SdkStruct} */
+  /** Builder for {@link SdkStruct}. */
   @AutoValue.Builder
   public abstract static class Builder {
     abstract Builder struct(Struct struct);
@@ -189,7 +189,7 @@ public abstract class SdkStruct {
       return value == null ? Value.ofNullValue() : fn.apply(value);
     }
 
-    /** Returns builds a {@link SdkStruct} */
+    /** Returns builds a {@link SdkStruct}. */
     public abstract SdkStruct build();
   }
 }

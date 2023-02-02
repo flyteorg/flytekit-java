@@ -111,7 +111,7 @@ public abstract class SdkTransform<InputT, OutputT> {
     return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
-  /** Returns the name of the transformation */
+  /** Returns the name of the transformation. */
   public String getName() {
     return getClass().getName();
   }

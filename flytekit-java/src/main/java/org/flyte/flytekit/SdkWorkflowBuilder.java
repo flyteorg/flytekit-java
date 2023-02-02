@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.WorkflowTemplate;
 
+/** Builder used during {@link SdkWorkflow#expand(SdkWorkflowBuilder)}. */
 public class SdkWorkflowBuilder {
   private final Map<String, SdkNode<?>> nodes;
   private final Map<String, SdkBindingData<?>> inputs;
@@ -37,6 +38,7 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> outputDescriptions;
   private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
+  /** Creates a new builder */
   public SdkWorkflowBuilder() {
     this(new SdkNodeNamePolicy());
   }
@@ -53,21 +55,49 @@ public class SdkWorkflowBuilder {
 
     this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
-
+  /**
+   * Applies the given transformation and returns a new node with a given node id.
+   *
+   * @param nodeId node id of the new node
+   * @param transformWithoutInputs transformation to apply.
+   * @return the new {@link SdkNode}
+   */
   public <OutputT> SdkNode<OutputT> apply(
       String nodeId, SdkTransform<Void, OutputT> transformWithoutInputs) {
     return applyInternal(nodeId, transformWithoutInputs, emptyList(), null);
   }
 
+  /**
+   * Applies the given transformation over the inputs and returns a new node with a given node id.
+   *
+   * @param nodeId node id of the new node
+   * @param transform transformation to apply.
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
   public <InputT, OutputT> SdkNode<OutputT> apply(
       String nodeId, SdkTransform<InputT, OutputT> transform, InputT inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
+  /**
+   * Applies the given transformation and returns a new node with a given default node id.
+   *
+   * @param transformWithoutInputs transformation to apply.
+   * @return the new {@link SdkNode}
+   */
   public <OutputT> SdkNode<OutputT> apply(SdkTransform<Void, OutputT> transformWithoutInputs) {
     return apply(/*nodeId=*/ (String) null, transformWithoutInputs);
   }
 
+  /**
+   * Applies the given transformation over the inputs and returns a new node with a given default
+   * node id.
+   *
+   * @param transform transformation to apply.
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
   public <InputT, OutputT> SdkNode<OutputT> apply(
       SdkTransform<InputT, OutputT> transform, InputT inputs) {
     return apply(/*nodeId=*/ null, transform, inputs);
@@ -114,22 +144,27 @@ public class SdkWorkflowBuilder {
     return bindingData;
   }
 
+  /** Returns the nodes by id. */
   public Map<String, SdkNode<?>> getNodes() {
     return unmodifiableMap(new LinkedHashMap<>(nodes));
   }
 
+  /** Returns the inputs bindings map. */
   public Map<String, SdkBindingData<?>> getInputs() {
     return unmodifiableMap(new LinkedHashMap<>(inputs));
   }
 
+  /** Returns input description for given input. */
   public String getInputDescription(String name) {
     return inputDescriptions.getOrDefault(name, "");
   }
 
+  /** Returns the outputs bindings map. */
   public Map<String, SdkBindingData<?>> getOutputs() {
     return unmodifiableMap(new LinkedHashMap<>(outputs));
   }
 
+  /** Returns output description for given input. */
   public String getOutputDescription(String name) {
     return outputDescriptions.getOrDefault(name, "");
   }
@@ -139,6 +174,7 @@ public class SdkWorkflowBuilder {
     outputs.put(name, value);
   }
 
+  /** Returns the {@link WorkflowTemplate} for this builder. */
   public WorkflowTemplate toIdlTemplate() {
     return WorkflowTemplateIdl.ofBuilder(this);
   }

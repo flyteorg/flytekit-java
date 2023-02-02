@@ -31,7 +31,14 @@ import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
-/** A registrar that creates {@link RunnableTask} instances. */
+/**
+ * Default implementation of a {@link RunnableTaskRegistrar} that discovers {@link SdkRunnableTask}s
+ * implementation via {@link ServiceLoader} mechanism. Container tasks implementations must use
+ * {@code @AutoService(SdkContainerTask.class)} or manually add their fully qualifies name to the
+ * corresponding file.
+ *
+ * @see ServiceLoader
+ */
 @AutoService(RunnableTaskRegistrar.class)
 public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
   private static final Logger LOG = Logger.getLogger(SdkRunnableTaskRegistrar.class.getName());
@@ -105,6 +112,15 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     }
   }
 
+  /**
+   * Load {@link SdkRunnableTask}s using {@link ServiceLoader}
+   *
+   * @param env env vars in a map that would be used to pickup the project, domain and version for
+   *     the discovered tasks.
+   * @param classLoader class loader to use when discovering the task using {@link
+   *     ServiceLoader#load(Class, ClassLoader)}
+   * @return a map of {@link SdkRunnableTask}s by its task identifier.
+   */
   @Override
   @SuppressWarnings("rawtypes")
   public Map<TaskIdentifier, RunnableTask> load(Map<String, String> env, ClassLoader classLoader) {

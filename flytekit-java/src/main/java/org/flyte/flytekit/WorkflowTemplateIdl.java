@@ -65,8 +65,8 @@ class WorkflowTemplateIdl {
     return toVariableMap(builder.getOutputs(), builder::getOutputDescription);
   }
 
-  private static Map<String, Variable> toVariableMap(Map<String, SdkBindingData<?>> bindingDataMap,
-      Function<String, String> nameToDescription) {
+  private static Map<String, Variable> toVariableMap(
+      Map<String, SdkBindingData<?>> bindingDataMap, Function<String, String> nameToDescription) {
     return bindingDataMap.entrySet().stream()
         .map(
             entry -> {

@@ -16,7 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.Collections.singletonMap;
 import static java.util.function.UnaryOperator.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableMap;
@@ -34,20 +33,26 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.Variable;
 
+/** Flyte launch plan, identifiers, inputs and schedule. */
 @SuppressWarnings("PreferJavaTimeOverload")
 @AutoValue
 public abstract class SdkLaunchPlan {
 
+  /** Returns launch plan name */
   public abstract String name();
 
+  /** Returns referenced workflow's project */
   @Nullable
   public abstract String workflowProject();
 
+  /** Returns referenced workflow's domain */
   @Nullable
   public abstract String workflowDomain();
 
+  /** Returns referenced workflow's name */
   public abstract String workflowName();
 
+  /** Returns referenced workflow's version */
   @Nullable
   public abstract String workflowVersion();
 
@@ -60,10 +65,19 @@ public abstract class SdkLaunchPlan {
    */
   public abstract Map<String, LiteralType> workflowInputTypeMap();
 
+  /**
+   * Returns the workflow inputs that were fixed in the launch plan. Fixed inputs cannot be changed
+   * at execution time
+   */
   public abstract Map<String, Literal> fixedInputs();
 
+  /**
+   * Returns the workflow inputs that with default inputs in the launch plan. Default inputs can be
+   * changed at execution time
+   */
   public abstract Map<String, Parameter> defaultInputs();
 
+  /** Returns the cron schedule of the launch plan */
   @Nullable
   public abstract SdkCronSchedule cronSchedule();
 
@@ -92,52 +106,107 @@ public abstract class SdkLaunchPlan {
         .collect(toUnmodifiableMap(identity(), name -> toLiteralTypeFn.apply(inputMap.get(name))));
   }
 
+  /**
+   * Returns this launch plan with a new name
+   *
+   * @param newName new name for the launch plan
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withName(String newName) {
     return toBuilder().name(newName).build();
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, long value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofInteger(value)),
-        singletonMap(inputName, LiteralTypes.INTEGER));
+        Map.of(inputName, Literals.ofInteger(value)), Map.of(inputName, LiteralTypes.INTEGER));
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, double value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofFloat(value)),
-        singletonMap(inputName, LiteralTypes.FLOAT));
+        Map.of(inputName, Literals.ofFloat(value)), Map.of(inputName, LiteralTypes.FLOAT));
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, String value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofString(value)),
-        singletonMap(inputName, LiteralTypes.STRING));
+        Map.of(inputName, Literals.ofString(value)), Map.of(inputName, LiteralTypes.STRING));
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, boolean value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofBoolean(value)),
-        singletonMap(inputName, LiteralTypes.BOOLEAN));
+        Map.of(inputName, Literals.ofBoolean(value)), Map.of(inputName, LiteralTypes.BOOLEAN));
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, Instant value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofDatetime(value)),
-        singletonMap(inputName, LiteralTypes.DATETIME));
+        Map.of(inputName, Literals.ofDatetime(value)), Map.of(inputName, LiteralTypes.DATETIME));
   }
 
+  /**
+   * Returns this launch plan with a new fixed input.
+   *
+   * @param inputName name for the input
+   * @param value value to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withFixedInput(String inputName, Duration value) {
     return withFixedInputs0(
-        singletonMap(inputName, Literals.ofDuration(value)),
-        singletonMap(inputName, LiteralTypes.DURATION));
+        Map.of(inputName, Literals.ofDuration(value)), Map.of(inputName, LiteralTypes.DURATION));
   }
 
+  /**
+   * Returns this launch plan with fixed inputs.
+   *
+   * @param type for the inputs
+   * @param value inputs to fix
+   * @return the new launch plan
+   */
   public <T> SdkLaunchPlan withFixedInputs(SdkType<T> type, T value) {
     return withFixedInputs0(
         type.toLiteralMap(value),
         toWorkflowInputTypeMap(type.getVariableMap(), Variable::literalType));
   }
 
+  /**
+   * Returns this launch plan with cron schedule.
+   *
+   * @param cronSchedule cron schedule to set
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withCronSchedule(SdkCronSchedule cronSchedule) {
     return toBuilder().cronSchedule(cronSchedule).build();
   }
@@ -153,36 +222,76 @@ public abstract class SdkLaunchPlan {
     return toBuilder().fixedInputs(newCompleteInputs).build();
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, long value) {
     return withDefaultInputs0(
-        singletonMap(inputName, createParameter(LiteralTypes.INTEGER, Literals.ofInteger(value))));
+        Map.of(inputName, createParameter(LiteralTypes.INTEGER, Literals.ofInteger(value))));
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, double value) {
     return withDefaultInputs0(
-        singletonMap(inputName, createParameter(LiteralTypes.FLOAT, Literals.ofFloat(value))));
+        Map.of(inputName, createParameter(LiteralTypes.FLOAT, Literals.ofFloat(value))));
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, String value) {
     return withDefaultInputs0(
-        singletonMap(inputName, createParameter(LiteralTypes.STRING, Literals.ofString(value))));
+        Map.of(inputName, createParameter(LiteralTypes.STRING, Literals.ofString(value))));
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, boolean value) {
     return withDefaultInputs0(
-        singletonMap(inputName, createParameter(LiteralTypes.BOOLEAN, Literals.ofBoolean(value))));
+        Map.of(inputName, createParameter(LiteralTypes.BOOLEAN, Literals.ofBoolean(value))));
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, Instant value) {
     return withDefaultInputs0(
-        singletonMap(
-            inputName, createParameter(LiteralTypes.DATETIME, Literals.ofDatetime(value))));
+        Map.of(inputName, createParameter(LiteralTypes.DATETIME, Literals.ofDatetime(value))));
   }
 
+  /**
+   * Returns this launch plan with default input.
+   *
+   * @param inputName name for the input
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public SdkLaunchPlan withDefaultInput(String inputName, Duration value) {
     return withDefaultInputs0(
-        singletonMap(
-            inputName, createParameter(LiteralTypes.DURATION, Literals.ofDuration(value))));
+        Map.of(inputName, createParameter(LiteralTypes.DURATION, Literals.ofDuration(value))));
   }
 
   private Parameter createParameter(LiteralType literalType, Literal literal) {
@@ -190,6 +299,13 @@ public abstract class SdkLaunchPlan {
         Variable.builder().description("").literalType(literalType).build(), literal);
   }
 
+  /**
+   * Returns this launch plan with default inputs.
+   *
+   * @param type for the inputs
+   * @param value inputs to set default
+   * @return the new launch plan
+   */
   public <T> SdkLaunchPlan withDefaultInput(SdkType<T> type, T value) {
     Map<String, LiteralType> literalTypeMap =
         type.getVariableMap().entrySet().stream()

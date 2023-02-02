@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import java.util.List;
 
+/** Used to discover {@link SdkLaunchPlan}s */
 public interface SdkLaunchPlanRegistry {
 
   List<SdkLaunchPlan> getLaunchPlans();

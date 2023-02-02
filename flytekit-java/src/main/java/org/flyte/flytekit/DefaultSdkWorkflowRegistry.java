@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 /**
- * Default implementation of a Discovers {@link SdkWorkflowRegistry} that discovers {@link
- * SdkWorkflow}s implementation via {@link ServiceLoader} mechanism. Workflows implementations must
- * use {@code @AutoService(SdkWorkflow.class)} or manually add their fully qualifies name to the
+ * Default implementation of a {@link SdkWorkflowRegistry} that discovers {@link SdkWorkflow}s
+ * implementation via {@link ServiceLoader} mechanism. Workflows implementations must use
+ * {@code @AutoService(SdkWorkflow.class)} or manually add their fully qualifies name to the
  * corresponding file.
  *
  * @see ServiceLoader

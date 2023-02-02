@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 import javax.annotation.Nullable;
 
+/** Holds case clauses and the node if none of the cases matched */
 @AutoValue
 abstract class SdkIfElseBlock {
 

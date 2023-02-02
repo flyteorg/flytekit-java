@@ -19,21 +19,63 @@ package org.flyte.flytekit;
 import java.util.Map;
 import java.util.Set;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 
+/**
+ * Bridge between the properties of a Java type and a set of variable set in Flyte. It is a
+ * requirement that the properties of the value are of type {@link SdkBindingData}.
+ *
+ * @param <T> the Java native type to bridge.
+ */
 public abstract class SdkType<T> {
 
+  /**
+   * Coverts the value's properties into a {@link Literal} map by variable name.
+   *
+   * @param value value to convert.
+   * @return the literal map.
+   */
   public abstract Map<String, Literal> toLiteralMap(T value);
 
+  /**
+   * Coverts a {@link Literal} map by variable name into a value.
+   *
+   * @param value a {@link Literal} map by variable name.
+   * @return the converted value.
+   */
   public abstract T fromLiteralMap(Map<String, Literal> value);
 
+  /**
+   * Returns a value composed of {@link SdkBindingData#ofOutputReference(String, String,
+   * LiteralType)} for thw supplied node is
+   *
+   * @param nodeId the node id that the value is a promise for.
+   * @return the value.
+   */
   public abstract T promiseFor(String nodeId);
 
+  /**
+   * Returns a variable map for the properties for {@link T}
+   *
+   * @return the variable map
+   */
   public abstract Map<String, Variable> getVariableMap();
 
+  /**
+   * Returns the names for the properties for {@link T}
+   *
+   * @return the variable map
+   */
   public Set<String> variableNames() {
     return Set.copyOf(getVariableMap().keySet());
   }
 
+  /**
+   * Coverts the value's properties into a {@link SdkBindingData} map by variable name.
+   *
+   * @param value value to convert.
+   * @return the binding data map.
+   */
   public abstract Map<String, SdkBindingData<?>> toSdkBindingMap(T value);
 }

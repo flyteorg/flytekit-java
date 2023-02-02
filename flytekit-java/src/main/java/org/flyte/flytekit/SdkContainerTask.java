@@ -36,6 +36,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
 
   /**
    * Called by subclasses passing the {@link SdkType}s for inputs and outputs.
+   *
    * @param inputType type for inputs.
    * @param outputType type for outputs.
    */
@@ -54,10 +55,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     this.outputType = null;
   }
 
-  /**
-   * {@inheritDoc}
-   * returns {@code raw-container}
-   */
+  /** returns {@code raw-container} */
   public String getType() {
     return "raw-container";
   }

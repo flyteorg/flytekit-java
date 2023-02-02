@@ -27,37 +27,52 @@ import org.flyte.api.v1.Variable;
 @AutoValue
 public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
+  /** Returns the domain of the remote task */
   @Nullable
   public abstract String domain();
 
+  /** Returns the project of the remote task */
   public abstract String project();
 
+  /** Returns the name of the remote task */
   public abstract String name();
 
-  // FIXME should be auto-value property, but doing so breaks backwards-compatibility, to be fixed
-  // in 0.3.0
-
+  /** Returns the version of the remote task */
   @Nullable
   public String version() {
     return null;
   }
 
+  /** See {@link #getInputType()}. */
   public abstract SdkType<InputT> inputs();
 
+  /** See {@link #getOutputType()}. */
   public abstract SdkType<OutputT> outputs();
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<InputT> getInputType() {
     // TODO consider break backward compatibility to unify the names and avoid this bridge method
     return inputs();
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<OutputT> getOutputType() {
     // TODO consider break backward compatibility to unify the names and avoid this bridge method
     return outputs();
   }
 
+  /**
+   * Create a remote task, a reference to a task that have been deployed previously.
+   *
+   * @param domain the domain of the remote launch plan
+   * @param project the project of the remote launch plan
+   * @param name the name of the remote launch plan
+   * @param inputs the {@link SdkType} for the inputs of the remote launch plan
+   * @param outputs the {@link SdkType} for the outputs of the remote launch plan
+   * @return the remote task
+   */
   public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
       String domain,
       String project,
@@ -73,11 +88,13 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
         .build();
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getName() {
     return name();
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
@@ -104,12 +121,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
         builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, variableMap, output);
   }
 
-  public static <InputT, OutputT> Builder<InputT, OutputT> builder() {
+  static <InputT, OutputT> Builder<InputT, OutputT> builder() {
     return new AutoValue_SdkRemoteTask.Builder<>();
   }
 
   @AutoValue.Builder
-  public abstract static class Builder<InputT, OutputT> {
+  abstract static class Builder<InputT, OutputT> {
 
     public abstract Builder<InputT, OutputT> domain(String domain);
 

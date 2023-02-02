@@ -29,7 +29,9 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-public class SdkLiteralTypes {
+// TODO: this class it is not used. We should remove it or even better use it in place of
+//  raw literal types in SdkBinding data
+class SdkLiteralTypes {
 
   public static SdkLiteralType<Long> integers() {
     return IntegerSdkLiteralType.INSTANCE;

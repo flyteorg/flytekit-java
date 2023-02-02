@@ -68,6 +68,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left == right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -80,6 +81,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left != right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -92,6 +94,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left > right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -104,6 +107,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left >= right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -116,6 +120,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left < right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -128,6 +133,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code left <= right}.
+   *
    * @param left first operand
    * @param right second operand
    * @return the boolean expression
@@ -140,6 +146,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code data == true}.
+   *
    * @param data data to compare
    * @return the boolean expression
    */
@@ -151,6 +158,7 @@ public class SdkConditions {
 
   /**
    * Return a {@link SdkBooleanExpression} for {@code data == false}.
+   *
    * @param data data to compare
    * @return the boolean expression
    */

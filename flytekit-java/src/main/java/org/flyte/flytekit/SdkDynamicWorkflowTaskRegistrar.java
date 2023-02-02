@@ -36,7 +36,14 @@ import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
-/** A registrar that creates {@link DynamicWorkflowTask} instances. */
+/**
+ * Default implementation of a {@link DynamicWorkflowTaskRegistrar} that discovers {@link
+ * SdkDynamicWorkflowTask}s implementation via {@link ServiceLoader} mechanism. Dynamic Workflow
+ * Task implementations must use {@code @AutoService(SdkDynamicWorkflowTask.class)} or manually add
+ * their fully qualifies name to the corresponding file.
+ *
+ * @see ServiceLoader
+ */
 @AutoService(DynamicWorkflowTaskRegistrar.class)
 public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistrar {
   private static final Logger LOG =
@@ -54,11 +61,13 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
       this.sdkDynamicWorkflow = sdkDynamicWorkflow;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
       return sdkDynamicWorkflow.getName();
     }
 
+    /** {@inheritDoc} */
     @Override
     public TypedInterface getInterface() {
       return TypedInterface.builder()
@@ -67,6 +76,7 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
           .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public DynamicJobSpec run(Map<String, Literal> inputs) {
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
@@ -87,12 +97,22 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
           .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public RetryStrategy getRetries() {
       return RetryStrategy.builder().retries(sdkDynamicWorkflow.getRetries()).build();
     }
   }
 
+  /**
+   * Load {@link DynamicWorkflowTask}s using {@link ServiceLoader}
+   *
+   * @param env env vars in a map that would be used to pickup the project, domain and version for
+   *     the discovered tasks.
+   * @param classLoader class loader to use when discovering the task using {@link
+   *     ServiceLoader#load(Class, ClassLoader)}
+   * @return a map of {@link DynamicWorkflowTask}s by its task identifier.
+   */
   @Override
   @SuppressWarnings("rawtypes")
   public Map<TaskIdentifier, DynamicWorkflowTask> load(

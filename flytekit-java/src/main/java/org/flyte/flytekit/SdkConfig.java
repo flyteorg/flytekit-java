@@ -20,8 +20,8 @@ import com.google.auto.value.AutoValue;
 import java.util.Map;
 
 /**
- * Holds project, domain and version to be use as default values for tasks, workflows and
- * launch plans.
+ * Holds project, domain and version to be use as default values for tasks, workflows and launch
+ * plans.
  */
 @AutoValue
 abstract class SdkConfig {

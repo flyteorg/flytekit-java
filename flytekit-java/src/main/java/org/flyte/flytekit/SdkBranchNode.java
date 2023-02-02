@@ -85,7 +85,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   /**
    * {@inheritDoc}
    *
-   * The returned Node contains a branch node
+   * <p>The returned Node contains a branch node
    */
   @Override
   public Node toIdl() {

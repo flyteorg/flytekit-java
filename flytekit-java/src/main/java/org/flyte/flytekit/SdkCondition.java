@@ -50,8 +50,8 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   }
 
   /**
-   * Adds a case clause to this conditional transformation. The {@code then} transformation takes
-   * no inputs.
+   * Adds a case clause to this conditional transformation. The {@code then} transformation takes no
+   * inputs.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
    * @param condition boolean expression that must evaluate to true to apply {@code then}
@@ -73,9 +73,11 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
    * {@link InputT} inputs and they are supplied as well.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
-   * @param condition boolean expression that must evaluate to true to apply {@code then} transformation.
+   * @param condition boolean expression that must evaluate to true to apply {@code then}
+   *     transformation.
    * @param then the transformation to apply if {@code condition} evaluates to true.
-   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition} evaluates to true.
+   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition}
+   *     evaluates to true.
    * @param <InputT> the input type of the {@code then} transformation
    * @return this modified transformation.
    */
@@ -88,8 +90,8 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   }
 
   /**
-   * Adds a otherwise clause to this conditional transformation. The {@code otherwise} transformation takes
-   * no inputs.
+   * Adds a otherwise clause to this conditional transformation. The {@code otherwise}
+   * transformation takes no inputs.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
    * @param otherwise the transformation to apply if no other case in this transformation is true.
@@ -104,12 +106,13 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   }
 
   /**
-   * Adds a otherwise clause to this conditional transformation. The {@code then} transformation takes
-   * {@link InputT} inputs and they are supplied as well.
+   * Adds a otherwise clause to this conditional transformation. The {@code then} transformation
+   * takes {@link InputT} inputs and they are supplied as well.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
    * @param otherwise the transformation to apply if no other case in this transformation is true.
-   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition} evaluates to true.
+   * @param inputs the inputs to apply to the {@code then} transformation if {@code condition}
+   *     evaluates to true.
    * @param <InputT> the input type of the {@code then} transformation
    * @return this modified transformation.
    */
@@ -130,10 +133,7 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
     return outputType;
   }
 
-  /**
-   * {@inheritDoc}
-   * Returns a {@link SdkBranchNode}
-   */
+  /** {@inheritDoc} Returns a {@link SdkBranchNode} */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,

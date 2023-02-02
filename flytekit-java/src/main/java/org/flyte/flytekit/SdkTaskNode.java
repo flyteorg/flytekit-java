@@ -58,6 +58,7 @@ public class SdkTaskNode<T> extends SdkNode<T> {
     this.outputs = outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputVars.entrySet().stream()
@@ -69,16 +70,19 @@ public class SdkTaskNode<T> extends SdkNode<T> {
                         nodeId, entry.getKey(), entry.getValue().literalType())));
   }
 
+  /** {@inheritDoc} */
   @Override
   public T getOutputs() {
     return outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getNodeId() {
     return nodeId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Node toIdl() {
     TaskNode taskNode = TaskNode.builder().referenceId(taskId).build();

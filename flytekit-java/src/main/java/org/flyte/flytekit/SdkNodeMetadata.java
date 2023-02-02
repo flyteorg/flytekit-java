@@ -22,6 +22,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.NodeMetadata;
 
+/** Holds node metadata. */
 @AutoValue
 abstract class SdkNodeMetadata {
 

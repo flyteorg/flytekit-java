@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
 
+/** Describes a set of tasks to execute and how the final outputs are produced. */
 @AutoValue
 public abstract class DynamicJobSpec {
 
@@ -30,6 +31,8 @@ public abstract class DynamicJobSpec {
    */
   public abstract List<Node> nodes();
 
+  // TODO: add minSuccesses from src/main/proto/flyteidl/core/dynamic_job.proto
+
   /**
    * Describes how to bind the final output of the dynamic job from the outputs of executed nodes.
    * The referenced ids in bindings should have the generated id for the subtask.
@@ -39,14 +42,14 @@ public abstract class DynamicJobSpec {
   public abstract List<Binding> outputs();
 
   /**
-   * Returns sub-workflows templates.
+   * [Optional] A complete list of task specs referenced in nodes.
    *
    * @return sub-workflows.
    */
   public abstract Map<WorkflowIdentifier, WorkflowTemplate> subWorkflows();
 
   /**
-   * Returns tasks templates.
+   * [Optional] A complete list of task specs referenced in nodes.
    *
    * @return tasks
    */

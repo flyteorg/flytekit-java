@@ -26,17 +26,35 @@ import java.util.List;
 @AutoValue
 public abstract class WorkflowTemplate {
 
+  /**
+   * A list of nodes. In addition, 'globals' is a special reserved node id that can be used to
+   * consume workflow inputs.
+   */
   public abstract List<Node> nodes();
-
+  /** Extra metadata about the workflow. */
   public abstract WorkflowMetadata metadata();
 
   public static Builder builder() {
     return new AutoValue_WorkflowTemplate.Builder();
   }
 
+  /**
+   * Defines a strongly typed interface for the Workflow. This can include some optional parameters.
+   */
   public abstract TypedInterface interface_();
 
+  /**
+   * A list of output bindings that specify how to construct workflow outputs. Bindings can pull
+   * node outputs or specify literals. All workflow outputs specified in the interface field must be
+   * bound in order for the workflow to be validated. A workflow has an implicit dependency on all
+   * of its nodes to execute successfully in order to bind final outputs. Most of these outputs will
+   * be Binding's with a BindingData of type OutputReference. That is, your workflow can just have
+   * an output of some constant (`Output(5)`), but usually, the workflow will be pulling outputs
+   * from the output of a task.
+   */
   public abstract List<Binding> outputs();
+
+  // TODO: add failure_node and metadata_defaults from src/main/proto/flyteidl/core/workflow.proto
 
   public abstract Builder toBuilder();
 

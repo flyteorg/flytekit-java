@@ -25,6 +25,7 @@ import com.google.auto.value.AutoValue;
  */
 @AutoValue
 public abstract class BranchNode {
+  /** Required. */
   public abstract IfElseBlock ifElse();
 
   public static Builder builder() {

@@ -24,16 +24,31 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class Container {
 
+  /**
+   * Command to be executed, if not provided, the default entrypoint in the container image will be
+   * used.
+   */
   public abstract List<String> command();
 
+  /**
+   * These will default to Flyte given paths. If provided, the system will not append known paths.
+   * If the task still needs flyte's inputs and outputs path, add $(FLYTE_INPUT_FILE),
+   * $(FLYTE_OUTPUT_FILE) wherever makes sense and the system will populate these before executing
+   * the container.
+   */
   public abstract List<String> args();
 
+  /** Container image url. Eg: docker/redis:latest */
   public abstract String image();
 
+  /** Environment variables will be set as the container is starting up. */
   public abstract List<KeyValuePair> env();
 
+  /** Container resources requirement as specified by the container engine. */
   @Nullable
   public abstract Resources resources();
+
+  // TODO: add ports and architecture from src/main/proto/flyteidl/core/tasks.proto
 
   public static Builder builder() {
     return new AutoValue_Container.Builder();

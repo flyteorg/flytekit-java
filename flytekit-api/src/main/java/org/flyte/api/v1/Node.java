@@ -29,23 +29,42 @@ public abstract class Node {
 
   public static final String START_NODE_ID = "start-node";
 
+  /**
+   * A workflow-level unique identifier that identifies this node in the workflow. 'inputs' and
+   * 'outputs' are reserved node ids that cannot be used by other nodes.
+   */
   public abstract String id();
 
+  /** Extra metadata about the node. */
   @Nullable
   public abstract NodeMetadata metadata();
 
+  /** Information about the target to execute in this node. */
   @Nullable
   public abstract TaskNode taskNode();
 
+  /** Information about the branch node to evaluate in this node. */
   @Nullable
   public abstract BranchNode branchNode();
 
+  /** Information about the Workflow to execute in this mode. */
   @Nullable
   public abstract WorkflowNode workflowNode();
 
+  /**
+   * Specifies how to bind the underlying interface's inputs. All required inputs specified in the
+   * underlying interface must be fulfilled.
+   */
   public abstract List<Binding> inputs();
 
+  /**
+   * [Optional] Specifies execution dependency for this node ensuring it will only get scheduled to
+   * run after all its upstream nodes have completed. This node will have an implicit dependency on
+   * any node that appears in inputs field.
+   */
   public abstract List<String> upstreamNodeIds();
+
+  // TODO: add outputAliases from src/main/proto/flyteidl/core/workflow.proto
 
   public abstract Builder toBuilder();
 

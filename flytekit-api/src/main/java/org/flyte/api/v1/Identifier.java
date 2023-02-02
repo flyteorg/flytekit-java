@@ -19,12 +19,20 @@ package org.flyte.api.v1;
 /** Encapsulation of fields that uniquely identifies a Flyte resource. */
 public interface Identifier extends PartialIdentifier {
 
+  /**
+   * Name of the domain the resource belongs to. A domain can be considered as a subset within a
+   * specific project.
+   */
   @Override
   String domain();
 
+  /** Name of the project the resource belongs to. */
   @Override
   String project();
 
+  /** Specific version of the resource. */
   @Override
   String version();
+
+  // TODO: add resourceType and name from src/main/proto/flyteidl/core/identifier.proto
 }

@@ -35,6 +35,8 @@ public abstract class NodeMetadata {
   @Nullable
   public abstract RetryStrategy retries();
 
+  // TODO: add interruptible from src/main/proto/flyteidl/core/workflow.proto
+
   public static Builder builder() {
     return new AutoValue_NodeMetadata.Builder();
   }

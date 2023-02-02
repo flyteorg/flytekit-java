@@ -22,8 +22,11 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class TaskNode {
 
+  /** A globally unique identifier for the task. */
   public abstract PartialTaskIdentifier referenceId();
 
+  // TODO: check if overrides should be added from  should be added from
+  // src/main/proto/flyteidl/core/workflow.proto
   public static Builder builder() {
     return new AutoValue_TaskNode.Builder();
   }

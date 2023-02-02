@@ -16,7 +16,6 @@
  */
 package org.flyte.flytekit.testing;
 
-import org.flyte.api.v1.RunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;

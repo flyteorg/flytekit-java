@@ -24,9 +24,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 
-/**
- *  Utility to build {@link LiteralType}
- */
+/** Utility to build {@link LiteralType} */
 class LiteralTypes {
   static final LiteralType INTEGER = ofSimpleType(SimpleType.INTEGER);
   static final LiteralType FLOAT = ofSimpleType(SimpleType.FLOAT);
@@ -57,6 +55,7 @@ class LiteralTypes {
 
   /**
    * Utility to get pretty string representation from a {@link LiteralType}
+   *
    * @param literalType
    * @return pretty string representation
    */

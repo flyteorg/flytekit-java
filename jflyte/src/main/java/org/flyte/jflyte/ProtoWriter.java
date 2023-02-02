@@ -31,6 +31,7 @@ import org.flyte.jflyte.api.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** ProtocolBuffer file writer helper. */
 class ProtoWriter {
   private static final String OUTPUTS_PB = "outputs.pb";
   private static final String FUTURES_PB = "futures.pb";

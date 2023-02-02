@@ -26,7 +26,7 @@ abstract class Artifact {
   /**
    * Get the artifact location.
    *
-   * @return the artifact location
+   * @return the artifact location.
    */
   abstract String location();
 
@@ -45,7 +45,7 @@ abstract class Artifact {
   abstract long size();
 
   /**
-   * Create a new artifact
+   * Create a new artifact.
    *
    * @param location artifact location.
    * @param name name location.

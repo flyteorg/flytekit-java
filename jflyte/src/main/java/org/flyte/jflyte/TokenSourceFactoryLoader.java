@@ -27,7 +27,7 @@ import org.flyte.jflyte.api.TokenSourceFactoryRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** TokenSource loader */
+/** TokenSource loader. */
 class TokenSourceFactoryLoader {
   private static final Logger LOG = LoggerFactory.getLogger(TokenSourceFactoryLoader.class);
 

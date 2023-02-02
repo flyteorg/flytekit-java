@@ -25,18 +25,21 @@ abstract class Config {
 
   /**
    * Get flyte platform URL.
+   *
    * @return flyte platform URL.
    */
   abstract String platformUrl();
 
   /**
    * Get flyte docker image.
+   *
    * @return flyte docker image.
    */
   abstract String image();
 
   /**
    * Get flyte staging location path.
+   *
    * @return flyte staging location path.
    */
   @Nullable
@@ -44,12 +47,14 @@ abstract class Config {
 
   /**
    * Get flyte module dir path.
+   *
    * @return flyte module dir path.
    */
   abstract String moduleDir();
 
   /**
    * Get if the auth with the platform is secure or not.
+   *
    * @return boolean indicating if platform is insecure or not.
    */
   abstract boolean platformInsecure();

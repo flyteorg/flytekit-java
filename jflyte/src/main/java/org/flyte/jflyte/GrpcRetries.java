@@ -57,6 +57,7 @@ abstract class GrpcRetries {
 
   /**
    * Configure the retry function.
+   *
    * @param retryable The retry function.
    * @return The result of the retry.
    * @param <T>

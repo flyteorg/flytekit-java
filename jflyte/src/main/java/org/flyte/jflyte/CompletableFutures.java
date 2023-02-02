@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
-/**
- * Utility to wait for a list of completion stages.
- */
+/** Utility to wait for a list of completion stages. */
 class CompletableFutures {
 
   static <T> List<T> getAll(List<CompletionStage<T>> stages) {

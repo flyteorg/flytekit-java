@@ -30,9 +30,7 @@ import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-/**
- * Utility to navigate through the workflow nodes.
- */
+/** Utility to navigate through the workflow nodes. */
 class WorkflowNodeVisitor {
 
   WorkflowTemplate visitWorkflowTemplate(WorkflowTemplate template) {

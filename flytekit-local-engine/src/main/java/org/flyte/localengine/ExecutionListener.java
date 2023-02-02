@@ -19,9 +19,7 @@ package org.flyte.localengine;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 
-/**
- * Registers nodes depending on their state, i.e. pending, retrying, error, stating or completed
- */
+/** Registers nodes depending on their state, i.e. pending, retrying, error, stating or completed */
 public interface ExecutionListener {
 
   /** Registers the execution node as pending */

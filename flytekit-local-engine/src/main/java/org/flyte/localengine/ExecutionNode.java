@@ -23,9 +23,7 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.RunnableNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-/**
- * An execution node is a compiled node, ready to be executed
- */
+/** An execution node is a compiled node, ready to be executed */
 @AutoValue
 public abstract class ExecutionNode {
 
@@ -39,33 +37,42 @@ public abstract class ExecutionNode {
   @Nullable
   public abstract List<Binding> bindings();
 
-  /** [Optional] Inner runnable node that will be used to run this execution node, if not null.
-   * An ExecutionNode must have one of the following:
+  /**
+   * [Optional] Inner runnable node that will be used to run this execution node, if not null. An
+   * ExecutionNode must have one of the following:
+   *
    * <ul>
-   * <li>{@link RunnableNode} runnableNode()</li>
-   * <li>{@link WorkflowTemplate} subWorkflow()</li>
-   * <li>{@link ExecutionBranchNode} branchNode()</li>
-   * </ul>*/
+   *   <li>{@link RunnableNode} runnableNode()
+   *   <li>{@link WorkflowTemplate} subWorkflow()
+   *   <li>{@link ExecutionBranchNode} branchNode()
+   * </ul>
+   */
   @Nullable
   public abstract RunnableNode runnableNode();
 
-  /** [Optional] Inner subworkflow that will be used to run this execution node, if not null.
-   * An ExecutionNode must have one of the following:
+  /**
+   * [Optional] Inner subworkflow that will be used to run this execution node, if not null. An
+   * ExecutionNode must have one of the following:
+   *
    * <ul>
-   * <li>{@link RunnableNode} runnableNode()</li>
-   * <li>{@link WorkflowTemplate} subWorkflow()</li>
-   * <li>{@link ExecutionBranchNode} branchNode()</li>
-   * </ul>*/
+   *   <li>{@link RunnableNode} runnableNode()
+   *   <li>{@link WorkflowTemplate} subWorkflow()
+   *   <li>{@link ExecutionBranchNode} branchNode()
+   * </ul>
+   */
   @Nullable
   public abstract WorkflowTemplate subWorkflow();
 
-  /** [Optional] Inner branch node that will be used to run this execution node, if not null.
-   * An ExecutionNode must have one of the following:
+  /**
+   * [Optional] Inner branch node that will be used to run this execution node, if not null. An
+   * ExecutionNode must have one of the following:
+   *
    * <ul>
-   * <li>{@link RunnableNode} runnableNode()</li>
-   * <li>{@link WorkflowTemplate} subWorkflow()</li>
-   * <li>{@link ExecutionBranchNode} branchNode()</li>
-   * </ul>*/
+   *   <li>{@link RunnableNode} runnableNode()
+   *   <li>{@link WorkflowTemplate} subWorkflow()
+   *   <li>{@link ExecutionBranchNode} branchNode()
+   * </ul>
+   */
   @Nullable
   public abstract ExecutionBranchNode branchNode();
 

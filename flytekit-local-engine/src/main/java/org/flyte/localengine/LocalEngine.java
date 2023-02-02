@@ -48,8 +48,9 @@ public class LocalEngine {
   }
 
   /**
-   * Compiles template nodes using the current context and executes the compiled nodes taking
-   * the inputs and the template outputs indicated.
+   * Compiles template nodes using the current context and executes the compiled nodes taking the
+   * inputs and the template outputs indicated.
+   *
    * @param template workflow template from which nodes and outputs are extracted
    * @param inputs input values to use for the execution
    * @return literal map with values obtained as a result of the execution

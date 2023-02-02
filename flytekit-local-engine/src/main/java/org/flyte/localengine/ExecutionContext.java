@@ -25,8 +25,8 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /**
- * Contains context data used by the {@link ExecutionNodeCompiler} and the {@link LocalEngine}
- * in order to compile and execute workflows, subworkflos, tasks, etc.
+ * Contains context data used by the {@link ExecutionNodeCompiler} and the {@link LocalEngine} in
+ * order to compile and execute workflows, subworkflos, tasks, etc.
  */
 @AutoValue
 public abstract class ExecutionContext {

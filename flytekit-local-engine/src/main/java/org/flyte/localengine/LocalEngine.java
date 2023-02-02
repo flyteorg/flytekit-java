@@ -36,6 +36,10 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
 
+/**
+ * Execution engine used by jflyte's execute-local command and by the flytekit-java testing
+ * framework
+ */
 public class LocalEngine {
   private final ExecutionContext context;
 
@@ -43,6 +47,13 @@ public class LocalEngine {
     this.context = requireNonNull(context);
   }
 
+  /**
+   * Compiles template nodes using the current context and executes the compiled nodes taking
+   * the inputs and the template outputs indicated.
+   * @param template workflow template from which nodes and outputs are extracted
+   * @param inputs input values to use for the execution
+   * @return literal map with values obtained as a result of the execution
+   */
   public Map<String, Literal> compileAndExecute(
       WorkflowTemplate template, Map<String, Literal> inputs) {
     List<ExecutionNode> executionNodes =

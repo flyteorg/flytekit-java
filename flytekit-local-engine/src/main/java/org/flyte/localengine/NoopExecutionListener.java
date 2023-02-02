@@ -19,6 +19,9 @@ package org.flyte.localengine;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 
+/**
+ * Implementation of {@link ExecutionListener} that performs no operations when called
+ */
 public class NoopExecutionListener implements ExecutionListener {
 
   private NoopExecutionListener() {}

@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
 
+/**
+ * Wrapper for multiple {@link ExecutionListener}s used for testing purposes
+ */
 public class ChainedExecutionListener implements ExecutionListener {
 
   private final List<ExecutionListener> listeners;

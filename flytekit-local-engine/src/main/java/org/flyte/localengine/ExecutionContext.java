@@ -24,16 +24,25 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.WorkflowTemplate;
 
+/**
+ * Contains context data used by the {@link ExecutionNodeCompiler} and the {@link LocalEngine}
+ * in order to compile and execute workflows, subworkflos, tasks, etc.
+ */
 @AutoValue
 public abstract class ExecutionContext {
+  /** Mapping from task name to {@link RunnableTask} */
   abstract Map<String, RunnableTask> runnableTasks();
 
+  /** Mapping from task name to {@link DynamicWorkflowTask} */
   abstract Map<String, DynamicWorkflowTask> dynamicWorkflowTasks();
 
+  /** Mapping from workflow name to {@link WorkflowTemplate} */
   abstract Map<String, WorkflowTemplate> workflowTemplates();
 
+  /** Mapping from launch plan name to {@link RunnableLaunchPlan} */
   abstract Map<String, RunnableLaunchPlan> runnableLaunchPlans();
 
+  /** Instance of {@link ExecutionListener} to be able to register nodes depending on their state */
   abstract ExecutionListener executionListener();
 
   public static Builder builder() {
@@ -48,16 +57,21 @@ public abstract class ExecutionContext {
   @AutoValue.Builder
   public abstract static class Builder {
 
+    /** Stores the mapping from task name to {@link RunnableTask} */
     public abstract Builder runnableTasks(Map<String, RunnableTask> runnableTasks);
 
+    /** Stores the mapping from task name to {@link DynamicWorkflowTask} */
     public abstract Builder dynamicWorkflowTasks(
         Map<String, DynamicWorkflowTask> dynamicWorkflowTasks);
 
+    /** Stores the mapping from workflow name to {@link WorkflowTemplate} */
     public abstract Builder workflowTemplates(Map<String, WorkflowTemplate> workflowTemplates);
 
+    /** Stores the mapping from launch plan name to {@link RunnableLaunchPlan} */
     public abstract Builder runnableLaunchPlans(
         Map<String, RunnableLaunchPlan> runnableLaunchPlans);
 
+    /** Stores the {@link ExecutionListener} used to register nodes depending on their state */
     public abstract Builder executionListener(ExecutionListener executionListener);
 
     public abstract ExecutionContext build();

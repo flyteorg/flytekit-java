@@ -18,8 +18,6 @@ package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -27,25 +25,24 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SdkCronSchedule {
   private static final List<String> CRON_ALIAS =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              "hours",
-              "days",
-              "weeks",
-              "months",
-              "years",
-              "hourly",
-              "daily",
-              "weekly",
-              "monthly",
-              "yearly",
-              "annually",
-              "@hourly",
-              "@daily",
-              "@weekly",
-              "@monthly",
-              "@yearly",
-              "@annually"));
+      List.of(
+          "hours",
+          "days",
+          "weeks",
+          "months",
+          "years",
+          "hourly",
+          "daily",
+          "weekly",
+          "monthly",
+          "yearly",
+          "annually",
+          "@hourly",
+          "@daily",
+          "@weekly",
+          "@monthly",
+          "@yearly",
+          "@annually");
 
   private static final String REGEX_CRON_SCHEDULE =
       "(^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|"

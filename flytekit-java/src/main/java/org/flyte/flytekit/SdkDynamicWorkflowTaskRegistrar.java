@@ -107,7 +107,7 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
   /**
    * Load {@link DynamicWorkflowTask}s using {@link ServiceLoader}.
    *
-   * @param env env vars in a map that would be used to pickup the project, domain and version for
+   * @param env env vars in a map that would be used to pick up the project, domain and version for
    *     the discovered tasks.
    * @param classLoader class loader to use when discovering the task using {@link
    *     ServiceLoader#load(Class, ClassLoader)}

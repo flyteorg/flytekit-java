@@ -129,7 +129,7 @@ public abstract class SdkStruct {
      * @return this builder
      */
     public Builder addFloatCollectionField(String name, List<Double> values) {
-      return this.<Double>addListValueField(name, values, Value::ofNumberValue);
+      return this.addListValueField(name, values, Value::ofNumberValue);
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract class SdkStruct {
      * @return this builder
      */
     public Builder addStringCollectionField(String name, List<String> values) {
-      return this.<String>addListValueField(name, values, Value::ofStringValue);
+      return this.addListValueField(name, values, Value::ofStringValue);
     }
 
     /**
@@ -151,7 +151,7 @@ public abstract class SdkStruct {
      * @return this builder
      */
     public Builder addBooleanCollectionField(String name, List<Boolean> values) {
-      return this.<Boolean>addListValueField(name, values, Value::ofBoolValue);
+      return this.addListValueField(name, values, Value::ofBoolValue);
     }
 
     /**
@@ -162,7 +162,7 @@ public abstract class SdkStruct {
      * @return this builder
      */
     public Builder addStructCollectionField(String name, List<SdkStruct> values) {
-      return this.<SdkStruct>addListValueField(name, values, x -> Value.ofStructValue(x.struct()));
+      return this.addListValueField(name, values, x -> Value.ofStructValue(x.struct()));
     }
 
     Builder addValueField(String name, Value value) {

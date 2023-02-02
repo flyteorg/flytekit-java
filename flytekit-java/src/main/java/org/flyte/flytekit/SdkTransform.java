@@ -72,7 +72,7 @@ public abstract class SdkTransform<InputT, OutputT> {
       Map<String, SdkBindingData<?>> inputs);
 
   /**
-   * Returns a new transformation derived from this one, with a explicit upstream node dependency.
+   * Returns a new transformation derived from this one, with an explicit upstream node dependency.
    *
    * @param node the explicit upstream node dependency
    * @return the new transformation

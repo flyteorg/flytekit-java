@@ -22,8 +22,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
- * Denotes a conditional transformation. It contains several case clauses and a otherwise clause to
- * be executed if non of the conditions of the case clauses was satisfied. All the case clauses and
+ * Denotes a conditional transformation. It contains several case clauses and an otherwise clause to
+ * be executed if none of the conditions of the case clauses was satisfied. All the case clauses and
  * otherwise must have the same output type.
  *
  * @param <OutputT> The output type of the transformation.
@@ -90,7 +90,7 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   }
 
   /**
-   * Adds a otherwise clause to this conditional transformation. The {@code otherwise}
+   * Adds an otherwise clause to this conditional transformation. The {@code otherwise}
    * transformation takes no inputs.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
@@ -106,8 +106,8 @@ public class SdkCondition<OutputT> extends SdkTransform<Void, OutputT> {
   }
 
   /**
-   * Adds a otherwise clause to this conditional transformation. The {@code then} transformation
-   * takes {@link InputT} inputs and they are supplied as well.
+   * Adds an otherwise clause to this conditional transformation. The {@code then} transformation
+   * takes {@link InputT} inputs, and they are supplied as well.
    *
    * @param name for the case, it should be unique among all the case clauses of the condition
    * @param otherwise the transformation to apply if no other case in this transformation is true.

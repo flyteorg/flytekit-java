@@ -42,7 +42,7 @@ public abstract class DynamicJobSpec {
   public abstract List<Binding> outputs();
 
   /**
-   * Returns sub-workflows templates.
+   * [Optional] A complete list of task specs referenced in nodes.
    *
    * @return sub-workflows.
    */

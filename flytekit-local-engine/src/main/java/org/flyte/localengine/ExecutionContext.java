@@ -42,7 +42,9 @@ public abstract class ExecutionContext {
   /** Mapping from launch plan name to {@link RunnableLaunchPlan}. */
   abstract Map<String, RunnableLaunchPlan> runnableLaunchPlans();
 
-  /** Instance of {@link ExecutionListener} to be able to register nodes depending on their state. */
+  /**
+   * Instance of {@link ExecutionListener} to be able to register nodes depending on their state.
+   */
   abstract ExecutionListener executionListener();
 
   public static Builder builder() {

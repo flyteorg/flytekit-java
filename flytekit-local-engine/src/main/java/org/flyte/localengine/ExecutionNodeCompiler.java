@@ -42,16 +42,16 @@ import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /**
- * Performs following operations
+ * Performs the following operations
  *
  * <ul>
  *   <li>Task identifier is resolved to RunnableTask.
  *   <li>SubWorkflows identifier is resolved to WorkflowTemplate.
  *   <li>Launch plans identifier is resolved to RunnableLaunchPlan.
  *   <li>Upstream node ids are computed from bindings and original node ids.
- *   <li>All upstream nodes exist and there are no cycles.
+ *   <li>Makes sure that all upstream nodes exist and there are no cycles.
  *   <li>Execution nodes are topologically sorted.
- *   <li>All nodes are connected to other nodes, or start-node.
+ *   <li>Makes sure that all nodes are connected to other nodes, unless it is the start-node.
  *   <li>TODO type checking
  *   <li>TODO type conversion
  * </ul>

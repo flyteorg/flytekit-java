@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/** A {@link RuntimeException} containing a list of {@link CompilerError}s. */
 public class CompilerException extends RuntimeException {
   private static final long serialVersionUID = 766444357230118198L;
   private final List<CompilerError> errors;
@@ -56,6 +57,11 @@ public class CompilerException extends RuntimeException {
         .collect(Collectors.joining("\n", "Failed to build workflow with errors:\n", ""));
   }
 
+  /**
+   * Returns the {@link CompilerError}s contained in this exception.
+   *
+   * @return compile error lists.
+   */
   public List<CompilerError> getErrors() {
     return errors;
   }

@@ -34,6 +34,12 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
   private final transient SdkType<InputT> inputType;
   private final transient SdkType<OutputT> outputType;
 
+  /**
+   * Called by subclasses passing the {@link SdkType}s for inputs and outputs.
+   *
+   * @param inputType type for inputs.
+   * @param outputType type for outputs.
+   */
   @SuppressWarnings("PublicConstructorForAbstractClass")
   public SdkContainerTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
@@ -49,17 +55,18 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     this.outputType = null;
   }
 
+  /** returns {@code raw-container}. */
   public String getType() {
     return "raw-container";
   }
 
-  /** Specifies task input type. */
+  /** {@inheritDoc} */
   @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
 
-  /** Specifies task output type. */
+  /** {@inheritDoc} */
   @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
@@ -70,7 +77,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     return SdkStruct.empty();
   }
 
-  /** Specifies container resource requests. */
+  /** Specifies container resource requests and limits. */
   public SdkResources getResources() {
     return SdkResources.empty();
   }
@@ -85,6 +92,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     return 0;
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,

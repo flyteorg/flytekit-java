@@ -27,6 +27,11 @@ public class SdkTypes {
 
   private SdkTypes() {}
 
+  /**
+   * Returns a {@link org.flyte.flytekit.SdkType} for {@code Void} which contains no properties.
+   *
+   * @return the sdk type
+   */
   public static SdkType<Void> nulls() {
     return VOID_SDK_TYPE;
   }

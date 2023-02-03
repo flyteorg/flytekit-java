@@ -21,32 +21,48 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
+/**
+ * A {@link SdkTransform} that when it executes it builds a DAG in runtime.
+ *
+ * @param <InputT> input type of the task
+ * @param <OutputT> output type of the task
+ */
 public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
     extends SdkTransform<InputT, OutputT> {
 
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
 
+  /**
+   * Called by subclasses passing the {@link SdkType}s for inputs and outputs.
+   *
+   * @param inputType type for inputs.
+   * @param outputType type for outputs.
+   */
   @SuppressWarnings("PublicConstructorForAbstractClass")
   public SdkDynamicWorkflowTask(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
   }
 
+  /** returns {@code dynamic}. */
   public String getType() {
     return "dynamic";
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,

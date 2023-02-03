@@ -16,8 +16,8 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.List;
 import java.util.Map;
@@ -58,6 +58,7 @@ public class SdkTaskNode<T> extends SdkNode<T> {
     this.outputs = outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputVars.entrySet().stream()
@@ -69,16 +70,19 @@ public class SdkTaskNode<T> extends SdkNode<T> {
                         nodeId, entry.getKey(), entry.getValue().literalType())));
   }
 
+  /** {@inheritDoc} */
   @Override
   public T getOutputs() {
     return outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getNodeId() {
     return nodeId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Node toIdl() {
     TaskNode taskNode = TaskNode.builder().referenceId(taskId).build();

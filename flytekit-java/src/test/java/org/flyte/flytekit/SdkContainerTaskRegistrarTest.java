@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.google.auto.service.AutoService;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +40,8 @@ import org.flyte.api.v1.TypedInterface;
 import org.junit.jupiter.api.Test;
 
 public class SdkContainerTaskRegistrarTest {
-  private static final Map<String, String> ENV;
-
-  static {
-    HashMap<String, String> env = new HashMap<>();
-    env.put(PROJECT_ENV_VAR, "project");
-    env.put(DOMAIN_ENV_VAR, "domain");
-    env.put(VERSION_ENV_VAR, "version");
-    ENV = Collections.unmodifiableMap(env);
-  }
+  private static final Map<String, String> ENV =
+      Map.of(PROJECT_ENV_VAR, "project", DOMAIN_ENV_VAR, "domain", VERSION_ENV_VAR, "version");
 
   private static final String TEST_TASK_NAME =
       "org.flyte.flytekit.SdkContainerTaskRegistrarTest$TestTask";
@@ -134,7 +126,7 @@ public class SdkContainerTaskRegistrarTest {
 
     @Override
     public List<String> getCommand() {
-      return Arrays.asList("bash");
+      return List.of("bash");
     }
 
     @Override

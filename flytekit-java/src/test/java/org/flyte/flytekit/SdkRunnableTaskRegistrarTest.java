@@ -26,7 +26,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.google.auto.service.AutoService;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
@@ -38,15 +37,8 @@ import org.flyte.api.v1.TypedInterface;
 import org.junit.jupiter.api.Test;
 
 public class SdkRunnableTaskRegistrarTest {
-  private static final Map<String, String> ENV;
-
-  static {
-    HashMap<String, String> env = new HashMap<>();
-    env.put(PROJECT_ENV_VAR, "project");
-    env.put(DOMAIN_ENV_VAR, "domain");
-    env.put(VERSION_ENV_VAR, "version");
-    ENV = Collections.unmodifiableMap(env);
-  }
+  private static final Map<String, String> ENV =
+      Map.of(PROJECT_ENV_VAR, "project", DOMAIN_ENV_VAR, "domain", VERSION_ENV_VAR, "version");
 
   private final SdkRunnableTaskRegistrar registrar = new SdkRunnableTaskRegistrar();
 

@@ -27,17 +27,42 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
+/**
+ * A Flyte workflow. A workflow is made of nodes conforming a DAG. The nodes could refer to tasks,
+ * branches or other workflows.
+ *
+ * @param <InputT> input type of the workflow
+ * @param <OutputT> output type of the workflow
+ */
 public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
   private final SdkType<InputT> inputType;
   private final SdkType<OutputT> outputType;
 
+  /**
+   * Called by subclasses passing the {@link SdkType}s for inputs and outputs.
+   *
+   * @param inputType type for inputs.
+   * @param outputType type for outputs.
+   */
   protected SdkWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     this.inputType = inputType;
     this.outputType = outputType;
   }
 
+  /**
+   * Expands the workflow into the builder.
+   *
+   * @param builder workflow builder that this workflow expands into.
+   * @param input workflow input.
+   * @return the workflow output.
+   */
   protected abstract OutputT expand(SdkWorkflowBuilder builder, InputT input);
 
+  /**
+   * Expands the workflow into the builder.
+   *
+   * @param builder workflow builder that this workflow expands into. \
+   */
   public final void expand(SdkWorkflowBuilder builder) {
     inputType
         .getVariableMap()
@@ -63,6 +88,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                         : outputVariableMap.get(name).description()));
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
@@ -101,16 +127,19 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
         builder, nodeId, upstreamNodeIds, metadata, workflowNode, inputs, outputs, promise);
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<InputT> getInputType() {
     return inputType;
   }
 
+  /** {@inheritDoc} */
   @Override
   public SdkType<OutputT> getOutputType() {
     return outputType;
   }
 
+  /** Returns the {@link WorkflowTemplate} for this workflow. */
   public WorkflowTemplate toIdlTemplate() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
     this.expand(builder);

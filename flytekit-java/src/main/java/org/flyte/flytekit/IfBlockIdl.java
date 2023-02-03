@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.util.Map;
 import org.flyte.api.v1.Binding;

@@ -19,6 +19,11 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 import org.flyte.api.v1.ComparisonExpression;
 
+/**
+ * Denotes a comparison of two {@link SdkBindingData}.
+ *
+ * @param <T> type of the comparison.
+ */
 @AutoValue
 abstract class SdkComparisonExpression<T> {
   abstract SdkBindingData<T> left();

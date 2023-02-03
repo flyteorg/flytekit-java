@@ -22,11 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
+/** Used to discover {@link SdkWorkflow}s. */
 public abstract class SdkWorkflowRegistry {
 
+  /**
+   * Returns the {@link SdkWorkflow} discovered.
+   *
+   * @return the workflow list.
+   */
   public abstract List<SdkWorkflow<?, ?>> getWorkflows();
 
-  public static List<SdkWorkflow<?, ?>> loadAll() {
+  static List<SdkWorkflow<?, ?>> loadAll() {
     return loadAll(ServiceLoader.load(SdkWorkflowRegistry.class));
   }
 

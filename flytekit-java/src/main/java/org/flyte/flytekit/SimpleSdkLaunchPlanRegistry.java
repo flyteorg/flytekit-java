@@ -20,11 +20,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
+/**
+ * Base implementation of {@link SdkLaunchPlanRegistry} with handy methods to register {@link
+ * SdkLaunchPlan}s.
+ */
+public abstract class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
 
   private final Map<String, SdkLaunchPlan> launchPlans = new LinkedHashMap<>();
 
-  public void registerLaunchPlan(SdkLaunchPlan launchPlan) {
+  /**
+   * Register the given launch plan.
+   *
+   * @param launchPlan the given launch plan.
+   */
+  protected void registerLaunchPlan(SdkLaunchPlan launchPlan) {
     String name = launchPlan.name();
     if (launchPlans.containsKey(name)) {
       throw new IllegalArgumentException(
@@ -33,7 +42,11 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
     launchPlans.put(name, launchPlan);
   }
 
-  public void registerDefaultLaunchPlans() {
+  /**
+   * Register default launch plans for discovered workflows. A default launch plan is the one with
+   * the same name as the workflow and set no fixed or default inputs.
+   */
+  protected void registerDefaultLaunchPlans() {
     List<SdkWorkflow<?, ?>> workflows = SdkWorkflowRegistry.loadAll();
 
     registerDefaultLaunchPlans(workflows);
@@ -47,6 +60,7 @@ public class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegistry {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<SdkLaunchPlan> getLaunchPlans() {
     return List.copyOf(launchPlans.values());

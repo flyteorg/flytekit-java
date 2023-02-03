@@ -24,13 +24,25 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-/** Implementations of {@code SdkTransform} transform {@link SdkNode} into a new one. */
+/** Implementations of {@code SdkTransform} transform a set of inputs into a {@link SdkNode}. */
 public abstract class SdkTransform<InputT, OutputT> {
 
+  /** Specifies the transform input type. */
   public abstract SdkType<InputT> getInputType();
 
+  /** Specifies the transform output type. */
   public abstract SdkType<OutputT> getOutputType();
 
+  /**
+   * Applies this transformation over {@code inputs}.
+   *
+   * @param builder workflow builder to keep tracks of the nodes that have been created.
+   * @param nodeId node id of the new node
+   * @param upstreamNodeIds node id lists for explicits upstream dependencies. The
+   * @param metadata node's metadata
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
   public final SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
@@ -42,6 +54,16 @@ public abstract class SdkTransform<InputT, OutputT> {
     return apply(builder, nodeId, upstreamNodeIds, metadata, inputsBindings);
   }
 
+  /**
+   * Applies this transformation over {@code inputs}.
+   *
+   * @param builder workflow builder to keep tracks of the nodes that have been created.
+   * @param nodeId node id of the new node
+   * @param upstreamNodeIds node id lists for explicits upstream dependencies. The
+   * @param metadata node's metadata
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
   abstract SdkNode<OutputT> apply(
       SdkWorkflowBuilder builder,
       String nodeId,
@@ -49,10 +71,22 @@ public abstract class SdkTransform<InputT, OutputT> {
       @Nullable SdkNodeMetadata metadata,
       Map<String, SdkBindingData<?>> inputs);
 
+  /**
+   * Returns a new transformation derived from this one, with an explicit upstream node dependency.
+   *
+   * @param node the explicit upstream node dependency
+   * @return the new transformation
+   */
   public SdkTransform<InputT, OutputT> withUpstreamNode(SdkNode<?> node) {
     return SdkMetadataDecoratorTransform.of(this, List.of(node.getNodeId()));
   }
 
+  /**
+   * Returns a new transformation derived from this one, with the name overriden by a new one.
+   *
+   * @param name new name
+   * @return the new transformation
+   */
   public SdkTransform<InputT, OutputT> withNameOverride(String name) {
     requireNonNull(name, "Name override cannot be null");
 
@@ -64,6 +98,12 @@ public abstract class SdkTransform<InputT, OutputT> {
     return withNameOverride(name);
   }
 
+  /**
+   * Returns a new transformation derived from this one, with the timeout overriden by a new one.
+   *
+   * @param timeout new timeout
+   * @return the new transformation
+   */
   public SdkTransform<InputT, OutputT> withTimeoutOverride(Duration timeout) {
     requireNonNull(timeout, "Timeout override cannot be null");
 
@@ -71,6 +111,7 @@ public abstract class SdkTransform<InputT, OutputT> {
     return SdkMetadataDecoratorTransform.of(this, metadata);
   }
 
+  /** Returns the name of the transformation. */
   public String getName() {
     return getClass().getName();
   }

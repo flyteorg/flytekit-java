@@ -53,14 +53,14 @@ public abstract class Node {
 
   /**
    * Specifies how to bind the underlying interface's inputs. All required inputs specified in the
-   * underlying interface must be fulfilled.
+   * underlying interface must be fulfilled. This node will have an implicit dependency on * any
+   * node that appears in inputs field.
    */
   public abstract List<Binding> inputs();
 
   /**
    * [Optional] Specifies execution dependency for this node ensuring it will only get scheduled to
-   * run after all its upstream nodes have completed. This node will have an implicit dependency on
-   * any node that appears in inputs field.
+   * run after all its upstream nodes have completed.
    */
   public abstract List<String> upstreamNodeIds();
 

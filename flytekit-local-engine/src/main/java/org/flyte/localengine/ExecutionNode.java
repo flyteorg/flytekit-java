@@ -23,17 +23,17 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.RunnableNode;
 import org.flyte.api.v1.WorkflowTemplate;
 
-/** An execution node is a compiled node, ready to be executed */
+/** An execution node is a compiled node, ready to be executed. */
 @AutoValue
 public abstract class ExecutionNode {
 
-  /** Node identifier used to uniquely identify the execution node */
+  /** Node identifier used to uniquely identify the execution node. */
   public abstract String nodeId();
 
-  /** Dependent node ids for this execution node */
+  /** Dependent node ids for this execution node. */
   public abstract List<String> upstreamNodeIds();
 
-  /** [Optional] Input bindings for this node */
+  /** [Optional] Input bindings for this node. */
   @Nullable
   public abstract List<Binding> bindings();
 
@@ -76,7 +76,7 @@ public abstract class ExecutionNode {
   @Nullable
   public abstract ExecutionBranchNode branchNode();
 
-  /** Maximum number of retries to execute this node */
+  /** Maximum number of retries to execute this node. */
   public abstract int attempts();
 
   static Builder builder() {

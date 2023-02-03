@@ -43,10 +43,10 @@ abstract class ExecutionBranchNode {
   @AutoValue.Builder
   public abstract static class Builder {
 
-    /** Indicates the {@link ExecutionIfBlock} nodes as if conditions to build this branch node */
+    /** Indicates the {@link ExecutionIfBlock} nodes as if conditions to build this branch node. */
     public abstract Builder ifNodes(List<ExecutionIfBlock> ifNodes);
 
-    /** Indicates the node to execute in case the if conditions are not satisfied */
+    /** Indicates the node to execute in case the if conditions are not satisfied. */
     public abstract Builder elseNode(ExecutionNode elseNode);
 
     /** Indicates the error node to throw in case none of the branches were taken. */

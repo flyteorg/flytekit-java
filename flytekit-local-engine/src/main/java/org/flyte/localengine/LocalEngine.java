@@ -38,7 +38,7 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 /**
  * Execution engine used by jflyte's execute-local command and by the flytekit-java testing
- * framework
+ * framework.
  */
 public class LocalEngine {
   private final ExecutionContext context;

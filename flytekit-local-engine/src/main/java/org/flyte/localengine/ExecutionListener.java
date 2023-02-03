@@ -22,18 +22,18 @@ import org.flyte.api.v1.Literal;
 /** Registers nodes depending on their state, i.e. pending, retrying, error, stating or completed */
 public interface ExecutionListener {
 
-  /** Registers the execution node as pending */
+  /** Registers the execution node as pending. */
   void pending(ExecutionNode node);
 
-  /** Registers the execution node as retrying */
+  /** Registers the execution node as retrying. */
   void retrying(ExecutionNode node, Map<String, Literal> inputs, Throwable e, int attempt);
 
-  /** Registers the execution node as error */
+  /** Registers the execution node as error. */
   void error(ExecutionNode node, Map<String, Literal> inputs, Throwable e);
 
-  /** Registers the execution node as starting */
+  /** Registers the execution node as starting. */
   void starting(ExecutionNode node, Map<String, Literal> inputs);
 
-  /** Registers the execution node as completed */
+  /** Registers the execution node as completed. */
   void completed(ExecutionNode node, Map<String, Literal> inputs, Map<String, Literal> outputs);
 }

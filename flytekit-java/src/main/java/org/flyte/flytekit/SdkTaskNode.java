@@ -66,7 +66,7 @@ public class SdkTaskNode<T> extends SdkNode<T> {
             toUnmodifiableMap(
                 Map.Entry::getKey,
                 entry ->
-                    SdkBindingData.ofOutputReference(
+                    SdkBindingDatas.ofOutputReference(
                         nodeId, entry.getKey(), entry.getValue().literalType())));
   }
 

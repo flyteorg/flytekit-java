@@ -18,7 +18,7 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.SdkScalaType
-import org.flyte.flytekitscala.SdkBindingData.ofString
+import org.flyte.flytekitscala.SdkBindingDatas.ofString
 
 case class AddQuestionTaskInput(greeting: SdkBindingData[String])
 case class AddQuestionTaskOutput(greeting: SdkBindingData[String])

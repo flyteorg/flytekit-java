@@ -46,6 +46,8 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkLiteralTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -70,30 +72,18 @@ public class JacksonSdkTypeTest {
       Map<String, List<String>> ml,
       Map<String, Map<String, String>> mm) {
     return AutoValueInput.create(
-        SdkBindingData.ofInteger(i),
-        SdkBindingData.ofFloat(f),
-        SdkBindingData.ofString(s),
-        SdkBindingData.ofBoolean(b),
-        SdkBindingData.ofDatetime(t),
-        SdkBindingData.ofDuration(d),
-        SdkBindingData.ofStringCollection(l),
-        SdkBindingData.ofStringMap(m),
-        SdkBindingData.ofCollection(
-            ll,
-            LiteralType.ofCollectionType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringCollection),
-        SdkBindingData.ofCollection(
-            lm,
-            LiteralType.ofCollectionType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringMap),
-        SdkBindingData.ofMap(
-            ml,
-            LiteralType.ofMapValueType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringCollection),
-        SdkBindingData.ofMap(
-            mm,
-            LiteralType.ofMapValueType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringMap));
+        SdkBindingDatas.ofInteger(i),
+        SdkBindingDatas.ofFloat(f),
+        SdkBindingDatas.ofString(s),
+        SdkBindingDatas.ofBoolean(b),
+        SdkBindingDatas.ofDatetime(t),
+        SdkBindingDatas.ofDuration(d),
+        SdkBindingDatas.ofStringCollection(l),
+        SdkBindingDatas.ofStringMap(m),
+        SdkBindingDatas.ofCollection(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ll),
+        SdkBindingDatas.ofCollection(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), lm),
+        SdkBindingDatas.ofMap(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ml),
+        SdkBindingDatas.ofMap(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), mm));
   }
 
   @Test
@@ -329,7 +319,7 @@ public class JacksonSdkTypeTest {
   public void testToSdkBindingDataMapJsonProperties() {
     JsonPropertyClassInput input =
         new JsonPropertyClassInput(
-            SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
+            SdkBindingDatas.ofString("test"), SdkBindingDatas.ofString("name"));
 
     Map<String, SdkBindingData<?>> sdkBindingDataMap =
         JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
@@ -355,7 +345,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoToLiteralMap() {
     PojoInput input = new PojoInput();
-    input.a = SdkBindingData.ofInteger(42);
+    input.a = SdkBindingDatas.ofInteger(42);
 
     Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
 
@@ -365,7 +355,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoFromLiteralMap() {
     PojoInput expected = new PojoInput();
-    expected.a = SdkBindingData.ofInteger(42);
+    expected.a = SdkBindingDatas.ofInteger(42);
 
     PojoInput pojoInput =
         JacksonSdkType.of(PojoInput.class)
@@ -454,31 +444,31 @@ public class JacksonSdkTypeTest {
 
     assertThat(
         autoValueInput.i(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
     assertThat(
         autoValueInput.f(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
     assertThat(
         autoValueInput.s(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
     assertThat(
         autoValueInput.b(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
     assertThat(
         autoValueInput.t(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
     assertThat(
         autoValueInput.d(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
+        equalTo(SdkBindingDatas.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
     assertThat(
         autoValueInput.l(),
         equalTo(
-            SdkBindingData.ofOutputReference(
+            SdkBindingDatas.ofOutputReference(
                 "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
     assertThat(
         autoValueInput.m(),
         equalTo(
-            SdkBindingData.ofOutputReference(
+            SdkBindingDatas.ofOutputReference(
                 "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
   }
 

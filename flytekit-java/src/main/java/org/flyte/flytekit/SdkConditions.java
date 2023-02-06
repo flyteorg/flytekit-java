@@ -153,7 +153,7 @@ public class SdkConditions {
   public static SdkBooleanExpression isTrue(SdkBindingData<Boolean> data) {
     return ofComparison(
         SdkComparisonExpression.create(
-            data, SdkBindingData.ofBoolean(true), ComparisonExpression.Operator.EQ));
+            data, SdkBindingDatas.ofBoolean(true), ComparisonExpression.Operator.EQ));
   }
 
   /**
@@ -165,6 +165,6 @@ public class SdkConditions {
   public static SdkBooleanExpression isFalse(SdkBindingData<Boolean> data) {
     return ofComparison(
         SdkComparisonExpression.create(
-            data, SdkBindingData.ofBoolean(false), ComparisonExpression.Operator.EQ));
+            data, SdkBindingDatas.ofBoolean(false), ComparisonExpression.Operator.EQ));
   }
 }

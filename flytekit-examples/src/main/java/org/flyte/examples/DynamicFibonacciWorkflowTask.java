@@ -21,6 +21,7 @@ import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
 import org.flyte.examples.SumTask.SumInput;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkDynamicWorkflowTask;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -56,10 +57,10 @@ public class DynamicFibonacciWorkflowTask
     if (input.n().get() < 0) {
       throw new IllegalArgumentException("n < 0");
     } else if (input.n().get() == 0) {
-      return Output.create(SdkBindingData.ofInteger(0));
+      return Output.create(SdkBindingDatas.ofInteger(0));
     } else {
-      @Var SdkBindingData<Long> prev = SdkBindingData.ofInteger(0);
-      @Var SdkBindingData<Long> value = SdkBindingData.ofInteger(1);
+      @Var SdkBindingData<Long> prev = SdkBindingDatas.ofInteger(0);
+      @Var SdkBindingData<Long> value = SdkBindingDatas.ofInteger(1);
       for (int i = 2; i <= input.n().get(); i++) {
         SdkBindingData<Long> next =
             builder.apply("fib-" + i, new SumTask(), SumInput.create(value, prev)).getOutputs().c();

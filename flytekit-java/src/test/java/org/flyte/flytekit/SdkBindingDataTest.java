@@ -32,7 +32,6 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.SimpleType;
 import org.junit.jupiter.api.Test;
 
 public class SdkBindingDataTest {
@@ -40,7 +39,7 @@ public class SdkBindingDataTest {
   @Test
   public void testOfBindingCollection() {
     List<SdkBindingData<Long>> input =
-        Arrays.asList(SdkBindingData.ofInteger(42L), SdkBindingData.ofInteger(1337L));
+        Arrays.asList(SdkBindingDatas.ofInteger(42L), SdkBindingDatas.ofInteger(1337L));
 
     List<BindingData> expected =
         Arrays.asList(
@@ -48,8 +47,7 @@ public class SdkBindingDataTest {
             BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
     SdkBindingData<List<Long>> output =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.INTEGER, input);
 
     assertThat(
         output,
@@ -69,38 +67,35 @@ public class SdkBindingDataTest {
             LiteralType.ofCollectionType(LiteralTypes.INTEGER),
             emptyList());
     SdkBindingData<List<Long>> output =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
-            emptyList());
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.INTEGER, emptyList());
     assertThat(output, equalTo(expected));
   }
 
   @Test
   public void testOfStringCollection() {
     List<SdkBindingData<String>> input =
-        List.of(SdkBindingData.ofString("1"), SdkBindingData.ofString("2"));
+        List.of(SdkBindingDatas.ofString("1"), SdkBindingDatas.ofString("2"));
 
     List<String> expectedValue = List.of("1", "2");
 
     SdkBindingData<List<String>> expected =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.STRING), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.STRING, input);
 
-    SdkBindingData<List<String>> output = SdkBindingData.ofStringCollection(expectedValue);
+    SdkBindingData<List<String>> output = SdkBindingDatas.ofStringCollection(expectedValue);
     assertThat(output, equalTo(expected));
   }
 
   @Test
   public void testOfFloatCollection() {
     List<SdkBindingData<Double>> input =
-        List.of(SdkBindingData.ofFloat(1.1), SdkBindingData.ofFloat(1.2));
+        List.of(SdkBindingDatas.ofFloat(1.1), SdkBindingDatas.ofFloat(1.2));
 
     List<Double> expectedValue = List.of(1.1, 1.2);
 
     SdkBindingData<List<Double>> expected =
-        SdkBindingData.ofBindingCollection(LiteralType.ofCollectionType(LiteralTypes.FLOAT), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.FLOAT, input);
 
-    SdkBindingData<List<Double>> output = SdkBindingData.ofFloatCollection(expectedValue);
+    SdkBindingData<List<Double>> output = SdkBindingDatas.ofFloatCollection(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -108,15 +103,14 @@ public class SdkBindingDataTest {
   @Test
   public void testOfIntegerCollection() {
     List<SdkBindingData<Long>> input =
-        List.of(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L));
+        List.of(SdkBindingDatas.ofInteger(1L), SdkBindingDatas.ofInteger(2L));
 
     List<Long> expectedValue = List.of(1L, 2L);
 
     SdkBindingData<List<Long>> expected =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.INTEGER), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.INTEGER, input);
 
-    SdkBindingData<List<Long>> output = SdkBindingData.ofIntegerCollection(expectedValue);
+    SdkBindingData<List<Long>> output = SdkBindingDatas.ofIntegerCollection(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -124,15 +118,14 @@ public class SdkBindingDataTest {
   @Test
   public void testOfBooleanCollection() {
     List<SdkBindingData<Boolean>> input =
-        List.of(SdkBindingData.ofBoolean(true), SdkBindingData.ofBoolean(false));
+        List.of(SdkBindingDatas.ofBoolean(true), SdkBindingDatas.ofBoolean(false));
 
     List<Boolean> expectedValue = List.of(true, false);
 
     SdkBindingData<List<Boolean>> expected =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.BOOLEAN), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.BOOLEAN, input);
 
-    SdkBindingData<List<Boolean>> output = SdkBindingData.ofBooleanCollection(expectedValue);
+    SdkBindingData<List<Boolean>> output = SdkBindingDatas.ofBooleanCollection(expectedValue);
     assertThat(output, equalTo(expected));
   }
 
@@ -140,16 +133,15 @@ public class SdkBindingDataTest {
   public void testOfDurationCollection() {
     List<SdkBindingData<Duration>> input =
         List.of(
-            SdkBindingData.ofDuration(Duration.ofDays(1)),
-            SdkBindingData.ofDuration(Duration.ofDays(2)));
+            SdkBindingDatas.ofDuration(Duration.ofDays(1)),
+            SdkBindingDatas.ofDuration(Duration.ofDays(2)));
 
     List<Duration> expectedValue = List.of(Duration.ofDays(1), Duration.ofDays(2));
 
     SdkBindingData<List<Duration>> expected =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.DURATION), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.DURATION, input);
 
-    SdkBindingData<List<Duration>> output = SdkBindingData.ofDurationCollection(expectedValue);
+    SdkBindingData<List<Duration>> output = SdkBindingDatas.ofDurationCollection(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -160,15 +152,14 @@ public class SdkBindingDataTest {
     Instant second = LocalDate.of(2022, 1, 17).atStartOfDay().toInstant(UTC);
 
     List<SdkBindingData<Instant>> input =
-        List.of(SdkBindingData.ofDatetime(first), SdkBindingData.ofDatetime(second));
+        List.of(SdkBindingDatas.ofDatetime(first), SdkBindingDatas.ofDatetime(second));
 
     List<Instant> expectedValue = List.of(first, second);
 
     SdkBindingData<List<Instant>> expected =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralTypes.DATETIME), input);
+        SdkBindingDatas.ofBindingCollection(LiteralTypes.DATETIME, input);
 
-    SdkBindingData<List<Instant>> output = SdkBindingData.ofDatetimeCollection(expectedValue);
+    SdkBindingData<List<Instant>> output = SdkBindingDatas.ofDatetimeCollection(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -177,8 +168,8 @@ public class SdkBindingDataTest {
   public void testOfBindingMap() {
     Map<String, SdkBindingData<Long>> input =
         Map.of(
-            "a", SdkBindingData.ofInteger(42L),
-            "b", SdkBindingData.ofInteger(1337L));
+            "a", SdkBindingDatas.ofInteger(42L),
+            "b", SdkBindingDatas.ofInteger(1337L));
 
     Map<String, BindingData> expected =
         Map.of(
@@ -188,7 +179,7 @@ public class SdkBindingDataTest {
             BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(1337L))));
 
     SdkBindingData<Map<String, Long>> output =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.INTEGER), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.INTEGER, input);
 
     assertThat(
         output,
@@ -209,8 +200,7 @@ public class SdkBindingDataTest {
             emptyMap());
 
     SdkBindingData<Map<String, Long>> output =
-        SdkBindingData.ofBindingMap(
-            LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)), emptyMap());
+        SdkBindingDatas.ofBindingMap(LiteralTypes.INTEGER, emptyMap());
     assertThat(output, equalTo(expected));
   }
 
@@ -218,8 +208,8 @@ public class SdkBindingDataTest {
   public void testOfStringMap() {
     Map<String, SdkBindingData<String>> input =
         Map.of(
-            "a", SdkBindingData.ofString("1"),
-            "b", SdkBindingData.ofString("2"));
+            "a", SdkBindingDatas.ofString("1"),
+            "b", SdkBindingDatas.ofString("2"));
 
     Map<String, String> expectedValue =
         Map.of(
@@ -227,9 +217,9 @@ public class SdkBindingDataTest {
             "b", "2");
 
     SdkBindingData<Map<String, String>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.STRING), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.STRING, input);
 
-    SdkBindingData<Map<String, String>> output = SdkBindingData.ofStringMap(expectedValue);
+    SdkBindingData<Map<String, String>> output = SdkBindingDatas.ofStringMap(expectedValue);
     assertThat(output, equalTo(expected));
   }
 
@@ -237,8 +227,8 @@ public class SdkBindingDataTest {
   public void testOfFloatMap() {
     Map<String, SdkBindingData<Double>> input =
         Map.of(
-            "a", SdkBindingData.ofFloat(1.1),
-            "b", SdkBindingData.ofFloat(1.2));
+            "a", SdkBindingDatas.ofFloat(1.1),
+            "b", SdkBindingDatas.ofFloat(1.2));
 
     Map<String, Double> expectedValue =
         Map.of(
@@ -246,9 +236,9 @@ public class SdkBindingDataTest {
             "b", 1.2);
 
     SdkBindingData<Map<String, Double>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.FLOAT), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.FLOAT, input);
 
-    SdkBindingData<Map<String, Double>> output = SdkBindingData.ofFloatMap(expectedValue);
+    SdkBindingData<Map<String, Double>> output = SdkBindingDatas.ofFloatMap(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -257,8 +247,8 @@ public class SdkBindingDataTest {
   public void testOfIntegerMap() {
     Map<String, SdkBindingData<Long>> input =
         Map.of(
-            "a", SdkBindingData.ofInteger(1L),
-            "b", SdkBindingData.ofInteger(2L));
+            "a", SdkBindingDatas.ofInteger(1L),
+            "b", SdkBindingDatas.ofInteger(2L));
 
     Map<String, Long> expectedValue =
         Map.of(
@@ -266,9 +256,9 @@ public class SdkBindingDataTest {
             "b", 2L);
 
     SdkBindingData<Map<String, Long>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.INTEGER), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.INTEGER, input);
 
-    SdkBindingData<Map<String, Long>> output = SdkBindingData.ofIntegerMap(expectedValue);
+    SdkBindingData<Map<String, Long>> output = SdkBindingDatas.ofIntegerMap(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -277,8 +267,8 @@ public class SdkBindingDataTest {
   public void testOfBooleanMap() {
     Map<String, SdkBindingData<Boolean>> input =
         Map.of(
-            "a", SdkBindingData.ofBoolean(true),
-            "b", SdkBindingData.ofBoolean(false));
+            "a", SdkBindingDatas.ofBoolean(true),
+            "b", SdkBindingDatas.ofBoolean(false));
 
     Map<String, Boolean> expectedValue =
         Map.of(
@@ -286,9 +276,9 @@ public class SdkBindingDataTest {
             "b", false);
 
     SdkBindingData<Map<String, Boolean>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.BOOLEAN), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.BOOLEAN, input);
 
-    SdkBindingData<Map<String, Boolean>> output = SdkBindingData.ofBooleanMap(expectedValue);
+    SdkBindingData<Map<String, Boolean>> output = SdkBindingDatas.ofBooleanMap(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -297,8 +287,8 @@ public class SdkBindingDataTest {
   public void testOfDurationMap() {
     Map<String, SdkBindingData<Duration>> input =
         Map.of(
-            "a", SdkBindingData.ofDuration(Duration.ofDays(1)),
-            "b", SdkBindingData.ofDuration(Duration.ofDays(2)));
+            "a", SdkBindingDatas.ofDuration(Duration.ofDays(1)),
+            "b", SdkBindingDatas.ofDuration(Duration.ofDays(2)));
 
     Map<String, Duration> expectedValue =
         Map.of(
@@ -306,9 +296,9 @@ public class SdkBindingDataTest {
             "b", Duration.ofDays(2));
 
     SdkBindingData<Map<String, Duration>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.DURATION), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.DURATION, input);
 
-    SdkBindingData<Map<String, Duration>> output = SdkBindingData.ofDurationMap(expectedValue);
+    SdkBindingData<Map<String, Duration>> output = SdkBindingDatas.ofDurationMap(expectedValue);
 
     assertThat(output, equalTo(expected));
   }
@@ -320,8 +310,8 @@ public class SdkBindingDataTest {
 
     Map<String, SdkBindingData<Instant>> input =
         Map.of(
-            "a", SdkBindingData.ofDatetime(first),
-            "b", SdkBindingData.ofDatetime(second));
+            "a", SdkBindingDatas.ofDatetime(first),
+            "b", SdkBindingDatas.ofDatetime(second));
 
     Map<String, Instant> expectedValue =
         Map.of(
@@ -329,9 +319,9 @@ public class SdkBindingDataTest {
             "b", second);
 
     SdkBindingData<Map<String, Instant>> expected =
-        SdkBindingData.ofBindingMap(LiteralType.ofMapValueType(LiteralTypes.DATETIME), input);
+        SdkBindingDatas.ofBindingMap(LiteralTypes.DATETIME, input);
 
-    SdkBindingData<Map<String, Instant>> output = SdkBindingData.ofDatetimeMap(expectedValue);
+    SdkBindingData<Map<String, Instant>> output = SdkBindingDatas.ofDatetimeMap(expectedValue);
 
     assertThat(output, equalTo(expected));
   }

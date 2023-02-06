@@ -16,8 +16,8 @@
  */
 package org.flyte.integrationtests.structs;
 
-import static org.flyte.flytekit.SdkBindingData.ofBoolean;
-import static org.flyte.flytekit.SdkBindingData.ofString;
+import static org.flyte.flytekit.SdkBindingDatas.ofBoolean;
+import static org.flyte.flytekit.SdkBindingDatas.ofString;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;

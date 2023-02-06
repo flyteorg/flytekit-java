@@ -19,6 +19,7 @@ package org.flyte.flytekit.testing;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -52,6 +53,6 @@ public class SumTask extends SdkRunnableTask<SumTask.SumInput, SumTask.SumOutput
 
   @Override
   public SumOutput run(SumInput input) {
-    return SumOutput.create(SdkBindingData.ofInteger(input.a().get() + input.b().get()));
+    return SumOutput.create(SdkBindingDatas.ofInteger(input.a().get() + input.b().get()));
   }
 }

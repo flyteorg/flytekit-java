@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit.testing;
 
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
+import static org.flyte.flytekit.SdkBindingDatas.ofInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

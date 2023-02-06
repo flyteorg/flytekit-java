@@ -120,7 +120,8 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
                 Collectors.toMap(
                     Map.Entry::getKey,
                     e ->
-                        SdkBindingData.ofOutputReference(nodeId, e.getKey(), e.getValue().type())));
+                        SdkBindingDatas.ofOutputReference(
+                            nodeId, e.getKey(), e.getValue().type())));
 
     var promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(

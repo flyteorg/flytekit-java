@@ -38,6 +38,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializers;
 import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
@@ -163,7 +164,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
                   toMap(
                       Map.Entry::getKey,
                       x ->
-                          SdkBindingData.ofOutputReference(
+                          SdkBindingDatas.ofOutputReference(
                               nodeId, x.getKey(), x.getValue().literalType())));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));

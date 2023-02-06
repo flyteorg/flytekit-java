@@ -126,7 +126,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
                 toUnmodifiableMap(
                     Map.Entry::getKey,
                     entry ->
-                        SdkBindingData.ofOutputReference(
+                        SdkBindingDatas.ofOutputReference(
                             nodeId, entry.getKey(), entry.getValue().literalType())));
 
     OutputT promise = getOutputType().promiseFor(nodeId);

@@ -97,7 +97,7 @@ class SdkLaunchPlanTest {
     Duration duration = Duration.ofSeconds(123);
 
     TestPairIntegerInput fixedInputs =
-        TestPairIntegerInput.create(SdkBindingData.ofInteger(456), SdkBindingData.ofInteger(789));
+        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(456), SdkBindingDatas.ofInteger(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -128,7 +128,7 @@ class SdkLaunchPlanTest {
     Duration duration = Duration.ofSeconds(123);
 
     TestPairIntegerInput fixedInputs =
-        TestPairIntegerInput.create(SdkBindingData.ofInteger(456), SdkBindingData.ofInteger(789));
+        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(456), SdkBindingDatas.ofInteger(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -311,27 +311,27 @@ class SdkLaunchPlanTest {
       @Override
       public TestWorkflowInput fromLiteralMap(Map<String, Literal> value) {
         return create(
-            SdkBindingData.ofInteger(value.get(INTEGER).scalar().primitive().integerValue()),
-            SdkBindingData.ofFloat(value.get(FLOAT).scalar().primitive().floatValue()),
-            SdkBindingData.ofString(value.get(STRING).scalar().primitive().stringValue()),
-            SdkBindingData.ofBoolean(value.get(BOOLEAN).scalar().primitive().booleanValue()),
-            SdkBindingData.ofDatetime(value.get(DATETIME).scalar().primitive().datetime()),
-            SdkBindingData.ofDuration(value.get(DURATION).scalar().primitive().duration()),
-            SdkBindingData.ofInteger(value.get(A).scalar().primitive().integerValue()),
-            SdkBindingData.ofInteger(value.get(B).scalar().primitive().integerValue()));
+            SdkBindingDatas.ofInteger(value.get(INTEGER).scalar().primitive().integerValue()),
+            SdkBindingDatas.ofFloat(value.get(FLOAT).scalar().primitive().floatValue()),
+            SdkBindingDatas.ofString(value.get(STRING).scalar().primitive().stringValue()),
+            SdkBindingDatas.ofBoolean(value.get(BOOLEAN).scalar().primitive().booleanValue()),
+            SdkBindingDatas.ofDatetime(value.get(DATETIME).scalar().primitive().datetime()),
+            SdkBindingDatas.ofDuration(value.get(DURATION).scalar().primitive().duration()),
+            SdkBindingDatas.ofInteger(value.get(A).scalar().primitive().integerValue()),
+            SdkBindingDatas.ofInteger(value.get(B).scalar().primitive().integerValue()));
       }
 
       @Override
       public TestWorkflowInput promiseFor(String nodeId) {
         return create(
-            SdkBindingData.ofOutputReference(nodeId, INTEGER, LiteralTypes.INTEGER),
-            SdkBindingData.ofOutputReference(nodeId, FLOAT, LiteralTypes.FLOAT),
-            SdkBindingData.ofOutputReference(nodeId, STRING, LiteralTypes.STRING),
-            SdkBindingData.ofOutputReference(nodeId, BOOLEAN, LiteralTypes.BOOLEAN),
-            SdkBindingData.ofOutputReference(nodeId, DATETIME, LiteralTypes.DATETIME),
-            SdkBindingData.ofOutputReference(nodeId, DURATION, LiteralTypes.DURATION),
-            SdkBindingData.ofOutputReference(nodeId, A, LiteralTypes.INTEGER),
-            SdkBindingData.ofOutputReference(nodeId, B, LiteralTypes.INTEGER));
+            SdkBindingDatas.ofOutputReference(nodeId, INTEGER, LiteralTypes.INTEGER),
+            SdkBindingDatas.ofOutputReference(nodeId, FLOAT, LiteralTypes.FLOAT),
+            SdkBindingDatas.ofOutputReference(nodeId, STRING, LiteralTypes.STRING),
+            SdkBindingDatas.ofOutputReference(nodeId, BOOLEAN, LiteralTypes.BOOLEAN),
+            SdkBindingDatas.ofOutputReference(nodeId, DATETIME, LiteralTypes.DATETIME),
+            SdkBindingDatas.ofOutputReference(nodeId, DURATION, LiteralTypes.DURATION),
+            SdkBindingDatas.ofOutputReference(nodeId, A, LiteralTypes.INTEGER),
+            SdkBindingDatas.ofOutputReference(nodeId, B, LiteralTypes.INTEGER));
       }
 
       @Override

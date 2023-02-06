@@ -37,7 +37,7 @@ public class SdkRemoteLaunchPlanTest {
   @Test
   void applyShouldReturnASdkWorkflowNode() {
     var inputs =
-        TestPairIntegerInput.create(SdkBindingData.ofInteger(1), SdkBindingData.ofInteger(2));
+        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(1), SdkBindingDatas.ofInteger(2));
     SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 
@@ -90,7 +90,7 @@ public class SdkRemoteLaunchPlanTest {
                 is(
                     singletonMap(
                         "o",
-                        SdkBindingData.ofOutputReference(
+                        SdkBindingDatas.ofOutputReference(
                             "some-node-id", "o", LiteralTypes.BOOLEAN)))));
   }
 

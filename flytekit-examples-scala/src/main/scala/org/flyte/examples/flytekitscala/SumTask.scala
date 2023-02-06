@@ -18,7 +18,7 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.{Description, SdkScalaType}
-import org.flyte.flytekitscala.SdkBindingData._
+import org.flyte.flytekitscala.SdkBindingDatas._
 
 case class SumTaskInput(
     @Description("First operand")

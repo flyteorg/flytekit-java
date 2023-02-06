@@ -16,7 +16,7 @@
  */
 package org.flyte.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofString;
+import static org.flyte.flytekit.SdkBindingDatas.ofString;
 import static org.flyte.flytekit.SdkConditions.eq;
 
 import com.google.auto.service.AutoService;

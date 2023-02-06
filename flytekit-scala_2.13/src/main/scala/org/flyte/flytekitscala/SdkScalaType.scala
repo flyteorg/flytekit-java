@@ -20,7 +20,11 @@ import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
-import org.flyte.flytekit.{SdkType, SdkBindingData => SdkJavaBindinigData}
+import org.flyte.flytekit.{
+  SdkBindingDatas => SdkJavaBindingDatas,
+  SdkType,
+  SdkBindingData => SdkJavaBindinigData
+}
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
@@ -151,7 +155,7 @@ object SdkScalaType {
             s"field ${param.label} not found in variable map"
           )
 
-          SdkJavaBindinigData.ofOutputReference(
+          SdkJavaBindingDatas.ofOutputReference(
             nodeId,
             param.label,
             paramLiteralType.literalType()

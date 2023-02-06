@@ -42,12 +42,12 @@ abstract class TestUnaryBooleanOutput {
 
     @Override
     public TestUnaryBooleanOutput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingData.ofBoolean(value.get(VAR).scalar().primitive().booleanValue()));
+      return create(SdkBindingDatas.ofBoolean(value.get(VAR).scalar().primitive().booleanValue()));
     }
 
     @Override
     public TestUnaryBooleanOutput promiseFor(String nodeId) {
-      return create(SdkBindingData.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
+      return create(SdkBindingDatas.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
     }
 
     @Override

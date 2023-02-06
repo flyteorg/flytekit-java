@@ -21,10 +21,12 @@ import org.flyte.api.v1.LiteralType;
 
 // TODO: this class it is not used. We should remove it or even better use it in place of
 //  raw literal types in SdkBinding data
-abstract class SdkLiteralType<T> {
+public abstract class SdkLiteralType<T> {
   public abstract LiteralType getLiteralType();
 
   public abstract Literal toLiteral(T value);
 
   public abstract T fromLiteral(Literal literal);
+
+  public abstract SdkBindingData<T> toSdkBinding(T value);
 }

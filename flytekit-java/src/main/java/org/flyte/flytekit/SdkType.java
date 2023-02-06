@@ -47,7 +47,7 @@ public abstract class SdkType<T> {
   public abstract T fromLiteralMap(Map<String, Literal> value);
 
   /**
-   * Returns a value composed of {@link SdkBindingData#ofOutputReference(String, String,
+   * Returns a value composed of {@link SdkBindingDatas#ofOutputReference(String, String,
    * LiteralType)} for the supplied node is.
    *
    * @param nodeId the node id that the value is a promise for.

@@ -16,13 +16,14 @@
  */
 package org.flyte.localengine.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
+import static org.flyte.flytekit.SdkBindingDatas.ofInteger;
 
 import com.google.auto.service.AutoService;
 import java.util.List;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -43,8 +44,8 @@ public class ListWorkflow extends SdkWorkflow<Void, ListTask.Output> {
         builder.apply("sum-2", new SumTask(), SumTask.Input.create(ofInteger(3), ofInteger(4)));
 
     SdkBindingData<List<Long>> list =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
+        SdkBindingDatas.ofBindingCollection(
+            LiteralType.ofSimpleType(SimpleType.INTEGER),
             List.of(sum1.getOutputs().o(), sum2.getOutputs().o()));
 
     SdkNode<ListTask.Output> list1 =

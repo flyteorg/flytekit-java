@@ -18,6 +18,7 @@ package org.flyte.flytekit.testing;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -48,7 +49,7 @@ public class RemoteSumTask {
     public abstract SdkBindingData<Long> c();
 
     public static RemoteSumOutput create(long c) {
-      return new AutoValue_RemoteSumTask_RemoteSumOutput(SdkBindingData.ofInteger(c));
+      return new AutoValue_RemoteSumTask_RemoteSumOutput(SdkBindingDatas.ofInteger(c));
     }
   }
 }

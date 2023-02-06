@@ -43,12 +43,12 @@ abstract class TestUnaryIntegerInput {
 
     @Override
     public TestUnaryIntegerInput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingData.ofInteger(value.get(VAR).scalar().primitive().integerValue()));
+      return create(SdkBindingDatas.ofInteger(value.get(VAR).scalar().primitive().integerValue()));
     }
 
     @Override
     public TestUnaryIntegerInput promiseFor(String nodeId) {
-      return create(SdkBindingData.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
+      return create(SdkBindingDatas.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
     }
 
     @Override

@@ -73,7 +73,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   }
 
   private SdkBindingData<?> createOutput(Map.Entry<String, LiteralType> entry) {
-    return SdkBindingData.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
+    return SdkBindingDatas.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
   }
 
   /** {@inheritDoc} */

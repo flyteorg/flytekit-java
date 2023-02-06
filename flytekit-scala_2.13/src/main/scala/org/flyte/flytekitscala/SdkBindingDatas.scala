@@ -23,14 +23,14 @@ import org.flyte.api.v1.{
   Scalar,
   SimpleType
 }
-import org.flyte.flytekit.{SdkBindingData => SdkJavaBindinigData}
+import org.flyte.flytekit.SdkBindingData
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
 /** Utility to create [[SdkBindingData]] using scala raw types.
   */
-object SdkBindingData {
+object SdkBindingDatas {
 
   /** Creates a [[SdkBindingData]] for a flyte string ([[String]] for scala)
     * with the given value.
@@ -40,7 +40,7 @@ object SdkBindingData {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofString(string: String): SdkJavaBindinigData[String] =
+  def ofString(string: String): SdkBindingData[String] =
     createSdkBindingData(string)
 
   /** Creates a [[SdkBindingData]] for a flyte integer ([[Long]] for scala) with
@@ -51,7 +51,7 @@ object SdkBindingData {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofInteger(long: Long): SdkJavaBindinigData[Long] =
+  def ofInteger(long: Long): SdkBindingData[Long] =
     createSdkBindingData(long)
 
   /** Creates a [[SdkBindingData]] for a flyte float ([[Double]] for scala) with
@@ -62,7 +62,7 @@ object SdkBindingData {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofFloat(double: Double): SdkJavaBindinigData[Double] =
+  def ofFloat(double: Double): SdkBindingData[Double] =
     createSdkBindingData(double)
 
   /** Creates a [[SdkBindingData]] for a flyte boolean ([[Boolean]] for scala)
@@ -75,7 +75,7 @@ object SdkBindingData {
     */
   def ofBoolean(
       boolean: Boolean
-  ): SdkJavaBindinigData[Boolean] =
+  ): SdkBindingData[Boolean] =
     createSdkBindingData(boolean)
 
   /** Creates a [[SdkBindingData]] for a flyte instant ([[Instant]] for scala)
@@ -86,7 +86,7 @@ object SdkBindingData {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofDateTime(instant: Instant): SdkJavaBindinigData[Instant] =
+  def ofDateTime(instant: Instant): SdkBindingData[Instant] =
     createSdkBindingData(instant)
 
   /** Creates a [[SdkBindingData]] for a flyte duration ([[Duration]] for scala)
@@ -99,7 +99,7 @@ object SdkBindingData {
     */
   def ofDuration(
       duration: Duration
-  ): SdkJavaBindinigData[Duration] = createSdkBindingData(duration)
+  ): SdkBindingData[Duration] = createSdkBindingData(duration)
 
   /** Creates a [[SdkBindingData]] for a flyte collection given a scala
     * [[List]].
@@ -111,7 +111,7 @@ object SdkBindingData {
     */
   def ofCollection[T](
       collection: List[T]
-  ): SdkJavaBindinigData[List[T]] = createSdkBindingData(collection)
+  ): SdkBindingData[List[T]] = createSdkBindingData(collection)
 
   /** Creates a [[SdkBindingData]] for a flyte collection given a scala
     * [[List]].
@@ -127,10 +127,10 @@ object SdkBindingData {
   def ofCollection[T](
       literalType: LiteralType,
       collection: List[T]
-  ): SdkJavaBindinigData[List[T]] =
+  ): SdkBindingData[List[T]] =
     createSdkBindingData(collection, Option(literalType))
 
-  /** Creates a [[SdkBindingData]] for a flyte string collection given a scala
+  /** Creates a [[SdkBindingDatas]] for a flyte string collection given a scala
     * [[List]].
     *
     * @param collection
@@ -140,7 +140,7 @@ object SdkBindingData {
     */
   def ofStringCollection(
       collection: List[String]
-  ): SdkJavaBindinigData[List[String]] =
+  ): SdkBindingData[List[String]] =
     createSdkBindingData(
       collection,
       Option(
@@ -156,11 +156,11 @@ object SdkBindingData {
     * @param collection
     *   collection to represent on this data.
     * @return
-    *   the new [[SdkBindingData]]
+    *   the new [[SdkBindingDatas]]
     */
   def ofIntegerCollection(
       collection: List[Long]
-  ): SdkJavaBindinigData[List[Long]] =
+  ): SdkBindingData[List[Long]] =
     createSdkBindingData(
       collection,
       Option(
@@ -180,7 +180,7 @@ object SdkBindingData {
     */
   def ofBooleanCollection(
       collection: List[Boolean]
-  ): SdkJavaBindinigData[List[Boolean]] =
+  ): SdkBindingData[List[Boolean]] =
     createSdkBindingData(
       collection,
       Option(
@@ -200,7 +200,7 @@ object SdkBindingData {
     */
   def ofFloatCollection(
       collection: List[Double]
-  ): SdkJavaBindinigData[List[Double]] =
+  ): SdkBindingData[List[Double]] =
     createSdkBindingData(
       collection,
       Option(
@@ -218,7 +218,7 @@ object SdkBindingData {
     */
   def ofInstantCollection(
       collection: List[Instant]
-  ): SdkJavaBindinigData[List[Instant]] =
+  ): SdkBindingData[List[Instant]] =
     createSdkBindingData(
       collection,
       Option(
@@ -238,7 +238,7 @@ object SdkBindingData {
     */
   def ofDurationCollection(
       collection: List[Duration]
-  ): SdkJavaBindinigData[List[Duration]] =
+  ): SdkBindingData[List[Duration]] =
     createSdkBindingData(
       collection,
       Option(
@@ -257,18 +257,18 @@ object SdkBindingData {
     */
   def ofMap[T](
       map: Map[String, T]
-  ): SdkJavaBindinigData[Map[String, T]] = createSdkBindingData(map)
+  ): SdkBindingData[Map[String, T]] = createSdkBindingData(map)
 
   /** Creates a [[SdkBindingData]] for a flyte string map given a scala [[Map]].
     *
     * @param map
     *   collection to represent on this data.
     * @return
-    *   the new [[SdkBindingData]]
+    *   the new [[SdkBindingDatas]]
     */
   def ofStringMap(
       map: Map[String, String]
-  ): SdkJavaBindinigData[Map[String, String]] =
+  ): SdkBindingData[Map[String, String]] =
     createSdkBindingData(
       map,
       Option(
@@ -285,7 +285,7 @@ object SdkBindingData {
     */
   def ofIntegerMap(
       map: Map[String, Long]
-  ): SdkJavaBindinigData[Map[String, Long]] =
+  ): SdkBindingData[Map[String, Long]] =
     createSdkBindingData(
       map,
       Option(
@@ -303,7 +303,7 @@ object SdkBindingData {
     */
   def ofBooleanMap(
       map: Map[String, Boolean]
-  ): SdkJavaBindinigData[Map[String, Boolean]] =
+  ): SdkBindingData[Map[String, Boolean]] =
     createSdkBindingData(
       map,
       Option(
@@ -320,7 +320,7 @@ object SdkBindingData {
     */
   def ofFloatMap(
       map: Map[String, Double]
-  ): SdkJavaBindinigData[Map[String, Double]] =
+  ): SdkBindingData[Map[String, Double]] =
     createSdkBindingData(
       map,
       Option(
@@ -338,7 +338,7 @@ object SdkBindingData {
     */
   def ofInstantMap(
       map: Map[String, Instant]
-  ): SdkJavaBindinigData[Map[String, Instant]] =
+  ): SdkBindingData[Map[String, Instant]] =
     createSdkBindingData(
       map,
       Option(
@@ -358,7 +358,7 @@ object SdkBindingData {
     */
   def ofDurationMap(
       map: Map[String, Duration]
-  ): SdkJavaBindinigData[Map[String, Duration]] =
+  ): SdkBindingData[Map[String, Duration]] =
     createSdkBindingData(
       map,
       Option(
@@ -382,7 +382,7 @@ object SdkBindingData {
   def ofMap[T](
       literalType: LiteralType,
       map: Map[String, T]
-  ): SdkJavaBindinigData[Map[String, T]] =
+  ): SdkBindingData[Map[String, T]] =
     createSdkBindingData(map, Option(literalType))
 
   private def toBindingData(
@@ -495,8 +495,8 @@ object SdkBindingData {
   private def createSdkBindingData[T](
       value: T,
       literalTypeOpt: Option[LiteralType] = None
-  ): SdkJavaBindinigData[T] = {
+  ): SdkBindingData[T] = {
     val (bindingData, literalType) = toBindingData(value, literalTypeOpt)
-    SdkJavaBindinigData.create(bindingData, literalType, value)
+    SdkBindingData.create(bindingData, literalType, value)
   }
 }

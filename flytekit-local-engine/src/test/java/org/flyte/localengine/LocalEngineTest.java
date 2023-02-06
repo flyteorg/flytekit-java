@@ -18,7 +18,7 @@ package org.flyte.localengine;
 
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
+import static org.flyte.flytekit.SdkBindingDatas.ofInteger;
 import static org.flyte.flytekit.SdkConditions.eq;
 import static org.flyte.flytekit.SdkConditions.when;
 import static org.flyte.localengine.TestingListener.ofCompleted;

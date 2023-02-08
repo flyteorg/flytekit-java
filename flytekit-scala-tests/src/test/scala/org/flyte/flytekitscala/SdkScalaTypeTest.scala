@@ -32,6 +32,7 @@ import org.flyte.flytekitscala.SdkBindingDatas._
 import org.junit.Assert.{assertEquals, assertThrows}
 import org.junit.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
+import org.flyte.flytekitscala.SdkLiteralTypes.{collections, maps, strings}
 
 class SdkScalaTypeTest {
 
@@ -372,7 +373,7 @@ class SdkScalaTypeTest {
 
   @Test
   def testUseAutoValueAttrIntoScalaClass(): Unit = {
-    import org.flyte.flytekit.SdkBindingDataConverters._
+    import SdkBindingDataConverters._
 
     val input = AutoAllInputsInput.create(
       SdkBindingDatas.ofInteger(2L),
@@ -433,11 +434,8 @@ class SdkScalaTypeTest {
   @Test
   def testEmptyCollection(): Unit = {
     val emptyList = ofStringCollection(List.empty[String])
-    val expected = SdkBindingData.create(
-      BindingData.ofCollection(List.empty[BindingData].asJava),
-      LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.STRING)),
-      List.empty[String]
-    )
+    val expected =
+      SdkBindingData.literal(collections(strings()), List.empty[String])
 
     assertEquals(emptyList, expected)
   }
@@ -445,14 +443,9 @@ class SdkScalaTypeTest {
   @Test
   def testEmptyMap(): Unit = {
     val emptyMap = ofStringMap(Map.empty[String, String])
-    val expected = SdkBindingData.create(
-      BindingData.ofMap(Map.empty[String, BindingData].asJava),
-      LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING)),
-      Map.empty[String, String]
-    )
+    val expected =
+      SdkBindingData.literal(maps(strings()), Map.empty[String, String])
 
     assertEquals(emptyMap, expected)
   }
-
-  // Typed[String] doesn't compile aka illtyped
 }

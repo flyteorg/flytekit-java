@@ -90,8 +90,8 @@ class SdkRemoteTaskTest {
                 is(
                     singletonMap(
                         "o",
-                        SdkBindingDatas.ofOutputReference(
-                            "lookup-endsong", "o", LiteralTypes.BOOLEAN)))));
+                        SdkBindingData.promise(
+                            SdkLiteralTypes.booleans(), "lookup-endsong", "o")))));
   }
 
   @SuppressWarnings("ExtendsAutoValue")

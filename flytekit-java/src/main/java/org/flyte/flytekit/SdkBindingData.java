@@ -16,67 +16,83 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static java.util.stream.Collectors.toUnmodifiableMap;
+import static org.flyte.flytekit.SdkLiteralTypes.collections;
+import static org.flyte.flytekit.SdkLiteralTypes.maps;
 
 import com.google.auto.value.AutoValue;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.function.Function;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 
 /** Specifies either a simple value or a reference to another output. */
-@AutoValue
 public abstract class SdkBindingData<T> {
 
   abstract BindingData idl();
 
-  abstract LiteralType type();
-
-  @Nullable
-  abstract T value();
+  public abstract SdkLiteralType<T> type();
 
   // TODO: it would be interesting to see if we can use java 9 modules to only expose this method
   //      to other modules in the sdk
   /**
-   * Creates a {@code SdkBindingData} based on its components; however it is not meant to be used by
-   * users directly, but users must use the higher level factory methods.
+   * Creates a {@code SdkBindingData} for a literal value.
    *
-   * @param idl the api class equivalent to this
-   * @param type the SdkBindingData type
-   * @param value when {@code idl} is not a {@link BindingData.Kind#PROMISE} then value contains the
-   *     simple value of this class, must be null otherwise
+   * @param type the {@link SdkLiteralType} type
+   * @param value contains the simple value of this class
    * @return A newly created SdkBindingData
    * @param <T> the java or scala type for the corresponding LiteralType, for example {@code
    *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
    */
-  public static <T> SdkBindingData<T> create(BindingData idl, LiteralType type, @Nullable T value) {
-    return new AutoValue_SdkBindingData<>(idl, type, value);
+  public static <T> SdkBindingData<T> literal(SdkLiteralType<T> type, T value) {
+    return LiteralSdkBindingData.create(type, value);
   }
 
-  public static <T> SdkBindingData<List<T>> create(
-      List<SdkBindingData<T>> bindingList, LiteralType type, @Nullable List<T> valueList) {
-    if (valueList != null && bindingList.size() != valueList.size()) {
-      throw new IllegalArgumentException("bindingList.size() != valueList.size()");
-    }
-    var idl = bindingList.stream().map(SdkBindingData::idl).collect(toUnmodifiableList());
-    return create(BindingData.ofCollection(idl), type, valueList);
+  /**
+   * Creates a {@code SdkBindingData} for a reference to (promise for) another output.
+   *
+   * @param type the {@link SdkLiteralType} type
+   * @param nodeId which nodeId to reference
+   * @param var variable name to reference on the node id
+   * @return A newly created SdkBindingData
+   * @param <T> the java or scala type for the corresponding LiteralType, for example {@code
+   *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
+   */
+  public static <T> SdkBindingData<T> promise(SdkLiteralType<T> type, String nodeId, String var) {
+    return PromiseSdkBindingData.create(type, nodeId, var);
   }
 
-  public static <T> SdkBindingData<Map<String, T>> create(
-      Map<String, SdkBindingData<T>> bindingMap,
-      LiteralType type,
-      @Nullable Map<String, T> valueMap) {
-    if (valueMap != null && bindingMap.size() != valueMap.size()) {
-      throw new IllegalArgumentException("bindingMap.size() != valueMap.size()");
-    }
-    var idl =
-        bindingMap.entrySet().stream()
-            .map(e -> Map.entry(e.getKey(), e.getValue().idl()))
-            .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
-    return create(BindingData.ofMap(idl), type, valueMap);
+  /**
+   * Creates a {@code SdkBindingData} for a collections of {@link SdkBindingData}.
+   *
+   * @param elementType the {@link SdkLiteralType} of the elements of the collection.
+   * @param collection collections of {@link SdkBindingData}s
+   * @return A newly created SdkBindingData
+   * @param <T> the java or scala type for the corresponding LiteralType, for example {@code
+   *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
+   */
+  public static <T> SdkBindingData<List<T>> bindingCollection(
+      SdkLiteralType<T> elementType, List<SdkBindingData<T>> collection) {
+    return SdkBindingCollection.create(elementType, collection);
+  }
+
+  /**
+   * Creates a {@code SdkBindingData} for a map of {@link SdkBindingData}.
+   *
+   * @param valuesType the {@link SdkLiteralType} of the elements of the collection.
+   * @param map map of {@link SdkBindingData}s
+   * @return A newly created SdkBindingData
+   * @param <T> the java or scala type for the corresponding LiteralType, for example {@code
+   *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
+   */
+  public static <T> SdkBindingData<Map<String, T>> bindingMap(
+      SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> map) {
+    return SdkBindingMap.create(valuesType, map);
   }
 
   /**
@@ -85,15 +101,165 @@ public abstract class SdkBindingData<T> {
    * @return the value that this simple data holds
    * @throws IllegalArgumentException when this data is an output reference
    */
-  public T get() {
-    if (idl().kind() == BindingData.Kind.PROMISE) {
-      OutputReference promise = idl().promise();
+  public abstract T get();
+
+  public abstract <NewT> SdkBindingData<NewT> as(
+      SdkLiteralType<NewT> newType, Function<T, NewT> castFunction);
+
+  @AutoValue
+  abstract static class LiteralSdkBindingData<T> extends SdkBindingData<T> {
+    abstract T value();
+
+    private static <T> LiteralSdkBindingData<T> create(SdkLiteralType<T> type, T value) {
+      return new AutoValue_SdkBindingData_LiteralSdkBindingData<>(type, value);
+    }
+
+    @Override
+    BindingData idl() {
+      return type().toBindingData(value());
+    }
+
+    @Override
+    public T get() {
+      return value();
+    }
+
+    @Override
+    public <NewtT> SdkBindingData<NewtT> as(
+        SdkLiteralType<NewtT> newType, Function<T, NewtT> castFunction) {
+      return create(newType, castFunction.apply(value()));
+    }
+
+    @Override
+    public final String toString() {
+      return String.format("SdkBindingData{type=%s, value=%s}", type(), value());
+    }
+  }
+
+  @AutoValue
+  abstract static class PromiseSdkBindingData<T> extends SdkBindingData<T> {
+    abstract String nodeId();
+
+    abstract String var();
+
+    private static <T> PromiseSdkBindingData<T> create(
+        SdkLiteralType<T> type, String nodeId, String var) {
+      return new AutoValue_SdkBindingData_PromiseSdkBindingData<>(type, nodeId, var);
+    }
+
+    @Override
+    BindingData idl() {
+      return BindingData.ofOutputReference(
+          OutputReference.builder().nodeId(nodeId()).var(var()).build());
+    }
+
+    @Override
+    public T get() {
       throw new IllegalArgumentException(
           String.format(
               "Value only available at workflow execution time: promise of %s[%s]",
-              promise.nodeId(), promise.var()));
+              nodeId(), var()));
     }
 
-    return value();
+    @Override
+    public <NewT> SdkBindingData<NewT> as(
+        SdkLiteralType<NewT> newType, Function<T, NewT> castFunction) {
+      return create(newType, nodeId(), var());
+    }
+
+    @Override
+    public final String toString() {
+      return String.format("SdkBindingData{type=%s, nodeIs=%s, var=%s}", type(), nodeId(), var());
+    }
+  }
+
+  @AutoValue
+  abstract static class SdkBindingCollection<T> extends SdkBindingData<List<T>> {
+    abstract List<SdkBindingData<T>> bindingCollection();
+
+    private static <T> SdkBindingCollection<T> create(
+        SdkLiteralType<T> elementType, List<SdkBindingData<T>> bindingCollection) {
+      checkIncompatibleTypes(elementType, bindingCollection);
+      return new AutoValue_SdkBindingData_SdkBindingCollection<>(
+          collections(elementType), bindingCollection);
+    }
+
+    @Override
+    BindingData idl() {
+      return BindingData.ofCollection(
+          bindingCollection().stream().map(SdkBindingData::idl).collect(toUnmodifiableList()));
+    }
+
+    @Override
+    public List<T> get() {
+      return bindingCollection().stream().map(SdkBindingData::get).collect(toUnmodifiableList());
+    }
+
+    @Override
+    public <NewT> SdkBindingData<NewT> as(
+        SdkLiteralType<NewT> newType, Function<List<T>, NewT> castFunction) {
+      // TODO: mmm, looks like the as method is not as flexible
+      //  I would like a function to apply to each element, but
+      throw new RuntimeException("Not yet implemented");
+    }
+
+    @Override
+    public final String toString() {
+      return String.format("SdkBindingData{type=%s, collection=%s}", type(), bindingCollection());
+    }
+  }
+
+  @AutoValue
+  abstract static class SdkBindingMap<T> extends SdkBindingData<Map<String, T>> {
+    abstract Map<String, SdkBindingData<T>> bindingMap();
+
+    private static <T> SdkBindingMap<T> create(
+        SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> bindingMap) {
+      checkIncompatibleTypes(valuesType, bindingMap.values());
+      return new AutoValue_SdkBindingData_SdkBindingMap<>(maps(valuesType), bindingMap);
+    }
+
+    @Override
+    BindingData idl() {
+      return BindingData.ofMap(
+          bindingMap().entrySet().stream()
+              .collect(toUnmodifiableMap(Map.Entry::getKey, e -> e.getValue().idl())));
+    }
+
+    @Override
+    public Map<String, T> get() {
+      return bindingMap().entrySet().stream()
+          .collect(toUnmodifiableMap(Map.Entry::getKey, e -> e.getValue().get()));
+    }
+
+    @Override
+    public <NewT> SdkBindingData<NewT> as(
+        SdkLiteralType<NewT> newType, Function<Map<String, T>, NewT> castFunction) {
+      // TODO: mmm, looks like the as method is not as flexible
+      //  I would like a function to apply to each element, but
+      throw new RuntimeException("Not yet implemented");
+    }
+
+    @Override
+    public final String toString() {
+      return String.format("SdkBindingData{type=%s, map=%s}", type(), bindingMap());
+    }
+  }
+
+  private static <T> void checkIncompatibleTypes(
+      SdkLiteralType<T> elementType, Collection<SdkBindingData<T>> elements) {
+    List<LiteralType> incompatibleTypes =
+        elements.stream()
+            .map(SdkBindingData::type)
+            .filter(type -> !type.equals(elementType))
+            .map(SdkLiteralType::getLiteralType)
+            .distinct()
+            .collect(toList());
+    if (!incompatibleTypes.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Type mismatch: expected all elements of type %s but found some elements of type: %s",
+              elementType.getLiteralType(), incompatibleTypes));
+    }
   }
 }

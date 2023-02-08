@@ -255,7 +255,7 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{type=integers, value=1}, b=SdkBindingData{type=integers, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
@@ -385,7 +385,7 @@ public class SdkTestingExecutorTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input SumLaunchPlanInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=3}}}, type=LiteralType{simpleType=INTEGER}, value=3}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=5}}}, type=LiteralType{simpleType=INTEGER}, value=5}} for remote launch plan [SumWorkflow] across known launch plan inputs, use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
+            "Can't find input SumLaunchPlanInput{a=SdkBindingData{type=integers, value=3}, b=SdkBindingData{type=integers, value=5}} for remote launch plan [SumWorkflow] across known launch plan inputs, use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test
@@ -461,7 +461,7 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{type=integers, value=1}, b=SdkBindingData{type=integers, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   public static class SimpleUberWorkflow

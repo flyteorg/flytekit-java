@@ -17,12 +17,11 @@
 package org.flyte.localengine.examples;
 
 import static org.flyte.flytekit.SdkBindingDatas.ofInteger;
+import static org.flyte.flytekit.SdkLiteralTypes.integers;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDatas;
 import org.flyte.flytekit.SdkNode;
@@ -62,8 +61,7 @@ public class MapWorkflow extends SdkWorkflow<Void, MapWorkflow.Output> {
             .o();
 
     SdkBindingData<Map<String, Long>> map =
-        SdkBindingDatas.ofBindingMap(
-            LiteralType.ofSimpleType(SimpleType.INTEGER), Map.of("e", sum1, "f", sum2));
+        SdkBindingDatas.ofBindingMap(integers(), Map.of("e", sum1, "f", sum2));
 
     SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask(), MapTask.Input.create(map));
 

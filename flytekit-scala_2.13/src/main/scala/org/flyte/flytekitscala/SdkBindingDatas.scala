@@ -16,17 +16,10 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{
-  BindingData,
-  LiteralType,
-  Primitive,
-  Scalar,
-  SimpleType
-}
-import org.flyte.flytekit.SdkBindingData
+import org.flyte.flytekit.{SdkBindingData, SdkLiteralType}
+import org.flyte.flytekitscala.SdkLiteralTypes._
 
 import java.time.{Duration, Instant}
-import scala.collection.JavaConverters._
 
 /** Utility to create [[SdkBindingData]] using scala raw types.
   */
@@ -41,7 +34,7 @@ object SdkBindingDatas {
     *   the new {[[SdkBindingData]]
     */
   def ofString(string: String): SdkBindingData[String] =
-    createSdkBindingData(string)
+    SdkBindingData.literal(strings(), string)
 
   /** Creates a [[SdkBindingData]] for a flyte integer ([[Long]] for scala) with
     * the given value.
@@ -52,7 +45,7 @@ object SdkBindingDatas {
     *   the new {[[SdkBindingData]]
     */
   def ofInteger(long: Long): SdkBindingData[Long] =
-    createSdkBindingData(long)
+    SdkBindingData.literal(integers(), long)
 
   /** Creates a [[SdkBindingData]] for a flyte float ([[Double]] for scala) with
     * the given value.
@@ -63,7 +56,7 @@ object SdkBindingDatas {
     *   the new {[[SdkBindingData]]
     */
   def ofFloat(double: Double): SdkBindingData[Double] =
-    createSdkBindingData(double)
+    SdkBindingData.literal(floats(), double)
 
   /** Creates a [[SdkBindingData]] for a flyte boolean ([[Boolean]] for scala)
     * with the given value.
@@ -76,7 +69,7 @@ object SdkBindingDatas {
   def ofBoolean(
       boolean: Boolean
   ): SdkBindingData[Boolean] =
-    createSdkBindingData(boolean)
+    SdkBindingData.literal(booleans(), boolean)
 
   /** Creates a [[SdkBindingData]] for a flyte instant ([[Instant]] for scala)
     * with the given value.
@@ -87,7 +80,7 @@ object SdkBindingDatas {
     *   the new {[[SdkBindingData]]
     */
   def ofDateTime(instant: Instant): SdkBindingData[Instant] =
-    createSdkBindingData(instant)
+    SdkBindingData.literal(datetimes(), instant)
 
   /** Creates a [[SdkBindingData]] for a flyte duration ([[Duration]] for scala)
     * with the given value.
@@ -99,7 +92,7 @@ object SdkBindingDatas {
     */
   def ofDuration(
       duration: Duration
-  ): SdkBindingData[Duration] = createSdkBindingData(duration)
+  ): SdkBindingData[Duration] = SdkBindingData.literal(durations(), duration)
 
   /** Creates a [[SdkBindingData]] for a flyte collection given a scala
     * [[List]].
@@ -110,25 +103,31 @@ object SdkBindingDatas {
     *   the new [[SdkBindingData]]
     */
   def ofCollection[T](
-      collection: List[T]
-  ): SdkBindingData[List[T]] = createSdkBindingData(collection)
-
-  /** Creates a [[SdkBindingData]] for a flyte collection given a scala
-    * [[List]].
-    *
-    * @param literalType
-    *   literal type for the whole collection. It must be a
-    *   [[LiteralType.Kind.COLLECTION_TYPE]].
-    * @param collection
-    *   collection to represent on this data.
-    * @return
-    *   the new [[SdkBindingData]]
-    */
-  def ofCollection[T](
-      literalType: LiteralType,
       collection: List[T]
   ): SdkBindingData[List[T]] =
-    createSdkBindingData(collection, Option(literalType))
+    SdkBindingData.literal(
+      toSdkLiteralType(collection).asInstanceOf[SdkLiteralType[List[T]]],
+      collection
+    )
+
+  /** Creates a [[SdkBindingData]] for a flyte collection given a scala
+    * [[List]].
+    *
+    * @param elementLiteralType
+    *   [[SdkLiteralType]] for elements of collection.
+    * @param collection
+    *   collection to represent on this data.
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def ofCollection[T](
+      elementLiteralType: SdkLiteralType[T],
+      collection: List[T]
+  ): SdkBindingData[List[T]] =
+    SdkBindingData.literal(
+      collections(elementLiteralType),
+      collection
+    )
 
   /** Creates a [[SdkBindingDatas]] for a flyte string collection given a scala
     * [[List]].
@@ -141,14 +140,7 @@ object SdkBindingDatas {
   def ofStringCollection(
       collection: List[String]
   ): SdkBindingData[List[String]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(
-          LiteralType.ofSimpleType(SimpleType.STRING)
-        )
-      )
-    )
+    SdkBindingData.literal(collections(strings()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte integer collection given a scala
     * [[List]].
@@ -161,14 +153,7 @@ object SdkBindingDatas {
   def ofIntegerCollection(
       collection: List[Long]
   ): SdkBindingData[List[Long]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(
-          LiteralType.ofSimpleType(SimpleType.INTEGER)
-        )
-      )
-    )
+    SdkBindingData.literal(collections(integers()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte boolean collection given a scala
     * [[List]].
@@ -181,14 +166,7 @@ object SdkBindingDatas {
   def ofBooleanCollection(
       collection: List[Boolean]
   ): SdkBindingData[List[Boolean]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(
-          LiteralType.ofSimpleType(SimpleType.BOOLEAN)
-        )
-      )
-    )
+    SdkBindingData.literal(collections(booleans()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte float collection given a scala
     * [[List]].
@@ -201,12 +179,7 @@ object SdkBindingDatas {
   def ofFloatCollection(
       collection: List[Double]
   ): SdkBindingData[List[Double]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.FLOAT))
-      )
-    )
+    SdkBindingData.literal(collections(floats()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte datetime collection given a scala
     * [[List]].
@@ -219,14 +192,7 @@ object SdkBindingDatas {
   def ofInstantCollection(
       collection: List[Instant]
   ): SdkBindingData[List[Instant]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(
-          LiteralType.ofSimpleType(SimpleType.DATETIME)
-        )
-      )
-    )
+    SdkBindingData.literal(collections(datetimes()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte duration collection given a scala
     * [[List]].
@@ -239,14 +205,7 @@ object SdkBindingDatas {
   def ofDurationCollection(
       collection: List[Duration]
   ): SdkBindingData[List[Duration]] =
-    createSdkBindingData(
-      collection,
-      Option(
-        LiteralType.ofCollectionType(
-          LiteralType.ofSimpleType(SimpleType.DURATION)
-        )
-      )
-    )
+    SdkBindingData.literal(collections(durations()), collection)
 
   /** Creates a [[SdkBindingData]] for a flyte map given a scala [[Map]].
     *
@@ -255,9 +214,11 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofMap[T](
-      map: Map[String, T]
-  ): SdkBindingData[Map[String, T]] = createSdkBindingData(map)
+  def ofMap[T](map: Map[String, T]): SdkBindingData[Map[String, T]] =
+    SdkBindingData.literal(
+      toSdkLiteralType(map).asInstanceOf[SdkLiteralType[Map[String, T]]],
+      map
+    )
 
   /** Creates a [[SdkBindingData]] for a flyte string map given a scala [[Map]].
     *
@@ -269,12 +230,7 @@ object SdkBindingDatas {
   def ofStringMap(
       map: Map[String, String]
   ): SdkBindingData[Map[String, String]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.STRING))
-      )
-    )
+    SdkBindingData.literal(maps(strings()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte long map given a scala [[Map]].
     *
@@ -283,15 +239,8 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofIntegerMap(
-      map: Map[String, Long]
-  ): SdkBindingData[Map[String, Long]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER))
-      )
-    )
+  def ofIntegerMap(map: Map[String, Long]): SdkBindingData[Map[String, Long]] =
+    SdkBindingData.literal(maps(integers()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte boolean map given a scala
     * [[Map]].
@@ -304,12 +253,7 @@ object SdkBindingDatas {
   def ofBooleanMap(
       map: Map[String, Boolean]
   ): SdkBindingData[Map[String, Boolean]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.BOOLEAN))
-      )
-    )
+    SdkBindingData.literal(maps(booleans()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte double map given a scala [[Map]].
     *
@@ -321,12 +265,7 @@ object SdkBindingDatas {
   def ofFloatMap(
       map: Map[String, Double]
   ): SdkBindingData[Map[String, Double]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.FLOAT))
-      )
-    )
+    SdkBindingData.literal(maps(floats()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte instant map given a scala
     * [[Map]].
@@ -339,14 +278,7 @@ object SdkBindingDatas {
   def ofInstantMap(
       map: Map[String, Instant]
   ): SdkBindingData[Map[String, Instant]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(
-          LiteralType.ofSimpleType(SimpleType.DATETIME)
-        )
-      )
-    )
+    SdkBindingData.literal(maps(datetimes()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte duration map given a scala
     * [[Map]].
@@ -359,132 +291,77 @@ object SdkBindingDatas {
   def ofDurationMap(
       map: Map[String, Duration]
   ): SdkBindingData[Map[String, Duration]] =
-    createSdkBindingData(
-      map,
-      Option(
-        LiteralType.ofMapValueType(
-          LiteralType.ofSimpleType(SimpleType.DURATION)
-        )
-      )
-    )
+    SdkBindingData.literal(maps(durations()), map)
 
   /** Creates a [[SdkBindingData]] for a flyte duration map given a scala
     * [[Map]].
     *
-    * @param literalType
-    *   literal type for the whole collection. It must be a
-    *   [[LiteralType.Kind.MAP_VALUE_TYPE]].
+    * @param valuesLiteralType
+    *   [[SdkLiteralType]] type for the values of the map.
     * @param map
     *   collection to represent on this data.
     * @return
     *   the new [[SdkBindingData]]
     */
   def ofMap[T](
-      literalType: LiteralType,
+      valuesLiteralType: SdkLiteralType[T],
       map: Map[String, T]
   ): SdkBindingData[Map[String, T]] =
-    createSdkBindingData(map, Option(literalType))
+    SdkBindingData.literal(maps(valuesLiteralType), map)
 
-  private def toBindingData(
+  private def toSdkLiteralType(
       value: Any,
-      literalTypeOpt: Option[LiteralType]
-  ): (BindingData, LiteralType) = {
+      internalTypeOpt: Option[SdkLiteralType[_]] = Option.empty
+  ): SdkLiteralType[_] = {
     value match {
       case string: String =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofStringValue(string))
-          ),
-          LiteralType.ofSimpleType(SimpleType.STRING)
-        )
+        strings()
       case boolean: Boolean =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofBooleanValue(boolean))
-          ),
-          LiteralType.ofSimpleType(SimpleType.BOOLEAN)
-        )
+        booleans()
       case long: Long =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofIntegerValue(long))
-          ),
-          LiteralType.ofSimpleType(SimpleType.INTEGER)
-        )
+        integers()
+
       case double: Double =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofFloatValue(double))
-          ),
-          LiteralType.ofSimpleType(SimpleType.FLOAT)
-        )
+        floats()
+
       case instant: Instant =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofDatetime(instant))
-          ),
-          LiteralType.ofSimpleType(SimpleType.DATETIME)
-        )
+        datetimes()
+
       case duration: Duration =>
-        (
-          BindingData.ofScalar(
-            Scalar.ofPrimitive(Primitive.ofDuration(duration))
-          ),
-          LiteralType.ofSimpleType(SimpleType.DURATION)
-        )
+        durations()
+
       case list: Seq[_] =>
-        val literalType = literalTypeOpt.getOrElse {
-          val (_, innerLiteralType) = toBindingData(
+        val internalType = internalTypeOpt.getOrElse {
+          toSdkLiteralType(
             list.headOption.getOrElse(
               throw new RuntimeException(
+                // TODO: check the error comment once we have settle with the name
                 "Can't create binding for an empty list without knowing the type, use SdkBindingData.of<type>Collection(...)"
               )
-            ),
-            literalTypeOpt = None
+            )
           )
 
-          LiteralType.ofCollectionType(innerLiteralType)
         }
+        collections(internalType)
 
-        (
-          BindingData.ofCollection(
-            list
-              .map { innerValue =>
-                val (bindingData, _) = toBindingData(innerValue, literalTypeOpt)
-                bindingData
-              }
-              .toList
-              .asJava
-          ),
-          literalType
-        )
-      case map: Map[String, _] =>
-        val literalType = literalTypeOpt.getOrElse {
-          val (_, innerLiteralType) = toBindingData(
-            map.headOption
-              .map(_._2)
-              .getOrElse(
-                throw new RuntimeException(
-                  "Can't create binding for an empty map without knowing the type, use SdkBindingData.of<type>Map(...)"
-                )
-              ),
-            literalTypeOpt = None
+      case map: Map[_, _] =>
+        val internalType = internalTypeOpt.getOrElse {
+          val head = map.headOption.getOrElse(
+            throw new RuntimeException(
+              // TODO: check the error comment once we have settle with the name
+              "Can't create binding for an empty map without knowing the type, use SdkBindingData.of<type>Map(...)"
+            )
           )
-
-          LiteralType.ofMapValueType(innerLiteralType)
+          head._1 match {
+            case _: String => toSdkLiteralType(head._2)
+            case _ =>
+              throw new RuntimeException(
+                "Can't create binding for a map with key type other than String."
+              )
+          }
         }
-        (
-          BindingData.ofMap(
-            map
-              .mapValues { innerValue =>
-                val (bindingData, _) = toBindingData(innerValue, literalTypeOpt)
-                bindingData
-              }
-              .toMap
-              .asJava
-          ),
-          literalType
-        )
+        maps(internalType)
+
       case other =>
         throw new IllegalStateException(
           s"${other.getClass.getSimpleName} class is not supported as SdkBindingData inner class"
@@ -492,11 +369,4 @@ object SdkBindingDatas {
     }
   }
 
-  private def createSdkBindingData[T](
-      value: T,
-      literalTypeOpt: Option[LiteralType] = None
-  ): SdkBindingData[T] = {
-    val (bindingData, literalType) = toBindingData(value, literalTypeOpt)
-    SdkBindingData.create(bindingData, literalType, value)
-  }
 }

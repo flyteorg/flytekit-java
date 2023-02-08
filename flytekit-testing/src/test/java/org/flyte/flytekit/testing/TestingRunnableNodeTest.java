@@ -81,7 +81,7 @@ class TestingRunnableNodeTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input Input{in=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{stringValue=not in fixed outputs}}}, type=LiteralType{simpleType=STRING}, value=not in fixed outputs}} for remote test [TestTask] "
+            "Can't find input Input{in=SdkBindingData{type=strings, value=not in fixed outputs}} for remote test [TestTask] "
                 + "across known test inputs, use a magic wang to provide a test double"));
   }
 

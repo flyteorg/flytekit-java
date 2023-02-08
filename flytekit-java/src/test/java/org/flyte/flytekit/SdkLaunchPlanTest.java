@@ -324,14 +324,14 @@ class SdkLaunchPlanTest {
       @Override
       public TestWorkflowInput promiseFor(String nodeId) {
         return create(
-            SdkBindingDatas.ofOutputReference(nodeId, INTEGER, LiteralTypes.INTEGER),
-            SdkBindingDatas.ofOutputReference(nodeId, FLOAT, LiteralTypes.FLOAT),
-            SdkBindingDatas.ofOutputReference(nodeId, STRING, LiteralTypes.STRING),
-            SdkBindingDatas.ofOutputReference(nodeId, BOOLEAN, LiteralTypes.BOOLEAN),
-            SdkBindingDatas.ofOutputReference(nodeId, DATETIME, LiteralTypes.DATETIME),
-            SdkBindingDatas.ofOutputReference(nodeId, DURATION, LiteralTypes.DURATION),
-            SdkBindingDatas.ofOutputReference(nodeId, A, LiteralTypes.INTEGER),
-            SdkBindingDatas.ofOutputReference(nodeId, B, LiteralTypes.INTEGER));
+            SdkBindingData.promise(SdkLiteralTypes.integers(), nodeId, INTEGER),
+            SdkBindingData.promise(SdkLiteralTypes.floats(), nodeId, FLOAT),
+            SdkBindingData.promise(SdkLiteralTypes.strings(), nodeId, STRING),
+            SdkBindingData.promise(SdkLiteralTypes.booleans(), nodeId, BOOLEAN),
+            SdkBindingData.promise(SdkLiteralTypes.datetimes(), nodeId, DATETIME),
+            SdkBindingData.promise(SdkLiteralTypes.durations(), nodeId, DURATION),
+            SdkBindingData.promise(SdkLiteralTypes.integers(), nodeId, A),
+            SdkBindingData.promise(SdkLiteralTypes.integers(), nodeId, B));
       }
 
       @Override
@@ -345,6 +345,19 @@ class SdkLaunchPlanTest {
             Map.entry(DURATION, Variable.builder().literalType(LiteralTypes.DURATION).build()),
             Map.entry(A, Variable.builder().literalType(LiteralTypes.INTEGER).build()),
             Map.entry(B, Variable.builder().literalType(LiteralTypes.INTEGER).build()));
+      }
+
+      @Override
+      public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+        return Map.ofEntries(
+            Map.entry(INTEGER, SdkLiteralTypes.integers()),
+            Map.entry(FLOAT, SdkLiteralTypes.floats()),
+            Map.entry(STRING, SdkLiteralTypes.strings()),
+            Map.entry(BOOLEAN, SdkLiteralTypes.booleans()),
+            Map.entry(DATETIME, SdkLiteralTypes.datetimes()),
+            Map.entry(DURATION, SdkLiteralTypes.durations()),
+            Map.entry(A, SdkLiteralTypes.integers()),
+            Map.entry(B, SdkLiteralTypes.integers()));
       }
 
       @Override

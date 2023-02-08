@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit.jackson;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -32,13 +33,12 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkLiteralType;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializers;
 import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
@@ -50,12 +50,17 @@ public class JacksonSdkType<T> extends SdkType<T> {
   private final Class<T> clazz;
   private final Map<String, Variable> variableMap;
   private final Map<String, AnnotatedMember> membersMap;
+  private final Map<String, SdkLiteralType<?>> typesMap;
 
   private JacksonSdkType(
-      Class<T> clazz, Map<String, Variable> variableMap, Map<String, AnnotatedMember> membersMap) {
-    this.clazz = Objects.requireNonNull(clazz);
-    this.variableMap = Objects.requireNonNull(variableMap);
-    this.membersMap = Objects.requireNonNull(membersMap);
+      Class<T> clazz,
+      Map<String, Variable> variableMap,
+      Map<String, AnnotatedMember> membersMap,
+      Map<String, SdkLiteralType<?>> typesMap) {
+    this.clazz = requireNonNull(clazz);
+    this.variableMap = requireNonNull(Map.copyOf(variableMap));
+    this.membersMap = requireNonNull(Map.copyOf(membersMap));
+    this.typesMap = requireNonNull(Map.copyOf(typesMap));
   }
 
   public static <T> JacksonSdkType<T> of(Class<T> clazz) {
@@ -79,7 +84,8 @@ public class JacksonSdkType<T> extends SdkType<T> {
       serializer.acceptJsonFormatVisitor(
           visitor, OBJECT_MAPPER.getTypeFactory().constructType(clazz));
 
-      return new JacksonSdkType<>(clazz, visitor.getVariableMap(), visitor.getMembersMap());
+      return new JacksonSdkType<>(
+          clazz, visitor.getVariableMap(), visitor.getMembersMap(), visitor.getTypesMap());
     } catch (JsonMappingException e) {
       throw new IllegalArgumentException(
           String.format("Failed to find serializer for [%s]", clazz.getName()), e);
@@ -126,6 +132,11 @@ public class JacksonSdkType<T> extends SdkType<T> {
     return variableMap;
   }
 
+  @Override
+  public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+    return typesMap;
+  }
+
   private Map<String, AnnotatedMember> getMembersMap() {
     return membersMap;
   }
@@ -149,8 +160,8 @@ public class JacksonSdkType<T> extends SdkType<T> {
    * Method used to create SdkBindingData output references/promises for SdkTransform outputs (e.g.,
    * workflows and tasks outputs). We need to go from {@code Map<String, Variable>} to object of
    * output class T. We leverage Jackson to help create the object of the output class T from the
-   * map. We use a the BindingMapSerializer to serialize only the keys of the map to JsonNode
-   * Instead of recreating SdkBindingData objects we pass the bindingMap to the
+   * map. We use the BindingMapSerializer to serialize only the keys of the map to JsonNode Instead
+   * of recreating SdkBindingData objects we pass the bindingMap to the
    * CustomSdkBindingDataDeserializers so it can get use the keys to retrieve the objects from the
    * map. We need to create a new object mapper to use a different deserializer for SdkBindingData
    * than the one used in other places.
@@ -159,13 +170,11 @@ public class JacksonSdkType<T> extends SdkType<T> {
   public T promiseFor(String nodeId) {
     try {
       Map<String, SdkBindingData<?>> bindingMap =
-          getVariableMap().entrySet().stream()
+          typesMap.entrySet().stream()
               .collect(
                   toMap(
                       Map.Entry::getKey,
-                      x ->
-                          SdkBindingDatas.ofOutputReference(
-                              nodeId, x.getKey(), x.getValue().literalType())));
+                      e -> SdkBindingData.promise(e.getValue(), nodeId, e.getKey())));
 
       JsonNode tree = OBJECT_MAPPER.valueToTree(new JacksonBindingMap(bindingMap));
 

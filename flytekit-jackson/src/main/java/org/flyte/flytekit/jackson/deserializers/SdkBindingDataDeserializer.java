@@ -46,6 +46,8 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkLiteralType;
+import org.flyte.flytekit.SdkLiteralTypes;
 
 class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   private static final long serialVersionUID = 0L;
@@ -110,63 +112,79 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
-    LiteralType literalType = readLiteralType(tree.get(TYPE));
+    SdkLiteralType<T> literalType = (SdkLiteralType<T>) readLiteralType(tree.get(TYPE));
     Iterator<JsonNode> elements = tree.get(VALUE).elements();
 
-    switch (literalType.getKind()) {
+    switch (literalType.getLiteralType().getKind()) {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
-        List<? extends SdkBindingData<?>> collection =
-            streamOf(elements).map(this::transform).collect(toList());
-        return SdkBindingDatas.ofBindingCollection(
-            literalType, (List<SdkBindingData<T>>) collection);
+        List<T> collection =
+            (List<T>)
+                streamOf(elements).map(this::transform).map(SdkBindingData::get).collect(toList());
+        return SdkBindingDatas.ofCollection(literalType, collection);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
-            "Type contains a collection of an supported literal type: " + literalType.getKind());
+            "Type contains a collection of an supported literal type: " + literalType);
     }
   }
 
   @SuppressWarnings("unchecked")
   private <T> SdkBindingData<Map<String, T>> transformMap(JsonNode tree) {
-    LiteralType literalType = readLiteralType(tree.get(TYPE));
+    SdkLiteralType<T> literalType = (SdkLiteralType<T>) readLiteralType(tree.get(TYPE));
     JsonNode valueNode = tree.get(VALUE);
     List<Map.Entry<String, JsonNode>> entries =
         streamOf(valueNode.fieldNames())
             .map(name -> Map.entry(name, valueNode.get(name)))
             .collect(toList());
-    switch (literalType.getKind()) {
+    switch (literalType.getLiteralType().getKind()) {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
-        Map<String, SdkBindingData<T>> bindingDataMap =
+        Map<String, T> bindingDataMap =
             entries.stream()
-                .map(
-                    entry ->
-                        Map.entry(entry.getKey(), (SdkBindingData<T>) transform(entry.getValue())))
+                .map(entry -> Map.entry(entry.getKey(), (T) transform(entry.getValue()).get()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return SdkBindingDatas.ofBindingMap(literalType, bindingDataMap);
+        return SdkBindingDatas.ofMap(literalType, bindingDataMap);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
-            "Type contains a map of an supported literal type: " + literalType.getKind());
+            "Type contains a map of an supported literal type: " + literalType);
     }
   }
 
-  private LiteralType readLiteralType(JsonNode typeNode) {
+  private SdkLiteralType<?> readLiteralType(JsonNode typeNode) {
     LiteralType.Kind kind = LiteralType.Kind.valueOf(typeNode.get(KIND).asText());
     switch (kind) {
       case SIMPLE_TYPE:
-        return LiteralType.ofSimpleType(SimpleType.valueOf(typeNode.get(VALUE).asText()));
+        SimpleType simpleType = SimpleType.valueOf(typeNode.get(VALUE).asText());
+        switch (simpleType) {
+          case INTEGER:
+            return SdkLiteralTypes.integers();
+          case FLOAT:
+            return SdkLiteralTypes.floats();
+          case STRING:
+            return SdkLiteralTypes.strings();
+          case BOOLEAN:
+            return SdkLiteralTypes.booleans();
+          case DATETIME:
+            return SdkLiteralTypes.datetimes();
+          case DURATION:
+            return SdkLiteralTypes.durations();
+          case STRUCT:
+            // not yet supported, fallthrough
+        }
+        throw new UnsupportedOperationException(
+            "Type contains a collection/map of an supported literal type: " + kind);
       case MAP_VALUE_TYPE:
-        return LiteralType.ofMapValueType(readLiteralType(typeNode.get(VALUE).get(TYPE)));
+        return SdkLiteralTypes.maps(readLiteralType(typeNode.get(VALUE).get(TYPE)));
       case COLLECTION_TYPE:
-        return LiteralType.ofCollectionType(readLiteralType(typeNode.get(VALUE).get(TYPE)));
+        return SdkLiteralTypes.collections(readLiteralType(typeNode.get(VALUE).get(TYPE)));
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:

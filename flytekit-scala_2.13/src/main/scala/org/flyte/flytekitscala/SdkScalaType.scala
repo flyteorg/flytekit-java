@@ -21,9 +21,10 @@ import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
 import org.flyte.api.v1._
 import org.flyte.flytekit.{
-  SdkBindingDatas => SdkJavaBindingDatas,
+  SdkBindingData,
+  SdkLiteralType,
   SdkType,
-  SdkBindingData => SdkJavaBindinigData
+  SdkLiteralTypes => SdkJavaLiteralTypes
 }
 
 import scala.annotation.implicitNotFound
@@ -42,27 +43,20 @@ sealed trait SdkScalaType[T]
 
 trait SdkScalaProductType[T] extends SdkType[T] with SdkScalaType[T]
 
-trait SdkScalaLiteralType[T] extends SdkScalaType[T] {
-  def getLiteralType: LiteralType
+trait SdkScalaLiteralType[T] extends SdkLiteralType[T] with SdkScalaType[T]
 
-  def toLiteral(value: T): Literal
+case class DelegateLiteralType[T](delegate: SdkLiteralType[T])
+    extends SdkScalaLiteralType[T] {
+  override def getLiteralType: LiteralType = delegate.getLiteralType
 
-  def fromLiteral(literal: Literal): T
-}
+  override def toLiteral(value: T): Literal = delegate.toLiteral(value)
 
-object SdkScalaLiteralType {
-  def apply[T](
-      literalType: LiteralType,
-      to: T => Literal,
-      from: Literal => T
-  ): SdkScalaLiteralType[T] =
-    new SdkScalaLiteralType[T] {
-      override def getLiteralType: LiteralType = literalType
+  override def fromLiteral(literal: Literal): T = delegate.fromLiteral(literal)
 
-      override def toLiteral(value: T): Literal = to(value)
+  override def toBindingData(value: T): BindingData =
+    delegate.toBindingData(value)
 
-      override def fromLiteral(literal: Literal): T = from(literal)
-    }
+  override def toString: String = delegate.toString
 }
 
 /** Applied to a case classes fields to denote the description of such field
@@ -155,17 +149,17 @@ object SdkScalaType {
             s"field ${param.label} not found in variable map"
           )
 
-          SdkJavaBindingDatas.ofOutputReference(
+          SdkBindingData.promise(
+            param.typeclass,
             nodeId,
-            param.label,
-            paramLiteralType.literalType()
+            param.label
           )
         })
       }
 
       override def toSdkBindingMap(
           value: T
-      ): ju.Map[String, SdkJavaBindinigData[_]] = {
+      ): ju.Map[String, SdkBindingData[_]] = {
         value match {
           case product: Product =>
             value.getClass.getDeclaredFields
@@ -173,7 +167,7 @@ object SdkScalaType {
               .zip(product.productIterator.toSeq)
               .toMap
               .mapValues {
-                case value: SdkJavaBindinigData[_] => value
+                case value: SdkBindingData[_] => value
                 case _ =>
                   throw new IllegalStateException(
                     s"All the fields of the case class ${value.getClass.getSimpleName} must be SdkBindingData[_]"
@@ -187,12 +181,22 @@ object SdkScalaType {
             )
         }
       }
+
+      override def toLiteralTypes: ju.Map[String, SdkLiteralType[_]] = {
+        params
+          .map { case ParamsWithDesc(param, _) =>
+            val value: SdkLiteralType[_] = param.typeclass
+            param.label -> value
+          }
+          .toMap[String, SdkLiteralType[_]]
+          .asJava
+      }
     }
   }
 
   implicit def sdkBindingLiteralType[T](implicit
       sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[SdkJavaBindinigData[T]] = {
+  ): SdkScalaLiteralType[SdkBindingData[T]] = {
 
     def toBindingData(literal: Literal): BindingData = {
       literal.kind() match {
@@ -209,62 +213,37 @@ object SdkScalaType {
       }
     }
 
-    SdkScalaLiteralType[SdkJavaBindinigData[T]](
-      sdkLiteral.getLiteralType,
-      value => sdkLiteral.toLiteral(value.get()),
-      literal =>
-        SdkJavaBindinigData.create(
-          toBindingData(literal),
-          sdkLiteral.getLiteralType,
-          sdkLiteral.fromLiteral(literal)
-        )
-    )
+    new SdkScalaLiteralType[SdkBindingData[T]]() {
+      override def getLiteralType: LiteralType = sdkLiteral.getLiteralType
+
+      override def toLiteral(value: SdkBindingData[T]): Literal =
+        sdkLiteral.toLiteral(value.get())
+
+      override def fromLiteral(literal: Literal): SdkBindingData[T] =
+        SdkBindingData.literal(sdkLiteral, sdkLiteral.fromLiteral(literal))
+
+      override def toBindingData(value: SdkBindingData[T]): BindingData =
+        sdkLiteral.toBindingData(value.get())
+    }
   }
 
   implicit def stringLiteralType: SdkScalaLiteralType[String] =
-    SdkScalaLiteralType[String](
-      LiteralType.ofSimpleType(SimpleType.STRING),
-      value =>
-        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofStringValue(value))),
-      _.scalar().primitive().stringValue()
-    )
+    DelegateLiteralType(SdkLiteralTypes.strings())
 
   implicit def longLiteralType: SdkScalaLiteralType[Long] =
-    SdkScalaLiteralType[Long](
-      LiteralType.ofSimpleType(SimpleType.INTEGER),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
-      _.scalar().primitive().integerValue()
-    )
+    DelegateLiteralType(SdkLiteralTypes.integers())
 
   implicit def doubleLiteralType: SdkScalaLiteralType[Double] =
-    SdkScalaLiteralType[Double](
-      LiteralType.ofSimpleType(SimpleType.FLOAT),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
-      literal => literal.scalar().primitive().floatValue()
-    )
+    DelegateLiteralType(SdkLiteralTypes.floats())
 
   implicit def booleanLiteralType: SdkScalaLiteralType[Boolean] =
-    SdkScalaLiteralType[Boolean](
-      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
-      _.scalar().primitive().booleanValue()
-    )
+    DelegateLiteralType(SdkLiteralTypes.booleans())
 
   implicit def instantLiteralType: SdkScalaLiteralType[Instant] =
-    SdkScalaLiteralType[Instant](
-      LiteralType.ofSimpleType(SimpleType.DATETIME),
-      value =>
-        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDatetime(value))),
-      _.scalar().primitive().datetime()
-    )
+    DelegateLiteralType(SdkLiteralTypes.datetimes())
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
-    SdkScalaLiteralType[Duration](
-      LiteralType.ofSimpleType(SimpleType.DURATION),
-      value =>
-        Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofDuration(value))),
-      _.scalar().primitive().duration()
-    )
+    DelegateLiteralType(SdkLiteralTypes.durations())
 
   // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>
   //  This makes Scala dev mad when they are forced to use the java types instead of scala types
@@ -272,75 +251,23 @@ object SdkScalaType {
   //  So java and scala can have their own factory class/companion object using their own native types
   //  In the meantime, we need to duplicate all the literal types to use also the java types
   implicit def javaLongLiteralType: SdkScalaLiteralType[java.lang.Long] =
-    SdkScalaLiteralType[java.lang.Long](
-      LiteralType.ofSimpleType(SimpleType.INTEGER),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofInteger(value))),
-      _.scalar().primitive().integerValue()
-    )
+    DelegateLiteralType(SdkJavaLiteralTypes.integers())
 
   implicit def javaDoubleLiteralType: SdkScalaLiteralType[java.lang.Double] =
-    SdkScalaLiteralType[java.lang.Double](
-      LiteralType.ofSimpleType(SimpleType.FLOAT),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloat(value))),
-      literal => literal.scalar().primitive().floatValue()
-    )
+    DelegateLiteralType(SdkJavaLiteralTypes.floats())
 
   implicit def javaBooleanLiteralType: SdkScalaLiteralType[java.lang.Boolean] =
-    SdkScalaLiteralType[java.lang.Boolean](
-      LiteralType.ofSimpleType(SimpleType.BOOLEAN),
-      value => Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBoolean(value))),
-      _.scalar().primitive().booleanValue()
-    )
+    DelegateLiteralType(SdkJavaLiteralTypes.booleans())
 
   implicit def collectionLiteralType[T](implicit
       sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[List[T]] = {
-    new SdkScalaLiteralType[List[T]] {
-
-      override def getLiteralType: LiteralType =
-        LiteralType.ofCollectionType(sdkLiteral.getLiteralType)
-
-      override def toLiteral(values: List[T]): Literal = {
-        Literal.ofCollection(
-          values
-            .map(value => sdkLiteral.toLiteral(value))
-            .asJava
-        )
-      }
-
-      override def fromLiteral(literal: Literal): List[T] =
-        literal
-          .collection()
-          .asScala
-          .map(elem => sdkLiteral.fromLiteral(elem))
-          .toList
-    }
-  }
+  ): SdkScalaLiteralType[List[T]] =
+    DelegateLiteralType(SdkLiteralTypes.collections(sdkLiteral))
 
   implicit def mapLiteralType[T](implicit
       sdkLiteral: SdkScalaLiteralType[T]
-  ): SdkScalaLiteralType[Map[String, T]] = {
-    new SdkScalaLiteralType[Map[String, T]] {
-
-      override def getLiteralType: LiteralType =
-        LiteralType.ofMapValueType(sdkLiteral.getLiteralType)
-
-      override def toLiteral(values: Map[String, T]): Literal = {
-        Literal.ofMap(
-          values.map { case (key, value) =>
-            key -> sdkLiteral.toLiteral(value)
-          }.asJava
-        )
-      }
-
-      override def fromLiteral(literal: Literal): Map[String, T] =
-        literal
-          .map()
-          .asScala
-          .map { case (key, value) => key -> sdkLiteral.fromLiteral(value) }
-          .toMap
-    }
-  }
+  ): SdkScalaLiteralType[Map[String, T]] =
+    DelegateLiteralType(SdkLiteralTypes.maps(sdkLiteral))
 
   @implicitNotFound("Cannot derive SdkScalaType for sealed trait")
   sealed trait Dispatchable[T]
@@ -369,6 +296,9 @@ private object SdkUnitType extends SdkScalaProductType[Unit] {
 
   override def toSdkBindingMap(
       value: Unit
-  ): ju.Map[String, SdkJavaBindinigData[_]] =
-    Map.empty[String, SdkJavaBindinigData[_]].asJava
+  ): ju.Map[String, SdkBindingData[_]] =
+    Map.empty[String, SdkBindingData[_]].asJava
+
+  override def toLiteralTypes: ju.Map[String, SdkLiteralType[_]] =
+    Map.empty[String, SdkLiteralType[_]].asJava
 }

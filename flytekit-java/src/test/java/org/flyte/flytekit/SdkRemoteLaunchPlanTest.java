@@ -90,8 +90,7 @@ public class SdkRemoteLaunchPlanTest {
                 is(
                     singletonMap(
                         "o",
-                        SdkBindingDatas.ofOutputReference(
-                            "some-node-id", "o", LiteralTypes.BOOLEAN)))));
+                        SdkBindingData.promise(SdkLiteralTypes.booleans(), "some-node-id", "o")))));
   }
 
   @SuppressWarnings("ExtendsAutoValue")

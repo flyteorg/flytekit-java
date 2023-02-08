@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrappe
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.util.Map;
 import org.flyte.api.v1.Variable;
+import org.flyte.flytekit.SdkLiteralType;
 
 class RootFormatVisitor extends JsonFormatVisitorWrapper.Base {
 
@@ -52,5 +53,13 @@ class RootFormatVisitor extends JsonFormatVisitorWrapper.Base {
     }
 
     return builder.getMembersMap();
+  }
+
+  public Map<String, SdkLiteralType<?>> getTypesMap() {
+    if (builder == null) {
+      throw new IllegalStateException("invariant failed: typesMap not set");
+    }
+
+    return builder.getTypesMap();
   }
 }

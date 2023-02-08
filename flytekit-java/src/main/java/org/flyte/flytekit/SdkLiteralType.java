@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekit;
 
+import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
@@ -28,5 +29,20 @@ public abstract class SdkLiteralType<T> {
 
   public abstract T fromLiteral(Literal literal);
 
-  public abstract SdkBindingData<T> toSdkBinding(T value);
+  public abstract BindingData toBindingData(T value);
+
+  @Override
+  public final int hashCode() {
+    return getLiteralType().hashCode();
+  }
+
+  @Override
+  public final boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj instanceof SdkLiteralType) {
+      return this.getLiteralType().equals(((SdkLiteralType<?>) obj).getLiteralType());
+    }
+    return false;
+  }
 }

@@ -14,9 +14,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit
+package org.flyte.flytekitscala
 
-import scala.collection.JavaConverters._
+import org.flyte.flytekit.{
+  SdkBindingData,
+  SdkLiteralTypes => SdkJavaLiteralTypes
+}
+import org.flyte.flytekitscala.{SdkLiteralTypes => SdkScalaLiteralTypes}
 
 /** The [[SdkBindingDataConverters]] allows you to do java <-> scala conversions
   * for [[SdkBindingData]]
@@ -33,11 +37,7 @@ object SdkBindingDataConverters {
   def toScalaLong(
       sdkBindingData: SdkBindingData[java.lang.Long]
   ): SdkBindingData[Long] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkScalaLiteralTypes.integers(), l => l)
   }
 
   /** Transform from scala Long to java.lang.Long.
@@ -50,11 +50,7 @@ object SdkBindingDataConverters {
   def toJavaLong(
       sdkBindingData: SdkBindingData[Long]
   ): SdkBindingData[java.lang.Long] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkJavaLiteralTypes.integers(), l => l)
   }
 
   /** Transform from java.lang.Boolean to scala Boolean.
@@ -67,11 +63,7 @@ object SdkBindingDataConverters {
   def toScalaBoolean(
       sdkBindingData: SdkBindingData[java.lang.Boolean]
   ): SdkBindingData[Boolean] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkScalaLiteralTypes.booleans(), b => b)
   }
 
   /** Transform from scala Boolean to java.lang.Boolean.
@@ -84,11 +76,7 @@ object SdkBindingDataConverters {
   def toJavaBoolean(
       sdkBindingData: SdkBindingData[Boolean]
   ): SdkBindingData[java.lang.Boolean] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkJavaLiteralTypes.booleans(), b => b)
   }
 
   /** Transform from scala Double to java.lang.Double.
@@ -101,11 +89,7 @@ object SdkBindingDataConverters {
   def toScalaDouble(
       sdkBindingData: SdkBindingData[java.lang.Double]
   ): SdkBindingData[Double] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkScalaLiteralTypes.floats(), f => f)
   }
 
   /** Transform from scala Double to java.lang.Double.
@@ -118,11 +102,7 @@ object SdkBindingDataConverters {
   def toJavaDouble(
       sdkBindingData: SdkBindingData[Double]
   ): SdkBindingData[java.lang.Double] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value()
-    )
+    sdkBindingData.as(SdkJavaLiteralTypes.floats(), f => f)
   }
 
   /** Transform from java.util.List to scala List.
@@ -135,11 +115,7 @@ object SdkBindingDataConverters {
   def toScalaList[K, T](
       sdkBindingData: SdkBindingData[java.util.List[K]]
   ): SdkBindingData[List[T]] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value().asScala.map(_.asInstanceOf[T]).toList
-    )
+    ???
   }
 
   /** Transform from scala List to java.util.List.
@@ -152,11 +128,7 @@ object SdkBindingDataConverters {
   def toJavaList[K, T](
       sdkBindingData: SdkBindingData[List[K]]
   ): SdkBindingData[java.util.List[T]] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value().toList.map(_.asInstanceOf[T]).asJava
-    )
+    ???
   }
 
   /** Transform from scala Map to java.util.Map.
@@ -169,11 +141,7 @@ object SdkBindingDataConverters {
   def toScalaMap[K, T](
       sdkBindingData: SdkBindingData[java.util.Map[String, K]]
   ): SdkBindingData[Map[String, T]] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value().asScala.mapValues(_.asInstanceOf[T]).toMap
-    )
+    ???
   }
 
   /** Transform from scala Map to java.util.Map.
@@ -186,11 +154,6 @@ object SdkBindingDataConverters {
   def toJavaMap[K, T](
       sdkBindingData: SdkBindingData[Map[String, K]]
   ): SdkBindingData[java.util.Map[String, T]] = {
-    SdkBindingData.create(
-      sdkBindingData.idl(),
-      sdkBindingData.`type`(),
-      sdkBindingData.value().mapValues(_.asInstanceOf[T]).toMap.asJava
-    )
+    ???
   }
-
 }

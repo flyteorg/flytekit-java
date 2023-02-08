@@ -57,7 +57,7 @@ class Compiler {
         continue;
       }
 
-      LiteralType actualType = input.type();
+      LiteralType actualType = input.type().getLiteralType();
       LiteralType expectedType = variable.literalType();
 
       if (!actualType.equals(expectedType)) {

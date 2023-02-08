@@ -159,6 +159,11 @@ class SdkTransformTest {
     }
 
     @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+      return Map.of();
+    }
+
+    @Override
     public Map<String, SdkBindingData<?>> toSdkBindingMap(Object value) {
       return Map.of();
     }

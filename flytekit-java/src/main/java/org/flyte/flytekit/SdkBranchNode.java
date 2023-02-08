@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BranchNode;
 import org.flyte.api.v1.IfElseBlock;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 
@@ -38,7 +37,7 @@ import org.flyte.api.v1.NodeError;
 public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   private final String nodeId;
   private final SdkIfElseBlock ifElse;
-  private final Map<String, LiteralType> outputTypes;
+  private final Map<String, SdkLiteralType<?>> outputTypes;
   private final List<String> upstreamNodeIds;
 
   private final OutputT outputs;
@@ -48,7 +47,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
       String nodeId,
       List<String> upstreamNodeIds,
       SdkIfElseBlock ifElse,
-      Map<String, LiteralType> outputTypes,
+      Map<String, SdkLiteralType<?>> outputTypes,
       OutputT outputs) {
     super(builder);
 
@@ -72,8 +71,8 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     return outputs;
   }
 
-  private SdkBindingData<?> createOutput(Map.Entry<String, LiteralType> entry) {
-    return SdkBindingDatas.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
+  private SdkBindingData<?> createOutput(Map.Entry<String, SdkLiteralType<?>> entry) {
+    return SdkBindingData.promise(entry.getValue(), nodeId, entry.getKey());
   }
 
   /** {@inheritDoc} */
@@ -121,7 +120,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     private final List<SdkIfBlock> ifBlocks = new ArrayList<>();
 
     private SdkNode<?> elseNode;
-    private Map<String, LiteralType> outputTypes;
+    private Map<String, SdkLiteralType<?>> outputTypes;
 
     Builder(SdkWorkflowBuilder builder, SdkType<OutputT> outputType) {
       this.builder = builder;
@@ -134,7 +133,7 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
           case_.then().apply(builder, case_.name(), List.of(), /*metadata=*/ null, Map.of());
 
       Map<String, SdkBindingData<?>> thatOutputs = sdkNode.getOutputBindings();
-      Map<String, LiteralType> thatOutputTypes =
+      Map<String, SdkLiteralType<?>> thatOutputTypes =
           thatOutputs.entrySet().stream()
               .collect(toUnmodifiableMap(Map.Entry::getKey, x -> x.getValue().type()));
 

@@ -16,8 +16,6 @@
  */
 package org.flyte.flytekit;
 
-import static java.util.stream.Collectors.toUnmodifiableMap;
-
 import com.google.auto.value.AutoValue;
 import java.util.List;
 import java.util.Map;
@@ -120,16 +118,9 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
       throw new CompilerException(errors);
     }
 
-    Map<String, SdkBindingData<?>> outputs =
-        outputs().getVariableMap().entrySet().stream()
-            .collect(
-                toUnmodifiableMap(
-                    Map.Entry::getKey,
-                    entry ->
-                        SdkBindingDatas.ofOutputReference(
-                            nodeId, entry.getKey(), entry.getValue().literalType())));
-
+    Map<String, SdkBindingData<?>> outputs = outputs().promiseMapFor(nodeId);
     OutputT promise = getOutputType().promiseFor(nodeId);
+
     return new SdkWorkflowNode<>(
         builder,
         nodeId,

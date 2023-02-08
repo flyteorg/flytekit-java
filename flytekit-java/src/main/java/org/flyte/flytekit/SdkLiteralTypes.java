@@ -31,7 +31,6 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
-import org.flyte.api.v1.SimpleType;
 
 // TODO: this class it is not used. We should remove it or even better use it in place of
 //  raw literal types in SdkBinding data
@@ -92,8 +91,13 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Long> toSdkBinding(Long value) {
+    public BindingData toBindingData(Long value) {
       return ofPrimitive(Primitive::ofIntegerValue, value);
+    }
+
+    @Override
+    public String toString() {
+      return "integers";
     }
   }
 
@@ -116,8 +120,13 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Double> toSdkBinding(Double value) {
+    public BindingData toBindingData(Double value) {
       return ofPrimitive(Primitive::ofFloatValue, value);
+    }
+
+    @Override
+    public String toString() {
+      return "floats";
     }
   }
 
@@ -140,8 +149,13 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<String> toSdkBinding(String value) {
+    public BindingData toBindingData(String value) {
       return ofPrimitive(Primitive::ofStringValue, value);
+    }
+
+    @Override
+    public String toString() {
+      return "strings";
     }
   }
 
@@ -164,8 +178,13 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Boolean> toSdkBinding(Boolean value) {
-      return ofPrimitive(Primitive::ofBooleanValue, value);
+    public BindingData toBindingData(Boolean value) {
+      return BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value)));
+    }
+
+    @Override
+    public String toString() {
+      return "booleans";
     }
   }
 
@@ -188,8 +207,13 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Instant> toSdkBinding(Instant value) {
+    public BindingData toBindingData(Instant value) {
       return ofPrimitive(Primitive::ofDatetime, value);
+    }
+
+    @Override
+    public String toString() {
+      return "datetimes";
     }
   }
 
@@ -212,12 +236,17 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Duration> toSdkBinding(Duration value) {
+    public BindingData toBindingData(Duration value) {
       return ofPrimitive(Primitive::ofDuration, value);
+    }
+
+    @Override
+    public String toString() {
+      return "durations";
     }
   }
 
-  private static class CollectionSdkLiteralType<T> extends SdkLiteralType<List<T>> {
+  private static class CollectionSdkLiteralType<T> extends SdkCollectionLiteralType<T> {
     private final SdkLiteralType<T> elementType;
 
     private CollectionSdkLiteralType(SdkLiteralType<T> elementType) {
@@ -245,19 +274,23 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<List<T>> toSdkBinding(List<T> value) {
-      BindingData data =
-          BindingData.ofCollection(
-              value.stream()
-                  .map(elementType::toSdkBinding)
-                  .map(SdkBindingData::idl)
-                  .collect(toUnmodifiableList()));
-      LiteralType collectionType = LiteralType.ofCollectionType(elementType.getLiteralType());
-      return SdkBindingData.create(data, collectionType, value);
+    public BindingData toBindingData(List<T> value) {
+      return BindingData.ofCollection(
+          value.stream().map(elementType::toBindingData).collect(toUnmodifiableList()));
+    }
+
+    @Override
+    public String toString() {
+      return "collections of [" + elementType + ']';
+    }
+
+    @Override
+    public SdkLiteralType<T> getElementType() {
+      return elementType;
     }
   }
 
-  private static class MapSdkLiteralType<T> extends SdkLiteralType<Map<String, T>> {
+  private static class MapSdkLiteralType<T> extends SdkMapLiteralType<T> {
     private final SdkLiteralType<T> valuesType;
 
     private MapSdkLiteralType(SdkLiteralType<T> valuesType) {
@@ -292,45 +325,26 @@ public class SdkLiteralTypes {
     }
 
     @Override
-    public SdkBindingData<Map<String, T>> toSdkBinding(Map<String, T> value) {
-      BindingData data =
-          BindingData.ofMap(
-              value.entrySet().stream()
-                  .map(
-                      entry ->
-                          Map.entry(
-                              entry.getKey(), valuesType.toSdkBinding(entry.getValue()).idl()))
-                  .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)));
-      LiteralType type = LiteralType.ofMapValueType(valuesType.getLiteralType());
-      return SdkBindingData.create(data, type, value);
+    public BindingData toBindingData(Map<String, T> value) {
+      return BindingData.ofMap(
+          value.entrySet().stream()
+              .map(entry -> Map.entry(entry.getKey(), valuesType.toBindingData(entry.getValue())))
+              .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)));
+    }
+
+    @Override
+    public String toString() {
+      return "map of [" + valuesType + ']';
+    }
+
+    @Override
+    public SdkLiteralType<T> getValuesType() {
+      return valuesType;
     }
   }
 
-  private static <T> SdkBindingData<T> ofPrimitive(Function<T, Primitive> toPrimitive, T value) {
-    Primitive primitive = toPrimitive.apply(value);
-    BindingData bindingData = BindingData.ofScalar(Scalar.ofPrimitive(primitive));
-    LiteralType literalType = LiteralType.ofSimpleType(getSimpleType(primitive.kind()));
-
-    return SdkBindingData.create(bindingData, literalType, value);
-  }
-
-  // TODO: find a better place
-  private static SimpleType getSimpleType(Primitive.Kind kind) {
-    switch (kind) {
-      case INTEGER_VALUE:
-        return SimpleType.INTEGER;
-      case FLOAT_VALUE:
-        return SimpleType.FLOAT;
-      case STRING_VALUE:
-        return SimpleType.STRING;
-      case BOOLEAN_VALUE:
-        return SimpleType.BOOLEAN;
-      case DATETIME:
-        return SimpleType.DATETIME;
-      case DURATION:
-        return SimpleType.DURATION;
-    }
-
-    throw new AssertionError("Unexpected Primitive.Kind: " + kind);
+  private static <T> BindingData ofPrimitive(Function<T, Primitive> toPrimitive, T value) {
+    var primitive = toPrimitive.apply(value);
+    return BindingData.ofScalar(Scalar.ofPrimitive(primitive));
   }
 }

@@ -64,13 +64,14 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
    * @param builder workflow builder that this workflow expands into. \
    */
   public final void expand(SdkWorkflowBuilder builder) {
+    var literalTypes = inputType.toLiteralTypes();
     inputType
         .getVariableMap()
         .forEach(
             (name, variable) ->
-                builder.inputOf(
+                builder.setInput(
+                    literalTypes.get(name),
                     name,
-                    variable.literalType(),
                     variable.description() == null ? "" : variable.description()));
 
     OutputT output = expand(builder, inputType.promiseFor(START_NODE_ID));
@@ -119,9 +120,7 @@ public abstract class SdkWorkflow<InputT, OutputT> extends SdkTransform<InputT, 
             .collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
-                    e ->
-                        SdkBindingDatas.ofOutputReference(
-                            nodeId, e.getKey(), e.getValue().type())));
+                    e -> SdkBindingData.promise(e.getValue().type(), nodeId, e.getKey())));
 
     var promise = getOutputType().promiseFor(nodeId);
     return new SdkWorkflowNode<>(

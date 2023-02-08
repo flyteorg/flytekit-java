@@ -59,6 +59,11 @@ public class SdkTypes {
     }
 
     @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+      return Map.of();
+    }
+
+    @Override
     public Map<String, SdkBindingData<?>> toSdkBindingMap(Void value) {
       return Map.of();
     }

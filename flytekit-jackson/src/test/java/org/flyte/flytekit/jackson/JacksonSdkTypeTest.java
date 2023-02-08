@@ -330,10 +330,10 @@ public class JacksonSdkTypeTest {
   }
 
   public static class JsonPropertyClassInput {
-    @JsonProperty SdkBindingData<String> test;
+    @JsonProperty final SdkBindingData<String> test;
 
     @JsonProperty("name")
-    SdkBindingData<String> otherTest;
+    final SdkBindingData<String> otherTest;
 
     @JsonCreator
     public JsonPropertyClassInput(SdkBindingData<String> test, SdkBindingData<String> otherTest) {
@@ -444,32 +444,32 @@ public class JacksonSdkTypeTest {
 
     assertThat(
         autoValueInput.i(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.integers(), "node-id", "i")));
     assertThat(
         autoValueInput.f(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.floats(), "node-id", "f")));
     assertThat(
         autoValueInput.s(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.strings(), "node-id", "s")));
     assertThat(
         autoValueInput.b(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.booleans(), "node-id", "b")));
     assertThat(
         autoValueInput.t(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.datetimes(), "node-id", "t")));
     assertThat(
         autoValueInput.d(),
-        equalTo(SdkBindingDatas.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.durations(), "node-id", "d")));
     assertThat(
         autoValueInput.l(),
         equalTo(
-            SdkBindingDatas.ofOutputReference(
-                "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
+            SdkBindingData.promise(
+                SdkLiteralTypes.collections(SdkLiteralTypes.strings()), "node-id", "l")));
     assertThat(
         autoValueInput.m(),
         equalTo(
-            SdkBindingDatas.ofOutputReference(
-                "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
+            SdkBindingData.promise(
+                SdkLiteralTypes.maps(SdkLiteralTypes.strings()), "node-id", "m")));
   }
 
   @Test
@@ -701,9 +701,4 @@ public class JacksonSdkTypeTest {
   private static Literal literalOf(Primitive primitive) {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
-
-  // @SuppressWarnings({"unused"})
-  // private static Literal literalOf(Blob blob) {
-  //   return Literal.ofScalar(Scalar.ofBlob(blob));
-  // }
 }

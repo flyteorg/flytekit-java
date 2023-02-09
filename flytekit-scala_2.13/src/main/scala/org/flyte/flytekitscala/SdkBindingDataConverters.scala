@@ -16,11 +16,11 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.flytekit.{
-  SdkBindingData,
-  SdkLiteralTypes => SdkJavaLiteralTypes
-}
+import org.flyte.api.v1.{LiteralType, SimpleType}
+import org.flyte.flytekit.{SdkBindingData, SdkLiteralType, SdkLiteralTypes => SdkJavaLiteralTypes}
 import org.flyte.flytekitscala.{SdkLiteralTypes => SdkScalaLiteralTypes}
+
+import java.util.stream.Collectors
 
 /** The [[SdkBindingDataConverters]] allows you to do java <-> scala conversions
   * for [[SdkBindingData]]
@@ -115,19 +115,46 @@ object SdkBindingDataConverters {
   def toScalaList[JavaT, ScalaT](
       sdkBindingData: SdkBindingData[java.util.List[JavaT]]
   ): SdkBindingData[List[ScalaT]] = {
-    sdkBindingData.as(SdkScalaLiteralTypes.collections(sdkBindingData.`type`().))
-    ???
+    val literalType = fromLiteralType(sdkBindingData.`type`().getLiteralType)
+    sdkBindingData.as(SdkScalaLiteralTypes.collections(literalType._1), literalType._2.get
+      .asInstanceOf[java.util.function.Function[java.util.List[JavaT], java.util.List[ScalaT]]]) // TODO check casting
+//    ???
   }
 
-  def fromLiteralType(lt: LiteralType, conversionFunc: Option[Function[Any, Any]] = Option.empty):
-  (SdkLiteralType[_], Option[Function[Any, Any]]) = {
+
+  def fromLiteralType[JavaT, ScalaT](lt: LiteralType, conversionFunc: Option[Function[java.util.List[JavaT], java.util.List[ScalaT]]] = Option.empty):
+  (SdkLiteralType[ScalaT], Option[Function[java.util.List[JavaT], java.util.List[ScalaT]]]) = {
     lt.getKind match {
       case LiteralType.Kind.SIMPLE_TYPE =>
         lt.simpleType() match {
-          case SimpleType.FLOAT => (SdkLiteralTypes.floats(), ???)
+          case SimpleType.FLOAT => (SdkLiteralTypes.floats(), composeFunctions(conversionFunc, l => l))
+          case SimpleType.STRING => (SdkLiteralTypes.strings(), composeFunctions(conversionFunc, l => l))
+          case SimpleType.STRUCT => ??? // TODO how to handle? do we support structs already?
+          case SimpleType.BOOLEAN => (SdkLiteralTypes.booleans(), composeFunctions(conversionFunc, l => l))
+          case SimpleType.INTEGER => (SdkLiteralTypes.integers(), composeFunctions(conversionFunc, l => l))
+          case SimpleType.DATETIME => (SdkLiteralTypes.datetimes(), composeFunctions(conversionFunc, l => l))
+          case SimpleType.DURATION => (SdkLiteralTypes.durations(), composeFunctions(conversionFunc, l => l))
         }
+      case LiteralType.Kind.BLOB_TYPE => ??? // TODO do we support blob?
+      case LiteralType.Kind.SCHEMA_TYPE => ??? // TODO do we support schema type?
+      case LiteralType.Kind.COLLECTION_TYPE => fromLiteralType(lt.collectionType(),
+        composeFunctions(conversionFunc, generateCollectionConversionFunction(lt.collectionType())))
     }
   }
+
+  def generateCollectionConversionFunction[JavaT, ScalaT](collectionElemLiteralType: LiteralType): Function[java.util.List[JavaT], java.util.List[ScalaT]] = {
+    val func/*: Function[java.util.List[JavaT], List[ScalaT]]*/ = (javaList: java.util.List[JavaT]) => {
+      val functionToApply = fromLiteralType(collectionElemLiteralType, Option.empty)._2 // TODO does this circular dependency work with List<List<List<String>>> ???
+      javaList.asInstanceOf[java.util.List[JavaT]].stream().map(elem => functionToApply.get.apply(elem))
+      // TODO to scala list
+      //.collect(e => e)
+    }
+    func
+  }
+
+  def composeFunctions(previous: Option[Function[Any, Any]], current: Function[Any, Any]): Option[Function[Any, Any]] =
+    if (previous.isEmpty) Some(current) else Some(previous.get.andThen(current))
+
   /** Transform from scala List to java.util.List.
     *
     * @param sdkBindingData

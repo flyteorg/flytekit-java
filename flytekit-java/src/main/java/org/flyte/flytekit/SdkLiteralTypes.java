@@ -17,7 +17,7 @@
 package org.flyte.flytekit;
 
 import static java.util.Collections.unmodifiableMap;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,7 +29,9 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
-public class SdkLiteralTypes {
+// TODO: this class it is not used. We should remove it or even better use it in place of
+//  raw literal types in SdkBinding data
+class SdkLiteralTypes {
 
   public static SdkLiteralType<Long> integers() {
     return IntegerSdkLiteralType.INSTANCE;

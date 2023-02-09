@@ -19,15 +19,27 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 
 /**
- * Encapsulation of fields that identifies a Flyte resource. A resource can internally have multiple
- * versions.
+ * Encapsulation of fields that identifies a Flyte resource. A Flyte resource can be a task,
+ * workflow or launch plan. A resource can internally have multiple versions and is uniquely
+ * identified by project, domain, and name.
  */
 @AutoValue
 public abstract class NamedEntityIdentifier {
+
+  /**
+   * Name of the domain the resource belongs to. A domain can be considered as a subset within a
+   * specific project.
+   */
   public abstract String domain();
 
+  /** Name of the project the resource belongs to. */
   public abstract String project();
 
+  /**
+   * User provided value for the resource. The combination of project + domain + name uniquely
+   * identifies the resource. [Optional] - used in certain contexts - like 'List API', 'Launch
+   * plans'
+   */
   public abstract String name();
 
   public static Builder builder() {

@@ -11,13 +11,17 @@ import "flyteidl/core/literals.proto";
 message ComparisonExpression {
     // Binary Operator for each expression
     enum Operator {
+        // Equal to
         EQ = 0;
+        // Not equal to
         NEQ = 1;
         // Greater Than
         GT = 2;
+        // Greater than or equal to
         GTE = 3;
         // Less Than
         LT = 4;
+        // Less than or equal to
         LTE = 5;
     }
 
@@ -52,6 +56,7 @@ message ConjunctionExpression {
     enum LogicalOperator {
         // Conjunction
         AND = 0;
+        // Disjunction
         OR = 1;
     }
 

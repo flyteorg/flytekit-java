@@ -40,13 +40,13 @@ public abstract class BindingData {
   }
 
   public abstract Kind kind();
-
+  /** A simple scalar value. */
   public abstract Scalar scalar();
-
+  /** A collection of binding data. This allows nesting of binding data to any number of levels. */
   public abstract List<BindingData> collection();
-
+  /** References an output promised by another node. */
   public abstract OutputReference promise();
-
+  /** A map of bindings. The key is always a string. */
   public abstract Map<String, BindingData> map();
 
   public static BindingData ofScalar(Scalar scalar) {

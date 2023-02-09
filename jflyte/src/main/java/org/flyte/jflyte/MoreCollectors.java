@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
+/** Custom stream java collectors. */
 class MoreCollectors {
   static <T> Collector<T, ?, List<T>> toUnmodifiableList() {
     return collectingAndThen(toList(), Collections::unmodifiableList);

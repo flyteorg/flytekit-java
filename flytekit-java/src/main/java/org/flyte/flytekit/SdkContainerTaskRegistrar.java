@@ -29,12 +29,18 @@ import org.flyte.api.v1.ContainerTaskRegistrar;
 import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
-import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
 
-/** A registrar that creates {@link RunnableTask} instances. */
+/**
+ * Default implementation of a {@link ContainerTaskRegistrar} that discovers {@link ContainerTask}s
+ * implementation via {@link ServiceLoader} mechanism. Container tasks implementations must use
+ * {@code @AutoService(SdkContainerTask.class)} or manually add their fully qualifies name to the
+ * corresponding file.
+ *
+ * @see ServiceLoader
+ */
 @AutoService(ContainerTaskRegistrar.class)
 public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
   private static final Logger LOG = Logger.getLogger(SdkContainerTaskRegistrar.class.getName());
@@ -122,6 +128,15 @@ public class SdkContainerTaskRegistrar extends ContainerTaskRegistrar {
     }
   }
 
+  /**
+   * Load {@link ContainerTask}s using {@link ServiceLoader}.
+   *
+   * @param env env vars in a map that would be used to pick up the project, domain and version for
+   *     the discovered tasks.
+   * @param classLoader class loader to use when discovering the task using {@link
+   *     ServiceLoader#load(Class, ClassLoader)}
+   * @return a map of {@link ContainerTask}s by its task identifier.
+   */
   @Override
   @SuppressWarnings("rawtypes")
   public Map<TaskIdentifier, ContainerTask> load(Map<String, String> env, ClassLoader classLoader) {

@@ -20,6 +20,7 @@ import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 
+/** {@link SdkWorkflow} that can fix output for specific input. */
 class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
   private final OutputT output;

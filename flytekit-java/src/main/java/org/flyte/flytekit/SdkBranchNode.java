@@ -17,7 +17,7 @@
 package org.flyte.flytekit;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Var;
@@ -34,6 +34,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 
+/** A node in the workflow denoting a branching decision in the DAG. */
 public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
   private final String nodeId;
   private final SdkIfElseBlock ifElse;
@@ -58,12 +59,14 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     this.outputs = outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputTypes.entrySet().stream()
         .collect(toUnmodifiableMap(Map.Entry::getKey, this::createOutput));
   }
 
+  /** {@inheritDoc} */
   @Override
   public OutputT getOutputs() {
     return outputs;
@@ -73,11 +76,17 @@ public class SdkBranchNode<OutputT> extends SdkNode<OutputT> {
     return SdkBindingData.ofOutputReference(nodeId, entry.getKey(), entry.getValue());
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getNodeId() {
     return nodeId;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The returned Node contains a branch node
+   */
   @Override
   public Node toIdl() {
     NodeError nodeError =

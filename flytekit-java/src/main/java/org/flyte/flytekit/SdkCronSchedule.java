@@ -18,8 +18,6 @@ package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -27,25 +25,24 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SdkCronSchedule {
   private static final List<String> CRON_ALIAS =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              "hours",
-              "days",
-              "weeks",
-              "months",
-              "years",
-              "hourly",
-              "daily",
-              "weekly",
-              "monthly",
-              "yearly",
-              "annually",
-              "@hourly",
-              "@daily",
-              "@weekly",
-              "@monthly",
-              "@yearly",
-              "@annually"));
+      List.of(
+          "hours",
+          "days",
+          "weeks",
+          "months",
+          "years",
+          "hourly",
+          "daily",
+          "weekly",
+          "monthly",
+          "yearly",
+          "annually",
+          "@hourly",
+          "@daily",
+          "@weekly",
+          "@monthly",
+          "@yearly",
+          "@annually");
 
   private static final String REGEX_CRON_SCHEDULE =
       "(^(\\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|"
@@ -54,8 +51,10 @@ public abstract class SdkCronSchedule {
           + "(\\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\\*\\/([1-9]|1[0-9]|2[0-9]|3[0-1])) "
           + "(\\*|([1-9]|1[0-2])|\\*\\/([1-9]|1[0-2])) (\\*|([0-6])|\\*\\/([0-6])))";
 
+  /** Returns the schedule. */
   public abstract String schedule();
 
+  /** Returns the offset duration. It could be null */
   @Nullable
   public abstract Duration offset();
 
@@ -69,6 +68,13 @@ public abstract class SdkCronSchedule {
     return new AutoValue_SdkCronSchedule(schedule, null);
   }
 
+  /**
+   * Creates a {@link SdkCronSchedule} with input schedule and offset.
+   *
+   * @param schedule A cron alias (days, months, etc.) or a cron expression '* * * * *'
+   * @param offset offset duration
+   * @return the newly created {@link SdkCronSchedule}.
+   */
   public static SdkCronSchedule of(String schedule, Duration offset) {
     if (!CRON_ALIAS.contains(schedule) && !schedule.matches(REGEX_CRON_SCHEDULE)) {
       throw new IllegalArgumentException(
@@ -77,22 +83,27 @@ public abstract class SdkCronSchedule {
     return new AutoValue_SdkCronSchedule(schedule, offset);
   }
 
+  /** Returns a {@link SdkCronSchedule} with hourly alias and no offset. */
   public static SdkCronSchedule hourly() {
     return new AutoValue_SdkCronSchedule("hourly", null);
   }
 
+  /** Returns a {@link SdkCronSchedule} with daily alias and no offset. */
   public static SdkCronSchedule daily() {
     return new AutoValue_SdkCronSchedule("daily", null);
   }
 
+  /** Returns a {@link SdkCronSchedule} with weekly alias and no offset. */
   public static SdkCronSchedule weekly() {
     return new AutoValue_SdkCronSchedule("weekly", null);
   }
 
+  /** Returns a {@link SdkCronSchedule} with monthly alias and no offset. */
   public static SdkCronSchedule monthly() {
     return new AutoValue_SdkCronSchedule("monthly", null);
   }
 
+  /** Returns a {@link SdkCronSchedule} with yearly alias and no offset. */
   public static SdkCronSchedule yearly() {
     return new AutoValue_SdkCronSchedule("yearly", null);
   }

@@ -23,8 +23,10 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class Variable {
 
+  /** Variable literal type. */
   public abstract LiteralType literalType();
 
+  /** [Optional] string describing input variable. */
   @Nullable
   public abstract String description();
 

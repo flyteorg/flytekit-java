@@ -29,19 +29,39 @@ public abstract class TaskTemplate {
   @Nullable
   public abstract Container container();
 
+  /**
+   * A strongly typed interface for the task. This enables others to use this task within a workflow
+   * and guarantees compile-time validation of the workflow to avoid costly runtime failures.
+   */
   public abstract TypedInterface interface_();
 
+  /**
+   * A predefined yet extensible Task type identifier. This can be used to customize any of the
+   * components. If no extensions are provided in the system, Flyte will resolve this task to its
+   * TaskCategory and default the implementation registered for the TaskCategory.
+   */
   public abstract String type();
 
+  /** Number of retries per task. */
   public abstract RetryStrategy retries();
 
+  /** Custom data about the task. This is extensible to allow various plugins in the system. */
   public abstract Struct custom();
 
+  /**
+   * Indicates whether the system should attempt to lookup this task's output to reuse existing
+   * data.
+   */
   public abstract boolean discoverable();
 
+  /** Indicates a logical version to apply to this task for the purpose of discovery. */
   @Nullable
   public abstract String discoveryVersion();
 
+  /**
+   * Indicates whether the system should attempt to execute discoverable instances in serial to
+   * avoid duplicate work.
+   */
   public abstract boolean cacheSerializable();
 
   public abstract Builder toBuilder();

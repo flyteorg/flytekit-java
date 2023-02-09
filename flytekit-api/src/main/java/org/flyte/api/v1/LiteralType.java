@@ -37,6 +37,9 @@ public abstract class LiteralType {
 
     /** A blob might have specialized implementation details depending on associated metadata. */
     BLOB_TYPE,
+
+    // TODO: add ENUM_TYPE, STRUCTURED_DATASET_TYPE and UNION_TYPE from
+    // src/main/proto/flyteidl/core/types.proto
   }
 
   public abstract Kind getKind();

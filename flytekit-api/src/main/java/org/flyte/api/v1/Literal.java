@@ -38,6 +38,8 @@ public abstract class Literal {
     MAP
   }
 
+  // TODO: add hash from src/main/proto/flyteidl/core/literals.proto
+
   public abstract Kind kind();
 
   public abstract Scalar scalar();

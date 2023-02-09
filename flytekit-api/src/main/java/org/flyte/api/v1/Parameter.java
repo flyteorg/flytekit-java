@@ -19,9 +19,14 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
 
+/**
+ * A parameter is used as input to a launch plan and has the special ability to have a default value
+ * or mark itself as required.
+ */
 @AutoValue
 public abstract class Parameter {
 
+  // * [Required] Variable. Defines the type of the variable backing this parameter. */
   public abstract Variable var();
 
   // It's not required if it's null

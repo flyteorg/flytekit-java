@@ -27,6 +27,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
 
+/** ProtocolBuffer file reader helper. */
 class ProtoReader {
   private final FileSystem inputFs;
 

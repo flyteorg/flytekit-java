@@ -16,12 +16,12 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.TypedInterface;
@@ -31,7 +31,7 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 class WorkflowTemplateIdl {
 
-  public static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder) {
+  static WorkflowTemplate ofBuilder(SdkWorkflowBuilder builder) {
     WorkflowMetadata metadata = WorkflowMetadata.builder().build();
 
     List<Node> nodes =
@@ -58,33 +58,27 @@ class WorkflowTemplateIdl {
   }
 
   static Map<String, Variable> getInputVariableMap(SdkWorkflowBuilder builder) {
-    return builder.getInputs().entrySet().stream()
-        .map(
-            entry -> {
-              Variable variable =
-                  Variable.builder()
-                      .literalType(entry.getValue().type())
-                      .description(builder.getInputDescription(entry.getKey()))
-                      .build();
-
-              return new SimpleImmutableEntry<>(entry.getKey(), variable);
-            })
-        .collect(toUnmodifiableMap());
+    return toVariableMap(builder.getInputs(), builder::getInputDescription);
   }
 
   static Map<String, Variable> getOutputVariableMap(SdkWorkflowBuilder builder) {
-    return builder.getOutputs().entrySet().stream()
+    return toVariableMap(builder.getOutputs(), builder::getOutputDescription);
+  }
+
+  private static Map<String, Variable> toVariableMap(
+      Map<String, SdkBindingData<?>> bindingDataMap, Function<String, String> nameToDescription) {
+    return bindingDataMap.entrySet().stream()
         .map(
             entry -> {
               Variable variable =
                   Variable.builder()
                       .literalType(entry.getValue().type())
-                      .description(builder.getOutputDescription(entry.getKey()))
+                      .description(nameToDescription.apply(entry.getKey()))
                       .build();
 
-              return new SimpleImmutableEntry<>(entry.getKey(), variable);
+              return Map.entry(entry.getKey(), variable);
             })
-        .collect(toUnmodifiableMap());
+        .collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static Binding getBinding(String var_, SdkBindingData<?> bindingData) {

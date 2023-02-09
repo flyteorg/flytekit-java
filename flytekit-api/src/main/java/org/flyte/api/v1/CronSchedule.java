@@ -19,10 +19,19 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
 
+/** Options for schedules to run according to a cron expression. */
 @AutoValue
 public abstract class CronSchedule {
+  /**
+   * Standard/default cron implementation as described by
+   * https://en.wikipedia.org/wiki/Cron#CRON_expression; Also supports nonstandard predefined
+   * scheduling definitions as described by
+   * https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions
+   * except @reboot.
+   */
   public abstract String schedule();
 
+  /** ISO 8601 duration as described by https://en.wikipedia.org/wiki/ISO_8601#Durations . */
   @Nullable
   public abstract String offset();
 

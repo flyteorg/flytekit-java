@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +25,7 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.WorkflowNode;
 
+/** Represent a {@link org.flyte.flytekit.SdkWorkflow} in a workflow DAG. */
 public class SdkWorkflowNode<T> extends SdkNode<T> {
   private final String nodeId;
   private final List<String> upstreamNodeIds;
@@ -54,21 +55,25 @@ public class SdkWorkflowNode<T> extends SdkNode<T> {
     this.outputs = outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkBindingData<?>> getOutputBindings() {
     return outputBindings;
   }
 
+  /** {@inheritDoc} */
   @Override
   public T getOutputs() {
     return outputs;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getNodeId() {
     return nodeId;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Node toIdl() {
     // inputs in var order for predictability

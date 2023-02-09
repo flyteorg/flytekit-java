@@ -22,6 +22,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 
+/** Factory for {@link Literal}s. */
 class Literals {
 
   static Literal ofInteger(long value) {

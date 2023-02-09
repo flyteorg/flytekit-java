@@ -22,7 +22,8 @@ import java.io.Serializable;
 /**
  * CompilerError represents all possible errors that can be reported while building workflow.
  *
- * <p>See https://github.com/lyft/flytepropeller/blob/master/pkg/compiler/errors/compiler_errors.go.
+ * <p>See <a
+ * href="https://github.com/lyft/flytepropeller/blob/master/pkg/compiler/errors/compiler_errors.go">...</a>.
  */
 @AutoValue
 public abstract class CompilerError implements Serializable {
@@ -41,6 +42,8 @@ public abstract class CompilerError implements Serializable {
 
     /** An Id existed twice. */
     DUPLICATE_NODE_ID
+
+    // TODO: complete kinds from upstream
   }
 
   /**
@@ -64,6 +67,14 @@ public abstract class CompilerError implements Serializable {
    */
   public abstract String message();
 
+  /**
+   * Creates a compiler error.
+   *
+   * @param kind specifies the {@link CompilerError.Kind} of error.
+   * @param nodeId node id to which this error applies.
+   * @param message error message.
+   * @return the created compile error.
+   */
   public static CompilerError create(Kind kind, String nodeId, String message) {
     return new AutoValue_CompilerError(kind, nodeId, message);
   }

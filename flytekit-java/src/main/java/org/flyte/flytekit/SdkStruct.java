@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit;
 
-import static org.flyte.flytekit.MoreCollectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
@@ -27,69 +27,146 @@ import java.util.function.Function;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Struct.Value;
 
+/**
+ * Struct represents a structured data value, consisting of fields which map to dynamically typed
+ * values.
+ */
 @AutoValue
 public abstract class SdkStruct {
   private static final SdkStruct EMPTY = builder().build();
 
   abstract Struct struct();
 
+  /** Returns returns a {@link SdkStruct.Builder} from this struct. */
   public abstract Builder toBuilder();
 
+  /** Returns an empty struct, with no fields. */
   public static SdkStruct empty() {
     return EMPTY;
   }
 
+  /** Returns returns a new {@link SdkStruct.Builder}. */
   public static Builder builder() {
     return new AutoValue_SdkStruct.Builder().struct(Struct.of(Collections.emptyMap()));
   }
 
+  /** Builder for {@link SdkStruct}. */
   @AutoValue.Builder
   public abstract static class Builder {
     abstract Builder struct(Struct struct);
 
+    /**
+     * Adds a flyte boolean field.
+     *
+     * @param name name of the field
+     * @param value value to set
+     * @return this builder
+     */
     public Builder addBooleanField(String name, Boolean value) {
       return addValueField(name, ofNullable(value, Value::ofBoolValue));
     }
 
+    /**
+     * Adds a flyte String field.
+     *
+     * @param name name of the field
+     * @param value value to set
+     * @return this builder
+     */
     public Builder addStringField(String name, String value) {
       return addValueField(name, ofNullable(value, Value::ofStringValue));
     }
 
+    /**
+     * Adds a flyte integer field.
+     *
+     * @param name name of the field
+     * @param value value to set
+     * @return this builder
+     */
     public Builder addIntegerField(String name, Long value) {
       return addValueField(name, Builder.<Long>ofNullable(value, Value::ofNumberValue));
     }
 
+    /**
+     * Adds a flyte float field.
+     *
+     * @param name name of the field
+     * @param value value to set
+     * @return this builder
+     */
     public Builder addFloatField(String name, Double value) {
       return addValueField(name, ofNullable(value, Value::ofNumberValue));
     }
 
+    /**
+     * Adds a nested structs field.
+     *
+     * @param name name of the field
+     * @param value value to set
+     * @return this builder
+     */
     public Builder addStructField(String name, SdkStruct value) {
       return addValueField(name, ofNullable(value, v -> Value.ofStructValue(v.struct())));
     }
 
+    /**
+     * Adds a list of flyte integers field.
+     *
+     * @param name name of the field
+     * @param values values to set
+     * @return this builder
+     */
     public Builder addIntegerCollectionField(String name, List<Long> values) {
       return this.<Long>addListValueField(name, values, Value::ofNumberValue);
     }
 
+    /**
+     * Adds a list of flyte float field.
+     *
+     * @param name name of the field
+     * @param values values to set
+     * @return this builder
+     */
     public Builder addFloatCollectionField(String name, List<Double> values) {
-      return this.<Double>addListValueField(name, values, Value::ofNumberValue);
+      return this.addListValueField(name, values, Value::ofNumberValue);
     }
 
+    /**
+     * Adds a list of flyte String field.
+     *
+     * @param name name of the field
+     * @param values values to set
+     * @return this builder
+     */
     public Builder addStringCollectionField(String name, List<String> values) {
-      return this.<String>addListValueField(name, values, Value::ofStringValue);
+      return this.addListValueField(name, values, Value::ofStringValue);
     }
 
+    /**
+     * Adds a list of flyte booleans field.
+     *
+     * @param name name of the field
+     * @param values values to set
+     * @return this builder
+     */
     public Builder addBooleanCollectionField(String name, List<Boolean> values) {
-      return this.<Boolean>addListValueField(name, values, Value::ofBoolValue);
+      return this.addListValueField(name, values, Value::ofBoolValue);
     }
 
+    /**
+     * Adds a list of nested structures field.
+     *
+     * @param name name of the field
+     * @param values values to set
+     * @return this builder
+     */
     public Builder addStructCollectionField(String name, List<SdkStruct> values) {
-      return this.<SdkStruct>addListValueField(name, values, x -> Value.ofStructValue(x.struct()));
+      return this.addListValueField(name, values, x -> Value.ofStructValue(x.struct()));
     }
 
     Builder addValueField(String name, Value value) {
-      Map<String, Value> fields = new HashMap<>();
-      fields.putAll(build().struct().fields());
+      Map<String, Value> fields = new HashMap<>(build().struct().fields());
       fields.put(name, value);
       return struct(Struct.of(fields));
     }
@@ -112,6 +189,7 @@ public abstract class SdkStruct {
       return value == null ? Value.ofNullValue() : fn.apply(value);
     }
 
+    /** Returns builds a {@link SdkStruct}. */
     public abstract SdkStruct build();
   }
 }

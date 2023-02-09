@@ -42,7 +42,7 @@ public abstract class IfElseBlock {
   public abstract List<IfBlock> other();
 
   /**
-   * Returns the node to execute in case none of the branches were taken.
+   * [Optional] Returns the node to execute in case none of the branches were taken.
    *
    * @return the else node.
    */

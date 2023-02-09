@@ -43,11 +43,19 @@ public abstract class Resources {
 
   // Values must be a valid k8s quantity. See
   // https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go#L30-L80
+
+  /** The desired set of resources requested. ResourceNames must be unique within the list. */
   @Nullable
   public abstract Map<ResourceName, String> requests();
 
+  /**
+   * Defines a set of bounds (e.g. min/max) within which the task can reliably run. ResourceNames
+   * must be unique within the list.
+   */
   @Nullable
   public abstract Map<ResourceName, String> limits();
+
+  // TODO: check if resourceEntry should be added from src/main/proto/flyteidl/core/tasks.proto
 
   public static Builder builder() {
     return new AutoValue_Resources.Builder();

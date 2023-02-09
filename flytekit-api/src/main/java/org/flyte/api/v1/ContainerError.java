@@ -16,11 +16,14 @@
  */
 package org.flyte.api.v1;
 
-/** Exception to propagate detailed errors from container to the execution. */
+/** Error message to propagate detailed errors from container executions to the execution engine. */
 public class ContainerError extends RuntimeException {
 
   private static final long serialVersionUID = 5162780469952221158L;
+  /** A simplified code for errors, so that we can provide a glossary of all possible errors. */
   private final String code;
+  // TODO: add message from src/main/proto/flyteidl/core/errors.proto
+  /** An abstract error kind for this error. Defaults to Non_Recoverable if not specified. */
   private final Kind kind;
 
   /** Defines a generic error type that dictates the behavior of the retry strategy. */

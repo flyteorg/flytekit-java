@@ -38,6 +38,18 @@ public abstract class SdkBindingData<T> {
 
   public abstract SdkLiteralType<T> type();
 
+
+  /**
+   * Returns the simple value contained by this data.
+   *
+   * @return the value that this simple data holds
+   * @throws IllegalArgumentException when this data is an output reference
+   */
+  public abstract T get();
+
+  public abstract <NewT> SdkBindingData<NewT> as(
+      SdkLiteralType<NewT> newType, Function<T, NewT> castFunction);
+
   // TODO: it would be interesting to see if we can use java 9 modules to only expose this method
   //      to other modules in the sdk
   /**
@@ -94,17 +106,6 @@ public abstract class SdkBindingData<T> {
       SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> map) {
     return SdkBindingMap.create(valuesType, map);
   }
-
-  /**
-   * Returns the simple value contained by this data.
-   *
-   * @return the value that this simple data holds
-   * @throws IllegalArgumentException when this data is an output reference
-   */
-  public abstract T get();
-
-  public abstract <NewT> SdkBindingData<NewT> as(
-      SdkLiteralType<NewT> newType, Function<T, NewT> castFunction);
 
   @AutoValue
   abstract static class LiteralSdkBindingData<T> extends SdkBindingData<T> {

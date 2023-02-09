@@ -112,12 +112,22 @@ object SdkBindingDataConverters {
     * @return
     *   the value transformed.
     */
-  def toScalaList[K, T](
-      sdkBindingData: SdkBindingData[java.util.List[K]]
-  ): SdkBindingData[List[T]] = {
+  def toScalaList[JavaT, ScalaT](
+      sdkBindingData: SdkBindingData[java.util.List[JavaT]]
+  ): SdkBindingData[List[ScalaT]] = {
+    sdkBindingData.as(SdkScalaLiteralTypes.collections(sdkBindingData.`type`().))
     ???
   }
 
+  def fromLiteralType(lt: LiteralType, conversionFunc: Option[Function[Any, Any]] = Option.empty):
+  (SdkLiteralType[_], Option[Function[Any, Any]]) = {
+    lt.getKind match {
+      case LiteralType.Kind.SIMPLE_TYPE =>
+        lt.simpleType() match {
+          case SimpleType.FLOAT => (SdkLiteralTypes.floats(), ???)
+        }
+    }
+  }
   /** Transform from scala List to java.util.List.
     *
     * @param sdkBindingData

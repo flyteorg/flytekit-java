@@ -16,6 +16,10 @@
  */
 package org.flyte.flytekit;
 
+import static org.flyte.flytekit.SdkLiteralTypes.collections;
+import static org.flyte.flytekit.SdkLiteralTypes.maps;
+import static org.flyte.flytekit.SdkLiteralTypes.strings;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -59,7 +63,7 @@ public final class SdkBindingDatas {
    * @return the new {@code SdkBindingData}
    */
   public static SdkBindingData<String> ofString(String value) {
-    return SdkBindingData.literal(SdkLiteralTypes.strings(), value);
+    return SdkBindingData.literal(strings(), value);
   }
 
   /**
@@ -117,7 +121,7 @@ public final class SdkBindingDatas {
    */
   public static <T> SdkBindingData<List<T>> ofCollection(
       SdkLiteralType<T> elementType, List<T> collection) {
-    return SdkBindingData.literal(SdkLiteralTypes.collections(elementType), collection);
+    return SdkBindingData.literal(collections(elementType), collection);
   }
 
   /**
@@ -128,7 +132,7 @@ public final class SdkBindingDatas {
    * @return the new {@code SdkBindingData}
    */
   public static SdkBindingData<List<String>> ofStringCollection(List<String> collection) {
-    return ofCollection(SdkLiteralTypes.strings(), collection);
+    return ofCollection(strings(), collection);
   }
 
   /**
@@ -196,7 +200,7 @@ public final class SdkBindingDatas {
    */
   public static <T> SdkBindingData<Map<String, T>> ofMap(
       SdkLiteralType<T> valuesType, Map<String, T> map) {
-    return SdkBindingData.literal(SdkLiteralTypes.maps(valuesType), map);
+    return SdkBindingData.literal(maps(valuesType), map);
   }
 
   /**
@@ -207,7 +211,7 @@ public final class SdkBindingDatas {
    * @return the new {@code SdkBindingData}
    */
   public static SdkBindingData<Map<String, String>> ofStringMap(Map<String, String> map) {
-    return ofMap(SdkLiteralTypes.strings(), map);
+    return ofMap(strings(), map);
   }
 
   /**

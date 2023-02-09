@@ -26,27 +26,30 @@ import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
 
 object SdkLiteralTypes {
-  def integers(): SdkLiteralType[Long] = ScalaSdkLiteralType[Long](
+  def integers(): SdkLiteralType[Long] = ScalaLiteralType[Long](
     LiteralType.ofSimpleType(SimpleType.INTEGER),
     value =>
       Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(value))),
     _.scalar().primitive().integerValue(),
-    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(v)))
+    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(v))),
+    "integers"
   )
-  def floats(): SdkLiteralType[Double] = ScalaSdkLiteralType[Double](
+  def floats(): SdkLiteralType[Double] = ScalaLiteralType[Double](
     LiteralType.ofSimpleType(SimpleType.FLOAT),
     value =>
       Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(value))),
     _.scalar().primitive().floatValue(),
-    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(v)))
+    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofFloatValue(v))),
+    "floats"
   )
   def strings(): SdkLiteralType[String] = SdkJavaLiteralTypes.strings()
-  def booleans(): SdkLiteralType[Boolean] = ScalaSdkLiteralType[Boolean](
+  def booleans(): SdkLiteralType[Boolean] = ScalaLiteralType[Boolean](
     LiteralType.ofSimpleType(SimpleType.BOOLEAN),
     value =>
       Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(value))),
     _.scalar().primitive().booleanValue(),
-    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(v)))
+    v => BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofBooleanValue(v))),
+    "booleans"
   )
   def datetimes(): SdkLiteralType[Instant] = SdkJavaLiteralTypes.datetimes()
   def durations(): SdkLiteralType[Duration] = SdkJavaLiteralTypes.durations()
@@ -69,7 +72,7 @@ object SdkLiteralTypes {
 
       override def getElementType: SdkLiteralType[T] = elementType
 
-      override def toString: String = "collection of " + elementType
+      override def toString: String = s"collection of [$elementType]"
     }
 
   def maps[T](valuesType: SdkLiteralType[T]): SdkMapLiteralType[T] =
@@ -91,7 +94,7 @@ object SdkLiteralTypes {
 
       override def getValuesType: SdkLiteralType[T] = valuesType
 
-      override def toString: String = "map of " + valuesType
+      override def toString: String = s"map of [$valuesType]"
     }
 }
 
@@ -103,12 +106,13 @@ trait SdkMapLiteralType[T] extends SdkLiteralType[Map[String, T]] {
   def getValuesType: SdkLiteralType[T]
 }
 
-private object ScalaSdkLiteralType {
+private object ScalaLiteralType {
   def apply[T](
       literalType: LiteralType,
       to: T => Literal,
       from: Literal => T,
-      toData: T => BindingData
+      toData: T => BindingData,
+      strRep: String
   ): SdkLiteralType[T] =
     new SdkLiteralType[T] {
       override def getLiteralType: LiteralType = literalType
@@ -119,6 +123,6 @@ private object ScalaSdkLiteralType {
 
       override def toBindingData(value: T): BindingData = toData(value)
 
-      override def toString: String = getLiteralType.toString
+      override def toString: String = strRep
     }
 }

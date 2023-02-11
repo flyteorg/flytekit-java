@@ -70,6 +70,11 @@ public abstract class SdkType<T> {
    */
   public abstract Map<String, Variable> getVariableMap();
 
+  /**
+   * Returns the {@link SdkLiteralType} map bay variable name corresponding to this type.
+   *
+   * @return the literal type.
+   */
   public abstract Map<String, SdkLiteralType<?>> toLiteralTypes();
 
   /**

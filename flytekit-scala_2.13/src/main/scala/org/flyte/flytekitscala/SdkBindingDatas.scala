@@ -79,7 +79,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofDateTime(instant: Instant): SdkBindingData[Instant] =
+  def ofDatetime(instant: Instant): SdkBindingData[Instant] =
     SdkBindingData.literal(datetimes(), instant)
 
   /** Creates a [[SdkBindingData]] for a flyte duration ([[Duration]] for scala)
@@ -189,7 +189,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofInstantCollection(
+  def ofDatetimeCollection(
       collection: List[Instant]
   ): SdkBindingData[List[Instant]] =
     SdkBindingData.literal(collections(datetimes()), collection)
@@ -275,7 +275,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofInstantMap(
+  def ofDatetimeMap(
       map: Map[String, Instant]
   ): SdkBindingData[Map[String, Instant]] =
     SdkBindingData.literal(maps(datetimes()), map)

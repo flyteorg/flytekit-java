@@ -38,7 +38,6 @@ public abstract class SdkBindingData<T> {
 
   public abstract SdkLiteralType<T> type();
 
-
   /**
    * Returns the simple value contained by this data.
    *
@@ -47,11 +46,18 @@ public abstract class SdkBindingData<T> {
    */
   public abstract T get();
 
+  /**
+   * Returns a version of this {@code SdkBindingData} with a new type.
+   *
+   * @param newType the {@link SdkLiteralType} type to be casted to
+   * @param castFunction function to apply to the value to be converted to the new type
+   * @return the type casted version of this instance
+   * @param <NewT> the java or scala type for the corresponding to {@code newType}
+   * @throws UnsupportedOperationException if a cast cannot be performed over this instance.
+   */
   public abstract <NewT> SdkBindingData<NewT> as(
       SdkLiteralType<NewT> newType, Function<T, NewT> castFunction);
 
-  // TODO: it would be interesting to see if we can use java 9 modules to only expose this method
-  //      to other modules in the sdk
   /**
    * Creates a {@code SdkBindingData} for a literal value.
    *
@@ -62,7 +68,7 @@ public abstract class SdkBindingData<T> {
    *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
    */
   public static <T> SdkBindingData<T> literal(SdkLiteralType<T> type, T value) {
-    return LiteralSdkBindingData.create(type, value);
+    return Literal.create(type, value);
   }
 
   /**
@@ -76,7 +82,7 @@ public abstract class SdkBindingData<T> {
    *     Duration} for {@code LiteralType.ofSimpleType(SimpleType.DURATION)}
    */
   public static <T> SdkBindingData<T> promise(SdkLiteralType<T> type, String nodeId, String var) {
-    return PromiseSdkBindingData.create(type, nodeId, var);
+    return Promise.create(type, nodeId, var);
   }
 
   /**
@@ -90,7 +96,7 @@ public abstract class SdkBindingData<T> {
    */
   public static <T> SdkBindingData<List<T>> bindingCollection(
       SdkLiteralType<T> elementType, List<SdkBindingData<T>> collection) {
-    return SdkBindingCollection.create(elementType, collection);
+    return BindingCollection.create(elementType, collection);
   }
 
   /**
@@ -104,15 +110,15 @@ public abstract class SdkBindingData<T> {
    */
   public static <T> SdkBindingData<Map<String, T>> bindingMap(
       SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> map) {
-    return SdkBindingMap.create(valuesType, map);
+    return BindingMap.create(valuesType, map);
   }
 
   @AutoValue
-  abstract static class LiteralSdkBindingData<T> extends SdkBindingData<T> {
+  abstract static class Literal<T> extends SdkBindingData<T> {
     abstract T value();
 
-    private static <T> LiteralSdkBindingData<T> create(SdkLiteralType<T> type, T value) {
-      return new AutoValue_SdkBindingData_LiteralSdkBindingData<>(type, value);
+    private static <T> Literal<T> create(SdkLiteralType<T> type, T value) {
+      return new AutoValue_SdkBindingData_Literal<>(type, value);
     }
 
     @Override
@@ -138,14 +144,13 @@ public abstract class SdkBindingData<T> {
   }
 
   @AutoValue
-  abstract static class PromiseSdkBindingData<T> extends SdkBindingData<T> {
+  abstract static class Promise<T> extends SdkBindingData<T> {
     abstract String nodeId();
 
     abstract String var();
 
-    private static <T> PromiseSdkBindingData<T> create(
-        SdkLiteralType<T> type, String nodeId, String var) {
-      return new AutoValue_SdkBindingData_PromiseSdkBindingData<>(type, nodeId, var);
+    private static <T> Promise<T> create(SdkLiteralType<T> type, String nodeId, String var) {
+      return new AutoValue_SdkBindingData_Promise<>(type, nodeId, var);
     }
 
     @Override
@@ -175,13 +180,13 @@ public abstract class SdkBindingData<T> {
   }
 
   @AutoValue
-  abstract static class SdkBindingCollection<T> extends SdkBindingData<List<T>> {
+  abstract static class BindingCollection<T> extends SdkBindingData<List<T>> {
     abstract List<SdkBindingData<T>> bindingCollection();
 
-    private static <T> SdkBindingCollection<T> create(
+    private static <T> BindingCollection<T> create(
         SdkLiteralType<T> elementType, List<SdkBindingData<T>> bindingCollection) {
       checkIncompatibleTypes(elementType, bindingCollection);
-      return new AutoValue_SdkBindingData_SdkBindingCollection<>(
+      return new AutoValue_SdkBindingData_BindingCollection<>(
           collections(elementType), bindingCollection);
     }
 
@@ -198,10 +203,9 @@ public abstract class SdkBindingData<T> {
 
     @Override
     public <NewT> SdkBindingData<NewT> as(
-        SdkLiteralType<NewT> newType, Function<List<T>, NewT> castFunction) {
-      // TODO: mmm, looks like the as method is not as flexible
-      //  I would like a function to apply to each element, but
-      throw new RuntimeException("Not yet implemented");
+        SdkLiteralType<NewT> newElementType, Function<List<T>, NewT> castFunction) {
+      throw new UnsupportedOperationException(
+          "SdkBindingData of binding collections cannot be casted");
     }
 
     @Override
@@ -211,13 +215,13 @@ public abstract class SdkBindingData<T> {
   }
 
   @AutoValue
-  abstract static class SdkBindingMap<T> extends SdkBindingData<Map<String, T>> {
+  public abstract static class BindingMap<T> extends SdkBindingData<Map<String, T>> {
     abstract Map<String, SdkBindingData<T>> bindingMap();
 
-    private static <T> SdkBindingMap<T> create(
+    private static <T> BindingMap<T> create(
         SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> bindingMap) {
       checkIncompatibleTypes(valuesType, bindingMap.values());
-      return new AutoValue_SdkBindingData_SdkBindingMap<>(maps(valuesType), bindingMap);
+      return new AutoValue_SdkBindingData_BindingMap<>(maps(valuesType), bindingMap);
     }
 
     @Override
@@ -236,9 +240,7 @@ public abstract class SdkBindingData<T> {
     @Override
     public <NewT> SdkBindingData<NewT> as(
         SdkLiteralType<NewT> newType, Function<Map<String, T>, NewT> castFunction) {
-      // TODO: mmm, looks like the as method is not as flexible
-      //  I would like a function to apply to each element, but
-      throw new RuntimeException("Not yet implemented");
+      throw new UnsupportedOperationException("SdkBindingData of binding map cannot be casted");
     }
 
     @Override

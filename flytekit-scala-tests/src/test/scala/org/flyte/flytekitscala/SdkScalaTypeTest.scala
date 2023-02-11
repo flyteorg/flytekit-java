@@ -29,8 +29,8 @@ import org.flyte.api.v1.{
 }
 import org.flyte.flytekit.{SdkBindingData, SdkBindingDatas}
 import org.flyte.flytekitscala.SdkBindingDatas._
-import org.junit.Assert.{assertEquals, assertThrows}
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
+import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
 import org.flyte.flytekitscala.SdkLiteralTypes.{collections, maps, strings}
 
@@ -150,7 +150,7 @@ class SdkScalaTypeTest {
         integer = ofInteger(1337L),
         float = ofFloat(42.0),
         boolean = ofBoolean(true),
-        datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+        datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
         duration = ofDuration(Duration.ofSeconds(123, 456))
       )
 
@@ -167,7 +167,7 @@ class SdkScalaTypeTest {
         integer = ofInteger(1337L),
         float = ofFloat(42.0),
         boolean = ofBoolean(true),
-        datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+        datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
         duration = ofDuration(Duration.ofSeconds(123, 456))
       )
 
@@ -218,7 +218,7 @@ class SdkScalaTypeTest {
       integer = ofInteger(1337L),
       float = ofFloat(42.0),
       boolean = ofBoolean(true),
-      datetime = ofDateTime(Instant.ofEpochMilli(123456L)),
+      datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
       duration = ofDuration(Duration.ofSeconds(123, 456))
     )
 
@@ -229,7 +229,7 @@ class SdkScalaTypeTest {
       "integer" -> ofInteger(1337L),
       "float" -> ofFloat(42.0),
       "boolean" -> ofBoolean(true),
-      "datetime" -> ofDateTime(Instant.ofEpochMilli(123456L)),
+      "datetime" -> ofDatetime(Instant.ofEpochMilli(123456L)),
       "duration" -> ofDuration(Duration.ofSeconds(123, 456))
     ).asJava
 
@@ -419,7 +419,7 @@ class SdkScalaTypeTest {
       ofFloat(2.0),
       ofString("hello"),
       ofBoolean(true),
-      ofDateTime(Instant.parse("2023-01-01T00:00:00Z")),
+      ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
       ofDuration(Duration.ZERO),
       ofCollection(List("1", "2", "3")),
       ofMap(Map("a" -> "2", "b" -> "3")),

@@ -26,8 +26,8 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
-import org.flyte.api.v1.LiteralType;
 
+/** A utility class for creating {@link SdkBindingData} objects for different types. */
 public final class SdkBindingDatas {
 
   private SdkBindingDatas() {
@@ -271,10 +271,11 @@ public final class SdkBindingDatas {
 
   /**
    * Creates a {@code SdkBindingData} for a flyte collection given a java {@code
-   * List<SdkBindingData<T>>} and a literalType tp be used.
+   * List<SdkBindingData<T>>} and {@link SdkLiteralType} for types for the elements.
    *
+   * @param elementType a {@link SdkLiteralType} expressing the types for the elements in the
+   *     collection.
    * @param elements collection to represent on this data.
-   * @param elementType literal type for the elements in the collection.
    * @return the new {@code SdkBindingData}
    */
   public static <T> SdkBindingData<List<T>> ofBindingCollection(
@@ -284,11 +285,11 @@ public final class SdkBindingDatas {
 
   /**
    * Creates a {@code SdkBindingData} for a flyte map given a java {@code Map<String,
-   * SdkBindingData<T>>} and a literalType tp be used.
+   * SdkBindingData<T>>} and a {@link SdkLiteralType} for the values of the map.
    *
    * @param valueMap collection to represent on this data.
-   * @param valuesType literal type for the whole map. It must be a {@link
-   *     LiteralType.Kind#MAP_VALUE_TYPE}.
+   * @param valuesType a {@link SdkLiteralType} expressing the types for the values of the map. The
+   *     keys are always String. LiteralType.Kind#MAP_VALUE_TYPE}.
    * @return the new {@code SdkBindingData}
    */
   public static <T> SdkBindingData<Map<String, T>> ofBindingMap(

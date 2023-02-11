@@ -20,22 +20,59 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 
-// TODO: this class it is not used. We should remove it or even better use it in place of
-//  raw literal types in SdkBinding data
+/**
+ * Bridge between the a Java type and a variable in Flyte.
+ *
+ * @param <T> the Java native type to bridge.
+ */
 public abstract class SdkLiteralType<T> {
+  /**
+   * Returns the {@link LiteralType} corresponding to this type.
+   *
+   * @return the literal type.
+   */
   public abstract LiteralType getLiteralType();
 
+  /**
+   * Coverts the value into a {@link Literal}.
+   *
+   * @param value value to convert.
+   * @return the literal.
+   */
   public abstract Literal toLiteral(T value);
 
+  /**
+   * Coverts a {@link Literal} into a value.
+   *
+   * @param literal literal to convert.
+   * @return the value.
+   */
   public abstract T fromLiteral(Literal literal);
 
+  /**
+   * Coverts the value into a {@link BindingData}.
+   *
+   * @param value value to convert.
+   * @return the binding data.
+   */
   public abstract BindingData toBindingData(T value);
 
+  /**
+   * {@inheritDoc}
+   *
+   * Hashcode is computed based on {@link #getLiteralType()}
+   */
   @Override
   public final int hashCode() {
     return getLiteralType().hashCode();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Equals comparing only {@link #getLiteralType()}. Simplifies equality among the several
+   * implementation of this class.
+   */
   @Override
   public final boolean equals(Object obj) {
     if (this == obj) {

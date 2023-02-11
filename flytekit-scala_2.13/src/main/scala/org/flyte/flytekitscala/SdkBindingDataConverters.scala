@@ -146,7 +146,10 @@ object SdkBindingDataConverters {
               (f: Any) => Double.unbox(f.asInstanceOf[j.Double])
             )
           case SimpleType.STRING =>
-            TypeCastingResult(SdkScalaLiteralTypes.strings(), jf.Function.identity())
+            TypeCastingResult(
+              SdkScalaLiteralTypes.strings(),
+              jf.Function.identity()
+            )
           case SimpleType.STRUCT => ??? // TODO not yet supported
           case SimpleType.BOOLEAN =>
             TypeCastingResult(
@@ -159,9 +162,15 @@ object SdkBindingDataConverters {
               (i: Any) => Long.unbox(i.asInstanceOf[j.Long])
             )
           case SimpleType.DATETIME =>
-            TypeCastingResult(SdkScalaLiteralTypes.datetimes(), jf.Function.identity())
+            TypeCastingResult(
+              SdkScalaLiteralTypes.datetimes(),
+              jf.Function.identity()
+            )
           case SimpleType.DURATION =>
-            TypeCastingResult(SdkScalaLiteralTypes.durations(), jf.Function.identity())
+            TypeCastingResult(
+              SdkScalaLiteralTypes.durations(),
+              jf.Function.identity()
+            )
         }
       case LiteralType.Kind.BLOB_TYPE   => ??? // TODO not yet supported
       case LiteralType.Kind.SCHEMA_TYPE => ??? // TODO not yet supported
@@ -221,7 +230,10 @@ object SdkBindingDataConverters {
               (f: Any) => j.Double.valueOf(f.asInstanceOf[Double])
             )
           case SimpleType.STRING =>
-            TypeCastingResult(SdkJavaLiteralTypes.strings(), jf.Function.identity())
+            TypeCastingResult(
+              SdkJavaLiteralTypes.strings(),
+              jf.Function.identity()
+            )
           case SimpleType.STRUCT =>
             ??? // TODO how to handle? do we support structs already?
           case SimpleType.BOOLEAN =>
@@ -235,9 +247,15 @@ object SdkBindingDataConverters {
               (i: Any) => j.Long.valueOf(i.asInstanceOf[Long])
             )
           case SimpleType.DATETIME =>
-            TypeCastingResult(SdkJavaLiteralTypes.datetimes(), jf.Function.identity())
+            TypeCastingResult(
+              SdkJavaLiteralTypes.datetimes(),
+              jf.Function.identity()
+            )
           case SimpleType.DURATION =>
-            TypeCastingResult(SdkJavaLiteralTypes.durations(), jf.Function.identity())
+            TypeCastingResult(
+              SdkJavaLiteralTypes.durations(),
+              jf.Function.identity()
+            )
         }
       case LiteralType.Kind.BLOB_TYPE => ??? // TODO do we support blob?
       case LiteralType.Kind.SCHEMA_TYPE =>

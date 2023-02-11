@@ -17,7 +17,10 @@
 package org.flyte.flytekitscala
 
 import org.flyte.api.v1._
-import org.flyte.flytekit.{SdkLiteralType, SdkLiteralTypes => SdkJavaLiteralTypes}
+import org.flyte.flytekit.{
+  SdkLiteralType,
+  SdkLiteralTypes => SdkJavaLiteralTypes
+}
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
@@ -25,20 +28,21 @@ import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 object SdkLiteralTypes {
 
-  /**
-   * [[SdkLiteralType]] for the specified Scala type.
-   *
-   * | Scala type   | Returned type                                                 |
-   * | ------------ | ------------------------------------------------------------- |
-   * | [[Long]]     | {{{SdkLiteralType[Long]}}}, equivalent to [[integers()]]      |
-   * | [[Double]]   | {{{SdkLiteralType[Double]}}}, equivalent to [[floats()]]      |
-   * | [[String]]   | {{{SdkLiteralType[String]}}}, equivalent to [[strings]]       |
-   * | [[Boolean]]  | {{{SdkLiteralType[Boolean]}}}, equivalent to [[booleans()]]   |
-   * | [[Instant]]  | {{{SdkLiteralType[Instant]}}}, equivalent to [[datetimes()]]  |
-   * | [[Duration]] | {{{SdkLiteralType[Duration]}}}, equivalent to [[durations()]] |
-   * @tparam T Scala type used to decide what [[SdkLiteralType]] to return.
-   * @return the [[SdkLiteralType]] based on the java type
-   */
+  /** [[SdkLiteralType]] for the specified Scala type.
+    *
+    * | Scala type   | Returned type                                                 |
+    * |:-------------|:--------------------------------------------------------------|
+    * | [[Long]]     | {{{SdkLiteralType[Long]}}}, equivalent to [[integers()]]      |
+    * | [[Double]]   | {{{SdkLiteralType[Double]}}}, equivalent to [[floats()]]      |
+    * | [[String]]   | {{{SdkLiteralType[String]}}}, equivalent to [[strings]]       |
+    * | [[Boolean]]  | {{{SdkLiteralType[Boolean]}}}, equivalent to [[booleans()]]   |
+    * | [[Instant]]  | {{{SdkLiteralType[Instant]}}}, equivalent to [[datetimes()]]  |
+    * | [[Duration]] | {{{SdkLiteralType[Duration]}}}, equivalent to [[durations()]] |
+    * @tparam T
+    *   Scala type used to decide what [[SdkLiteralType]] to return.
+    * @return
+    *   the [[SdkLiteralType]] based on the java type
+    */
   def of[T: TypeTag](): SdkLiteralType[T] = {
     typeOf[T] match {
       case t if t =:= typeOf[Long] => integers().asInstanceOf[SdkLiteralType[T]]
@@ -135,11 +139,11 @@ object SdkLiteralTypes {
     }
   }
 
-  /**
-   * Returns a [[SdkLiteralType]] for flyte integers.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for flyte integers.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def integers(): SdkLiteralType[Long] = ScalaLiteralType[Long](
     LiteralType.ofSimpleType(SimpleType.INTEGER),
     value =>
@@ -149,11 +153,11 @@ object SdkLiteralTypes {
     "integers"
   )
 
-  /**
-   * Returns a [[SdkLiteralType]] for flyte floats.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for flyte floats.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def floats(): SdkLiteralType[Double] = ScalaLiteralType[Double](
     LiteralType.ofSimpleType(SimpleType.FLOAT),
     value =>
@@ -163,18 +167,18 @@ object SdkLiteralTypes {
     "floats"
   )
 
-  /**
-   * Returns a [[SdkLiteralType]] for string.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for string.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def strings(): SdkLiteralType[String] = SdkJavaLiteralTypes.strings()
 
-  /**
-   * Returns a [[SdkLiteralType]] for booleans.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for booleans.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def booleans(): SdkLiteralType[Boolean] = ScalaLiteralType[Boolean](
     LiteralType.ofSimpleType(SimpleType.BOOLEAN),
     value =>
@@ -184,27 +188,30 @@ object SdkLiteralTypes {
     "booleans"
   )
 
-  /**
-   * Returns a [[SdkLiteralType]] for flyte date times.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for flyte date times.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def datetimes(): SdkLiteralType[Instant] = SdkJavaLiteralTypes.datetimes()
 
-  /**
-   * Returns a [[SdkLiteralType]] for durations.
-   *
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for durations.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def durations(): SdkLiteralType[Duration] = SdkJavaLiteralTypes.durations()
 
-  /**
-   * Returns a [[SdkLiteralType]] for flyte collections.
-   *
-   * @param elementType the [[SdkLiteralType]] representing the types of the elements of the collection.
-   * @tparam T the Scala type of the elements of the collection.
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for flyte collections.
+    *
+    * @param elementType
+    *   the [[SdkLiteralType]] representing the types of the elements of the
+    *   collection.
+    * @tparam T
+    *   the Scala type of the elements of the collection.
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def collections[T](
       elementType: SdkLiteralType[T]
   ): SdkLiteralType[List[T]] =
@@ -218,18 +225,21 @@ object SdkLiteralTypes {
       override def fromLiteral(literal: Literal): List[T] =
         literal.collection().asScala.map(elementType.fromLiteral).toList
 
-      override def toBindingData(value: List[T]): BindingData = BindingData.ofCollection(value.map(elementType.toBindingData).asJava)
+      override def toBindingData(value: List[T]): BindingData =
+        BindingData.ofCollection(value.map(elementType.toBindingData).asJava)
 
       override def toString = s"collection of [$elementType]"
     }
 
-  /**
-   * Returns a [[SdkLiteralType]] for flyte maps.
-   *
-   * @param valuesType the [[SdkLiteralType]] representing the types of the map's values.
-   * @tparam T the Scala type of the map's values, keys are always string.
-   * @return the [[SdkLiteralType]]
-   */
+  /** Returns a [[SdkLiteralType]] for flyte maps.
+    *
+    * @param valuesType
+    *   the [[SdkLiteralType]] representing the types of the map's values.
+    * @tparam T
+    *   the Scala type of the map's values, keys are always string.
+    * @return
+    *   the [[SdkLiteralType]]
+    */
   def maps[T](valuesType: SdkLiteralType[T]): SdkLiteralType[Map[String, T]] =
     new SdkLiteralType[Map[String, T]] {
       override def getLiteralType: LiteralType =

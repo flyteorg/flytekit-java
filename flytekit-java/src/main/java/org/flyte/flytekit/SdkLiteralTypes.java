@@ -41,22 +41,23 @@ public class SdkLiteralTypes {
    * Returns a {@link SdkLiteralType} for the specified Java type.
    *
    * <dl>
-   *   <dt>{@code Long.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<Long>}, equivalent to {@link #integers()}</dd>
-   *   <dt>{@code Double.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<Double>}, equivalent to {@link #floats()}</dd>
-   *   <dt>{@code String.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<String>}, equivalent to {@link #strings()}</dd>
-   *   <dt>{@code Boolean.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<Boolean>}, equivalent to {@link #booleans()}</dd>
-   *   <dt>{@code Instant.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<Instant>}, equivalent to {@link #datetimes()}</dd>
-   *   <dt>{@code Duration.class} -> </dt>
-   *   <dd>{@code SdkLiteralType<Duration>}, equivalent to {@link #durations()}</dd>
+   *   <dt>{@code Long.class} ->
+   *   <dd>{@code SdkLiteralType<Long>}, equivalent to {@link #integers()}
+   *   <dt>{@code Double.class} ->
+   *   <dd>{@code SdkLiteralType<Double>}, equivalent to {@link #floats()}
+   *   <dt>{@code String.class} ->
+   *   <dd>{@code SdkLiteralType<String>}, equivalent to {@link #strings()}
+   *   <dt>{@code Boolean.class} ->
+   *   <dd>{@code SdkLiteralType<Boolean>}, equivalent to {@link #booleans()}
+   *   <dt>{@code Instant.class} ->
+   *   <dd>{@code SdkLiteralType<Instant>}, equivalent to {@link #datetimes()}
+   *   <dt>{@code Duration.class} ->
+   *   <dd>{@code SdkLiteralType<Duration>}, equivalent to {@link #durations()}
    * </dl>
-   * @param clazz Java type used to decide what {@link  SdkLiteralType} to return.
-   * @return the {@link  SdkLiteralType} based on the java type
-   * @param <T> type of the returned {@link  SdkLiteralType}, matching the one specified.
+   *
+   * @param clazz Java type used to decide what {@link SdkLiteralType} to return.
+   * @return the {@link SdkLiteralType} based on the java type
+   * @param <T> type of the returned {@link SdkLiteralType}, matching the one specified.
    */
   @SuppressWarnings("unchecked")
   public static <T> SdkLiteralType<T> of(Class<T> clazz) {
@@ -77,13 +78,12 @@ public class SdkLiteralTypes {
   }
 
   /**
-   * Returns a {@link SdkLiteralType} for a collection of the specified Java type. Equivalent to {code
-   * SdkLiteralTypes.collections(SdkLiteralTypes.of(elementsClass}
+   * Returns a {@link SdkLiteralType} for a collection of the specified Java type. Equivalent to
+   * {code SdkLiteralTypes.collections(SdkLiteralTypes.of(elementsClass}
    *
    * @param elementsClass Java type used to decide what {@link SdkLiteralType} to return.
    * @return the {@link SdkLiteralType} based on the java type
-   * @param <T> type of the elements of the collections for the returned {@link
-   *     SdkLiteralType}.
+   * @param <T> type of the elements of the collections for the returned {@link SdkLiteralType}.
    * @see SdkLiteralTypes#of
    */
   public static <T> SdkLiteralType<List<T>> collections(Class<T> elementsClass) {
@@ -96,8 +96,8 @@ public class SdkLiteralTypes {
    *
    * @param valuesType Java type used to decide what {@link SdkLiteralType} to return.
    * @return the {@link SdkLiteralType} based on the java type
-   * @param <T> type of the values of the map for the returned {@link
-   *     SdkLiteralType}. Key types are always {@code String}.
+   * @param <T> type of the values of the map for the returned {@link SdkLiteralType}. Key types are
+   *     always {@code String}.
    * @see SdkLiteralTypes#of
    */
   public static <T> SdkLiteralType<Map<String, T>> maps(Class<T> valuesType) {
@@ -160,7 +160,9 @@ public class SdkLiteralTypes {
 
   /**
    * Returns a {@link SdkLiteralType} for flyte collections.
-   * @param elementType the {@link SdkLiteralType} representing the types of the elements of the collection.
+   *
+   * @param elementType the {@link SdkLiteralType} representing the types of the elements of the
+   *     collection.
    * @param <T> the Java type of the elements of the collection.
    * @return the {@link SdkLiteralType}
    */
@@ -170,6 +172,7 @@ public class SdkLiteralTypes {
 
   /**
    * Returns a {@link SdkLiteralType} for flyte maps.
+   *
    * @param mapValueType the {@link SdkLiteralType} representing the types of the map's values.
    * @param <T> the Java type of the map's values, keys are always string.
    * @return the {@link SdkLiteralType}

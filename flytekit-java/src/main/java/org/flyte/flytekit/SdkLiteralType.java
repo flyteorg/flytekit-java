@@ -60,7 +60,7 @@ public abstract class SdkLiteralType<T> {
   /**
    * {@inheritDoc}
    *
-   * Hashcode is computed based on {@link #getLiteralType()}
+   * <p>Hashcode is computed based on {@link #getLiteralType()}
    */
   @Override
   public final int hashCode() {
@@ -70,7 +70,7 @@ public abstract class SdkLiteralType<T> {
   /**
    * {@inheritDoc}
    *
-   * Equals comparing only {@link #getLiteralType()}. Simplifies equality among the several
+   * <p>Equals comparing only {@link #getLiteralType()}. Simplifies equality among the several
    * implementation of this class.
    */
   @Override

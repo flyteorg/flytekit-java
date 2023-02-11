@@ -41,17 +41,17 @@ public class SdkLiteralTypes {
    * Returns a {@link SdkLiteralType} for the specified Java type.
    *
    * <dl>
-   *   <dt>{@code Long.class} ->
+   *   <dt>{@code Long.class} {@code .>}
    *   <dd>{@code SdkLiteralType<Long>}, equivalent to {@link #integers()}
-   *   <dt>{@code Double.class} ->
+   *   <dt>{@code Double.class} {@code .>}
    *   <dd>{@code SdkLiteralType<Double>}, equivalent to {@link #floats()}
-   *   <dt>{@code String.class} ->
+   *   <dt>{@code String.class} {@code .>}
    *   <dd>{@code SdkLiteralType<String>}, equivalent to {@link #strings()}
-   *   <dt>{@code Boolean.class} ->
+   *   <dt>{@code Boolean.class} {@code .>}
    *   <dd>{@code SdkLiteralType<Boolean>}, equivalent to {@link #booleans()}
-   *   <dt>{@code Instant.class} ->
+   *   <dt>{@code Instant.class} {@code .>}
    *   <dd>{@code SdkLiteralType<Instant>}, equivalent to {@link #datetimes()}
-   *   <dt>{@code Duration.class} ->
+   *   <dt>{@code Duration.class} {@code .>}
    *   <dd>{@code SdkLiteralType<Duration>}, equivalent to {@link #durations()}
    * </dl>
    *

@@ -18,7 +18,7 @@ package org.flyte.integrationtests.structs;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -48,7 +48,7 @@ public class MockLookupBqTask
     public abstract SdkBindingData<Boolean> exists();
 
     public static Output create(boolean exists) {
-      return new AutoValue_MockLookupBqTask_Output(SdkBindingDatas.ofBoolean(exists));
+      return new AutoValue_MockLookupBqTask_Output(SdkBindingDataFactory.of(exists));
     }
   }
 

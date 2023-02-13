@@ -17,7 +17,7 @@
 package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekitscala.{
-  SdkBindingDatas,
+  SdkBindingDataFactory,
   SdkScalaType,
   SdkScalaWorkflow,
   SdkScalaWorkflowBuilder
@@ -33,8 +33,8 @@ class WorkflowWithRemoteLaunchPlan
       builder: SdkScalaWorkflowBuilder,
       input: RemoteLaunchPlanInput
   ): RemoteLaunchPlanOutput = {
-    val fib0 = SdkBindingDatas.ofInteger(0L)
-    val fib1 = SdkBindingDatas.ofInteger(1L)
+    val fib0 = SdkBindingDataFactory.of(0L)
+    val fib1 = SdkBindingDataFactory.of(1L)
 
     val fib5 = builder
       .apply(

@@ -46,7 +46,7 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkLiteralTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -72,18 +72,18 @@ public class JacksonSdkTypeTest {
       Map<String, List<String>> ml,
       Map<String, Map<String, String>> mm) {
     return AutoValueInput.create(
-        SdkBindingDatas.ofInteger(i),
-        SdkBindingDatas.ofFloat(f),
-        SdkBindingDatas.ofString(s),
-        SdkBindingDatas.ofBoolean(b),
-        SdkBindingDatas.ofDatetime(t),
-        SdkBindingDatas.ofDuration(d),
-        SdkBindingDatas.ofStringCollection(l),
-        SdkBindingDatas.ofStringMap(m),
-        SdkBindingDatas.ofCollection(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ll),
-        SdkBindingDatas.ofCollection(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), lm),
-        SdkBindingDatas.ofMap(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ml),
-        SdkBindingDatas.ofMap(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), mm));
+        SdkBindingDataFactory.of(i),
+        SdkBindingDataFactory.of(f),
+        SdkBindingDataFactory.of(s),
+        SdkBindingDataFactory.of(b),
+        SdkBindingDataFactory.of(t),
+        SdkBindingDataFactory.of(d),
+        SdkBindingDataFactory.ofStringCollection(l),
+        SdkBindingDataFactory.ofStringMap(m),
+        SdkBindingDataFactory.of(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ll),
+        SdkBindingDataFactory.of(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), lm),
+        SdkBindingDataFactory.of(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ml),
+        SdkBindingDataFactory.of(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), mm));
   }
 
   @Test
@@ -319,7 +319,7 @@ public class JacksonSdkTypeTest {
   public void testToSdkBindingDataMapJsonProperties() {
     JsonPropertyClassInput input =
         new JsonPropertyClassInput(
-            SdkBindingDatas.ofString("test"), SdkBindingDatas.ofString("name"));
+            SdkBindingDataFactory.of("test"), SdkBindingDataFactory.of("name"));
 
     Map<String, SdkBindingData<?>> sdkBindingDataMap =
         JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
@@ -345,7 +345,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoToLiteralMap() {
     PojoInput input = new PojoInput();
-    input.a = SdkBindingDatas.ofInteger(42);
+    input.a = SdkBindingDataFactory.of(42);
 
     Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
 
@@ -355,7 +355,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoFromLiteralMap() {
     PojoInput expected = new PojoInput();
-    expected.a = SdkBindingDatas.ofInteger(42);
+    expected.a = SdkBindingDataFactory.of(42);
 
     PojoInput pojoInput =
         JacksonSdkType.of(PojoInput.class)

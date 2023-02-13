@@ -25,7 +25,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -208,8 +208,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(
-                    SdkBindingDatas.ofInteger(1L), SdkBindingDatas.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -234,8 +233,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(
-                    SdkBindingDatas.ofInteger(1L), SdkBindingDatas.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -248,7 +246,7 @@ public class SdkTestingExecutorTest {
                     .withTaskOutput(
                         RemoteSumTask.create(),
                         RemoteSumInput.create(
-                            SdkBindingDatas.ofInteger(10L), SdkBindingDatas.ofInteger(20L)),
+                            SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 
@@ -287,9 +285,9 @@ public class SdkTestingExecutorTest {
             .withWorkflowOutput(
                 new SimpleSubWorkflow(),
                 JacksonSdkType.of(TestUnaryIntegerIO.class),
-                TestUnaryIntegerIO.create(SdkBindingDatas.ofInteger(7)),
+                TestUnaryIntegerIO.create(SdkBindingDataFactory.of(7)),
                 JacksonSdkType.of(TestUnaryIntegerIO.class),
-                TestUnaryIntegerIO.create(SdkBindingDatas.ofInteger(5)))
+                TestUnaryIntegerIO.create(SdkBindingDataFactory.of(5)))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(5L));
@@ -331,8 +329,8 @@ public class SdkTestingExecutorTest {
             .withLaunchPlanOutput(
                 launchplanRef,
                 SumLaunchPlanInput.create(
-                    SdkBindingDatas.ofInteger(3L), SdkBindingDatas.ofInteger(5L)),
-                SumLaunchPlanOutput.create(SdkBindingDatas.ofInteger(8L)))
+                    SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)),
+                SumLaunchPlanOutput.create(SdkBindingDataFactory.of(8L)))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(8L));
@@ -378,8 +376,8 @@ public class SdkTestingExecutorTest {
                         launchplanRef,
                         // The stub values won't be matched, so exception iis throws
                         SumLaunchPlanInput.create(
-                            SdkBindingDatas.ofInteger(100000L), SdkBindingDatas.ofInteger(100000L)),
-                        SumLaunchPlanOutput.create(SdkBindingDatas.ofInteger(8L)))
+                            SdkBindingDataFactory.of(100000L), SdkBindingDataFactory.of(100000L)),
+                        SumLaunchPlanOutput.create(SdkBindingDataFactory.of(8L)))
                     .execute());
 
     assertThat(
@@ -425,7 +423,7 @@ public class SdkTestingExecutorTest {
                 launchplanRef,
                 in ->
                     SumLaunchPlanOutput.create(
-                        SdkBindingDatas.ofInteger(in.a().get() + in.b().get())))
+                        SdkBindingDataFactory.of(in.a().get() + in.b().get())))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(35L));
@@ -440,8 +438,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(
-                    SdkBindingDatas.ofInteger(1L), SdkBindingDatas.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -454,7 +451,7 @@ public class SdkTestingExecutorTest {
                     .withTaskOutput(
                         RemoteSumTask.create(),
                         RemoteSumInput.create(
-                            SdkBindingDatas.ofInteger(10L), SdkBindingDatas.ofInteger(20L)),
+                            SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 

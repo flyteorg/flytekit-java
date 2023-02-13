@@ -45,7 +45,7 @@ import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkLiteralType;
 import org.flyte.flytekit.SdkLiteralTypes;
 
@@ -87,17 +87,17 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         Primitive.Kind primitiveKind = Primitive.Kind.valueOf(tree.get("primitive").asText());
         switch (primitiveKind) {
           case INTEGER_VALUE:
-            return SdkBindingDatas.ofInteger(tree.get(VALUE).longValue());
+            return SdkBindingDataFactory.of(tree.get(VALUE).longValue());
           case BOOLEAN_VALUE:
-            return SdkBindingDatas.ofBoolean(tree.get(VALUE).booleanValue());
+            return SdkBindingDataFactory.of(tree.get(VALUE).booleanValue());
           case STRING_VALUE:
-            return SdkBindingDatas.ofString(tree.get(VALUE).asText());
+            return SdkBindingDataFactory.of(tree.get(VALUE).asText());
           case DURATION:
-            return SdkBindingDatas.ofDuration(Duration.parse(tree.get(VALUE).asText()));
+            return SdkBindingDataFactory.of(Duration.parse(tree.get(VALUE).asText()));
           case DATETIME:
-            return SdkBindingDatas.ofDatetime(Instant.parse(tree.get(VALUE).asText()));
+            return SdkBindingDataFactory.of(Instant.parse(tree.get(VALUE).asText()));
           case FLOAT_VALUE:
-            return SdkBindingDatas.ofFloat(tree.get(VALUE).doubleValue());
+            return SdkBindingDataFactory.of(tree.get(VALUE).doubleValue());
         }
         throw new UnsupportedOperationException(
             "Type contains an unsupported primitive: " + primitiveKind);
@@ -122,7 +122,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         List<T> collection =
             (List<T>)
                 streamOf(elements).map(this::transform).map(SdkBindingData::get).collect(toList());
-        return SdkBindingDatas.ofCollection(literalType, collection);
+        return SdkBindingDataFactory.of(literalType, collection);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:
@@ -148,7 +148,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             entries.stream()
                 .map(entry -> Map.entry(entry.getKey(), (T) transform(entry.getValue()).get()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return SdkBindingDatas.ofMap(literalType, bindingDataMap);
+        return SdkBindingDataFactory.of(literalType, bindingDataMap);
 
       case SCHEMA_TYPE:
       case BLOB_TYPE:

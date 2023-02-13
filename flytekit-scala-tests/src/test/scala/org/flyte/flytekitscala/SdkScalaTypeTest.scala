@@ -27,8 +27,8 @@ import org.flyte.api.v1.{
   SimpleType,
   Variable
 }
-import org.flyte.flytekit.{SdkBindingData, SdkBindingDatas}
-import org.flyte.flytekitscala.SdkBindingDatas._
+import org.flyte.flytekit.{SdkBindingData, SdkBindingDataFactory}
+import org.flyte.flytekitscala.SdkBindingDataFactory._
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
 import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
@@ -376,16 +376,18 @@ class SdkScalaTypeTest {
     import SdkBindingDataConverters._
 
     val input = AutoAllInputsInput.create(
-      SdkBindingDatas.ofInteger(2L),
-      SdkBindingDatas.ofFloat(2.0),
-      SdkBindingDatas.ofString("hello"),
-      SdkBindingDatas.ofBoolean(true),
-      SdkBindingDatas.ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
-      SdkBindingDatas.ofDuration(Duration.ZERO),
-      SdkBindingDatas.ofStringCollection(List("1", "2", "3").asJava),
-      SdkBindingDatas.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
-      SdkBindingDatas.ofStringCollection(List.empty[String].asJava),
-      SdkBindingDatas.ofIntegerMap(Map.empty[String, java.lang.Long].asJava)
+      SdkBindingDataFactory.of(2L),
+      SdkBindingDataFactory.of(2.0),
+      SdkBindingDataFactory.of("hello"),
+      SdkBindingDataFactory.of(true),
+      SdkBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
+      SdkBindingDataFactory.of(Duration.ZERO),
+      SdkBindingDataFactory.ofStringCollection(List("1", "2", "3").asJava),
+      SdkBindingDataFactory.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
+      SdkBindingDataFactory.ofStringCollection(List.empty[String].asJava),
+      SdkBindingDataFactory.ofIntegerMap(
+        Map.empty[String, java.lang.Long].asJava
+      )
     )
 
     case class AutoAllInputsInputScala(

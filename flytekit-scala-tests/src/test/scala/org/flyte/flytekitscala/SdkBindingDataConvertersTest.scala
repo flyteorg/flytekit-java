@@ -18,12 +18,12 @@ package org.flyte.flytekitscala
 
 import org.flyte.flytekit.{
   SdkBindingData,
-  SdkBindingDatas => JavaSBD,
+  SdkBindingDataFactory => JavaSBD,
   SdkLiteralTypes => JavaSLT
 }
 import org.flyte.flytekitscala.SdkBindingDataConverters._
 import org.flyte.flytekitscala.{
-  SdkBindingDatas => ScalaSBD,
+  SdkBindingDataFactory => ScalaSBD,
   SdkLiteralTypes => ScalaSLT
 }
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
@@ -182,19 +182,19 @@ class TestRoundTripConversionForScalarProvider extends ArgumentsProvider {
   ): Stream[_ <: Arguments] = {
     Stream.of(
       Arguments.of(
-        JavaSBD.ofInteger(j.Long.valueOf(1L)),
+        JavaSBD.of(j.Long.valueOf(1L)),
         d => toScalaLong(d),
         ScalaSBD.ofInteger(1L),
         d => toJavaLong(d)
       ),
       Arguments.of(
-        JavaSBD.ofFloat(j.Double.valueOf(1.0)),
+        JavaSBD.of(j.Double.valueOf(1.0)),
         d => toScalaDouble(d),
         ScalaSBD.ofFloat(1.0),
         d => toJavaDouble(d)
       ),
       Arguments.of(
-        JavaSBD.ofBoolean(j.Boolean.valueOf(true)),
+        JavaSBD.of(j.Boolean.valueOf(true)),
         d => toScalaBoolean(d),
         ScalaSBD.ofBoolean(true),
         d => toJavaBoolean(d)
@@ -239,7 +239,7 @@ class TestRoundTripConversionForCollectionsProvider extends ArgumentsProvider {
         )
       ),
       Arguments.of(
-        JavaSBD.ofCollection(
+        JavaSBD.of(
           JavaSLT.collections(JavaSLT.strings()),
           ju.List.of(ju.List.of("frodo", "sam"), ju.List.of("harry", "ron"))
         ),
@@ -249,7 +249,7 @@ class TestRoundTripConversionForCollectionsProvider extends ArgumentsProvider {
         )
       ),
       Arguments.of(
-        JavaSBD.ofCollection(
+        JavaSBD.of(
           JavaSLT.maps(JavaSLT.strings()),
           ju.List.of(ju.Map.of("frodo", "sam"), ju.Map.of("harry", "ron"))
         ),
@@ -313,7 +313,7 @@ class TestRoundTripConversionForMapProvider extends ArgumentsProvider {
         )
       ),
       Arguments.of(
-        JavaSBD.ofMap(
+        JavaSBD.of(
           JavaSLT.maps(JavaSLT.strings()),
           ju.Map.of(
             "lotr",
@@ -328,7 +328,7 @@ class TestRoundTripConversionForMapProvider extends ArgumentsProvider {
         )
       ),
       Arguments.of(
-        JavaSBD.ofMap(
+        JavaSBD.of(
           JavaSLT.collections(JavaSLT.strings()),
           ju.Map.of(
             "lotr",

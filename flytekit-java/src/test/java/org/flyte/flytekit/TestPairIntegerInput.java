@@ -46,8 +46,8 @@ abstract class TestPairIntegerInput {
     @Override
     public TestPairIntegerInput fromLiteralMap(Map<String, Literal> value) {
       return create(
-          SdkBindingDatas.ofInteger(value.get(A).scalar().primitive().integerValue()),
-          SdkBindingDatas.ofInteger(value.get(B).scalar().primitive().integerValue()));
+          SdkBindingDataFactory.of(value.get(A).scalar().primitive().integerValue()),
+          SdkBindingDataFactory.of(value.get(B).scalar().primitive().integerValue()));
     }
 
     @Override

@@ -20,7 +20,7 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.List;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -34,7 +34,7 @@ public class ListTask extends SdkRunnableTask<ListTask.Input, ListTask.Output> {
 
   @Override
   public Output run(Input input) {
-    return Output.create(SdkBindingDatas.ofIntegerCollection(input.list().get()));
+    return Output.create(SdkBindingDataFactory.ofIntegerCollection(input.list().get()));
   }
 
   @AutoValue

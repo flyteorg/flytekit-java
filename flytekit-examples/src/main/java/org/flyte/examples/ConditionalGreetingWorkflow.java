@@ -16,7 +16,7 @@
  */
 package org.flyte.examples;
 
-import static org.flyte.flytekit.SdkBindingDatas.ofString;
+import static org.flyte.flytekit.SdkBindingDataFactory.of;
 import static org.flyte.flytekit.SdkConditions.eq;
 
 import com.google.auto.service.AutoService;
@@ -40,9 +40,9 @@ public class ConditionalGreetingWorkflow extends SdkWorkflow<GreetTask.Input, Gr
                 "decide",
                 SdkConditions.when(
                         "when-empty",
-                        eq(input.name(), ofString("")),
+                        eq(input.name(), of("")),
                         new GreetTask(),
-                        GreetTask.Input.create(ofString("World")))
+                        GreetTask.Input.create(of("World")))
                     .otherwise(
                         "when-not-empty", new GreetTask(), GreetTask.Input.create(input.name())))
             .getOutputs()

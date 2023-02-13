@@ -45,7 +45,7 @@ class SdkTransformTest {
     var nodeId = "node";
     var upstreamNodeIds = List.of("upstream-node");
     var metadata = SdkNodeMetadata.builder().name("fancy-name").build();
-    var in = SdkBindingDatas.ofInteger(1);
+    var in = SdkBindingDataFactory.of(1);
     var inputs = TestUnaryIntegerInput.create(in);
     var inputsBindings = Map.<String, SdkBindingData<?>>of("in", in);
 

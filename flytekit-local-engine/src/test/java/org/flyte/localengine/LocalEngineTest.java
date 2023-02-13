@@ -18,7 +18,6 @@ package org.flyte.localengine;
 
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
-import static org.flyte.flytekit.SdkBindingDatas.ofInteger;
 import static org.flyte.flytekit.SdkConditions.eq;
 import static org.flyte.flytekit.SdkConditions.when;
 import static org.flyte.localengine.TestingListener.ofCompleted;
@@ -47,6 +46,7 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -562,8 +562,12 @@ class LocalEngineTest {
           builder
               .apply(
                   "decide",
-                  when("eq_1", eq(ofInteger(1L), x), new NoOp(), NoOpType.create(x))
-                      .when("eq_2", eq(ofInteger(2L), x), new NoOp(), NoOpType.create(x)))
+                  when("eq_1", eq(SdkBindingDataFactory.of(1L), x), new NoOp(), NoOpType.create(x))
+                      .when(
+                          "eq_2",
+                          eq(SdkBindingDataFactory.of(2L), x),
+                          new NoOp(),
+                          NoOpType.create(x)))
               .getOutputs()
               .x();
 

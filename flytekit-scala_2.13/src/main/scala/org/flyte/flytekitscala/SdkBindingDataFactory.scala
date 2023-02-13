@@ -23,7 +23,7 @@ import java.time.{Duration, Instant}
 
 /** Utility to create [[SdkBindingData]] using scala raw types.
   */
-object SdkBindingDatas {
+object SdkBindingDataFactory {
 
   /** Creates a [[SdkBindingData]] for a flyte string ([[String]] for scala)
     * with the given value.
@@ -33,7 +33,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofString(string: String): SdkBindingData[String] =
+  def of(string: String): SdkBindingData[String] =
     SdkBindingData.literal(strings(), string)
 
   /** Creates a [[SdkBindingData]] for a flyte integer ([[Long]] for scala) with
@@ -44,7 +44,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofInteger(long: Long): SdkBindingData[Long] =
+  def of(long: Long): SdkBindingData[Long] =
     SdkBindingData.literal(integers(), long)
 
   /** Creates a [[SdkBindingData]] for a flyte float ([[Double]] for scala) with
@@ -55,7 +55,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofFloat(double: Double): SdkBindingData[Double] =
+  def of(double: Double): SdkBindingData[Double] =
     SdkBindingData.literal(floats(), double)
 
   /** Creates a [[SdkBindingData]] for a flyte boolean ([[Boolean]] for scala)
@@ -66,7 +66,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofBoolean(
+  def of(
       boolean: Boolean
   ): SdkBindingData[Boolean] =
     SdkBindingData.literal(booleans(), boolean)
@@ -79,7 +79,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofDatetime(instant: Instant): SdkBindingData[Instant] =
+  def of(instant: Instant): SdkBindingData[Instant] =
     SdkBindingData.literal(datetimes(), instant)
 
   /** Creates a [[SdkBindingData]] for a flyte duration ([[Duration]] for scala)
@@ -90,7 +90,7 @@ object SdkBindingDatas {
     * @return
     *   the new {[[SdkBindingData]]
     */
-  def ofDuration(
+  def of(
       duration: Duration
   ): SdkBindingData[Duration] = SdkBindingData.literal(durations(), duration)
 
@@ -102,7 +102,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofCollection[T](
+  def of[T](
       collection: List[T]
   ): SdkBindingData[List[T]] =
     SdkBindingData.literal(
@@ -120,7 +120,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofCollection[T](
+  def of[T](
       elementLiteralType: SdkLiteralType[T],
       collection: List[T]
   ): SdkBindingData[List[T]] =
@@ -129,8 +129,8 @@ object SdkBindingDatas {
       collection
     )
 
-  /** Creates a [[SdkBindingDatas]] for a flyte string collection given a scala
-    * [[List]].
+  /** Creates a [[SdkBindingDataFactory]] for a flyte string collection given a
+    * scala [[List]].
     *
     * @param collection
     *   collection to represent on this data.
@@ -148,7 +148,7 @@ object SdkBindingDatas {
     * @param collection
     *   collection to represent on this data.
     * @return
-    *   the new [[SdkBindingDatas]]
+    *   the new [[SdkBindingDataFactory]]
     */
   def ofIntegerCollection(
       collection: List[Long]
@@ -214,7 +214,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofMap[T](map: Map[String, T]): SdkBindingData[Map[String, T]] =
+  def of[T](map: Map[String, T]): SdkBindingData[Map[String, T]] =
     SdkBindingData.literal(
       toSdkLiteralType(map).asInstanceOf[SdkLiteralType[Map[String, T]]],
       map
@@ -225,7 +225,7 @@ object SdkBindingDatas {
     * @param map
     *   collection to represent on this data.
     * @return
-    *   the new [[SdkBindingDatas]]
+    *   the new [[SdkBindingDataFactory]]
     */
   def ofStringMap(
       map: Map[String, String]
@@ -303,7 +303,7 @@ object SdkBindingDatas {
     * @return
     *   the new [[SdkBindingData]]
     */
-  def ofMap[T](
+  def of[T](
       valuesLiteralType: SdkLiteralType[T],
       map: Map[String, T]
   ): SdkBindingData[Map[String, T]] =

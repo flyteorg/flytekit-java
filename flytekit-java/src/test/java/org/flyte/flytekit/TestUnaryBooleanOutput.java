@@ -41,7 +41,7 @@ abstract class TestUnaryBooleanOutput {
 
     @Override
     public TestUnaryBooleanOutput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingDatas.ofBoolean(value.get(VAR).scalar().primitive().booleanValue()));
+      return create(SdkBindingDataFactory.of(value.get(VAR).scalar().primitive().booleanValue()));
     }
 
     @Override

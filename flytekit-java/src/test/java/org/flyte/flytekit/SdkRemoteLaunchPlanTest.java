@@ -37,7 +37,7 @@ public class SdkRemoteLaunchPlanTest {
   @Test
   void applyShouldReturnASdkWorkflowNode() {
     var inputs =
-        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(1), SdkBindingDatas.ofInteger(2));
+        TestPairIntegerInput.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(2));
     SdkRemoteLaunchPlan<TestPairIntegerInput, TestUnaryBooleanOutput> remoteLaunchPlan =
         new TestSdkRemoteLaunchPlan();
 

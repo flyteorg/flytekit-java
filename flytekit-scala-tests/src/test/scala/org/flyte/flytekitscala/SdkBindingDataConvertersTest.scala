@@ -184,19 +184,19 @@ class TestRoundTripConversionForScalarProvider extends ArgumentsProvider {
       Arguments.of(
         JavaSBD.of(j.Long.valueOf(1L)),
         d => toScalaLong(d),
-        ScalaSBD.ofInteger(1L),
+        ScalaSBD.of(1L),
         d => toJavaLong(d)
       ),
       Arguments.of(
         JavaSBD.of(j.Double.valueOf(1.0)),
         d => toScalaDouble(d),
-        ScalaSBD.ofFloat(1.0),
+        ScalaSBD.of(1.0),
         d => toJavaDouble(d)
       ),
       Arguments.of(
         JavaSBD.of(j.Boolean.valueOf(true)),
         d => toScalaBoolean(d),
-        ScalaSBD.ofBoolean(true),
+        ScalaSBD.of(true),
         d => toJavaBoolean(d)
       )
     )
@@ -243,7 +243,7 @@ class TestRoundTripConversionForCollectionsProvider extends ArgumentsProvider {
           JavaSLT.collections(JavaSLT.strings()),
           ju.List.of(ju.List.of("frodo", "sam"), ju.List.of("harry", "ron"))
         ),
-        ScalaSBD.ofCollection(
+        ScalaSBD.of(
           ScalaSLT.collections(ScalaSLT.strings()),
           List(List("frodo", "sam"), List("harry", "ron"))
         )
@@ -253,7 +253,7 @@ class TestRoundTripConversionForCollectionsProvider extends ArgumentsProvider {
           JavaSLT.maps(JavaSLT.strings()),
           ju.List.of(ju.Map.of("frodo", "sam"), ju.Map.of("harry", "ron"))
         ),
-        ScalaSBD.ofCollection(
+        ScalaSBD.of(
           ScalaSLT.maps(ScalaSLT.strings()),
           List(Map("frodo" -> "sam"), Map("harry" -> "ron"))
         )
@@ -322,7 +322,7 @@ class TestRoundTripConversionForMapProvider extends ArgumentsProvider {
             ju.Map.of("harry", "ron")
           )
         ),
-        ScalaSBD.ofMap(
+        ScalaSBD.of(
           ScalaSLT.maps(ScalaSLT.strings()),
           Map("lotr" -> Map("frodo" -> "sam"), "hp" -> Map("harry" -> "ron"))
         )
@@ -337,7 +337,7 @@ class TestRoundTripConversionForMapProvider extends ArgumentsProvider {
             ju.List.of("harry", "ron")
           )
         ),
-        ScalaSBD.ofMap(
+        ScalaSBD.of(
           ScalaSLT.collections(ScalaSLT.strings()),
           Map("lotr" -> List("frodo", "sam"), "hp" -> List("harry", "ron"))
         )

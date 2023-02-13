@@ -16,12 +16,12 @@
  */
 package org.flyte.flytekit.testing;
 
-import static org.flyte.flytekit.SdkBindingDataFactory.of;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -53,7 +53,8 @@ public class FibonacciWorkflowTest {
         SdkTestingExecutor.of(new FibonacciWorkflow())
             .withFixedInputs(
                 JacksonSdkType.of(FibonacciWorkflowInputs.class),
-                FibonacciWorkflowInputs.create(of(1), of(1)))
+                FibonacciWorkflowInputs.create(
+                    SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(1)))
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));
@@ -69,7 +70,9 @@ public class FibonacciWorkflowTest {
             .withFixedInput("fib0", 1)
             .withFixedInput("fib1", 1)
             .withTaskOutput(
-                new SumTask(), SumInput.create(of(3L), of(5L)), SumOutput.create(of(42L)))
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)),
+                SumOutput.create(SdkBindingDataFactory.of(42L)))
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));
@@ -86,19 +89,19 @@ public class FibonacciWorkflowTest {
             .withFixedInput("fib1", 1)
             .withTaskOutput(
                 RemoteSumTask.create(),
-                RemoteSumInput.create(of(1L), of(1L)),
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
                 RemoteSumOutput.create(5L))
             .withTaskOutput(
                 RemoteSumTask.create(),
-                RemoteSumInput.create(of(1L), of(5L)),
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(5L)),
                 RemoteSumOutput.create(10L))
             .withTaskOutput(
                 RemoteSumTask.create(),
-                RemoteSumInput.create(of(5L), of(10L)),
+                RemoteSumInput.create(SdkBindingDataFactory.of(5L), SdkBindingDataFactory.of(10L)),
                 RemoteSumOutput.create(20L))
             .withTaskOutput(
                 RemoteSumTask.create(),
-                RemoteSumInput.create(of(10L), of(20L)),
+                RemoteSumInput.create(SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(20L)),
                 RemoteSumOutput.create(40L))
             .execute();
 
@@ -115,9 +118,14 @@ public class FibonacciWorkflowTest {
             .withFixedInput("fib0", 1)
             .withFixedInput("fib1", 1)
             .withTask(
-                new SumTask(), input -> SumOutput.create(of(input.a().get() * input.b().get())))
+                new SumTask(),
+                input ->
+                    SumOutput.create(SdkBindingDataFactory.of(input.a().get() * input.b().get())))
             // can combine withTask and withTaskOutput
-            .withTaskOutput(new SumTask(), SumInput.create(of(1), of(1)), SumOutput.create(of(2)))
+            .withTaskOutput(
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(1)),
+                SumOutput.create(SdkBindingDataFactory.of(2)))
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));

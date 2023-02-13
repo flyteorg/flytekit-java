@@ -19,7 +19,6 @@ package org.flyte.flytekitscala
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import org.flyte.api.v1.{
-  BindingData,
   Literal,
   LiteralType,
   Primitive,
@@ -27,8 +26,11 @@ import org.flyte.api.v1.{
   SimpleType,
   Variable
 }
-import org.flyte.flytekit.{SdkBindingData, SdkBindingDataFactory}
-import org.flyte.flytekitscala.SdkBindingDataFactory._
+import org.flyte.flytekit.{
+  SdkBindingData,
+  SdkBindingDataFactory => SdkJavaBindingDataFactory
+}
+import org.flyte.flytekitscala.SdkBindingDataFactory
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
 import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.AutoAllInputsInput
@@ -146,12 +148,12 @@ class SdkScalaTypeTest {
 
     val expected =
       ScalarInput(
-        string = ofString("string"),
-        integer = ofInteger(1337L),
-        float = ofFloat(42.0),
-        boolean = ofBoolean(true),
-        datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
-        duration = ofDuration(Duration.ofSeconds(123, 456))
+        string = SdkBindingDataFactory.of("string"),
+        integer = SdkBindingDataFactory.of(1337L),
+        float = SdkBindingDataFactory.of(42.0),
+        boolean = SdkBindingDataFactory.of(true),
+        datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
+        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
       )
 
     val output = SdkScalaType[ScalarInput].fromLiteralMap(input)
@@ -163,12 +165,12 @@ class SdkScalaTypeTest {
   def testScalarToLiteralMap(): Unit = {
     val input =
       ScalarInput(
-        string = ofString("string"),
-        integer = ofInteger(1337L),
-        float = ofFloat(42.0),
-        boolean = ofBoolean(true),
-        datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
-        duration = ofDuration(Duration.ofSeconds(123, 456))
+        string = SdkBindingDataFactory.of("string"),
+        integer = SdkBindingDataFactory.of(1337L),
+        float = SdkBindingDataFactory.of(42.0),
+        boolean = SdkBindingDataFactory.of(true),
+        datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
+        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
       )
 
     val expected = Map(
@@ -214,23 +216,23 @@ class SdkScalaTypeTest {
   @Test
   def testToSdkBindingMap(): Unit = {
     val input = ScalarInput(
-      string = ofString("string"),
-      integer = ofInteger(1337L),
-      float = ofFloat(42.0),
-      boolean = ofBoolean(true),
-      datetime = ofDatetime(Instant.ofEpochMilli(123456L)),
-      duration = ofDuration(Duration.ofSeconds(123, 456))
+      string = SdkBindingDataFactory.of("string"),
+      integer = SdkBindingDataFactory.of(1337L),
+      float = SdkBindingDataFactory.of(42.0),
+      boolean = SdkBindingDataFactory.of(true),
+      datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
+      duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
     )
 
     val output = SdkScalaType[ScalarInput].toSdkBindingMap(input)
 
     val expected = Map(
-      "string" -> ofString("string"),
-      "integer" -> ofInteger(1337L),
-      "float" -> ofFloat(42.0),
-      "boolean" -> ofBoolean(true),
-      "datetime" -> ofDatetime(Instant.ofEpochMilli(123456L)),
-      "duration" -> ofDuration(Duration.ofSeconds(123, 456))
+      "string" -> SdkBindingDataFactory.of("string"),
+      "integer" -> SdkBindingDataFactory.of(1337L),
+      "float" -> SdkBindingDataFactory.of(42.0),
+      "boolean" -> SdkBindingDataFactory.of(true),
+      "datetime" -> SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
+      "duration" -> SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
     ).asJava
 
     assertEquals(expected, output)
@@ -268,14 +270,14 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithCollections(): Unit = {
     val input =
       CollectionInput(
-        strings = ofCollection(List("foo", "bar")),
-        integers = ofCollection(List(1337L, 321L)),
-        floats = ofCollection(List(42.0, 3.14)),
-        booleans = ofCollection(List(true, false)),
-        datetimes = ofCollection(
+        strings = SdkBindingDataFactory.of(List("foo", "bar")),
+        integers = SdkBindingDataFactory.of(List(1337L, 321L)),
+        floats = SdkBindingDataFactory.of(List(42.0, 3.14)),
+        booleans = SdkBindingDataFactory.of(List(true, false)),
+        datetimes = SdkBindingDataFactory.of(
           List(Instant.ofEpochMilli(123456L), Instant.ofEpochMilli(321L))
         ),
-        durations = ofCollection(
+        durations = SdkBindingDataFactory.of(
           List(Duration.ofSeconds(123, 456), Duration.ofSeconds(543, 21))
         )
       )
@@ -317,12 +319,14 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithMaps(): Unit = {
     val input =
       MapInput(
-        stringMap = ofMap(Map("k1" -> "foo")),
-        integerMap = ofMap(Map("k2" -> 321L)),
-        floatMap = ofMap(Map("k3" -> 3.14)),
-        booleanMap = ofMap(Map("k4" -> false)),
-        datetimeMap = ofMap(Map("k5" -> Instant.ofEpochMilli(321L))),
-        durationMap = ofMap(Map("k6" -> Duration.ofSeconds(543, 21)))
+        stringMap = SdkBindingDataFactory.of(Map("k1" -> "foo")),
+        integerMap = SdkBindingDataFactory.of(Map("k2" -> 321L)),
+        floatMap = SdkBindingDataFactory.of(Map("k3" -> 3.14)),
+        booleanMap = SdkBindingDataFactory.of(Map("k4" -> false)),
+        datetimeMap =
+          SdkBindingDataFactory.of(Map("k5" -> Instant.ofEpochMilli(321L))),
+        durationMap =
+          SdkBindingDataFactory.of(Map("k6" -> Duration.ofSeconds(543, 21)))
       )
 
     val output = SdkScalaType[MapInput].fromLiteralMap(
@@ -356,7 +360,7 @@ class SdkScalaTypeTest {
   def testRoundTripFromAndToCaseClassWithListsOfMaps(): Unit = {
     val input =
       ComplexInput(
-        metadataList = ofCollection(
+        metadataList = SdkBindingDataFactory.of(
           List(
             Map("Frodo" -> "Baggins", "Sam" -> "Gamgee"),
             Map("Clark" -> "Kent", "Loise" -> "Lane")
@@ -376,16 +380,16 @@ class SdkScalaTypeTest {
     import SdkBindingDataConverters._
 
     val input = AutoAllInputsInput.create(
-      SdkBindingDataFactory.of(2L),
-      SdkBindingDataFactory.of(2.0),
-      SdkBindingDataFactory.of("hello"),
-      SdkBindingDataFactory.of(true),
-      SdkBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
-      SdkBindingDataFactory.of(Duration.ZERO),
-      SdkBindingDataFactory.ofStringCollection(List("1", "2", "3").asJava),
-      SdkBindingDataFactory.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
-      SdkBindingDataFactory.ofStringCollection(List.empty[String].asJava),
-      SdkBindingDataFactory.ofIntegerMap(
+      SdkJavaBindingDataFactory.of(2L),
+      SdkJavaBindingDataFactory.of(2.0),
+      SdkJavaBindingDataFactory.of("hello"),
+      SdkJavaBindingDataFactory.of(true),
+      SdkJavaBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
+      SdkJavaBindingDataFactory.of(Duration.ZERO),
+      SdkJavaBindingDataFactory.ofStringCollection(List("1", "2", "3").asJava),
+      SdkJavaBindingDataFactory.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
+      SdkJavaBindingDataFactory.ofStringCollection(List.empty[String].asJava),
+      SdkJavaBindingDataFactory.ofIntegerMap(
         Map.empty[String, java.lang.Long].asJava
       )
     )
@@ -417,16 +421,16 @@ class SdkScalaTypeTest {
     )
 
     val expected = AutoAllInputsInputScala(
-      ofInteger(2L),
-      ofFloat(2.0),
-      ofString("hello"),
-      ofBoolean(true),
-      ofDatetime(Instant.parse("2023-01-01T00:00:00Z")),
-      ofDuration(Duration.ZERO),
-      ofCollection(List("1", "2", "3")),
-      ofMap(Map("a" -> "2", "b" -> "3")),
-      ofStringCollection(List.empty[String]),
-      ofIntegerMap(Map.empty[String, Long])
+      SdkBindingDataFactory.of(2L),
+      SdkBindingDataFactory.of(2.0),
+      SdkBindingDataFactory.of("hello"),
+      SdkBindingDataFactory.of(true),
+      SdkBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
+      SdkBindingDataFactory.of(Duration.ZERO),
+      SdkBindingDataFactory.of(List("1", "2", "3")),
+      SdkBindingDataFactory.of(Map("a" -> "2", "b" -> "3")),
+      SdkBindingDataFactory.ofStringCollection(List.empty[String]),
+      SdkBindingDataFactory.ofIntegerMap(Map.empty[String, Long])
     )
 
     assertEquals(expected, scalaClass)
@@ -435,7 +439,7 @@ class SdkScalaTypeTest {
 
   @Test
   def testEmptyCollection(): Unit = {
-    val emptyList = ofStringCollection(List.empty[String])
+    val emptyList = SdkBindingDataFactory.ofStringCollection(List.empty[String])
     val expected =
       SdkBindingData.literal(collections(strings()), List.empty[String])
 
@@ -444,7 +448,7 @@ class SdkScalaTypeTest {
 
   @Test
   def testEmptyMap(): Unit = {
-    val emptyMap = ofStringMap(Map.empty[String, String])
+    val emptyMap = SdkBindingDataFactory.ofStringMap(Map.empty[String, String])
     val expected =
       SdkBindingData.literal(maps(strings()), Map.empty[String, String])
 

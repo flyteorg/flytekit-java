@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -47,7 +47,7 @@ public class BatchLookUpTask
             .map(key -> input.keyValues().get().get(key))
             .collect(Collectors.toList());
 
-    return Output.create(SdkBindingDatas.ofStringCollection(foundValues));
+    return Output.create(SdkBindingDataFactory.ofStringCollection(foundValues));
   }
 
   @AutoValue

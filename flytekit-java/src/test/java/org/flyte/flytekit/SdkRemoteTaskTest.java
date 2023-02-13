@@ -38,7 +38,7 @@ class SdkRemoteTaskTest {
   @Test
   void applyShouldReturnASdkTaskNode() {
     var inputs =
-        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(1), SdkBindingDatas.ofInteger(2));
+        TestPairIntegerInput.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(2));
     SdkRemoteTask<TestPairIntegerInput, TestUnaryBooleanOutput> remoteTask =
         new TestSdkRemoteTask();
 

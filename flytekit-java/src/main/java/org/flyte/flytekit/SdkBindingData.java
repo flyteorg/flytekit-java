@@ -33,7 +33,8 @@ import org.flyte.api.v1.OutputReference;
 
 /**
  * Specifies either a literal value or a promise that reference to the output of a node. The {@link
- * SdkBindingDatas} class provides factory methods for {@link SdkBindingData} of different types.
+ * SdkBindingDataFactory} class provides factory methods for {@link SdkBindingData} of different
+ * types.
  */
 public abstract class SdkBindingData<T> {
 

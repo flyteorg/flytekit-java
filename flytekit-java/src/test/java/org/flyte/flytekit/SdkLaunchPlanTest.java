@@ -97,7 +97,7 @@ class SdkLaunchPlanTest {
     Duration duration = Duration.ofSeconds(123);
 
     TestPairIntegerInput fixedInputs =
-        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(456), SdkBindingDatas.ofInteger(789));
+        TestPairIntegerInput.create(SdkBindingDataFactory.of(456), SdkBindingDataFactory.of(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -128,7 +128,7 @@ class SdkLaunchPlanTest {
     Duration duration = Duration.ofSeconds(123);
 
     TestPairIntegerInput fixedInputs =
-        TestPairIntegerInput.create(SdkBindingDatas.ofInteger(456), SdkBindingDatas.ofInteger(789));
+        TestPairIntegerInput.create(SdkBindingDataFactory.of(456), SdkBindingDataFactory.of(789));
 
     SdkLaunchPlan plan =
         SdkLaunchPlan.of(new TestWorkflow())
@@ -311,14 +311,14 @@ class SdkLaunchPlanTest {
       @Override
       public TestWorkflowInput fromLiteralMap(Map<String, Literal> value) {
         return create(
-            SdkBindingDatas.ofInteger(value.get(INTEGER).scalar().primitive().integerValue()),
-            SdkBindingDatas.ofFloat(value.get(FLOAT).scalar().primitive().floatValue()),
-            SdkBindingDatas.ofString(value.get(STRING).scalar().primitive().stringValue()),
-            SdkBindingDatas.ofBoolean(value.get(BOOLEAN).scalar().primitive().booleanValue()),
-            SdkBindingDatas.ofDatetime(value.get(DATETIME).scalar().primitive().datetime()),
-            SdkBindingDatas.ofDuration(value.get(DURATION).scalar().primitive().duration()),
-            SdkBindingDatas.ofInteger(value.get(A).scalar().primitive().integerValue()),
-            SdkBindingDatas.ofInteger(value.get(B).scalar().primitive().integerValue()));
+            SdkBindingDataFactory.of(value.get(INTEGER).scalar().primitive().integerValue()),
+            SdkBindingDataFactory.of(value.get(FLOAT).scalar().primitive().floatValue()),
+            SdkBindingDataFactory.of(value.get(STRING).scalar().primitive().stringValue()),
+            SdkBindingDataFactory.of(value.get(BOOLEAN).scalar().primitive().booleanValue()),
+            SdkBindingDataFactory.of(value.get(DATETIME).scalar().primitive().datetime()),
+            SdkBindingDataFactory.of(value.get(DURATION).scalar().primitive().duration()),
+            SdkBindingDataFactory.of(value.get(A).scalar().primitive().integerValue()),
+            SdkBindingDataFactory.of(value.get(B).scalar().primitive().integerValue()));
       }
 
       @Override

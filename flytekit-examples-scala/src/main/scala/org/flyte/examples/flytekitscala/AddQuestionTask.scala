@@ -16,9 +16,9 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask}
 import org.flyte.flytekitscala.SdkScalaType
-import org.flyte.flytekitscala.SdkBindingDatas.ofString
+import org.flyte.flytekitscala.SdkBindingDataFactory.of
 
 case class AddQuestionTaskInput(greeting: SdkBindingData[String])
 case class AddQuestionTaskOutput(greeting: SdkBindingData[String])
@@ -44,5 +44,5 @@ class AddQuestionTask
     *   the updated greeting message
     */
   override def run(input: AddQuestionTaskInput): AddQuestionTaskOutput =
-    AddQuestionTaskOutput(ofString(s"${input.greeting.get} How are you?"))
+    AddQuestionTaskOutput(of(s"${input.greeting.get} How are you?"))
 }

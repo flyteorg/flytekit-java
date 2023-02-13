@@ -29,7 +29,7 @@ import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.junit.jupiter.api.Test;
 
@@ -133,7 +133,7 @@ class TestingRunnableNodeTest {
     abstract SdkBindingData<String> in();
 
     public static Input create(String in) {
-      return new AutoValue_TestingRunnableNodeTest_Input(SdkBindingDatas.ofString(in));
+      return new AutoValue_TestingRunnableNodeTest_Input(SdkBindingDataFactory.of(in));
     }
   }
 
@@ -142,7 +142,7 @@ class TestingRunnableNodeTest {
     abstract SdkBindingData<Long> out();
 
     public static Output create(Long out) {
-      return new AutoValue_TestingRunnableNodeTest_Output(SdkBindingDatas.ofInteger(out));
+      return new AutoValue_TestingRunnableNodeTest_Output(SdkBindingDataFactory.of(out));
     }
   }
 }

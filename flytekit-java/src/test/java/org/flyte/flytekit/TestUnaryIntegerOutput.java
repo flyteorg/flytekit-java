@@ -41,7 +41,7 @@ abstract class TestUnaryIntegerOutput {
 
     @Override
     public TestUnaryIntegerOutput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingDatas.ofInteger(value.get(VAR).scalar().primitive().integerValue()));
+      return create(SdkBindingDataFactory.of(value.get(VAR).scalar().primitive().integerValue()));
     }
 
     @Override

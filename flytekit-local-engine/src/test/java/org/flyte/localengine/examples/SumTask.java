@@ -19,7 +19,7 @@ package org.flyte.localengine.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.localengine.examples.SumTask.Input;
@@ -46,6 +46,6 @@ public class SumTask extends SdkRunnableTask<Input, TestUnaryIntegerOutput> {
   @Override
   public TestUnaryIntegerOutput run(Input input) {
     return TestUnaryIntegerOutput.create(
-        SdkBindingDatas.ofInteger(input.a().get() + input.b().get()));
+        SdkBindingDataFactory.of(input.a().get() + input.b().get()));
   }
 }

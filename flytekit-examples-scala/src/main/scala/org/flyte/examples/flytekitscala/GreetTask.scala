@@ -18,7 +18,7 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.{Description, SdkScalaType}
-import org.flyte.flytekitscala.SdkBindingDatas._
+import org.flyte.flytekitscala.SdkBindingDataFactory._
 
 case class GreetTaskInput(
     @Description("the name of the person to be greeted")
@@ -47,5 +47,5 @@ class GreetTask
     *   the welcome message
     */
   override def run(input: GreetTaskInput): GreetTaskOutput =
-    GreetTaskOutput(ofString(s"Welcome, ${input.name.get()}!"))
+    GreetTaskOutput(of(s"Welcome, ${input.name.get()}!"))
 }

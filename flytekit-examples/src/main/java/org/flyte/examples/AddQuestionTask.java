@@ -19,7 +19,7 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkBindingDatas;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -76,6 +76,6 @@ public class AddQuestionTask
   @Override
   public Output run(Input input) {
     return Output.create(
-        SdkBindingDatas.ofString(String.format("%s How are you?", input.greeting().get())));
+        SdkBindingDataFactory.of(String.format("%s How are you?", input.greeting().get())));
   }
 }

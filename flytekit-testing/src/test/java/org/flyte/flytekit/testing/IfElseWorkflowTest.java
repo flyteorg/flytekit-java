@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit.testing;
 
-import static org.flyte.flytekit.SdkBindingDatas.ofString;
+import static org.flyte.flytekit.SdkBindingDataFactory.of;
 import static org.flyte.flytekit.SdkConditions.eq;
 import static org.flyte.flytekit.SdkConditions.gt;
 import static org.flyte.flytekit.SdkConditions.lt;
@@ -114,17 +114,17 @@ public class IfElseWorkflowTest {
                           "c == d",
                           eq(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a == b && c == d")))
+                          ConstStringTask.Input.create(of("a == b && c == d")))
                       .when(
                           "c > d",
                           gt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a == b && c > d")))
+                          ConstStringTask.Input.create(of("a == b && c > d")))
                       .when(
                           "c < d",
                           lt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a == b && c < d"))))
+                          ConstStringTask.Input.create(of("a == b && c < d"))))
               .when(
                   "a < b",
                   lt(a, b),
@@ -132,17 +132,17 @@ public class IfElseWorkflowTest {
                           "c == d",
                           eq(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a < b && c == d")))
+                          ConstStringTask.Input.create(of("a < b && c == d")))
                       .when(
                           "c > d",
                           gt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a < b && c > d")))
+                          ConstStringTask.Input.create(of("a < b && c > d")))
                       .when(
                           "c < d",
                           lt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a < b && c < d"))))
+                          ConstStringTask.Input.create(of("a < b && c < d"))))
               .when(
                   "a > b",
                   gt(a, b),
@@ -150,17 +150,17 @@ public class IfElseWorkflowTest {
                           "c == d",
                           eq(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a > b && c == d")))
+                          ConstStringTask.Input.create(of("a > b && c == d")))
                       .when(
                           "c > d",
                           gt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a > b && c > d")))
+                          ConstStringTask.Input.create(of("a > b && c > d")))
                       .when(
                           "c < d",
                           lt(c, d),
                           new ConstStringTask(),
-                          ConstStringTask.Input.create(ofString("a > b && c < d"))));
+                          ConstStringTask.Input.create(of("a > b && c < d"))));
 
       SdkBindingData<String> value = builder.apply("condition", condition).getOutputs().value();
 

@@ -31,18 +31,26 @@ import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.OutputReference;
 
-/** Specifies either a simple value or a reference to another output. */
+/**
+ * Specifies either a literal value or a promise that reference to the output of a node. The {@link
+ * SdkBindingDatas} class provides factory methods for {@link SdkBindingData} of different types.
+ */
 public abstract class SdkBindingData<T> {
 
   abstract BindingData idl();
 
+  /**
+   * Returns the {@link SdkLiteralType} type of this instance.
+   *
+   * @return the type of this instance.
+   */
   public abstract SdkLiteralType<T> type();
 
   /**
-   * Returns the simple value contained by this data.
+   * Returns the literal value contained by this data.
    *
-   * @return the value that this simple data holds
-   * @throws IllegalArgumentException when this data is an output reference
+   * @return the literal value that this instance holds
+   * @throws IllegalArgumentException when this data is a promise for the output of a node
    */
   public abstract T get();
 

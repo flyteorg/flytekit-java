@@ -130,6 +130,50 @@ class SdkBindingDataConvertersTest {
     )
   }
 
+  @Test
+  def testToScalaListForBindMapsShouldThrowException(): Unit = {
+    val javaLongList = ju.Map.of(
+      "a",
+      SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(1L)),
+      "b",
+      SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(2L)),
+      "c",
+      SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(3L))
+    )
+    val original =
+      SdkBindingData.bindingMap(JavaSLT.integers(), javaLongList)
+
+    val exception = assertThrows(
+      classOf[UnsupportedOperationException],
+      () => toScalaMap(original)
+    )
+
+    assertEquals(
+      exception.getMessage,
+      "SdkBindingData of binding map cannot be casted"
+    )
+  }
+
+  @Test
+  def testToJavaListForBindMapsShouldThrowException(): Unit = {
+    val scalaLongList = Map(
+      "a" -> SdkBindingData.literal(ScalaSLT.integers(), 1L),
+      "b" -> SdkBindingData.literal(ScalaSLT.integers(), 2L),
+      "c" -> SdkBindingData.literal(ScalaSLT.integers(), 3L)
+    )
+    val original =
+      SdkBindingData.bindingMap(ScalaSLT.integers(), scalaLongList.asJava)
+
+    val exception = assertThrows(
+      classOf[UnsupportedOperationException],
+      () => toScalaMap(original)
+    )
+
+    assertEquals(
+      exception.getMessage,
+      "SdkBindingData of binding map cannot be casted"
+    )
+  }
 }
 
 class TestRoundTripConversionForScalarProvider extends ArgumentsProvider {

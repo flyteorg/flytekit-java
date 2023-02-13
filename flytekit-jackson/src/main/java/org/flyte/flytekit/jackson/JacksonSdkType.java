@@ -58,9 +58,9 @@ public class JacksonSdkType<T> extends SdkType<T> {
       Map<String, AnnotatedMember> membersMap,
       Map<String, SdkLiteralType<?>> typesMap) {
     this.clazz = requireNonNull(clazz);
-    this.variableMap = requireNonNull(Map.copyOf(variableMap));
-    this.membersMap = requireNonNull(Map.copyOf(membersMap));
-    this.typesMap = requireNonNull(Map.copyOf(typesMap));
+    this.variableMap = Map.copyOf(requireNonNull(variableMap));
+    this.membersMap = Map.copyOf(requireNonNull(membersMap));
+    this.typesMap = Map.copyOf(requireNonNull(typesMap));
   }
 
   public static <T> JacksonSdkType<T> of(Class<T> clazz) {

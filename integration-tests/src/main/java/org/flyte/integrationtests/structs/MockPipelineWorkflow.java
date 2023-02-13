@@ -16,8 +16,6 @@
  */
 package org.flyte.integrationtests.structs;
 
-import static org.flyte.flytekit.SdkBindingDataFactory.of;
-
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
@@ -45,7 +43,9 @@ public class MockPipelineWorkflow
                 "build-ref",
                 new BuildBqReference(),
                 BuildBqReference.Input.create(
-                    of("styx-1265"), of("styx-insights"), input.tableName()))
+                    SdkBindingDataFactory.of("styx-1265"),
+                    SdkBindingDataFactory.of("styx-insights"),
+                    input.tableName()))
             .getOutputs()
             .ref();
     SdkBindingData<Boolean> exists =

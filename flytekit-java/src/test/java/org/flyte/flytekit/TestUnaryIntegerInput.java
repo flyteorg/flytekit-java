@@ -19,7 +19,6 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 
 @AutoValue
@@ -34,7 +33,7 @@ abstract class TestUnaryIntegerInput {
   public static class SdkType extends org.flyte.flytekit.SdkType<TestUnaryIntegerInput> {
 
     private static final String VAR = "in";
-    private static final LiteralType LITERAL_TYPE = LiteralTypes.INTEGER;
+    private static final SdkLiteralType<Long> INTEGERS = SdkLiteralTypes.integers();
 
     @Override
     public Map<String, Literal> toLiteralMap(TestUnaryIntegerInput value) {
@@ -43,17 +42,23 @@ abstract class TestUnaryIntegerInput {
 
     @Override
     public TestUnaryIntegerInput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingData.ofInteger(value.get(VAR).scalar().primitive().integerValue()));
+      return create(SdkBindingDataFactory.of(value.get(VAR).scalar().primitive().integerValue()));
     }
 
     @Override
     public TestUnaryIntegerInput promiseFor(String nodeId) {
-      return create(SdkBindingData.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
+      return create(SdkBindingData.promise(INTEGERS, nodeId, VAR));
     }
 
     @Override
     public Map<String, Variable> getVariableMap() {
-      return Map.of(VAR, Variable.builder().literalType(LITERAL_TYPE).description("").build());
+      return Map.of(
+          VAR, Variable.builder().literalType(INTEGERS.getLiteralType()).description("").build());
+    }
+
+    @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+      return Map.of(VAR, INTEGERS);
     }
 
     @Override

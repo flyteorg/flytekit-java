@@ -29,6 +29,7 @@ import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +81,7 @@ class TestingRunnableNodeTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input Input{in=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{stringValue=not in fixed outputs}}}, type=LiteralType{simpleType=STRING}, value=not in fixed outputs}} for remote test [TestTask] "
+            "Can't find input Input{in=SdkBindingData{type=strings, value=not in fixed outputs}} for remote test [TestTask] "
                 + "across known test inputs, use a magic wang to provide a test double"));
   }
 
@@ -132,7 +133,7 @@ class TestingRunnableNodeTest {
     abstract SdkBindingData<String> in();
 
     public static Input create(String in) {
-      return new AutoValue_TestingRunnableNodeTest_Input(SdkBindingData.ofString(in));
+      return new AutoValue_TestingRunnableNodeTest_Input(SdkBindingDataFactory.of(in));
     }
   }
 
@@ -141,7 +142,7 @@ class TestingRunnableNodeTest {
     abstract SdkBindingData<Long> out();
 
     public static Output create(Long out) {
-      return new AutoValue_TestingRunnableNodeTest_Output(SdkBindingData.ofInteger(out));
+      return new AutoValue_TestingRunnableNodeTest_Output(SdkBindingDataFactory.of(out));
     }
   }
 }

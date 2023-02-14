@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -61,9 +62,9 @@ public class PhoneBookWorkflow extends SdkWorkflow<Void, PhoneBookWorkflow.Outpu
 
   @Override
   public Output expand(SdkWorkflowBuilder builder, Void noInput) {
-    SdkBindingData<Map<String, String>> phoneBook = SdkBindingData.ofStringMap(PHONE_BOOK);
+    SdkBindingData<Map<String, String>> phoneBook = SdkBindingDataFactory.ofStringMap(PHONE_BOOK);
 
-    SdkBindingData<List<String>> searchKeys = SdkBindingData.ofStringCollection(NAMES);
+    SdkBindingData<List<String>> searchKeys = SdkBindingDataFactory.ofStringCollection(NAMES);
 
     SdkBindingData<List<String>> phoneNumbers =
         builder

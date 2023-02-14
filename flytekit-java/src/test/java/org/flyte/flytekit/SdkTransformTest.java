@@ -45,7 +45,7 @@ class SdkTransformTest {
     var nodeId = "node";
     var upstreamNodeIds = List.of("upstream-node");
     var metadata = SdkNodeMetadata.builder().name("fancy-name").build();
-    var in = SdkBindingData.ofInteger(1);
+    var in = SdkBindingDataFactory.of(1);
     var inputs = TestUnaryIntegerInput.create(in);
     var inputsBindings = Map.<String, SdkBindingData<?>>of("in", in);
 
@@ -155,6 +155,11 @@ class SdkTransformTest {
 
     @Override
     public Map<String, Variable> getVariableMap() {
+      return Map.of();
+    }
+
+    @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
       return Map.of();
     }
 

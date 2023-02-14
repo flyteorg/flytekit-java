@@ -16,10 +16,11 @@
  */
 package org.flyte.flytekit;
 
+import static java.util.stream.Collectors.toUnmodifiableMap;
+
 import java.util.Map;
 import java.util.Set;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 
 /**
@@ -47,13 +48,20 @@ public abstract class SdkType<T> {
   public abstract T fromLiteralMap(Map<String, Literal> value);
 
   /**
-   * Returns a value composed of {@link SdkBindingData#ofOutputReference(String, String,
-   * LiteralType)} for the supplied node is.
+   * Returns a value composed of {@link SdkBindingData#promise(SdkLiteralType, String, String)} for
+   * the supplied node is.
    *
    * @param nodeId the node id that the value is a promise for.
    * @return the value.
    */
   public abstract T promiseFor(String nodeId);
+
+  public final Map<String, SdkBindingData<?>> promiseMapFor(String nodeId) {
+    return toLiteralTypes().entrySet().stream()
+        .collect(
+            toUnmodifiableMap(
+                Map.Entry::getKey, e -> SdkBindingData.promise(e.getValue(), nodeId, e.getKey())));
+  }
 
   /**
    * Returns a variable map for the properties for {@link T}.
@@ -61,6 +69,13 @@ public abstract class SdkType<T> {
    * @return the variable map
    */
   public abstract Map<String, Variable> getVariableMap();
+
+  /**
+   * Returns the {@link SdkLiteralType} map bay variable name corresponding to this type.
+   *
+   * @return the literal type.
+   */
+  public abstract Map<String, SdkLiteralType<?>> toLiteralTypes();
 
   /**
    * Returns the names for the properties for {@link T}.

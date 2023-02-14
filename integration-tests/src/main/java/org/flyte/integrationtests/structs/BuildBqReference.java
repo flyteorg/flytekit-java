@@ -16,13 +16,12 @@
  */
 package org.flyte.integrationtests.structs;
 
-import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkRunnableTask.class)
+// @AutoService(SdkRunnableTask.class)
 public class BuildBqReference
     extends SdkRunnableTask<BuildBqReference.Input, BuildBqReference.Output> {
   private static final long serialVersionUID = -489898361071672070L;

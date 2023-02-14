@@ -46,6 +46,8 @@ import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
+import org.flyte.flytekit.SdkLiteralTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -70,30 +72,18 @@ public class JacksonSdkTypeTest {
       Map<String, List<String>> ml,
       Map<String, Map<String, String>> mm) {
     return AutoValueInput.create(
-        SdkBindingData.ofInteger(i),
-        SdkBindingData.ofFloat(f),
-        SdkBindingData.ofString(s),
-        SdkBindingData.ofBoolean(b),
-        SdkBindingData.ofDatetime(t),
-        SdkBindingData.ofDuration(d),
-        SdkBindingData.ofStringCollection(l),
-        SdkBindingData.ofStringMap(m),
-        SdkBindingData.ofCollection(
-            ll,
-            LiteralType.ofCollectionType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringCollection),
-        SdkBindingData.ofCollection(
-            lm,
-            LiteralType.ofCollectionType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringMap),
-        SdkBindingData.ofMap(
-            ml,
-            LiteralType.ofMapValueType(LiteralType.ofCollectionType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringCollection),
-        SdkBindingData.ofMap(
-            mm,
-            LiteralType.ofMapValueType(LiteralType.ofMapValueType(LiteralTypes.STRING)),
-            SdkBindingData::ofStringMap));
+        SdkBindingDataFactory.of(i),
+        SdkBindingDataFactory.of(f),
+        SdkBindingDataFactory.of(s),
+        SdkBindingDataFactory.of(b),
+        SdkBindingDataFactory.of(t),
+        SdkBindingDataFactory.of(d),
+        SdkBindingDataFactory.ofStringCollection(l),
+        SdkBindingDataFactory.ofStringMap(m),
+        SdkBindingDataFactory.of(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ll),
+        SdkBindingDataFactory.of(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), lm),
+        SdkBindingDataFactory.of(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ml),
+        SdkBindingDataFactory.of(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), mm));
   }
 
   @Test
@@ -329,7 +319,7 @@ public class JacksonSdkTypeTest {
   public void testToSdkBindingDataMapJsonProperties() {
     JsonPropertyClassInput input =
         new JsonPropertyClassInput(
-            SdkBindingData.ofString("test"), SdkBindingData.ofString("name"));
+            SdkBindingDataFactory.of("test"), SdkBindingDataFactory.of("name"));
 
     Map<String, SdkBindingData<?>> sdkBindingDataMap =
         JacksonSdkType.of(JsonPropertyClassInput.class).toSdkBindingMap(input);
@@ -340,10 +330,10 @@ public class JacksonSdkTypeTest {
   }
 
   public static class JsonPropertyClassInput {
-    @JsonProperty SdkBindingData<String> test;
+    @JsonProperty final SdkBindingData<String> test;
 
     @JsonProperty("name")
-    SdkBindingData<String> otherTest;
+    final SdkBindingData<String> otherTest;
 
     @JsonCreator
     public JsonPropertyClassInput(SdkBindingData<String> test, SdkBindingData<String> otherTest) {
@@ -355,7 +345,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoToLiteralMap() {
     PojoInput input = new PojoInput();
-    input.a = SdkBindingData.ofInteger(42);
+    input.a = SdkBindingDataFactory.of(42);
 
     Map<String, Literal> literalMap = JacksonSdkType.of(PojoInput.class).toLiteralMap(input);
 
@@ -365,7 +355,7 @@ public class JacksonSdkTypeTest {
   @Test
   public void testPojoFromLiteralMap() {
     PojoInput expected = new PojoInput();
-    expected.a = SdkBindingData.ofInteger(42);
+    expected.a = SdkBindingDataFactory.of(42);
 
     PojoInput pojoInput =
         JacksonSdkType.of(PojoInput.class)
@@ -454,32 +444,32 @@ public class JacksonSdkTypeTest {
 
     assertThat(
         autoValueInput.i(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "i", LiteralTypes.INTEGER)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.integers(), "node-id", "i")));
     assertThat(
         autoValueInput.f(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "f", LiteralTypes.FLOAT)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.floats(), "node-id", "f")));
     assertThat(
         autoValueInput.s(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "s", LiteralTypes.STRING)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.strings(), "node-id", "s")));
     assertThat(
         autoValueInput.b(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "b", LiteralTypes.BOOLEAN)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.booleans(), "node-id", "b")));
     assertThat(
         autoValueInput.t(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "t", LiteralTypes.DATETIME)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.datetimes(), "node-id", "t")));
     assertThat(
         autoValueInput.d(),
-        equalTo(SdkBindingData.ofOutputReference("node-id", "d", LiteralTypes.DURATION)));
+        equalTo(SdkBindingData.promise(SdkLiteralTypes.durations(), "node-id", "d")));
     assertThat(
         autoValueInput.l(),
         equalTo(
-            SdkBindingData.ofOutputReference(
-                "node-id", "l", LiteralType.ofCollectionType(LiteralTypes.STRING))));
+            SdkBindingData.promise(
+                SdkLiteralTypes.collections(SdkLiteralTypes.strings()), "node-id", "l")));
     assertThat(
         autoValueInput.m(),
         equalTo(
-            SdkBindingData.ofOutputReference(
-                "node-id", "m", LiteralType.ofMapValueType(LiteralTypes.STRING))));
+            SdkBindingData.promise(
+                SdkLiteralTypes.maps(SdkLiteralTypes.strings()), "node-id", "m")));
   }
 
   @Test
@@ -711,9 +701,4 @@ public class JacksonSdkTypeTest {
   private static Literal literalOf(Primitive primitive) {
     return Literal.ofScalar(Scalar.ofPrimitive(primitive));
   }
-
-  // @SuppressWarnings({"unused"})
-  // private static Literal literalOf(Blob blob) {
-  //   return Literal.ofScalar(Scalar.ofBlob(blob));
-  // }
 }

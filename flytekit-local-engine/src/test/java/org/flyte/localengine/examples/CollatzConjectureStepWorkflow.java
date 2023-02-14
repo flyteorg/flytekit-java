@@ -16,13 +16,13 @@
  */
 package org.flyte.localengine.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
 import static org.flyte.flytekit.SdkConditions.isTrue;
 import static org.flyte.flytekit.SdkConditions.when;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -64,7 +64,7 @@ public class CollatzConjectureStepWorkflow
                         "was_even",
                         isTrue(isOdd),
                         new Divide(),
-                        Divide.Input.create(input.x(), ofInteger(2L)))
+                        Divide.Input.create(input.x(), SdkBindingDataFactory.of(2L)))
                     .otherwise(
                         "was_odd", new ThreeXPlusOne(), ThreeXPlusOne.Input.create(input.x())))
             .getOutputs()
@@ -83,7 +83,7 @@ public class CollatzConjectureStepWorkflow
 
     @Override
     public IsEvenTask.Output run(IsEvenTask.Input input) {
-      return IsEvenTask.Output.create(SdkBindingData.ofBoolean(input.x().get() % 2 == 0));
+      return IsEvenTask.Output.create(SdkBindingDataFactory.of(input.x().get() % 2 == 0));
     }
 
     @AutoValue
@@ -118,7 +118,7 @@ public class CollatzConjectureStepWorkflow
     @Override
     public TestUnaryIntegerOutput run(Divide.Input input) {
       return TestUnaryIntegerOutput.create(
-          SdkBindingData.ofInteger(input.num().get() / input.den().get()));
+          SdkBindingDataFactory.of(input.num().get() / input.den().get()));
     }
 
     @AutoValue
@@ -157,7 +157,7 @@ public class CollatzConjectureStepWorkflow
 
     @Override
     public TestUnaryIntegerOutput run(ThreeXPlusOne.Input input) {
-      return TestUnaryIntegerOutput.create(SdkBindingData.ofInteger(3 * input.x().get() + 1));
+      return TestUnaryIntegerOutput.create(SdkBindingDataFactory.of(3 * input.x().get() + 1));
     }
 
     @AutoValue

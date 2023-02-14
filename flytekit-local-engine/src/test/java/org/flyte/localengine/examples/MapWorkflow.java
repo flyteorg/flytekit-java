@@ -16,14 +16,13 @@
  */
 package org.flyte.localengine.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
+import static org.flyte.flytekit.SdkLiteralTypes.integers;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -50,20 +49,24 @@ public class MapWorkflow extends SdkWorkflow<Void, MapWorkflow.Output> {
   public Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkBindingData<Long> sum1 =
         builder
-            .apply("sum-1", new SumTask(), SumTask.Input.create(ofInteger(1), ofInteger(2)))
+            .apply(
+                "sum-1",
+                new SumTask(),
+                SumTask.Input.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(2)))
             .getOutputs()
             .o();
 
     SdkBindingData<Long> sum2 =
         builder
-            .apply("sum-2", new SumTask(), SumTask.Input.create(ofInteger(3), ofInteger(4)))
+            .apply(
+                "sum-2",
+                new SumTask(),
+                SumTask.Input.create(SdkBindingDataFactory.of(3), SdkBindingDataFactory.of(4)))
             .getOutputs()
             .o();
 
     SdkBindingData<Map<String, Long>> map =
-        SdkBindingData.ofBindingMap(
-            LiteralType.ofMapValueType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
-            Map.of("e", sum1, "f", sum2));
+        SdkBindingDataFactory.ofBindingMap(integers(), Map.of("e", sum1, "f", sum2));
 
     SdkNode<MapTask.Output> map1 = builder.apply("map-1", new MapTask(), MapTask.Input.create(map));
 

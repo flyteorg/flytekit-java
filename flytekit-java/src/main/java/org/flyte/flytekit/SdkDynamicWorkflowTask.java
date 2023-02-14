@@ -79,14 +79,7 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
     }
 
     return new SdkTaskNode<>(
-        builder,
-        nodeId,
-        taskId,
-        upstreamNodeIds,
-        metadata,
-        inputs,
-        outputType.getVariableMap(),
-        outputType.promiseFor(nodeId));
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType);
   }
 
   public abstract OutputT run(SdkWorkflowBuilder builder, InputT input);

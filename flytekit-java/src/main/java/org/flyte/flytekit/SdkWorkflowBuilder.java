@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Builder used during {@link SdkWorkflow#expand(SdkWorkflowBuilder)}. */
@@ -134,14 +133,11 @@ public class SdkWorkflowBuilder {
     return sdkNode;
   }
 
-  <T> SdkBindingData<T> inputOf(String name, LiteralType literalType, String help) {
-    SdkBindingData<T> bindingData =
-        SdkBindingData.ofOutputReference(START_NODE_ID, name, literalType);
+  <T> void setInput(SdkLiteralType<T> type, String name, String help) {
+    SdkBindingData<T> bindingData = SdkBindingData.promise(type, START_NODE_ID, name);
 
     inputDescriptions.put(name, help);
     inputs.put(name, bindingData);
-
-    return bindingData;
   }
 
   /** Returns the nodes by id. */

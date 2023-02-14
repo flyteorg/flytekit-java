@@ -18,7 +18,6 @@ package org.flyte.flytekit.testing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.in;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,6 +25,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -208,7 +208,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -233,7 +233,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -246,14 +246,14 @@ public class SdkTestingExecutorTest {
                     .withTaskOutput(
                         RemoteSumTask.create(),
                         RemoteSumInput.create(
-                            SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(20L)),
+                            SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{type=integers, value=1}, b=SdkBindingData{type=integers, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   @Test
@@ -285,9 +285,9 @@ public class SdkTestingExecutorTest {
             .withWorkflowOutput(
                 new SimpleSubWorkflow(),
                 JacksonSdkType.of(TestUnaryIntegerIO.class),
-                TestUnaryIntegerIO.create(SdkBindingData.ofInteger(7)),
+                TestUnaryIntegerIO.create(SdkBindingDataFactory.of(7)),
                 JacksonSdkType.of(TestUnaryIntegerIO.class),
-                TestUnaryIntegerIO.create(SdkBindingData.ofInteger(5)))
+                TestUnaryIntegerIO.create(SdkBindingDataFactory.of(5)))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(5L));
@@ -329,8 +329,8 @@ public class SdkTestingExecutorTest {
             .withLaunchPlanOutput(
                 launchplanRef,
                 SumLaunchPlanInput.create(
-                    SdkBindingData.ofInteger(3L), SdkBindingData.ofInteger(5L)),
-                SumLaunchPlanOutput.create(SdkBindingData.ofInteger(8L)))
+                    SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)),
+                SumLaunchPlanOutput.create(SdkBindingDataFactory.of(8L)))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(8L));
@@ -376,14 +376,14 @@ public class SdkTestingExecutorTest {
                         launchplanRef,
                         // The stub values won't be matched, so exception iis throws
                         SumLaunchPlanInput.create(
-                            SdkBindingData.ofInteger(100000L), SdkBindingData.ofInteger(100000L)),
-                        SumLaunchPlanOutput.create(SdkBindingData.ofInteger(8L)))
+                            SdkBindingDataFactory.of(100000L), SdkBindingDataFactory.of(100000L)),
+                        SumLaunchPlanOutput.create(SdkBindingDataFactory.of(8L)))
                     .execute());
 
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input SumLaunchPlanInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=3}}}, type=LiteralType{simpleType=INTEGER}, value=3}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=5}}}, type=LiteralType{simpleType=INTEGER}, value=5}} for remote launch plan [SumWorkflow] across known launch plan inputs, use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
+            "Can't find input SumLaunchPlanInput{a=SdkBindingData{type=integers, value=3}, b=SdkBindingData{type=integers, value=5}} for remote launch plan [SumWorkflow] across known launch plan inputs, use SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test
@@ -423,7 +423,7 @@ public class SdkTestingExecutorTest {
                 launchplanRef,
                 in ->
                     SumLaunchPlanOutput.create(
-                        SdkBindingData.ofInteger(in.a().get() + in.b().get())))
+                        SdkBindingDataFactory.of(in.a().get() + in.b().get())))
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(35L));
@@ -438,7 +438,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 "sum",
                 RemoteSumTask.create(),
-                RemoteSumInput.create(SdkBindingData.ofInteger(1L), SdkBindingData.ofInteger(2L)));
+                RemoteSumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)));
             return null;
           }
         };
@@ -451,14 +451,14 @@ public class SdkTestingExecutorTest {
                     .withTaskOutput(
                         RemoteSumTask.create(),
                         RemoteSumInput.create(
-                            SdkBindingData.ofInteger(10L), SdkBindingData.ofInteger(20L)),
+                            SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(20L)),
                         RemoteSumOutput.create(30L))
                     .execute());
 
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't find input RemoteSumInput{a=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=1}}}, type=LiteralType{simpleType=INTEGER}, value=1}, b=SdkBindingData{idl=BindingData{scalar=Scalar{primitive=Primitive{integerValue=2}}}, type=LiteralType{simpleType=INTEGER}, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
+            "Can't find input RemoteSumInput{a=SdkBindingData{type=integers, value=1}, b=SdkBindingData{type=integers, value=2}} for remote task [remote_sum_task] across known task inputs, use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask to provide a test double"));
   }
 
   public static class SimpleUberWorkflow

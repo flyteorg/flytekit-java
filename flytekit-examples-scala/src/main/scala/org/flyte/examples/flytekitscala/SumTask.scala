@@ -18,7 +18,7 @@ package org.flyte.examples.flytekitscala
 
 import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
 import org.flyte.flytekitscala.{Description, SdkScalaType}
-import org.flyte.flytekitscala.SdkBindingData._
+import org.flyte.flytekitscala.SdkBindingDataFactory._
 
 case class SumTaskInput(
     @Description("First operand")
@@ -39,7 +39,7 @@ class SumTask
 
   override def run(input: SumTaskInput): SumTaskOutput = {
     val result = input.a.get + input.b.get
-    SumTaskOutput(ofInteger(result))
+    SumTaskOutput(of(result))
   }
 
   override def isCached: Boolean = true

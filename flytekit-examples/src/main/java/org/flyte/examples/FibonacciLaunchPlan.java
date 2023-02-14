@@ -19,6 +19,7 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkLaunchPlan;
 import org.flyte.flytekit.SdkLaunchPlanRegistry;
 import org.flyte.flytekit.SimpleSdkLaunchPlanRegistry;
@@ -37,7 +38,7 @@ public class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
             .withName("FibonacciWorkflowLaunchPlan")
             .withFixedInputs(
                 JacksonSdkType.of(Input.class),
-                Input.create(SdkBindingData.ofInteger(0), SdkBindingData.ofInteger(1))));
+                Input.create(SdkBindingDataFactory.of(0), SdkBindingDataFactory.of(1))));
 
     // Register launch plan with fixed inputs specified directly
     registerLaunchPlan(

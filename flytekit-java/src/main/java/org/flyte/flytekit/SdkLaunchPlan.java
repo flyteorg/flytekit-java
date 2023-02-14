@@ -96,7 +96,8 @@ public abstract class SdkLaunchPlan {
     return builder()
         .name(workflow.getName())
         .workflowName(workflow.getName())
-        .workflowInputTypeMap(toWorkflowInputTypeMap(wfBuilder.getInputs(), SdkBindingData::type))
+        .workflowInputTypeMap(
+            toWorkflowInputTypeMap(wfBuilder.getInputs(), in -> in.type().getLiteralType()))
         .build();
   }
 

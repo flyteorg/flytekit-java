@@ -109,14 +109,7 @@ public abstract class SdkContainerTask<InputT, OutputT> extends SdkTransform<Inp
     }
 
     return new SdkTaskNode<>(
-        builder,
-        nodeId,
-        taskId,
-        upstreamNodeIds,
-        metadata,
-        inputs,
-        outputType.getVariableMap(),
-        outputType.promiseFor(nodeId));
+        builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType);
   }
 
   /** Specifies container image. */

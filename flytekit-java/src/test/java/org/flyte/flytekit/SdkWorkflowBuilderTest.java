@@ -229,8 +229,8 @@ class SdkWorkflowBuilderTest {
   void testDuplicateNodeId() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
-    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> a = SdkBindingDataFactory.of(10L);
+    SdkBindingData<Long> b = SdkBindingDataFactory.of(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     builder.apply("node-1", new MultiplicationTask(), input);
@@ -252,8 +252,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
-    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> a = SdkBindingDataFactory.of(10L);
+    SdkBindingData<Long> b = SdkBindingDataFactory.of(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -310,8 +310,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
-    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> a = SdkBindingDataFactory.of(10L);
+    SdkBindingData<Long> b = SdkBindingDataFactory.of(10L);
 
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
@@ -337,8 +337,8 @@ class SdkWorkflowBuilderTest {
       SdkTransform<TestPairIntegerInput, TestUnaryIntegerOutput> transform) {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
-    SdkBindingData<Long> a = SdkBindingData.ofInteger(10L);
-    SdkBindingData<Long> b = SdkBindingData.ofInteger(10L);
+    SdkBindingData<Long> a = SdkBindingDataFactory.of(10L);
+    SdkBindingData<Long> b = SdkBindingDataFactory.of(10L);
     TestPairIntegerInput input = TestPairIntegerInput.create(a, b);
 
     SdkNode<TestUnaryIntegerOutput> el2 = builder.apply("el2", transform, input);
@@ -392,7 +392,7 @@ class SdkWorkflowBuilderTest {
 
     @Override
     public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestUnaryIntegerInput input) {
-      SdkBindingData<Long> two = SdkBindingData.ofInteger(2L);
+      SdkBindingData<Long> two = SdkBindingDataFactory.of(2L);
 
       SdkBindingData<Long> out1 =
           builder
@@ -419,7 +419,7 @@ class SdkWorkflowBuilderTest {
     @Override
     public TestUnaryIntegerOutput expand(SdkWorkflowBuilder builder, TestUnaryIntegerInput input) {
 
-      SdkBindingData<Long> two = SdkBindingData.ofInteger(2L);
+      SdkBindingData<Long> two = SdkBindingDataFactory.of(2L);
 
       SdkNode<TestUnaryIntegerOutput> out =
           builder.apply(

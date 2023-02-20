@@ -25,8 +25,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * {@link URLClassLoader} that loads classes into child class loader, instead of parent.
@@ -42,12 +40,11 @@ class ChildFirstClassLoader extends URLClassLoader {
 
   // we have to load these classes in parent class loader
   // it's base shared between all plugins and user code
-  private static final String[] PARENT_FIRST_PACKAGE_PREFIXES =
-      new String[] {"org.flyte.api.v1.", "org.flyte.jflyte.api."};
+  private static final Set<String> PARENT_FIRST_PACKAGE_PREFIXES =
+      Set.of("org.flyte.api.v1.", "org.flyte.jflyte.api.");
 
-  private static final Set<String> CHILD_ONLY_RESOURCE_PREFIXES =
-      Stream.of("org/slf4j/impl/StaticLoggerBinder.class", "META-INF/services/")
-          .collect(Collectors.toSet());
+  private static final Set<String> CHILD_ONLY_PREFIXES =
+      Set.of("org.slf4j.impl.", "org/slf4j/impl/", "META-INF/services/");
 
   @SuppressWarnings("JdkObsolete")
   private static class CustomEnumeration implements Enumeration<URL> {
@@ -79,15 +76,16 @@ class ChildFirstClassLoader extends URLClassLoader {
     @Var Class<?> cls = findLoadedClass(name);
 
     if (cls == null) {
-      for (String prefix : PARENT_FIRST_PACKAGE_PREFIXES) {
-        if (name.startsWith(prefix)) {
-          return super.loadClass(name, resolve);
-        }
+      if (parentFirst(name)) {
+        return super.loadClass(name, resolve);
       }
 
       try {
         cls = findClass(name);
       } catch (ClassNotFoundException e) {
+        if (childOnly(name)) {
+          throw e;
+        }
         cls = getParent().loadClass(name);
       }
     }
@@ -107,10 +105,7 @@ class ChildFirstClassLoader extends URLClassLoader {
       return resource;
     }
 
-    if (delegateResourceToParent(name)) {
-      return getParent().getResource(name);
-    }
-    return null;
+    return childOnly(name) ? null : getParent().getResource(name);
   }
 
   @Override
@@ -123,7 +118,7 @@ class ChildFirstClassLoader extends URLClassLoader {
       allResources.add(childResources.nextElement());
     }
 
-    if (delegateResourceToParent(name)) {
+    if (!childOnly(name)) {
       Enumeration<URL> parentResources = getParent().getResources(name);
 
       while (parentResources.hasMoreElements()) {
@@ -134,12 +129,11 @@ class ChildFirstClassLoader extends URLClassLoader {
     return new CustomEnumeration(allResources.iterator());
   }
 
-  private static boolean delegateResourceToParent(String name) {
-    for (String resourcePrefix : CHILD_ONLY_RESOURCE_PREFIXES) {
-      if (name.startsWith(resourcePrefix)) {
-        return false;
-      }
-    }
-    return true;
+  private static boolean parentFirst(String name) {
+    return PARENT_FIRST_PACKAGE_PREFIXES.stream().anyMatch(name::startsWith);
+  }
+
+  private static boolean childOnly(String name) {
+    return CHILD_ONLY_PREFIXES.stream().anyMatch(name::startsWith);
   }
 }

@@ -19,6 +19,7 @@ package org.flyte.jflyte;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -71,12 +72,32 @@ class ChildFirstClassLoaderTest {
   }
 
   @Test
+  void testLoadClassFromChild() throws IOException {
+    try (URLClassLoader classLoader =
+        new ChildFirstClassLoader(new URL[] {urlVisibleToChildOnly()})) {
+      // The class file used by the test case is empty, so we expect ClassFormatError
+      assertThrows(
+          ClassFormatError.class, () -> classLoader.loadClass("org.slf4j.impl.StaticLoggerBinder"));
+    }
+  }
+
+  @Test
   void testGetResourceNotFound() throws IOException {
     try (URLClassLoader classLoader =
         new ChildFirstClassLoader(new URL[] {urlVisibleToChildOnly()})) {
       URL resource = classLoader.getResource("META-INF/services/org.flyte.jflyte.Foo");
 
       assertNull(resource);
+    }
+  }
+
+  @Test
+  void testLoadClassNotFound() throws IOException {
+    try (URLClassLoader classLoader =
+        new ChildFirstClassLoader(new URL[] {urlVisibleToBothChildAndParent()})) {
+      assertThrows(
+          ClassNotFoundException.class,
+          () -> classLoader.loadClass("org.slf4j.impl.StaticLoggerBinder"));
     }
   }
 

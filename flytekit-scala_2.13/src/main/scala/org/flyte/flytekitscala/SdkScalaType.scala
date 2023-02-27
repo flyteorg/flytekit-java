@@ -198,21 +198,6 @@ object SdkScalaType {
       sdkLiteral: SdkScalaLiteralType[T]
   ): SdkScalaLiteralType[SdkBindingData[T]] = {
 
-    def toBindingData(literal: Literal): BindingData = {
-      literal.kind() match {
-        case Literal.Kind.SCALAR =>
-          BindingData.ofScalar(literal.scalar())
-        case Literal.Kind.COLLECTION =>
-          BindingData.ofCollection(
-            literal.collection().asScala.map(toBindingData).toList.asJava
-          )
-        case Literal.Kind.MAP =>
-          BindingData.ofMap(
-            literal.map().asScala.mapValues(toBindingData).toMap.asJava
-          )
-      }
-    }
-
     new SdkScalaLiteralType[SdkBindingData[T]]() {
       override def getLiteralType: LiteralType = sdkLiteral.getLiteralType
 

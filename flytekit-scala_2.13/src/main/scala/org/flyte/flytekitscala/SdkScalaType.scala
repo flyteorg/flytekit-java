@@ -279,6 +279,11 @@ object SdkScalaType {
 
   def apply[T <: Product]: SdkScalaProductType[T] = macro Magnolia.gen[T]
 
+  /** Returns a [[SdkType]] for [[Unit]] which contains no properties.
+    *
+    * @return
+    *   the sdk type
+    */
   def unit: SdkScalaProductType[Unit] = SdkUnitType
 
   /** Returns a [[SdkType]] with only one variable with the specified

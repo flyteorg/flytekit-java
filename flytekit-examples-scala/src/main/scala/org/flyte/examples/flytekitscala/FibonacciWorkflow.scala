@@ -49,19 +49,15 @@ class FibonacciWorkflow
     val fib2 = builder
       .apply("fib-2", new SumTask(), SumTaskInput(input.fib0, input.fib1))
       .getOutputs
-      .c
     val fib3 = builder
       .apply("fib-3", new SumTask(), SumTaskInput(input.fib1, fib2))
       .getOutputs
-      .c
     val fib4 = builder
       .apply("fib-4", new SumTask(), SumTaskInput(fib2, fib3))
       .getOutputs
-      .c
     val fib5 = builder
       .apply("fib-5", new SumTask(), SumTaskInput(fib3, fib4))
       .getOutputs
-      .c
 
     FibonacciWorkflowOutput(fib5)
   }

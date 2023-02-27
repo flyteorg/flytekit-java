@@ -19,7 +19,6 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
-import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.Description;
@@ -38,19 +37,18 @@ public class FibonacciWorkflow
   @Override
   public Output expand(SdkWorkflowBuilder builder, Input input) {
 
-    SdkNode<SumTask.SumOutput> apply =
-        builder.apply("fib-2", new SumTask(), SumTask.SumInput.create(input.fib1(), input.fib0()));
-    SumTask.SumOutput outputs = apply.getOutputs();
-    SdkBindingData<Long> fib2 = outputs.c();
+    SdkBindingData<Long> fib2 =
+        builder
+            .apply("fib-2", new SumTask(), SumTask.SumInput.create(input.fib1(), input.fib0()))
+            .getOutputs();
     SdkBindingData<Long> fib3 =
         builder
             .apply("fib-3", new SumTask(), SumTask.SumInput.create(input.fib1(), fib2))
-            .getOutputs()
-            .c();
+            .getOutputs();
     SdkBindingData<Long> fib4 =
-        builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs().c();
+        builder.apply("fib-4", new SumTask(), SumTask.SumInput.create(fib2, fib3)).getOutputs();
     SdkBindingData<Long> fib5 =
-        builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs().c();
+        builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs();
 
     return Output.create(fib5);
   }

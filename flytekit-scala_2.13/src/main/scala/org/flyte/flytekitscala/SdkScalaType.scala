@@ -281,6 +281,26 @@ object SdkScalaType {
 
   def unit: SdkScalaProductType[Unit] = SdkUnitType
 
+  /** Returns a [[SdkType]] with only one variable with the specified
+    * [[SdkLiteralType]], name and description.
+    *
+    * @param literalType
+    *   the type of the single variable of the returned type.
+    * @param varName
+    *   the name of the single variable of the returned type.
+    * @param varDescription
+    *   the description of the single variable of the returned type, defaults to
+    *   empty String.
+    * @return
+    *   the SdkType with a single variable.
+    * @tparam T
+    *   the native type of the single variable type.
+    */
+  def apply[T](
+      literalType: SdkLiteralType[T],
+      varName: String,
+      varDescription: String = ""
+  ): SdkType[SdkBindingData[T]] = literalType.asSdkType(varName, varDescription)
 }
 
 private object SdkUnitType extends SdkScalaProductType[Unit] {

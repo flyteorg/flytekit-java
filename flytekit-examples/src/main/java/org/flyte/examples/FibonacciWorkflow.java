@@ -19,23 +19,24 @@ package org.flyte.examples;
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkLiteralTypes;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class FibonacciWorkflow
-    extends SdkWorkflow<FibonacciWorkflow.Input, FibonacciWorkflow.Output> {
+public class FibonacciWorkflow extends SdkWorkflow<FibonacciWorkflow.Input, SdkBindingData<Long>> {
 
   public FibonacciWorkflow() {
     super(
         JacksonSdkType.of(FibonacciWorkflow.Input.class),
-        JacksonSdkType.of(FibonacciWorkflow.Output.class));
+        SdkTypes.of(SdkLiteralTypes.integers(), "fib5", "Value for Fib5"));
   }
 
   @Override
-  public Output expand(SdkWorkflowBuilder builder, Input input) {
+  public SdkBindingData<Long> expand(SdkWorkflowBuilder builder, Input input) {
 
     SdkBindingData<Long> fib2 =
         builder
@@ -50,7 +51,7 @@ public class FibonacciWorkflow
     SdkBindingData<Long> fib5 =
         builder.apply("fib-5", new SumTask(), SumTask.SumInput.create(fib3, fib4)).getOutputs();
 
-    return Output.create(fib5);
+    return fib5;
   }
 
   @AutoValue
@@ -65,16 +66,6 @@ public class FibonacciWorkflow
     public static FibonacciWorkflow.Input create(
         SdkBindingData<Long> fib0, SdkBindingData<Long> fib1) {
       return new AutoValue_FibonacciWorkflow_Input(fib0, fib1);
-    }
-  }
-
-  @AutoValue
-  public abstract static class Output {
-    @Description("Value for Fib5")
-    public abstract SdkBindingData<Long> fib5();
-
-    public static FibonacciWorkflow.Output create(SdkBindingData<Long> fib5) {
-      return new AutoValue_FibonacciWorkflow_Output(fib5);
     }
   }
 }

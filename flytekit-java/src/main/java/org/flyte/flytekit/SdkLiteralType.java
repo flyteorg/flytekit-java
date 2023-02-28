@@ -102,6 +102,6 @@ public abstract class SdkLiteralType<T> {
    * @return the {@code SdkType} with ube variable.
    */
   public SdkType<SdkBindingData<T>> asSdkType(String varName, String varDescription) {
-    return new MonoVariableSdkType<>(this, varName, varDescription);
+    return new UnaryVariableSdkType<>(this, varName, varDescription);
   }
 }

@@ -28,7 +28,7 @@ import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class MonoVariableSdkTypeTest {
+class UnaryVariableSdkTypeTest {
   private static final String VAR_NAME = "x";
   private SdkType<SdkBindingData<Long>> sdkType;
 

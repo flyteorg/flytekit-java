@@ -27,13 +27,13 @@ import org.flyte.api.v1.Variable;
  *
  * @param <T> Native type for the type of the single variable.
  */
-class MonoVariableSdkType<T> extends SdkType<SdkBindingData<T>> {
+class UnaryVariableSdkType<T> extends SdkType<SdkBindingData<T>> {
 
   private final SdkLiteralType<T> sdkLiteralType;
   private final String varName;
   private final String varDescription;
 
-  MonoVariableSdkType(SdkLiteralType<T> sdkLiteralType, String varName, String varDescription) {
+  UnaryVariableSdkType(SdkLiteralType<T> sdkLiteralType, String varName, String varDescription) {
     this.sdkLiteralType = requireNonNull(sdkLiteralType, "the sdkLiteralType should not be null");
     this.varName = requireNonNull(varName, "the variable name cannot be null");
     this.varDescription = requireNonNull(varDescription, "the description cannot be null");

@@ -19,7 +19,6 @@ package org.flyte.examples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.flyte.examples.SumTask.SumInput;
-import org.flyte.examples.SumTask.SumOutput;
 import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.flyte.flytekit.testing.SdkTestingExecutor;
@@ -51,15 +50,15 @@ public class WorkflowTest {
             .withTaskOutput(
                 new SumTask(),
                 SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)),
-                SumTask.SumOutput.create(SdkBindingDataFactory.of(0L)))
+                SdkBindingDataFactory.of(0L))
             .withTaskOutput(
                 new SumTask(),
                 SumTask.SumInput.create(SdkBindingDataFactory.of(0L), SdkBindingDataFactory.of(3L)),
-                SumTask.SumOutput.create(SdkBindingDataFactory.of(0L)))
+                SdkBindingDataFactory.of(0L))
             .withTaskOutput(
                 new SumTask(),
                 SumTask.SumInput.create(SdkBindingDataFactory.of(0L), SdkBindingDataFactory.of(4L)),
-                SumTask.SumOutput.create(SdkBindingDataFactory.of(42L)))
+                SdkBindingDataFactory.of(42L))
             .execute();
 
     assertEquals(42L, result.getIntegerOutput("result"));
@@ -92,7 +91,7 @@ public class WorkflowTest {
             .withTaskOutput(
                 new SumTask(),
                 SumInput.create(SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(4L)),
-                SumOutput.create(SdkBindingDataFactory.of(15L)))
+                SdkBindingDataFactory.of(15L))
             .execute();
 
     assertEquals(15L, result.getIntegerOutput("result"));

@@ -56,6 +56,13 @@ public abstract class SdkType<T> {
    */
   public abstract T promiseFor(String nodeId);
 
+  /**
+   * Returns a map containing {@link SdkBindingData#promise(SdkLiteralType, String, String)} for
+   * every variable in this type.
+   *
+   * @param nodeId the node id for the promise of the map.
+   * @return the map of promise.
+   */
   public final Map<String, SdkBindingData<?>> promiseMapFor(String nodeId) {
     return toLiteralTypes().entrySet().stream()
         .collect(

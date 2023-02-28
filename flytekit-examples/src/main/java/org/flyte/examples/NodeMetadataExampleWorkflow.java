@@ -62,8 +62,7 @@ public class NodeMetadataExampleWorkflow
                     .withNameOverride("sum a+b")
                     .withTimeoutOverride(Duration.ofMinutes(15)),
                 SumTask.SumInput.create(a, b))
-            .getOutputs()
-            .c();
+            .getOutputs();
 
     return NodeMetadataExampleWorkflow.Output.create(c);
   }

@@ -82,4 +82,26 @@ public abstract class SdkLiteralType<T> {
     }
     return false;
   }
+
+  /**
+   * Returns a {@code SdkType} with only one variable named {@code varName} with no description.
+   *
+   * @param varName the variable name of the returned type.
+   * @return the {@code SdkType} with ube variable.
+   */
+  public SdkType<SdkBindingData<T>> asSdkType(String varName) {
+    return asSdkType(varName, "");
+  }
+
+  /**
+   * Returns a {@code SdkType} with only one variable named {@code varName} with the specified
+   * description.
+   *
+   * @param varName the variable name of the returned type.
+   * @param varDescription the description of the variable of the returned type.
+   * @return the {@code SdkType} with ube variable.
+   */
+  public SdkType<SdkBindingData<T>> asSdkType(String varName, String varDescription) {
+    return new UnaryVariableSdkType<>(this, varName, varDescription);
+  }
 }

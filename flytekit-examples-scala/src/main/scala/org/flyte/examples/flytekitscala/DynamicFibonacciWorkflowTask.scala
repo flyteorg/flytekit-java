@@ -57,7 +57,7 @@ class DynamicFibonacciWorkflowTask
             s"fib-${n + 1}",
             new SumTask(),
             SumTaskInput(value, prev)
-          ).getOutputs.c,
+          ).getOutputs,
           value
         )
     }

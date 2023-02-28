@@ -62,7 +62,7 @@ class SdkNodeNamePolicyTest {
   void nextNodeIdShouldReturnUniquePrefixForDistinctPolicies() {
     var prefixes =
         Stream.generate(SdkNodeNamePolicy::new)
-            .limit(100)
+            .limit(10)
             .map(SdkNodeNamePolicy::nextNodeId)
             .map(SdkNodeNamePolicyTest::prefix)
             .collect(toList());

@@ -198,21 +198,6 @@ object SdkScalaType {
       sdkLiteral: SdkScalaLiteralType[T]
   ): SdkScalaLiteralType[SdkBindingData[T]] = {
 
-    def toBindingData(literal: Literal): BindingData = {
-      literal.kind() match {
-        case Literal.Kind.SCALAR =>
-          BindingData.ofScalar(literal.scalar())
-        case Literal.Kind.COLLECTION =>
-          BindingData.ofCollection(
-            literal.collection().asScala.map(toBindingData).toList.asJava
-          )
-        case Literal.Kind.MAP =>
-          BindingData.ofMap(
-            literal.map().asScala.mapValues(toBindingData).toMap.asJava
-          )
-      }
-    }
-
     new SdkScalaLiteralType[SdkBindingData[T]]() {
       override def getLiteralType: LiteralType = sdkLiteral.getLiteralType
 
@@ -279,8 +264,33 @@ object SdkScalaType {
 
   def apply[T <: Product]: SdkScalaProductType[T] = macro Magnolia.gen[T]
 
+  /** Returns a [[SdkType]] for [[Unit]] which contains no properties.
+    *
+    * @return
+    *   the sdk type
+    */
   def unit: SdkScalaProductType[Unit] = SdkUnitType
 
+  /** Returns a [[SdkType]] with only one variable with the specified
+    * [[SdkLiteralType]], name and description.
+    *
+    * @param literalType
+    *   the type of the single variable of the returned type.
+    * @param varName
+    *   the name of the single variable of the returned type.
+    * @param varDescription
+    *   the description of the single variable of the returned type, defaults to
+    *   empty String.
+    * @return
+    *   the SdkType with a single variable.
+    * @tparam T
+    *   the native type of the single variable type.
+    */
+  def apply[T](
+      literalType: SdkLiteralType[T],
+      varName: String,
+      varDescription: String = ""
+  ): SdkType[SdkBindingData[T]] = literalType.asSdkType(varName, varDescription)
 }
 
 private object SdkUnitType extends SdkScalaProductType[Unit] {

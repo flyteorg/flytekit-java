@@ -16,13 +16,11 @@
  */
 package org.flyte.localengine.examples;
 
-import static org.flyte.flytekit.SdkBindingData.ofInteger;
-
 import com.google.auto.service.AutoService;
 import java.util.List;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
+import org.flyte.flytekit.SdkLiteralTypes;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -38,14 +36,19 @@ public class ListWorkflow extends SdkWorkflow<Void, ListTask.Output> {
   @Override
   public ListTask.Output expand(SdkWorkflowBuilder builder, Void noInput) {
     SdkNode<TestUnaryIntegerOutput> sum1 =
-        builder.apply("sum-1", new SumTask(), SumTask.Input.create(ofInteger(1), ofInteger(2)));
+        builder.apply(
+            "sum-1",
+            new SumTask(),
+            SumTask.Input.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(2)));
     SdkNode<TestUnaryIntegerOutput> sum2 =
-        builder.apply("sum-2", new SumTask(), SumTask.Input.create(ofInteger(3), ofInteger(4)));
+        builder.apply(
+            "sum-2",
+            new SumTask(),
+            SumTask.Input.create(SdkBindingDataFactory.of(3), SdkBindingDataFactory.of(4)));
 
     SdkBindingData<List<Long>> list =
-        SdkBindingData.ofBindingCollection(
-            LiteralType.ofCollectionType(LiteralType.ofSimpleType(SimpleType.INTEGER)),
-            List.of(sum1.getOutputs().o(), sum2.getOutputs().o()));
+        SdkBindingDataFactory.ofBindingCollection(
+            SdkLiteralTypes.integers(), List.of(sum1.getOutputs().o(), sum2.getOutputs().o()));
 
     SdkNode<ListTask.Output> list1 =
         builder.apply("list-1", new ListTask(), ListTask.Input.create(list));

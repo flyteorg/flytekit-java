@@ -18,70 +18,68 @@ package org.flyte.flytekit.jackson;
 
 import static java.util.Collections.unmodifiableMap;
 
-import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.flyte.api.v1.Blob;
-import org.flyte.api.v1.BlobType;
-import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.SimpleType;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkLiteralType;
+import org.flyte.flytekit.SdkLiteralTypes;
 
 class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
-  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER;
+  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER =
+      Map.of(
+          void.class, Void.class,
+          boolean.class, Boolean.class,
+          byte.class, Byte.class,
+          char.class, Character.class,
+          short.class, Short.class,
+          int.class, Integer.class,
+          long.class, Long.class,
+          float.class, Float.class,
+          double.class, Double.class);
 
   VariableMapVisitor(SerializerProvider provider) {
     super(provider);
   }
 
-  static {
-    Map<Class<?>, Class<?>> map = new HashMap<>();
-    map.put(void.class, Void.class);
-    map.put(boolean.class, Boolean.class);
-    map.put(byte.class, Byte.class);
-    map.put(char.class, Character.class);
-    map.put(short.class, Short.class);
-    map.put(int.class, Integer.class);
-    map.put(long.class, Long.class);
-    map.put(float.class, Float.class);
-    map.put(double.class, Double.class);
-    PRIMITIVE_TO_WRAPPER = unmodifiableMap(map);
-  }
-
-  private final Map<String, Variable> builder = new LinkedHashMap<>();
+  private final Map<String, Variable> builderVariables = new LinkedHashMap<>();
   private final Map<String, AnnotatedMember> builderMembers = new LinkedHashMap<>();
+  private final Map<String, SdkLiteralType<?>> builderTypes = new LinkedHashMap<>();
 
   @Override
   public void property(BeanProperty prop) {
     JavaType handledType = getHandledType(prop);
-    LiteralType literalType =
+    String propName = prop.getName();
+    AnnotatedMember member = prop.getMember();
+    SdkLiteralType<?> literalType =
         toLiteralType(
             handledType,
             /*rootLevel=*/ true,
-            prop.getName(),
-            prop.getMember().getMember().getDeclaringClass().getName());
+            propName,
+            member.getMember().getDeclaringClass().getName());
 
-    String description = getDescription(prop.getMember());
+    String description = getDescription(member);
 
     Variable variable =
-        Variable.builder().description(description).literalType(literalType).build();
+        Variable.builder()
+            .description(description)
+            .literalType(literalType.getLiteralType())
+            .build();
 
-    builderMembers.put(prop.getName(), prop.getMember());
-    builder.put(prop.getName(), variable);
+    builderMembers.put(propName, member);
+    builderVariables.put(propName, variable);
+    builderTypes.put(propName, literalType);
   }
 
   private JavaType getHandledType(BeanProperty prop) {
@@ -111,11 +109,15 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   }
 
   public Map<String, Variable> getVariableMap() {
-    return unmodifiableMap(new HashMap<>(builder));
+    return unmodifiableMap(builderVariables);
   }
 
   public Map<String, AnnotatedMember> getMembersMap() {
-    return unmodifiableMap(new HashMap<>(builderMembers));
+    return unmodifiableMap(builderMembers);
+  }
+
+  public Map<String, SdkLiteralType<?>> getTypesMap() {
+    return unmodifiableMap(builderTypes);
   }
 
   private String getDescription(AnnotatedMember member) {
@@ -129,7 +131,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
   }
 
   @SuppressWarnings("AlreadyChecked")
-  private LiteralType toLiteralType(
+  private SdkLiteralType<?> toLiteralType(
       JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {
     Class<?> type = javaType.getRawClass();
 
@@ -143,21 +145,21 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
                   + "Please make sure your variable declared type is wrapped in 'SdkBindingData<>'.",
               propName, declaringClassName, type));
     } else if (isPrimitiveAssignableFrom(Long.class, type)) {
-      return LiteralTypes.INTEGER;
+      return SdkLiteralTypes.integers();
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
-      return LiteralTypes.FLOAT;
+      return SdkLiteralTypes.floats();
     } else if (String.class.equals(type) || javaType.isEnumType()) {
-      return LiteralTypes.STRING;
+      return SdkLiteralTypes.strings();
     } else if (isPrimitiveAssignableFrom(Boolean.class, type)) {
-      return LiteralTypes.BOOLEAN;
+      return SdkLiteralTypes.booleans();
     } else if (Instant.class.isAssignableFrom(type)) {
-      return LiteralTypes.DATETIME;
+      return SdkLiteralTypes.datetimes();
     } else if (Duration.class.isAssignableFrom(type)) {
-      return LiteralTypes.DURATION;
+      return SdkLiteralTypes.durations();
     } else if (List.class.isAssignableFrom(type)) {
       JavaType elementType = javaType.getBindings().getBoundType(0);
 
-      return LiteralType.ofCollectionType(
+      return SdkLiteralTypes.collections(
           toLiteralType(elementType, false, propName, declaringClassName));
     } else if (Map.class.isAssignableFrom(type)) {
       JavaType keyType = javaType.getBindings().getBoundType(0);
@@ -168,26 +170,11 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             "Only Map<String, ?> is supported, got [" + javaType.getGenericSignature() + "]");
       }
 
-      return LiteralType.ofMapValueType(
-          toLiteralType(valueType, false, propName, declaringClassName));
-    } else if (Blob.class.isAssignableFrom(type)) {
-      // TODO add annotation to specify dimensionality and format
-      BlobType blobType =
-          BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
-
-      return LiteralType.ofBlobType(blobType);
+      return SdkLiteralTypes.maps(toLiteralType(valueType, false, propName, declaringClassName));
     }
-
-    BeanDescription bean = getProvider().getConfig().introspect(javaType);
-    List<BeanPropertyDefinition> properties = bean.findProperties();
-
-    if (properties.isEmpty()) {
-      // doesn't look like a bean, can be java.lang.Integer, or something else
-      throw new UnsupportedOperationException(
-          String.format("Unsupported type: [%s]", type.getName()));
-    } else {
-      return LiteralType.ofSimpleType(SimpleType.STRUCT);
-    }
+    // TODO: Support blobs and structs
+    throw new UnsupportedOperationException(
+        String.format("Unsupported type: [%s]", type.getName()));
   }
 
   private static boolean isPrimitiveAssignableFrom(Class<?> fromClass, Class<?> toClass) {

@@ -67,7 +67,7 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
             .getOutputs()
             .result();
     SdkBindingData<Long> abcd =
-        builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs().c();
+        builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs();
     return SubWorkflow.Output.create(abcd);
   }
 }

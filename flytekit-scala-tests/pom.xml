@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.4.2-SNAPSHOT</version>
+    <version>0.4.5-SNAPSHOT</version>
   </parent>
 
   <!-- can't use properties, artifact name should be constant -->
@@ -61,11 +61,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

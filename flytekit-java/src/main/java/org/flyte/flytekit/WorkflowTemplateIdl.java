@@ -72,7 +72,7 @@ class WorkflowTemplateIdl {
             entry -> {
               Variable variable =
                   Variable.builder()
-                      .literalType(entry.getValue().type())
+                      .literalType(entry.getValue().type().getLiteralType())
                       .description(nameToDescription.apply(entry.getKey()))
                       .build();
 

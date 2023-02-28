@@ -38,7 +38,7 @@ class SdkRemoteTaskTest {
   @Test
   void applyShouldReturnASdkTaskNode() {
     var inputs =
-        TestPairIntegerInput.create(SdkBindingData.ofInteger(1), SdkBindingData.ofInteger(2));
+        TestPairIntegerInput.create(SdkBindingDataFactory.of(1), SdkBindingDataFactory.of(2));
     SdkRemoteTask<TestPairIntegerInput, TestUnaryBooleanOutput> remoteTask =
         new TestSdkRemoteTask();
 
@@ -90,8 +90,8 @@ class SdkRemoteTaskTest {
                 is(
                     singletonMap(
                         "o",
-                        SdkBindingData.ofOutputReference(
-                            "lookup-endsong", "o", LiteralTypes.BOOLEAN)))));
+                        SdkBindingData.promise(
+                            SdkLiteralTypes.booleans(), "lookup-endsong", "o")))));
   }
 
   @SuppressWarnings("ExtendsAutoValue")

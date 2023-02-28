@@ -16,9 +16,9 @@
  */
 package org.flyte.examples.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask, SdkTransform}
-import org.flyte.flytekitscala.{Description, SdkScalaType}
-import org.flyte.flytekitscala.SdkBindingData._
+import org.flyte.flytekit.{SdkBindingData, SdkRunnableTask}
+import org.flyte.flytekitscala.SdkBindingDataFactory._
+import org.flyte.flytekitscala.{Description, SdkLiteralTypes, SdkScalaType}
 
 case class SumTaskInput(
     @Description("First operand")
@@ -26,20 +26,14 @@ case class SumTaskInput(
     @Description("Second operand")
     b: SdkBindingData[Long]
 )
-case class SumTaskOutput(
-    @Description("Computed sum")
-    c: SdkBindingData[Long]
-)
-
 class SumTask
-    extends SdkRunnableTask[SumTaskInput, SumTaskOutput](
+    extends SdkRunnableTask[SumTaskInput, SdkBindingData[Long]](
       SdkScalaType[SumTaskInput],
-      SdkScalaType[SumTaskOutput]
+      SdkScalaType(SdkLiteralTypes.integers(), "c", "Computed sum")
     ) {
 
-  override def run(input: SumTaskInput): SumTaskOutput = {
-    val result = input.a.get + input.b.get
-    SumTaskOutput(ofInteger(result))
+  override def run(input: SumTaskInput): SdkBindingData[Long] = {
+    of(input.a.get + input.b.get)
   }
 
   override def isCached: Boolean = true

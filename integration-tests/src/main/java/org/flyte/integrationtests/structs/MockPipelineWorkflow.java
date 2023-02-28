@@ -16,11 +16,9 @@
  */
 package org.flyte.integrationtests.structs;
 
-import static org.flyte.flytekit.SdkBindingData.ofBoolean;
-import static org.flyte.flytekit.SdkBindingData.ofString;
-
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -45,7 +43,9 @@ public class MockPipelineWorkflow
                 "build-ref",
                 new BuildBqReference(),
                 BuildBqReference.Input.create(
-                    ofString("styx-1265"), ofString("styx-insights"), input.tableName()))
+                    SdkBindingDataFactory.of("styx-1265"),
+                    SdkBindingDataFactory.of("styx-insights"),
+                    input.tableName()))
             .getOutputs()
             .ref();
     SdkBindingData<Boolean> exists =
@@ -53,7 +53,7 @@ public class MockPipelineWorkflow
             .apply(
                 "lookup",
                 new MockLookupBqTask(),
-                MockLookupBqTask.Input.create(ref, ofBoolean(true)))
+                MockLookupBqTask.Input.create(ref, SdkBindingDataFactory.of(true)))
             .getOutputs()
             .exists();
     return Output.create(exists);

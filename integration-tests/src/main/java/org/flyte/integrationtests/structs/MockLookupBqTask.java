@@ -16,13 +16,13 @@
  */
 package org.flyte.integrationtests.structs;
 
-import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-@AutoService(SdkRunnableTask.class)
+// @AutoService(SdkRunnableTask.class)
 public class MockLookupBqTask
     extends SdkRunnableTask<MockLookupBqTask.Input, MockLookupBqTask.Output> {
   private static final long serialVersionUID = 604843235716487166L;
@@ -48,7 +48,7 @@ public class MockLookupBqTask
     public abstract SdkBindingData<Boolean> exists();
 
     public static Output create(boolean exists) {
-      return new AutoValue_MockLookupBqTask_Output(SdkBindingData.ofBoolean(exists));
+      return new AutoValue_MockLookupBqTask_Output(SdkBindingDataFactory.of(exists));
     }
   }
 

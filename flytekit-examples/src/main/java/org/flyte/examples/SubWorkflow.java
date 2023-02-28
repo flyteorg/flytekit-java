@@ -36,8 +36,7 @@ public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Outp
     SdkBindingData<Long> result =
         builder
             .apply("sum", new SumTask(), SumTask.SumInput.create(input.left(), input.right()))
-            .getOutputs()
-            .c();
+            .getOutputs();
     return Output.create(result);
   }
 

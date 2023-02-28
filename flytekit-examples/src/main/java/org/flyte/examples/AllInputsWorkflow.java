@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
 import org.flyte.flytekit.SdkBindingData;
+import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
@@ -50,16 +51,16 @@ public class AllInputsWorkflow
             "all-inputs",
             new AllInputsTask(),
             AllInputsTask.AutoAllInputsInput.create(
-                SdkBindingData.ofInteger(1L),
-                SdkBindingData.ofFloat(2),
-                SdkBindingData.ofString("test"),
-                SdkBindingData.ofBoolean(true),
-                SdkBindingData.ofDatetime(someInstant),
-                SdkBindingData.ofDuration(Duration.ofDays(1L)),
-                SdkBindingData.ofStringCollection(Arrays.asList("foo", "bar")),
-                SdkBindingData.ofStringMap(Map.of("test", "test")),
-                SdkBindingData.ofStringCollection(Collections.emptyList()),
-                SdkBindingData.ofIntegerMap(Collections.emptyMap())));
+                SdkBindingDataFactory.of(1L),
+                SdkBindingDataFactory.of(2.00),
+                SdkBindingDataFactory.of("test"),
+                SdkBindingDataFactory.of(true),
+                SdkBindingDataFactory.of(someInstant),
+                SdkBindingDataFactory.of(Duration.ofDays(1L)),
+                SdkBindingDataFactory.ofStringCollection(Arrays.asList("foo", "bar")),
+                SdkBindingDataFactory.ofStringMap(Map.of("test", "test")),
+                SdkBindingDataFactory.ofStringCollection(Collections.emptyList()),
+                SdkBindingDataFactory.ofIntegerMap(Collections.emptyMap())));
 
     AllInputsTask.AutoAllInputsOutput outputs = apply.getOutputs();
 

@@ -24,7 +24,7 @@ import org.flyte.flytekit.{
 import org.flyte.flytekitscala.SdkScalaType
 
 import scala.annotation.tailrec
-import org.flyte.flytekitscala.SdkBindingData._
+import org.flyte.flytekitscala.SdkBindingDataFactory._
 
 case class DynamicFibonacciWorkflowTaskInput(n: SdkBindingData[Long])
 case class DynamicFibonacciWorkflowTaskOutput(output: SdkBindingData[Long])
@@ -57,16 +57,16 @@ class DynamicFibonacciWorkflowTask
             s"fib-${n + 1}",
             new SumTask(),
             SumTaskInput(value, prev)
-          ).getOutputs.c,
+          ).getOutputs,
           value
         )
     }
 
     require(input.n.get > 0, "n < 0")
     val value = if (input.n.get == 0) {
-      ofInteger(0)
+      of(0)
     } else {
-      fib(1, ofInteger(1), ofInteger(0))
+      fib(1, of(1), of(0))
     }
     DynamicFibonacciWorkflowTaskOutput(value)
   }

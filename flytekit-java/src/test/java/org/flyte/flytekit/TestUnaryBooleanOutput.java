@@ -19,7 +19,6 @@ package org.flyte.flytekit;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
 import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Variable;
 
 @AutoValue
@@ -33,7 +32,7 @@ abstract class TestUnaryBooleanOutput {
   public static class SdkType extends org.flyte.flytekit.SdkType<TestUnaryBooleanOutput> {
 
     private static final String VAR = "o";
-    private static final LiteralType LITERAL_TYPE = LiteralTypes.BOOLEAN;
+    private static final SdkLiteralType<Boolean> BOOLEANS = SdkLiteralTypes.booleans();
 
     @Override
     public Map<String, Literal> toLiteralMap(TestUnaryBooleanOutput value) {
@@ -42,17 +41,22 @@ abstract class TestUnaryBooleanOutput {
 
     @Override
     public TestUnaryBooleanOutput fromLiteralMap(Map<String, Literal> value) {
-      return create(SdkBindingData.ofBoolean(value.get(VAR).scalar().primitive().booleanValue()));
+      return create(SdkBindingDataFactory.of(value.get(VAR).scalar().primitive().booleanValue()));
     }
 
     @Override
     public TestUnaryBooleanOutput promiseFor(String nodeId) {
-      return create(SdkBindingData.ofOutputReference(nodeId, VAR, LITERAL_TYPE));
+      return create(SdkBindingData.promise(BOOLEANS, nodeId, VAR));
     }
 
     @Override
     public Map<String, Variable> getVariableMap() {
-      return Map.of(VAR, Variable.builder().literalType(LITERAL_TYPE).build());
+      return Map.of(VAR, Variable.builder().literalType(BOOLEANS.getLiteralType()).build());
+    }
+
+    @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+      return Map.of(VAR, BOOLEANS);
     }
 
     @Override

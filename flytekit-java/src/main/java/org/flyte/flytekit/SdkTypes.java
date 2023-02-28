@@ -36,6 +36,34 @@ public class SdkTypes {
     return VOID_SDK_TYPE;
   }
 
+  /**
+   * Returns a {@code SdkType} with only one variable with the specified {@link SdkLiteralType},
+   * name and no description.
+   *
+   * @param literalType the type of the single variable of the returned type.
+   * @param varName the name of the single variable of the returned type.
+   * @return the SdkType with a single variable.
+   * @param <T> the native type of the single variable type.
+   */
+  public static <T> SdkType<SdkBindingData<T>> of(SdkLiteralType<T> literalType, String varName) {
+    return literalType.asSdkType(varName);
+  }
+
+  /**
+   * Returns a {@code SdkType} with only one variable with the specified {@link SdkLiteralType},
+   * name and description.
+   *
+   * @param literalType the type of the single variable of the returned type.
+   * @param varName the name of the single variable of the returned type.
+   * @param varDescription the description of the single variable of the returned type.
+   * @return the SdkType with a single variable.
+   * @param <T> the native type of the single variable type.
+   */
+  public static <T> SdkType<SdkBindingData<T>> of(
+      SdkLiteralType<T> literalType, String varName, String varDescription) {
+    return literalType.asSdkType(varName, varDescription);
+  }
+
   private static class VoidSdkType extends SdkType<Void> {
 
     @Override
@@ -55,6 +83,11 @@ public class SdkTypes {
 
     @Override
     public Map<String, Variable> getVariableMap() {
+      return Map.of();
+    }
+
+    @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
       return Map.of();
     }
 

@@ -46,15 +46,15 @@ abstract class TestPairIntegerInput {
     @Override
     public TestPairIntegerInput fromLiteralMap(Map<String, Literal> value) {
       return create(
-          SdkBindingData.ofInteger(value.get(A).scalar().primitive().integerValue()),
-          SdkBindingData.ofInteger(value.get(B).scalar().primitive().integerValue()));
+          SdkBindingDataFactory.of(value.get(A).scalar().primitive().integerValue()),
+          SdkBindingDataFactory.of(value.get(B).scalar().primitive().integerValue()));
     }
 
     @Override
     public TestPairIntegerInput promiseFor(String nodeId) {
       return create(
-          SdkBindingData.ofOutputReference(nodeId, A, LiteralTypes.INTEGER),
-          SdkBindingData.ofOutputReference(nodeId, B, LiteralTypes.INTEGER));
+          SdkBindingData.promise(SdkLiteralTypes.integers(), nodeId, A),
+          SdkBindingData.promise(SdkLiteralTypes.integers(), nodeId, B));
     }
 
     @Override
@@ -62,6 +62,11 @@ abstract class TestPairIntegerInput {
       return Map.of(
           A, Variable.builder().literalType(LiteralTypes.INTEGER).build(),
           B, Variable.builder().literalType(LiteralTypes.INTEGER).build());
+    }
+
+    @Override
+    public Map<String, SdkLiteralType<?>> toLiteralTypes() {
+      return Map.of(A, SdkLiteralTypes.integers(), B, SdkLiteralTypes.integers());
     }
 
     @Override

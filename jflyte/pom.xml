@@ -229,7 +229,7 @@
         <executions>
           <execution>
             <goals>
-              <goal>dockerBuild</goal>
+              <goal>build</goal>
             </goals>
             <phase>package</phase>
           </execution>

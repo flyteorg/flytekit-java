@@ -30,7 +30,7 @@ jobs:
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: mvn -B verify
+        run: mvn verify
 
       - name: Log in to Docker Hub
         if: ${{ github.ref == 'refs/heads/master' }}

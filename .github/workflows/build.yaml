@@ -28,10 +28,6 @@ jobs:
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Verify with Maven
-        if: ${{ github.ref != 'refs/heads/master' }}
-        run: mvn --batch-mode verify
-
       - name: Log in to Docker Hub
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: docker/login-action@v1
@@ -39,6 +35,10 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.FLYTE_BOT_USERNAME }}
           password: ${{ secrets.FLYTE_BOT_PAT }}
+
+      - name: Verify with Maven
+        if: ${{ github.ref != 'refs/heads/master' }}
+        run: mvn --batch-mode verify
 
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}

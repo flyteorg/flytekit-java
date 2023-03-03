@@ -229,10 +229,15 @@
         <executions>
           <execution>
             <goals>
-              <goal>build</goal>
               <goal>dockerBuild</goal>
             </goals>
             <phase>package</phase>
+          </execution>
+          <execution>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <phase>deploy</phase>
           </execution>
         </executions>
       </plugin>

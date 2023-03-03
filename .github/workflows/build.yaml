@@ -9,6 +9,8 @@ on:
 jobs:
   build-snapshot:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v2
       - name: Cache local Maven repository

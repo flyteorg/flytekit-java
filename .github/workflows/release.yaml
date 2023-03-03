@@ -5,6 +5,8 @@ on:
 jobs:
   build-snapshot:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     name: flytekit-java release
     steps:
       - uses: actions/checkout@v2

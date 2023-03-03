@@ -230,6 +230,7 @@
           <execution>
             <goals>
               <goal>build</goal>
+              <goal>dockerBuild</goal>
             </goals>
             <phase>package</phase>
           </execution>

@@ -228,12 +228,14 @@
         </configuration>
         <executions>
           <execution>
+            <id>build-locally</id>
             <goals>
               <goal>dockerBuild</goal>
             </goals>
             <phase>package</phase>
           </execution>
           <execution>
+            <id>deploy</id>
             <goals>
               <goal>build</goal>
             </goals>

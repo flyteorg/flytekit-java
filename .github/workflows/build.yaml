@@ -40,7 +40,7 @@ jobs:
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: mvn --batch-mode verify
+        run: mvn --batch-mode verify -Djib.to.auth.username=${{ secrets.FLYTE_BOT_USERNAME }} -Djib.to.auth.password=${{ secrets.FLYTE_BOT_PAT }}
 
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}

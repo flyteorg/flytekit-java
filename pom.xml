@@ -20,7 +20,7 @@
 
   <groupId>org.flyte</groupId>
   <artifactId>flytekit-parent</artifactId>
-  <version>0.3.30-SNAPSHOT</version>
+  <version>0.3.30</version>
 
   <packaging>pom</packaging>
 
@@ -67,7 +67,7 @@
   <scm>
     <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
     <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>0.3.30</tag>
     <url>https://github.com/flyteorg/flytekit-java</url>
   </scm>
 

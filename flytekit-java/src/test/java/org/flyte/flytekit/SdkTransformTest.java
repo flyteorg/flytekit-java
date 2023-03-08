@@ -94,10 +94,7 @@ class SdkTransformTest {
   }
 
   public static Stream<Arguments> nullValues() {
-    return Stream.of(
-        null,
-        Arguments.of(BoxedUnit.UNIT)
-    );
+    return Stream.of(null, Arguments.of(BoxedUnit.UNIT));
   }
 
   @Test

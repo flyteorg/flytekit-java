@@ -33,7 +33,6 @@
     <scala.version>2.13.10</scala.version>
   </properties>
 
-
   <dependencies>
     <!-- provided -->
     <dependency>

@@ -107,7 +107,9 @@ class SdkTransformTest {
                     .apply(new SdkWorkflowBuilder(), "node", List.of(), null, "not a null value"));
 
     assertThat(
-        exception.getMessage(), equalTo("Null input expected for a transform with no variables"));
+        exception.getMessage(),
+        equalTo(
+            "Null input expected for a transform with no variables, but was: not a null value"));
   }
 
   private class TransformWithInputs extends SdkTransform<TestUnaryIntegerInput, Void> {

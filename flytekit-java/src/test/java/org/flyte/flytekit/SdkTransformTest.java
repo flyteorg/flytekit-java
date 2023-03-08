@@ -18,20 +18,25 @@ package org.flyte.flytekit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import scala.runtime.BoxedUnit;
 
 @ExtendWith(MockitoExtension.class)
 class SdkTransformTest {
@@ -71,6 +76,28 @@ class SdkTransformTest {
     assertThat(
         exception.getMessage(),
         equalTo("Null supplied as input for a transform with variables: [in]"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("nullValues")
+  void shouldAcceptNullValuesJavaAndScala(Object nullValue) {
+    var spyTransform = Mockito.spy(new TransformWithoutInputs());
+    var builder = new SdkWorkflowBuilder();
+    var nodeId = "node";
+    var upstreamNodeIds = List.of("upstream-node");
+    var metadata = SdkNodeMetadata.builder().name("fancy-name").build();
+    var inputsBindings = Map.<String, SdkBindingData<?>>of();
+
+    spyTransform.apply(builder, nodeId, upstreamNodeIds, metadata, nullValue);
+
+    verify(spyTransform).apply(builder, nodeId, upstreamNodeIds, metadata, inputsBindings);
+  }
+
+  public static Stream<Arguments> nullValues() {
+    return Stream.of(
+        null,
+        Arguments.of(BoxedUnit.UNIT)
+    );
   }
 
   @Test

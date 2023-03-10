@@ -91,6 +91,34 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
         .build();
   }
 
+  /**
+   * Create a remote launch plan, a reference to a launch plan that have been deployed previously.
+   *
+   * @param domain the domain of the remote launch plan
+   * @param project the project of the remote launch plan
+   * @param name the name of the remote launch plan
+   * @param version of the remote launch plan
+   * @param inputs the {@link SdkType} for the inputs of the remote launch plan
+   * @param outputs the {@link SdkType} for the outputs of the remote launch plan
+   * @return the remote launch plan
+   */
+  public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
+          String domain,
+          String project,
+          String name,
+          String version,
+          SdkType<InputT> inputs,
+          SdkType<OutputT> outputs) {
+    return SdkRemoteLaunchPlan.<InputT, OutputT>builder()
+            .domain(domain)
+            .project(project)
+            .name(name)
+            .version(version)
+            .inputs(inputs)
+            .outputs(outputs)
+            .build();
+  }
+
   /** {@inheritDoc} */
   @Override
   public String getName() {

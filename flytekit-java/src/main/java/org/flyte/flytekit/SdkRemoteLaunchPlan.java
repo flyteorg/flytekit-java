@@ -68,6 +68,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
 
   /**
    * Create a remote launch plan, a reference to a launch plan that have been deployed previously.
+   * This function will fetch the latest version of the launch plan
    *
    * @param domain the domain of the remote launch plan
    * @param project the project of the remote launch plan
@@ -82,10 +83,32 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
       String name,
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
+    return create(domain, project, name, null, inputs, outputs);
+  }
+
+  /**
+   * Create a remote launch plan, a reference to a launch plan that have been deployed previously.
+   *
+   * @param domain the domain of the remote launch plan
+   * @param project the project of the remote launch plan
+   * @param name the name of the remote launch plan
+   * @param version of the remote launch plan, defaults to the latest version if null
+   * @param inputs the {@link SdkType} for the inputs of the remote launch plan
+   * @param outputs the {@link SdkType} for the outputs of the remote launch plan
+   * @return the remote launch plan
+   */
+  public static <InputT, OutputT> SdkRemoteLaunchPlan<InputT, OutputT> create(
+      String domain,
+      String project,
+      String name,
+      @Nullable String version,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
     return SdkRemoteLaunchPlan.<InputT, OutputT>builder()
         .domain(domain)
         .project(project)
         .name(name)
+        .version(version)
         .inputs(inputs)
         .outputs(outputs)
         .build();

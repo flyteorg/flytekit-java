@@ -83,13 +83,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
       String name,
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
-    return SdkRemoteLaunchPlan.<InputT, OutputT>builder()
-        .domain(domain)
-        .project(project)
-        .name(name)
-        .inputs(inputs)
-        .outputs(outputs)
-        .build();
+    return create(domain, project, name, null, inputs, outputs);
   }
 
   /**

@@ -68,6 +68,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
 
   /**
    * Create a remote launch plan, a reference to a launch plan that have been deployed previously.
+   * This function will fetch the latest version of the launch plan
    *
    * @param domain the domain of the remote launch plan
    * @param project the project of the remote launch plan

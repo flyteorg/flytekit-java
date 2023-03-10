@@ -92,7 +92,7 @@ public abstract class SdkRemoteLaunchPlan<InputT, OutputT> extends SdkTransform<
    * @param domain the domain of the remote launch plan
    * @param project the project of the remote launch plan
    * @param name the name of the remote launch plan
-   * @param version of the remote launch plan
+   * @param version of the remote launch plan, defaults to the latest version if null
    * @param inputs the {@link SdkType} for the inputs of the remote launch plan
    * @param outputs the {@link SdkType} for the outputs of the remote launch plan
    * @return the remote launch plan

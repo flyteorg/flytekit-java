@@ -36,11 +36,11 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
   /** Returns the name of the remote task. */
   public abstract String name();
 
-  /** Returns the version of the remote task. */
+  /**
+   * Returns the version of the remote task. Null means that the latest version should be fetched
+   */
   @Nullable
-  public String version() {
-    return null;
-  }
+  public abstract String version();
 
   /** See {@link #getInputType()}. */
   public abstract SdkType<InputT> inputs();
@@ -68,6 +68,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
    * @param domain the domain of the remote launch plan
    * @param project the project of the remote launch plan
    * @param name the name of the remote launch plan
+   * @param version of the remote task, defaults to the latest version if null
    * @param inputs the {@link SdkType} for the inputs of the remote launch plan
    * @param outputs the {@link SdkType} for the outputs of the remote launch plan
    * @return the remote task
@@ -76,15 +77,36 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
       String domain,
       String project,
       String name,
+      @Nullable String version,
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
     return SdkRemoteTask.<InputT, OutputT>builder()
         .domain(domain)
         .project(project)
         .name(name)
+        .version(version)
         .inputs(inputs)
         .outputs(outputs)
         .build();
+  }
+
+  /**
+   * Create a remote task, a reference to a task that have been deployed previously.
+   *
+   * @param domain the domain of the remote launch plan
+   * @param project the project of the remote launch plan
+   * @param name the name of the remote launch plan
+   * @param inputs the {@link SdkType} for the inputs of the remote launch plan
+   * @param outputs the {@link SdkType} for the outputs of the remote launch plan
+   * @return the latest version of the remote task
+   */
+  public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
+      String domain,
+      String project,
+      String name,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
+    return create(domain, project, name, null, inputs, outputs);
   }
 
   /** {@inheritDoc} */
@@ -130,6 +152,8 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
     public abstract Builder<InputT, OutputT> project(String project);
 
     public abstract Builder<InputT, OutputT> name(String name);
+
+    public abstract Builder<InputT, OutputT> version(String version);
 
     public abstract Builder<InputT, OutputT> inputs(SdkType<InputT> inputs);
 

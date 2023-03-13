@@ -37,8 +37,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
   public abstract String name();
 
   /**
-   * Returns the version of the remote task. Null means that the latest version should be
-   * fetched
+   * Returns the version of the remote task. Null means that the latest version should be fetched
    */
   @Nullable
   public abstract String version();
@@ -82,12 +81,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
       SdkType<InputT> inputs,
       SdkType<OutputT> outputs) {
     return SdkRemoteTask.<InputT, OutputT>builder()
-            .domain(domain)
-            .project(project)
-            .name(name)
-            .inputs(inputs)
-            .outputs(outputs)
-            .build();
+        .domain(domain)
+        .project(project)
+        .name(name)
+        .inputs(inputs)
+        .outputs(outputs)
+        .build();
   }
 
   /**
@@ -101,12 +100,12 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
    * @return the latest version of the remote task
    */
   public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
-          String domain,
-          String project,
-          String name,
-          SdkType<InputT> inputs,
-          SdkType<OutputT> outputs) {
-    return create(domain, project, name,null, inputs, outputs);
+      String domain,
+      String project,
+      String name,
+      SdkType<InputT> inputs,
+      SdkType<OutputT> outputs) {
+    return create(domain, project, name, null, inputs, outputs);
   }
 
   /** {@inheritDoc} */

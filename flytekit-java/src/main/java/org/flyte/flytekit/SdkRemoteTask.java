@@ -84,6 +84,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
         .domain(domain)
         .project(project)
         .name(name)
+        .version(version)
         .inputs(inputs)
         .outputs(outputs)
         .build();

@@ -98,7 +98,7 @@ public abstract class SdkRemoteTask<InputT, OutputT> extends SdkTransform<InputT
    * @param name the name of the remote launch plan
    * @param inputs the {@link SdkType} for the inputs of the remote launch plan
    * @param outputs the {@link SdkType} for the outputs of the remote launch plan
-   * @return the remote task
+   * @return the latest version of the remote task
    */
   public static <InputT, OutputT> SdkRemoteTask<InputT, OutputT> create(
           String domain,

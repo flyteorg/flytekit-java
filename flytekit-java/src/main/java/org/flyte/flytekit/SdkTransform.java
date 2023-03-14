@@ -119,11 +119,24 @@ public abstract class SdkTransform<InputT, OutputT> {
   void checkNullOnlyVoid(@Nullable InputT inputs) {
     Set<String> variableNames = getInputType().variableNames();
     boolean hasProperties = !variableNames.isEmpty();
-    if (inputs == null && hasProperties) {
+    boolean isNullInput = isNullInput(inputs);
+    if (isNullInput && hasProperties) {
       throw new IllegalArgumentException(
           "Null supplied as input for a transform with variables: " + variableNames);
-    } else if (inputs != null && !hasProperties) {
-      throw new IllegalArgumentException("Null input expected for a transform with no variables");
+    } else if (!isNullInput && !hasProperties) {
+      throw new IllegalArgumentException(
+          "Null input expected for a transform with no variables, but was: " + inputs);
     }
+  }
+
+  // Support Unit values coming from Scala
+  private static final Set<String> NULL_CLASS_NAMES =
+      Set.of(
+          "void", // Scala unit ()
+          "scala.runtime.BoxedUnit" // Scala unit when boxed
+          );
+
+  private static boolean isNullInput(@Nullable Object input) {
+    return input == null || NULL_CLASS_NAMES.contains(input.getClass().getName());
   }
 }

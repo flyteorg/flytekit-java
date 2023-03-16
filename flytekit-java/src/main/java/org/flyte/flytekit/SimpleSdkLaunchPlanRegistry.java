@@ -68,7 +68,7 @@ public abstract class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegist
     return List.copyOf(launchPlans.values());
   }
 
-  public void registerLaunchPlans(Function<SdkWorkflow<?, ?>, Optional<SdkLaunchPlan>> action) {
+  protected void registerLaunchPlans(Function<SdkWorkflow<?, ?>, Optional<SdkLaunchPlan>> action) {
     SdkWorkflowRegistry.loadAll().stream()
         .map(action)
         .flatMap(Optional::stream)

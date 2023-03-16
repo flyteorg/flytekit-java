@@ -19,6 +19,8 @@ package org.flyte.flytekit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Base implementation of {@link SdkLaunchPlanRegistry} with handy methods to register {@link
@@ -64,5 +66,12 @@ public abstract class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegist
   @Override
   public List<SdkLaunchPlan> getLaunchPlans() {
     return List.copyOf(launchPlans.values());
+  }
+
+  public void registerLaunchPlans(Function<SdkWorkflow<?, ?>, Optional<SdkLaunchPlan>> action) {
+    SdkWorkflowRegistry.loadAll().stream()
+        .map(action)
+        .flatMap(Optional::stream)
+        .forEach(this::registerLaunchPlan);
   }
 }

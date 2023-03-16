@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 public class SimpleSdkLaunchPlanTest {
@@ -39,6 +40,13 @@ public class SimpleSdkLaunchPlanTest {
     List<SdkLaunchPlan> launchPlans = registry.getLaunchPlans();
 
     assertThat(launchPlans, equalTo(Arrays.asList(LP, LP2)));
+  }
+
+  @Test
+  void shouldRegisterLaunchPlansWithAction() {
+    TestSimpleSdkLaunchPlanRegistry registry = new TestSimpleSdkLaunchPlanRegistry();
+    registry.registerLaunchPlans(sdkWorkflow -> Optional.of(SdkLaunchPlan.of(sdkWorkflow)));
+    assertThat(registry.getLaunchPlans(), equalTo(Arrays.asList(LP, LP2)));
   }
 
   public static class TestSimpleSdkLaunchPlanRegistry extends SimpleSdkLaunchPlanRegistry {

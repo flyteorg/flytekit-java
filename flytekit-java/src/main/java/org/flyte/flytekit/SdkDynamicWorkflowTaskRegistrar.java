@@ -20,6 +20,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 import com.google.auto.service.AutoService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,12 +83,21 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
       SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 
       InputT value = sdkDynamicWorkflow.getInputType().fromLiteralMap(inputs);
-      sdkDynamicWorkflow.run(builder, value);
+      var output = sdkDynamicWorkflow.run(builder, value);
 
       List<Node> nodes =
           builder.getNodes().values().stream().map(SdkNode::toIdl).collect(toUnmodifiableList());
 
-      List<Binding> outputs = WorkflowTemplateIdl.getOutputBindings(builder);
+      SdkType<OutputT> outputType = sdkDynamicWorkflow.getOutputType();
+      List<Binding> outputs =
+          outputType.toSdkBindingMap(output).entrySet().stream()
+              .map(
+                  entry ->
+                      Binding.builder()
+                          .var_(entry.getKey())
+                          .binding(entry.getValue().idl())
+                          .build())
+              .collect(toUnmodifiableList());
 
       return DynamicJobSpec.builder()
           .nodes(nodes)
@@ -120,13 +130,23 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
     ServiceLoader<SdkDynamicWorkflowTask> loader =
         ServiceLoader.load(SdkDynamicWorkflowTask.class, classLoader);
 
+    var dynamicWorkflows = new ArrayList<SdkDynamicWorkflowTask<?, ?>>();
+    loader.forEach(dynamicWorkflows::add);
+
+    return load(env, dynamicWorkflows);
+  }
+
+  // Visible for testing
+  Map<TaskIdentifier, DynamicWorkflowTask> load(
+      Map<String, String> env, List<SdkDynamicWorkflowTask<?, ?>> sdkDynamicWorkflows) {
+
     LOG.fine("Discovering SdkDynamicWorkflowTask");
 
     Map<TaskIdentifier, DynamicWorkflowTask> tasks = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
 
-    for (SdkDynamicWorkflowTask<?, ?> sdkTask : loader) {
-      String name = sdkTask.getName();
+    for (SdkDynamicWorkflowTask<?, ?> sdkDynamicWorkflow : sdkDynamicWorkflows) {
+      String name = sdkDynamicWorkflow.getName();
 
       TaskIdentifier taskId =
           TaskIdentifier.builder()
@@ -138,7 +158,7 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
 
       LOG.fine(String.format("Discovered [%s]", name));
 
-      DynamicWorkflowTask task = new DynamicWorkflowTaskImpl<>(sdkTask);
+      DynamicWorkflowTask task = new DynamicWorkflowTaskImpl<>(sdkDynamicWorkflow);
       DynamicWorkflowTask previous = tasks.put(taskId, task);
 
       if (previous != null) {

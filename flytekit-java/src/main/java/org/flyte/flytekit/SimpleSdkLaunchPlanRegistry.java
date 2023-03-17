@@ -19,7 +19,6 @@ package org.flyte.flytekit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -68,10 +67,24 @@ public abstract class SimpleSdkLaunchPlanRegistry implements SdkLaunchPlanRegist
     return List.copyOf(launchPlans.values());
   }
 
-  protected void registerLaunchPlans(Function<SdkWorkflow<?, ?>, Optional<SdkLaunchPlan>> action) {
-    SdkWorkflowRegistry.loadAll().stream()
-        .map(action)
-        .flatMap(Optional::stream)
+  /**
+   * Register launch plans for discovered workflows using a {@link SdkWorkflow} to {@link
+   * SdkLaunchPlan} function.
+   *
+   * @param toLpFunction function to convert descoverd workflows to launch plans.
+   */
+  protected void registerLaunchPlans(
+      Function<SdkWorkflow<?, ?>, List<SdkLaunchPlan>> toLpFunction) {
+    List<SdkWorkflow<?, ?>> workflows = SdkWorkflowRegistry.loadAll();
+    registerLaunchPlans(workflows, toLpFunction);
+  }
+
+  void registerLaunchPlans(
+      List<SdkWorkflow<?, ?>> loadedWorkflows,
+      Function<SdkWorkflow<?, ?>, List<SdkLaunchPlan>> toLpFunction) {
+    loadedWorkflows.stream()
+        .map(toLpFunction)
+        .flatMap(List::stream)
         .forEach(this::registerLaunchPlan);
   }
 }

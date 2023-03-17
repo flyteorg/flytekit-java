@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 public class SimpleSdkLaunchPlanTest {
@@ -42,17 +41,24 @@ public class SimpleSdkLaunchPlanTest {
     assertThat(launchPlans, equalTo(Arrays.asList(LP, LP2)));
   }
 
-  @Test
-  void shouldRegisterLaunchPlansWithAction() {
-    TestSimpleSdkLaunchPlanRegistry registry = new TestSimpleSdkLaunchPlanRegistry();
-    registry.registerLaunchPlans(sdkWorkflow -> Optional.of(SdkLaunchPlan.of(sdkWorkflow)));
-    assertThat(registry.getLaunchPlans(), equalTo(Arrays.asList(LP, LP2)));
-  }
-
   public static class TestSimpleSdkLaunchPlanRegistry extends SimpleSdkLaunchPlanRegistry {
     public TestSimpleSdkLaunchPlanRegistry() {
       registerLaunchPlan(LP);
       registerLaunchPlan(LP2);
+    }
+  }
+
+  @Test
+  void shouldRegisterLaunchPlansWithToLaunchPlanFucntion() {
+    TestSimpleSdkLaunchPlanRegistryWithLpFunction registry =
+        new TestSimpleSdkLaunchPlanRegistryWithLpFunction();
+    assertThat(registry.getLaunchPlans(), equalTo(Arrays.asList(LP, LP2)));
+  }
+
+  public static class TestSimpleSdkLaunchPlanRegistryWithLpFunction
+      extends SimpleSdkLaunchPlanRegistry {
+    public TestSimpleSdkLaunchPlanRegistryWithLpFunction() {
+      registerLaunchPlans(List.of(WORKFLOW), __ -> List.of(LP, LP2));
     }
   }
 

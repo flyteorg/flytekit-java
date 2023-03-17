@@ -49,6 +49,20 @@ public class SimpleSdkLaunchPlanTest {
   }
 
   @Test
+  void shouldRegisterLaunchPlansWithToLaunchPlanFucntion() {
+    TestSimpleSdkLaunchPlanRegistryWithLpFunction registry =
+        new TestSimpleSdkLaunchPlanRegistryWithLpFunction();
+    assertThat(registry.getLaunchPlans(), equalTo(Arrays.asList(LP, LP2)));
+  }
+
+  public static class TestSimpleSdkLaunchPlanRegistryWithLpFunction
+      extends SimpleSdkLaunchPlanRegistry {
+    public TestSimpleSdkLaunchPlanRegistryWithLpFunction() {
+      registerLaunchPlans(List.of(WORKFLOW), __ -> List.of(LP, LP2));
+    }
+  }
+
+  @Test
   void shouldRegisterDefaultLaunchPlans() {
     SdkLaunchPlan expectedDefaultLaunchPlan = SdkLaunchPlan.of(WORKFLOW);
     TestSimpleSdkLaunchPlanRegistryWithDefaults registry =

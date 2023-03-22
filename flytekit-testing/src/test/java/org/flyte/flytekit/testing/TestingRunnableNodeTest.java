@@ -86,6 +86,20 @@ class TestingRunnableNodeTest {
   }
 
   @Test
+  void testWithMismatchingInput() {
+    Function<Input, Output> fn = in -> {
+      throw new AssertionError("should not happen");
+    };
+    TestNode node =
+        new TestNode(null, emptyMap())
+            .withRunFn(fn)
+            .withFixedOutput(Input.create("8"), Output.create(7L));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> node.run(singletonMap("in", Literals.ofString("7"))));
+  }
+
+  @Test
   void testWithFixedOutput() {
     TestNode node =
         new TestNode(null, emptyMap()).withFixedOutput(Input.create("7"), Output.create(7L));

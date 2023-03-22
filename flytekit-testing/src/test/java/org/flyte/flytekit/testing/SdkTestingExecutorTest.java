@@ -18,6 +18,7 @@ package org.flyte.flytekit.testing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -197,6 +198,90 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo("Fixed input [string] (of type INTEGER) doesn't match expected type STRING"));
+  }
+
+  @Test
+  public void testWithTask_correctMockDoesNotRunTask() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new ThrowingTask(),
+                ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")));
+            return null;
+          }
+        };
+    // this would throw if it was not mocked
+    SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new ThrowingTask(),
+            ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")), null)
+        .execute();
+  }
+
+  @Test
+  public void testWithTask_oneMockOneRun() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new ThrowingTask(),
+                ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")));
+            builder.apply(
+                new ThrowingTask(),
+                ThrowingTask.Input.create(SdkBindingDataFactory.of("bar")));
+            return null;
+          }
+        };
+    SdkTestingExecutor sdkTestingExecutor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new ThrowingTask(),
+            ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")), null);
+
+    // should throw because "bar" is not mocked and task will throw unless mocked
+    ThrowingTask.ThrowingTaskException exception =
+        assertThrows(ThrowingTask.ThrowingTaskException.class, sdkTestingExecutor::execute);
+    assertThat(exception.getMessage(), is("in: bar"));
+  }
+
+  @Test
+  public void testWithTask_oneMockOneMockedIncorrect() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new ThrowingTask(),
+                ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")));
+            SdkBindingData<Long> three = builder.apply(
+                    new SumTask(),
+                    SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)))
+                .getOutputs().c();
+            SdkBindingData<Long> ten = builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(three, SdkBindingDataFactory.of(7L))).getOutputs().c();
+            builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(three, ten));
+            return null;
+          }
+        };
+    SdkTestingExecutor sdkTestingExecutor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new ThrowingTask(),
+            ThrowingTask.Input.create(SdkBindingDataFactory.of("foo")), null)
+        .withTaskOutput(
+            new ThrowingTask(),
+            ThrowingTask.Input.create(SdkBindingDataFactory.of("baz")), null)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)),
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
+
+    // should throw since "baz" mock is not used
+    assertThrows(IllegalArgumentException.class, sdkTestingExecutor::execute);
   }
 
   @Test

@@ -184,7 +184,7 @@ public class LocalEngine {
         .collect(toMap(Binding::var_, binding -> getLiteral(nodeOutputs, binding.binding())));
   }
 
-  static Literal getLiteral(
+  public static Literal getLiteral(
       Map<String, Map<String, Literal>> nodeOutputs, BindingData bindingData) {
     switch (bindingData.kind()) {
       case SCALAR:

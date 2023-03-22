@@ -56,10 +56,10 @@ import org.flyte.api.v1.WorkflowTemplate;
  *   <li>TODO type conversion
  * </ul>
  */
-class ExecutionNodeCompiler {
+public class ExecutionNodeCompiler {
   private final ExecutionContext executionContext;
 
-  ExecutionNodeCompiler(ExecutionContext executionContext) {
+  public ExecutionNodeCompiler(ExecutionContext executionContext) {
     this.executionContext = requireNonNull(executionContext);
   }
 
@@ -70,7 +70,7 @@ class ExecutionNodeCompiler {
    * @param nodes nodes
    * @return execution nodes
    */
-  List<ExecutionNode> compile(List<Node> nodes) {
+  public List<ExecutionNode> compile(List<Node> nodes) {
     List<ExecutionNode> executableNodes = nodes.stream().map(this::compile).collect(toList());
 
     return sort(executableNodes);

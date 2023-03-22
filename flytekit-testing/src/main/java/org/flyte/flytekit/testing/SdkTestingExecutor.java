@@ -19,7 +19,9 @@ package org.flyte.flytekit.testing;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.api.v1.Node.START_NODE_ID;
 import static org.flyte.flytekit.testing.Preconditions.checkArgument;
+import static org.flyte.localengine.LocalEngine.getLiteral;
 
 import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
@@ -33,6 +35,7 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
@@ -48,6 +51,8 @@ import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.localengine.ExecutionContext;
+import org.flyte.localengine.ExecutionNode;
+import org.flyte.localengine.ExecutionNodeCompiler;
 import org.flyte.localengine.LocalEngine;
 
 /** Flyte executor for testing purposes. */
@@ -175,13 +180,61 @@ public abstract class SdkTestingExecutor {
     checkInputsInFixedInputs(workflowTemplate);
     checkTestDoublesForNodes(workflowTemplate);
 
+    Map<String, TestingRunnableTask<?, ?>> doubles = taskTestDoubles();
+    System.out.println("doubles = " + doubles);
+    Map<String, Literal> finputs = fixedInputs();
+    System.out.println("finputs = " + finputs);
+    Map<String, LiteralType> finputtypes = fixedInputTypes();
+    System.out.println("finputtypes = " + finputtypes);
+
+    ExecutionContext executionContext = ExecutionContext.builder()
+        .runnableTasks(unmodifiableMap(taskTestDoubles()))
+        .workflowTemplates(unmodifiableMap(workflowTemplates()))
+        .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
+        .build();
+
+    List<ExecutionNode> executionNodes =
+        new ExecutionNodeCompiler(executionContext).compile(workflowTemplate.nodes());
+
+    Map<String, Map<String, Literal>> nodeOutputs = new HashMap<>();
+    nodeOutputs.put(START_NODE_ID, fixedInputs());
+    // inputs in workflows
+    for (Node node : workflowTemplate.nodes()) {
+      for (Binding input : node.inputs()) {
+        String key = input.var_();
+        System.out.println("key = " + key);
+        System.out.print("binding = " + input.binding());
+        switch (input.binding().kind()) {
+          case PROMISE:
+            System.out.println("promise = " + input.binding().promise());
+            break;
+          case SCALAR:
+            System.out.println("scalar = " + getLiteral(nodeOutputs, input.binding()));
+            break;
+          default:
+            System.out.println("scalar = " + input.binding().scalar());
+            break;
+        }
+      }
+    }
+
+    // inputs in mocks
+    for (ExecutionNode node : executionNodes) {
+      if (node.runnableNode() instanceof TestingRunnableTask<?, ?>) {
+        TestingRunnableTask<?, ?> testingRunnableTask =
+            (TestingRunnableTask<?, ?>) node.runnableNode();
+        System.out.println("testingRunnableTask = " + testingRunnableTask);
+        // testingRunnableTask.fixedOutputs.get()
+        // testingRunnableTask.inputType.fromLiteralMap(fixedInputs());
+      } else if (node.runnableNode() instanceof TestingRunnableLaunchPlan<?, ?>) {
+        TestingRunnableLaunchPlan<?, ?> testingRunnableLaunchPlan =
+            (TestingRunnableLaunchPlan<?, ?>) node.runnableNode();
+        System.out.println("testingRunnableLaunchPlan = " + testingRunnableLaunchPlan);
+      }
+    }
+
     Map<String, Literal> outputLiteralMap =
-        new LocalEngine(
-                ExecutionContext.builder()
-                    .runnableTasks(unmodifiableMap(taskTestDoubles()))
-                    .workflowTemplates(unmodifiableMap(workflowTemplates()))
-                    .runnableLaunchPlans(unmodifiableMap(launchPlanTestDoubles()))
-                    .build())
+        new LocalEngine(executionContext)
             .compileAndExecute(workflowTemplate, unmodifiableMap(fixedInputs()));
 
     Map<String, LiteralType> outputLiteralTypeMap =
@@ -317,8 +370,10 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
+    TestingRunnableTask<InputT, OutputT> fn = fixedTask.withFixedOutput(input, output);
+
     return toBuilder()
-        .putFixedTask(task.getName(), fixedTask.withFixedOutput(input, output))
+        .putFixedTask(task.getName(), fn)
         .build();
   }
 

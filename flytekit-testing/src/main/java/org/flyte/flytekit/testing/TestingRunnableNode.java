@@ -98,7 +98,8 @@ public abstract class TestingRunnableNode<
     } else if (runFn != null) {
       String message =
           String.format(
-              "The task doesn't have the proper mock and it is configured with isRunnable=false. Trying to run with %s, the available mocks are %s and the available allowed running inputs are %s",
+              "The task doesn't have the proper mock and it is configured with isRunnable=false. "
+                  + "Trying to run with %s, the available mocks are %s and the available allowed running inputs are %s",
               input, fixedOutputs, runningInputs);
       throw new IllegalArgumentException(message);
     } else {

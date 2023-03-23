@@ -95,9 +95,11 @@ public abstract class TestingRunnableNode<
       return outputType.toLiteralMap(fixedOutputs.get(input));
     } else if (runFn != null && (isRunnable || runningInputs.contains(input))) {
       return outputType.toLiteralMap(runFn.apply(input));
-    } else  if(runFn != null) {
+    } else if (runFn != null) {
       String message =
-          String.format("The task doesn't have the proper mock and it is configured with isRunnable=false. Trying to run with %s, the available mocks are %s and the available allowed running inputs are %s", input, fixedOutputs, runningInputs);
+          String.format(
+              "The task doesn't have the proper mock and it is configured with isRunnable=false. Trying to run with %s, the available mocks are %s and the available allowed running inputs are %s",
+              input, fixedOutputs, runningInputs);
       throw new IllegalArgumentException(message);
     } else {
       // TODO see if we can improve this error message as input is hard to read
@@ -109,8 +111,6 @@ public abstract class TestingRunnableNode<
               input, type, getName(), type, testingSuggestion);
       throw new IllegalArgumentException(message);
     }
-
-
   }
 
   @Override
@@ -119,24 +119,28 @@ public abstract class TestingRunnableNode<
   }
 
   public T withIsRunnable(Boolean isRunnable) {
-    return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs, runningInputs, isRunnable);
+    return creatorFn.create(
+        id, inputType, outputType, runFn, fixedOutputs, runningInputs, isRunnable);
   }
 
   public T withRunWithInput(InputT input) {
     Set<InputT> newRunningInputs = new HashSet<>(runningInputs);
     newRunningInputs.add(input);
 
-    return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs, newRunningInputs, isRunnable);
+    return creatorFn.create(
+        id, inputType, outputType, runFn, fixedOutputs, newRunningInputs, isRunnable);
   }
 
   public T withFixedOutput(InputT input, OutputT output) {
     Map<InputT, OutputT> newFixedOutputs = new HashMap<>(fixedOutputs);
     newFixedOutputs.put(input, output);
 
-    return creatorFn.create(id, inputType, outputType, runFn, newFixedOutputs, runningInputs, isRunnable);
+    return creatorFn.create(
+        id, inputType, outputType, runFn, newFixedOutputs, runningInputs, isRunnable);
   }
 
   public T withRunFn(Function<InputT, OutputT> runFn) {
-    return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs, runningInputs, isRunnable);
+    return creatorFn.create(
+        id, inputType, outputType, runFn, fixedOutputs, runningInputs, isRunnable);
   }
 }

@@ -30,6 +30,7 @@ public class WorkflowTest {
   public void testSubWorkflow() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new UberWorkflow())
+            .withEnableRunnableFor(new SumTask())
             .withFixedInput("a", 1)
             .withFixedInput("b", 2)
             .withFixedInput("c", 3)
@@ -101,6 +102,7 @@ public class WorkflowTest {
   void testWorkflowsWithBranchConditions() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new ConditionalGreetingWorkflow())
+            .withEnableRunnableFor(new GreetTask())
             .withFixedInput("name", "Joe")
             .execute();
 

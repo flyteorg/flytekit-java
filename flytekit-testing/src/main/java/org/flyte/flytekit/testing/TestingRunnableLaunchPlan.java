@@ -17,7 +17,6 @@
 package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -59,6 +58,7 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
     PartialLaunchPlanIdentifier launchPlanId =
         PartialLaunchPlanIdentifier.builder().name(name).build();
 
-    return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap(), new HashSet<>(), false);
+    return new TestingRunnableLaunchPlan<>(
+        launchPlanId, inputType, outputType, null, emptyMap(), new HashSet<>(), false);
   }
 }

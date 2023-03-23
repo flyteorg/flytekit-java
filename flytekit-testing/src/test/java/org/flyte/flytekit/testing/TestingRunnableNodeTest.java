@@ -25,7 +25,6 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -112,14 +111,14 @@ class TestingRunnableNodeTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "The task doesn't have the proper mock and it is configured with isRunnable=false. The available mocks are {Input{in=SdkBindingData{type=strings, value=7}}=Output{out=SdkBindingData{type=integers, value=7}}}"));
+            "The task doesn't have the proper mock and it is configured with isRunnable=false. Trying to run with Input{in=SdkBindingData{type=strings, value=not in fixed outputs}}, the available mocks are {Input{in=SdkBindingData{type=strings, value=7}}=Output{out=SdkBindingData{type=integers, value=7}}} and the available allowed running inputs are []"));
   }
-
 
   @Test
   void testWithFixedOutput() {
     TestNode node =
-        new TestNode(null, emptyMap(), emptySet(), false).withFixedOutput(Input.create("7"), Output.create(7L));
+        new TestNode(null, emptyMap(), emptySet(), false)
+            .withFixedOutput(Input.create("7"), Output.create(7L));
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -146,7 +145,11 @@ class TestingRunnableNodeTest {
   static class TestNode
       extends TestingRunnableNode<PartialTaskIdentifier, Input, Output, TestNode> {
 
-    protected TestNode(Function<Input, Output> runFn, Map<Input, Output> fixedOutputs, Set<Input> runningInputs, Boolean isRunnable) {
+    protected TestNode(
+        Function<Input, Output> runFn,
+        Map<Input, Output> fixedOutputs,
+        Set<Input> runningInputs,
+        Boolean isRunnable) {
       super(
           PartialTaskIdentifier.builder().name("TestTask").build(),
           JacksonSdkType.of(Input.class),

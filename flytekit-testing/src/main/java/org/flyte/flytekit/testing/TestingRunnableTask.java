@@ -17,7 +17,6 @@
 package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -61,14 +60,27 @@ class TestingRunnableTask<InputT, OutputT>
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
-        taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap(), new HashSet<>(), /* isRunnable= */ false);
+        taskId,
+        task.getInputType(),
+        task.getOutputType(),
+        task::run,
+        emptyMap(),
+        new HashSet<>(),
+        /* isRunnable= */ false);
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 
-    return new TestingRunnableTask<>(taskId, inputType, outputType, /* runFn= */ null, emptyMap(), new HashSet<>(), /* isRunnable= */ false);
+    return new TestingRunnableTask<>(
+        taskId,
+        inputType,
+        outputType,
+        /* runFn= */ null,
+        emptyMap(),
+        new HashSet<>(),
+        /* isRunnable= */ false);
   }
 
   @Override

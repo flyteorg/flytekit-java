@@ -90,10 +90,18 @@ public class FibonacciWorkflowTest {
         SdkTestingExecutor.of(new FibonacciWorkflow())
             .withFixedInput("fib0", 1)
             .withFixedInput("fib1", 1)
-            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
-            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)))
-            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(3L)))
-            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)))
+            .withEnableRunnableForInput(
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
+            .withEnableRunnableForInput(
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)))
+            .withEnableRunnableForInput(
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(3L)))
+            .withEnableRunnableForInput(
+                new SumTask(),
+                SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)))
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));

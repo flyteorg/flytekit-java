@@ -312,22 +312,20 @@ public abstract class SdkTestingExecutor {
     return builder.build();
   }
 
-  public <InputT, OutputT> SdkTestingExecutor withEnableRunnableFor(SdkRunnableTask<InputT, OutputT> task) {
+  public <InputT, OutputT> SdkTestingExecutor withEnableRunnableFor(
+      SdkRunnableTask<InputT, OutputT> task) {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
-    return toBuilder()
-        .putFixedTask(task.getName(), fixedTask.withIsRunnable(true))
-        .build();
+    return toBuilder().putFixedTask(task.getName(), fixedTask.withIsRunnable(true)).build();
   }
 
-  public <InputT, OutputT> SdkTestingExecutor withEnableRunnableForInput(SdkRunnableTask<InputT, OutputT> task, InputT input) {
+  public <InputT, OutputT> SdkTestingExecutor withEnableRunnableForInput(
+      SdkRunnableTask<InputT, OutputT> task, InputT input) {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
-    return toBuilder()
-        .putFixedTask(task.getName(), fixedTask.withRunWithInput(input))
-        .build();
+    return toBuilder().putFixedTask(task.getName(), fixedTask.withRunWithInput(input)).build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
@@ -366,7 +364,9 @@ public abstract class SdkTestingExecutor {
             launchPlan.name(), launchPlan.inputs(), launchPlan.outputs());
 
     return toBuilder()
-        .putLaunchPlan(launchPlanTestDouble.getName(), launchPlanTestDouble.withRunFn(runFn).withIsRunnable(true))
+        .putLaunchPlan(
+            launchPlanTestDouble.getName(),
+            launchPlanTestDouble.withRunFn(runFn).withIsRunnable(true))
         .build();
   }
 
@@ -375,7 +375,9 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 
-    return toBuilder().putFixedTask(task.getName(), fixedTask.withRunFn(runFn).withIsRunnable(true)).build();
+    return toBuilder()
+        .putFixedTask(task.getName(), fixedTask.withRunFn(runFn).withIsRunnable(true))
+        .build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withWorkflowOutput(

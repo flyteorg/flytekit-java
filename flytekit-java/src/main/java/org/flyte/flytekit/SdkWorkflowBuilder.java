@@ -63,7 +63,7 @@ public class SdkWorkflowBuilder {
    */
   public <OutputT> SdkNode<OutputT> apply(
       String nodeId, SdkTransform<Void, OutputT> transformWithoutInputs) {
-    return applyInternal(nodeId, transformWithoutInputs, emptyList(), null);
+    return applyInternal(nodeId, transformWithoutInputs, emptyList(), (Void) null);
   }
 
   /**
@@ -76,6 +76,19 @@ public class SdkWorkflowBuilder {
    */
   public <InputT, OutputT> SdkNode<OutputT> apply(
       String nodeId, SdkTransform<InputT, OutputT> transform, InputT inputs) {
+    return applyInternal(nodeId, transform, emptyList(), inputs);
+  }
+
+  /**
+   * Applies the given transformation over the inputs and returns a new node with a given node id.
+   *
+   * @param nodeId node id of the new node
+   * @param transform transformation to apply.
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
+  public <OutputT> SdkNode<OutputT> applyWithInputMap(
+      String nodeId, SdkTransform<?, OutputT> transform, Map<String, SdkBindingData<?>> inputs) {
     return applyInternal(nodeId, transform, emptyList(), inputs);
   }
 
@@ -102,11 +115,24 @@ public class SdkWorkflowBuilder {
     return apply(/*nodeId=*/ null, transform, inputs);
   }
 
+  /**
+   * Applies the given transformation over the inputs and returns a new node with a given default
+   * node id.
+   *
+   * @param transform transformation to apply.
+   * @param inputs inputs to transform
+   * @return the new {@link SdkNode}
+   */
+  public <OutputT> SdkNode<OutputT> applyWithInputMap(
+      SdkTransform<?, OutputT> transform, Map<String, SdkBindingData<?>> inputs) {
+    return applyWithInputMap(/*nodeId=*/ null, transform, inputs);
+  }
+
   protected <InputT, OutputT> SdkNode<OutputT> applyInternal(
       String nodeId,
       SdkTransform<InputT, OutputT> transform,
       List<String> upstreamNodeIds,
-      @Nullable InputT inputs) {
+      @Nullable Map<String, SdkBindingData<?>> inputs) {
     String actualNodeId = Objects.requireNonNullElseGet(nodeId, sdkNodeNamePolicy::nextNodeId);
 
     if (nodes.containsKey(actualNodeId)) {
@@ -131,6 +157,15 @@ public class SdkWorkflowBuilder {
     nodes.put(sdkNode.getNodeId(), sdkNode);
 
     return sdkNode;
+  }
+
+  protected <InputT, OutputT> SdkNode<OutputT> applyInternal(
+      String nodeId,
+      SdkTransform<InputT, OutputT> transform,
+      List<String> upstreamNodeIds,
+      @Nullable InputT inputs) {
+    var inputsBindings = transform.getInputType().toSdkBindingMap(inputs);
+    return applyInternal(nodeId, transform, upstreamNodeIds, inputsBindings);
   }
 
   <T> void setInput(SdkLiteralType<T> type, String name, String help) {

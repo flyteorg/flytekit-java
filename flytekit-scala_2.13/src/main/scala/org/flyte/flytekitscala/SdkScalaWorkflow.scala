@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{WorkflowTemplate}
+import org.flyte.api.v1.WorkflowTemplate
 import org.flyte.flytekit.{
   SdkBindingData => SdkJavaBindingData,
   SdkNode,
@@ -137,6 +137,25 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
       inputs: InputT
   ): SdkNode[OutputT] = builder.apply(nodeId, transform, inputs)
 
+  /** Create a new node with specific ID on the workflow DAG.
+    *
+    * @param nodeId
+    *   The specific node ID.
+    * @param transform
+    *   The transformation that you want to apply to the DAG.
+    * @param inputs
+    *   The [[SdkTransform]] inputs.
+    * @tparam OutputT
+    *   The [[SdkTransform]] and [[SdkNode]] output class.
+    * @return
+    */
+  def applyWithInputMap[InputT, OutputT](
+      nodeId: String,
+      transform: SdkTransform[InputT, OutputT],
+      inputs: Map[String, SdkJavaBindingData[_]]
+  ): SdkNode[OutputT] =
+    builder.applyWithInputMap(nodeId, transform, inputs.asJava)
+
   /** Create a new node without inputs on the workflow DAG.
     *
     * @param transform
@@ -164,4 +183,19 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
       transform: SdkTransform[InputT, OutputT],
       inputs: InputT
   ): SdkNode[OutputT] = builder.apply(transform, inputs)
+
+  /** Create a new node on the workflow DAG.
+    *
+    * @param transform
+    *   The transformation that you want to apply to the DAG.
+    * @param inputs
+    *   The [[SdkTransform]] inputs.
+    * @tparam OutputT
+    *   The [[SdkTransform]] and [[SdkNode]] output class.
+    * @return
+    */
+  def applyWithInputMap[InputT, OutputT](
+      transform: SdkTransform[InputT, OutputT],
+      inputs: Map[String, SdkJavaBindingData[_]]
+  ): SdkNode[OutputT] = builder.applyWithInputMap(transform, inputs.asJava)
 }

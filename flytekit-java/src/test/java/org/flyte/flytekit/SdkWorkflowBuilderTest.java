@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.BooleanExpression;
@@ -262,6 +263,28 @@ class SdkWorkflowBuilderTest {
         builder.apply("el3", transform.withUpstreamNode(el2), input);
 
     assertEquals(singletonList("el2"), el3.toIdl().upstreamNodeIds());
+  }
+
+  @Test
+  void testApplyWithInputMap() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    SdkNode<TestUnaryIntegerOutput> output =
+        builder.applyWithInputMap(
+            new MultiplicationTask(),
+            Map.of("a", SdkBindingDataFactory.of(10L), "b", SdkBindingDataFactory.of(10L)));
+
+    assertEquals(
+        List.of(
+            Binding.builder()
+                .var_("a")
+                .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(10))))
+                .build(),
+            Binding.builder()
+                .var_("b")
+                .binding(BindingData.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(10))))
+                .build()),
+        output.toIdl().inputs());
   }
 
   @Test

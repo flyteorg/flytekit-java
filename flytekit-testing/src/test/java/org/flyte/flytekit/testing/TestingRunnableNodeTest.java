@@ -17,6 +17,7 @@
 package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -24,7 +25,9 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -38,7 +41,7 @@ class TestingRunnableNodeTest {
   @Test
   void testRun_withStubValues() {
     Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
-    TestNode node = new TestNode(null, fixedOutputs);
+    TestNode node = new TestNode(null, fixedOutputs, emptySet(), false);
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -48,7 +51,17 @@ class TestingRunnableNodeTest {
   @Test
   void testRun_withFunction() {
     Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
-    TestNode node = new TestNode(fn, emptyMap());
+    TestNode node = new TestNode(fn, emptyMap(), emptySet(), true);
+
+    Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
+
+    assertThat(output, hasEntry("out", Literals.ofInteger(7L)));
+  }
+
+  @Test
+  void testRun_withSepecficInputFunction() {
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
+    TestNode node = new TestNode(fn, emptyMap(), Set.of(Input.create("7")), false);
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -60,7 +73,7 @@ class TestingRunnableNodeTest {
     Map<Input, Output> fixedOutputs =
         singletonMap(Input.create("meaning of life"), Output.create(42L));
     Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
-    TestNode node = new TestNode(fn, fixedOutputs);
+    TestNode node = new TestNode(fn, fixedOutputs, emptySet(), true);
 
     Map<String, Literal> output =
         node.run(singletonMap("in", Literals.ofString("meaning of life")));
@@ -71,7 +84,7 @@ class TestingRunnableNodeTest {
   @Test
   void testRun_notFound() {
     Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
-    TestNode node = new TestNode(null, fixedOutputs);
+    TestNode node = new TestNode(null, fixedOutputs, emptySet(), false);
 
     IllegalArgumentException ex =
         assertThrows(
@@ -86,9 +99,27 @@ class TestingRunnableNodeTest {
   }
 
   @Test
+  void testRun_notFound_mock() {
+    Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
+    TestNode node = new TestNode(fn, fixedOutputs, emptySet(), false);
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> node.run(singletonMap("in", Literals.ofString("not in fixed outputs"))));
+
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "The task doesn't have the proper mock and it is configured with isRunnable=false. The available mocks are {Input{in=SdkBindingData{type=strings, value=7}}=Output{out=SdkBindingData{type=integers, value=7}}}"));
+  }
+
+
+  @Test
   void testWithFixedOutput() {
     TestNode node =
-        new TestNode(null, emptyMap()).withFixedOutput(Input.create("7"), Output.create(7L));
+        new TestNode(null, emptyMap(), emptySet(), false).withFixedOutput(Input.create("7"), Output.create(7L));
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -98,7 +129,7 @@ class TestingRunnableNodeTest {
   @Test
   void testWithRunFn() {
     Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
-    TestNode node = new TestNode(null, emptyMap()).withRunFn(fn);
+    TestNode node = new TestNode(null, emptyMap(), emptySet(), true).withRunFn(fn);
 
     Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
 
@@ -107,7 +138,7 @@ class TestingRunnableNodeTest {
 
   @Test
   void testGetNameShouldDeriveFromId() {
-    TestNode node = new TestNode(null, emptyMap());
+    TestNode node = new TestNode(null, emptyMap(), emptySet(), false);
 
     assertThat(node.getName(), equalTo("TestTask"));
   }
@@ -115,16 +146,18 @@ class TestingRunnableNodeTest {
   static class TestNode
       extends TestingRunnableNode<PartialTaskIdentifier, Input, Output, TestNode> {
 
-    protected TestNode(Function<Input, Output> runFn, Map<Input, Output> fixedOutputs) {
+    protected TestNode(Function<Input, Output> runFn, Map<Input, Output> fixedOutputs, Set<Input> runningInputs, Boolean isRunnable) {
       super(
           PartialTaskIdentifier.builder().name("TestTask").build(),
           JacksonSdkType.of(Input.class),
           JacksonSdkType.of(Output.class),
           runFn,
           fixedOutputs,
-          (id, inType, outType, f, m) -> new TestNode(f, m),
+          runningInputs,
+          (id, inType, outType, f, m, r, b) -> new TestNode(f, m, r, b),
           "test",
-          "a magic wang");
+          "a magic wang",
+          isRunnable);
     }
   }
 

@@ -17,8 +17,11 @@
 package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.flytekit.SdkType;
@@ -35,16 +38,20 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
-      Map<InputT, OutputT> fixedOutputs) {
+      Map<InputT, OutputT> fixedOutputs,
+      Set<InputT> runningInputs,
+      Boolean isRunnable) {
     super(
         launchPlanId,
         inputType,
         outputType,
         runFn,
         fixedOutputs,
+        runningInputs,
         TestingRunnableLaunchPlan::new,
         "launch plan",
-        "SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan");
+        "SdkTestingExecutor#withLaunchPlanOutput or SdkTestingExecutor#withLaunchPlan",
+        isRunnable);
   }
 
   static <InputT, OutputT> TestingRunnableLaunchPlan<InputT, OutputT> create(
@@ -52,6 +59,6 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
     PartialLaunchPlanIdentifier launchPlanId =
         PartialLaunchPlanIdentifier.builder().name(name).build();
 
-    return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap());
+    return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap(), new HashSet<>(), false);
   }
 }

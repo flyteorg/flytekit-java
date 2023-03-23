@@ -37,6 +37,7 @@ public class FibonacciWorkflowTest {
   public void test() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new FibonacciWorkflow())
+            .withEnableRunnableFor(new SumTask())
             .withFixedInput("fib0", 1)
             .withFixedInput("fib1", 1)
             .execute();
@@ -51,6 +52,7 @@ public class FibonacciWorkflowTest {
   public void testWithFixedInputs() {
     SdkTestingExecutor.Result result =
         SdkTestingExecutor.of(new FibonacciWorkflow())
+            .withEnableRunnableFor(new SumTask())
             .withFixedInputs(
                 JacksonSdkType.of(FibonacciWorkflowInputs.class),
                 FibonacciWorkflowInputs.create(
@@ -69,6 +71,7 @@ public class FibonacciWorkflowTest {
         SdkTestingExecutor.of(new FibonacciWorkflow())
             .withFixedInput("fib0", 1)
             .withFixedInput("fib1", 1)
+            .withEnableRunnableFor(new SumTask())
             .withTaskOutput(
                 new SumTask(),
                 SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)),
@@ -79,6 +82,24 @@ public class FibonacciWorkflowTest {
     assertThat(result.getIntegerOutput("fib3"), equalTo(3L));
     assertThat(result.getIntegerOutput("fib4"), equalTo(5L));
     assertThat(result.getIntegerOutput("fib5"), equalTo(42L));
+  }
+
+  @Test
+  public void testWithEnableRunnableForInput_runnableTask() {
+    SdkTestingExecutor.Result result =
+        SdkTestingExecutor.of(new FibonacciWorkflow())
+            .withFixedInput("fib0", 1)
+            .withFixedInput("fib1", 1)
+            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
+            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)))
+            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(3L)))
+            .withEnableRunnableForInput(new SumTask(), SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)))
+            .execute();
+
+    assertThat(result.getIntegerOutput("fib2"), equalTo(2L));
+    assertThat(result.getIntegerOutput("fib3"), equalTo(3L));
+    assertThat(result.getIntegerOutput("fib4"), equalTo(5L));
+    assertThat(result.getIntegerOutput("fib5"), equalTo(8L));
   }
 
   @Test

@@ -17,8 +17,11 @@
 package org.flyte.flytekit.testing;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.RetryStrategy;
@@ -37,16 +40,20 @@ class TestingRunnableTask<InputT, OutputT>
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
-      Map<InputT, OutputT> fixedOutputs) {
+      Map<InputT, OutputT> fixedOutputs,
+      Set<InputT> runningInputs,
+      Boolean isRunnable) {
     super(
         taskId,
         inputType,
         outputType,
         runFn,
         fixedOutputs,
+        runningInputs,
         TestingRunnableTask::new,
         "task",
-        "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask");
+        "SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask",
+        isRunnable);
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
@@ -54,14 +61,14 @@ class TestingRunnableTask<InputT, OutputT>
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
-        taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap());
+        taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap(), new HashSet<>(), /* isRunnable= */ false);
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 
-    return new TestingRunnableTask<>(taskId, inputType, outputType, /* runFn= */ null, emptyMap());
+    return new TestingRunnableTask<>(taskId, inputType, outputType, /* runFn= */ null, emptyMap(), new HashSet<>(), /* isRunnable= */ false);
   }
 
   @Override

@@ -288,6 +288,48 @@ class SdkWorkflowBuilderTest {
   }
 
   @Test
+  void testApplyWithMoreInputMap() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    CompilerException e =
+        assertThrows(
+            CompilerException.class,
+            () ->
+                builder.applyWithInputMap(
+                    "test",
+                    new MultiplicationTask(),
+                    Map.of(
+                        "a",
+                        SdkBindingDataFactory.of(10L),
+                        "b",
+                        SdkBindingDataFactory.of(10L),
+                        "c",
+                        SdkBindingDataFactory.of(10L))));
+
+    assertEquals(
+        "Error 0: Code: VARIABLE_NAME_NOT_FOUND, "
+            + "Node Id: test, Description: Variable [c] not found on node [test].",
+        e.getMessage());
+  }
+
+  @Test
+  void testApplyWithLessInputMap() {
+    SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
+
+    CompilerException e =
+        assertThrows(
+            CompilerException.class,
+            () ->
+                builder.applyWithInputMap(
+                    "test", new MultiplicationTask(), Map.of("a", SdkBindingDataFactory.of(10L))));
+
+    assertEquals(
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: PARAMETER_NOT_BOUND, Node Id: test, Description: Parameter not bound [b].",
+        e.getMessage());
+  }
+
+  @Test
   void testUpstreamNode_apply() {
     SdkWorkflowBuilder builder = new SdkWorkflowBuilder();
 

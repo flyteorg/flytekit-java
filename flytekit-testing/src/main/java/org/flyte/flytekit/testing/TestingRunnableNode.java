@@ -25,6 +25,8 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialIdentifier;
 import org.flyte.api.v1.RunnableNode;
 import org.flyte.flytekit.SdkType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TestingRunnableNode<
         IdT extends PartialIdentifier,
@@ -32,6 +34,9 @@ public abstract class TestingRunnableNode<
         OutputT,
         T extends TestingRunnableNode<IdT, InputT, OutputT, T>>
     implements RunnableNode {
+
+  private static final Logger log = LoggerFactory.getLogger(TestingRunnableNode.class);
+
   protected final IdT id;
   protected final SdkType<InputT> inputType;
   protected final SdkType<OutputT> outputType;
@@ -80,17 +85,24 @@ public abstract class TestingRunnableNode<
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
 
-    // No mocking? Run the real stuff
     if (fixedOutputs.size() == 0) {
-      return outputType.toLiteralMap(runFn.apply(input));
+      // No mocking? Run the real stuff
+      if (runFn != null) {
+        return outputType.toLiteralMap(runFn.apply(input));
+      }
+    } else if (fixedOutputs.containsKey(input)) {
+      return outputType.toLiteralMap(fixedOutputs.get(input));
     }
 
-    if (fixedOutputs.containsKey(input)) {
-      return outputType.toLiteralMap(fixedOutputs.get(input));
-    } else {
-      // Not matching inputs
-      return Map.of();
-    }
+    String message =
+        String.format(
+            "Can't find input %s for remote %s [%s] across known %s inputs, "
+                + "use %s to provide a test double",
+            input, type, getName(), type, testingSuggestion);
+    log.warn(message);
+
+    // Not matching inputs and there is nothing to run
+    return Map.of();
   }
 
   @Override

@@ -80,20 +80,17 @@ public abstract class TestingRunnableNode<
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
 
-    if (fixedOutputs.containsKey(input)) {
-      return outputType.toLiteralMap(fixedOutputs.get(input));
-    } else if (runFn != null) {
+    // No mocking? Run the real stuff
+    if (fixedOutputs.size() == 0) {
       return outputType.toLiteralMap(runFn.apply(input));
     }
 
-    // TODO see if we can improve this error message as input is hard to read
-    // We can improve the SdkBindingData toString method
-    String message =
-        String.format(
-            "Can't find input %s for remote %s [%s] across known %s inputs, "
-                + "use %s to provide a test double",
-            input, type, getName(), type, testingSuggestion);
-    throw new IllegalArgumentException(message);
+    if (fixedOutputs.containsKey(input)) {
+      return outputType.toLiteralMap(fixedOutputs.get(input));
+    } else {
+      // Not matching inputs
+      return Map.of();
+    }
   }
 
   @Override

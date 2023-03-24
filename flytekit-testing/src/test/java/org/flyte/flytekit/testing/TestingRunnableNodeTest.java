@@ -21,7 +21,7 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
 import java.util.Map;
@@ -73,10 +73,16 @@ class TestingRunnableNodeTest {
     Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
     TestNode node = new TestNode(null, fixedOutputs);
 
-    Map<String, Literal> output =
-        node.run(singletonMap("in", Literals.ofString("not in fixed outputs")));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> node.run(singletonMap("in", Literals.ofString("not in fixed outputs"))));
 
-    assertThat(output, is(Map.of()));
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "Can't find input Input{in=SdkBindingData{type=strings, value=not in fixed outputs}} for remote test [TestTask] "
+                + "across known test inputs, use a magic wang to provide a test double"));
   }
 
   @Test
@@ -103,9 +109,16 @@ class TestingRunnableNodeTest {
   void testWithoutRunFn() {
     TestNode node = new TestNode(null, emptyMap());
 
-    Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("7")));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> node.run(singletonMap("in", Literals.ofString("7"))));
 
-    assertThat(output, is(Map.of()));
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "Can't find input Input{in=SdkBindingData{type=strings, value=7}} for remote test [TestTask] "
+                + "across known test inputs, use a magic wang to provide a test double"));
   }
 
   @Test

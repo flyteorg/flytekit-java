@@ -307,8 +307,8 @@ class SdkWorkflowBuilderTest {
                         SdkBindingDataFactory.of(10L))));
 
     assertEquals(
-        "Error 0: Code: VARIABLE_NAME_NOT_FOUND, "
-            + "Node Id: test, Description: Variable [c] not found on node [test].",
+        "Failed to build workflow with errors:\n"
+            + "Error 0: Code: VARIABLE_NAME_NOT_FOUND, Node Id: test, Description: Variable [c] not found on node [test].",
         e.getMessage());
   }
 

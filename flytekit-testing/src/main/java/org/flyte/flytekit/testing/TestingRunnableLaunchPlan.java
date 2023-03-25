@@ -35,12 +35,14 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
+      boolean runFnProvided,
       Map<InputT, OutputT> fixedOutputs) {
     super(
         launchPlanId,
         inputType,
         outputType,
         runFn,
+        runFnProvided,
         fixedOutputs,
         TestingRunnableLaunchPlan::new,
         "launch plan",
@@ -52,6 +54,7 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
     PartialLaunchPlanIdentifier launchPlanId =
         PartialLaunchPlanIdentifier.builder().name(name).build();
 
-    return new TestingRunnableLaunchPlan<>(launchPlanId, inputType, outputType, null, emptyMap());
+    return new TestingRunnableLaunchPlan<>(
+        launchPlanId, inputType, outputType, null, false, emptyMap());
   }
 }

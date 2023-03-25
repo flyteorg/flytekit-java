@@ -86,6 +86,17 @@ class TestingRunnableNodeTest {
   }
 
   @Test
+  void testRun_notFoundRunFnProvided() {
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
+    Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
+    TestNode node = new TestNode(fn, fixedOutputs);
+
+    Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("10")));
+
+    assertThat(output, hasEntry("out", Literals.ofInteger(10L)));
+  }
+
+  @Test
   void testWithFixedOutput() {
     TestNode node =
         new TestNode(null, emptyMap()).withFixedOutput(Input.create("7"), Output.create(7L));
@@ -137,8 +148,9 @@ class TestingRunnableNodeTest {
           JacksonSdkType.of(Input.class),
           JacksonSdkType.of(Output.class),
           runFn,
+          true,
           fixedOutputs,
-          (id, inType, outType, f, m) -> new TestNode(f, m),
+          (id, inType, outType, f, fProvided, m) -> new TestNode(f, m),
           "test",
           "a magic wang");
     }

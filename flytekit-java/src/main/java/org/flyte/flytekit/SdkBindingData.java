@@ -58,9 +58,9 @@ public abstract class SdkBindingData<T> {
   /**
    * Returns a version of this {@code SdkBindingData} with a new type.
    *
-   * @param newType the {@link SdkLiteralType} type to be casted to
+   * @param newType the {@link SdkLiteralType} type to be cast to
    * @param castFunction function to apply to the value to be converted to the new type
-   * @return the type casted version of this instance
+   * @return the type cast version of this instance
    * @param <NewT> the java or scala type for the corresponding to {@code newType}
    * @throws UnsupportedOperationException if a cast cannot be performed over this instance.
    */
@@ -196,7 +196,7 @@ public abstract class SdkBindingData<T> {
         SdkLiteralType<T> elementType, List<SdkBindingData<T>> bindingCollection) {
       checkIncompatibleTypes(elementType, bindingCollection);
       return new AutoValue_SdkBindingData_BindingCollection<>(
-          collections(elementType), bindingCollection);
+          collections(elementType), List.copyOf(bindingCollection));
     }
 
     @Override
@@ -230,7 +230,7 @@ public abstract class SdkBindingData<T> {
     private static <T> BindingMap<T> create(
         SdkLiteralType<T> valuesType, Map<String, SdkBindingData<T>> bindingMap) {
       checkIncompatibleTypes(valuesType, bindingMap.values());
-      return new AutoValue_SdkBindingData_BindingMap<>(maps(valuesType), bindingMap);
+      return new AutoValue_SdkBindingData_BindingMap<>(maps(valuesType), Map.copyOf(bindingMap));
     }
 
     @Override
@@ -258,7 +258,7 @@ public abstract class SdkBindingData<T> {
     }
   }
 
-  private static <T> void checkIncompatibleTypes(
+  protected static <T> void checkIncompatibleTypes(
       SdkLiteralType<T> elementType, Collection<SdkBindingData<T>> elements) {
     List<LiteralType> incompatibleTypes =
         elements.stream()

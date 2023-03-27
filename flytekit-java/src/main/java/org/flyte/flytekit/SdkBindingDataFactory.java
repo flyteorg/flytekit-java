@@ -286,9 +286,9 @@ public final class SdkBindingDataFactory {
    * Creates a {@code SdkBindingData} for a flyte map given a java {@code Map<String,
    * SdkBindingData<T>>} and a {@link SdkLiteralType} for the values of the map.
    *
-   * @param valueMap collection to represent on this data.
    * @param valuesType a {@link SdkLiteralType} expressing the types for the values of the map. The
-   *     keys are always String. LiteralType.Kind#MAP_VALUE_TYPE}.
+   *     keys are always String.
+   * @param valueMap map to represent on this data.
    * @return the new {@code SdkBindingData}
    */
   public static <T> SdkBindingData<Map<String, T>> ofBindingMap(

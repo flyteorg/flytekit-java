@@ -45,6 +45,10 @@
     <!-- compile -->
     <dependency>
       <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>
     </dependency>
     <dependency>

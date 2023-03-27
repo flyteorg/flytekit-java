@@ -16,7 +16,12 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.flytekit.{SdkBindingData, SdkLiteralType}
+import org.flyte.flytekit.{
+  BindingCollection,
+  BindingMap,
+  SdkBindingData,
+  SdkLiteralType
+}
 import org.flyte.flytekitscala.SdkLiteralTypes._
 
 import java.time.{Duration, Instant}
@@ -309,6 +314,43 @@ object SdkBindingDataFactory {
   ): SdkBindingData[Map[String, T]] =
     SdkBindingData.literal(maps(valuesLiteralType), map)
 
+  /** Creates a [[SdkBindingData]] for a flyte collection given a scala
+    * {{{List[SdkBindingData[T]]}}} and [[SdkLiteralType]] for types for the
+    * elements.
+    *
+    * @param elementType
+    *   a [[SdkLiteralType]] expressing the types for the elements in the
+    *   collection.
+    * @param elements
+    *   collection to represent on this data.
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def ofBindingCollection[T](
+      elementType: SdkLiteralType[T],
+      elements: List[SdkBindingData[T]]
+  ): SdkBindingData[List[T]] = {
+    new BindingCollection(elementType, elements)
+  }
+
+  /** Creates a [[SdkBindingData]] for a flyte map given a java
+    * {{{SdkBindingData[Map[String, T]]}}} and a [[SdkLiteralType]] for the
+    * values of the map.
+    *
+    * @param valuesType
+    *   a [[SdkLiteralType]] expressing the types for the values of the map. The
+    *   keys are always String.
+    * @param valueMap
+    *   map to represent on this data.
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def ofBindingMap[T](
+      valuesType: SdkLiteralType[T],
+      valueMap: Map[String, SdkBindingData[T]]
+  ): SdkBindingData[Map[String, T]] =
+    new BindingMap(valuesType, valueMap)
+
   private def toSdkLiteralType(
       value: Any,
       internalTypeOpt: Option[SdkLiteralType[_]] = Option.empty
@@ -368,5 +410,4 @@ object SdkBindingDataFactory {
         )
     }
   }
-
 }

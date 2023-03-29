@@ -132,6 +132,9 @@ public class JacksonSdkLiteralType<T> extends SdkLiteralType<T> {
   /** {@inheritDoc} */
   @Override
   public BindingData toBindingData(T value) {
+    if (value == null) {
+      return null;
+    }
     var struct = toLiteral(value).scalar().generic();
     return BindingData.ofScalar(Scalar.ofGeneric(struct));
   }

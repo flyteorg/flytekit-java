@@ -28,7 +28,7 @@ class SdkLiteralTypeModule extends Module {
 
   @Override
   public String getModuleName() {
-    return "test";
+    return "SdkLiteralType";
   }
 
   @Override

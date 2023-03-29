@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.flyte.api.v1.BindingData;
@@ -71,6 +72,11 @@ public class JacksonSdkLiteralType<T> extends SdkLiteralType<T> {
             clazz,
             String.format(
                 "No serializer found for class %s and no properties discovered to create BeanSerializer",
+                clazz.getName()));
+      } else if (!(serializer instanceof BeanSerializer)) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Class [%s] not compatible with JacksonSdkLiteralType. Use SdkLiteralType.of instead",
                 clazz.getName()));
       }
       return new JacksonSdkLiteralType<>(clazz);

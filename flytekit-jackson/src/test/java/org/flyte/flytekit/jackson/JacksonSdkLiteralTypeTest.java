@@ -22,6 +22,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -187,6 +189,29 @@ class JacksonSdkLiteralTypeTest {
     assertThat(
         ex.getMessage(),
         equalTo(String.format("Failed to find serializer for [%s]", type.getName())));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      classes = {
+        Long.class,
+        Double.class,
+        String.class,
+        Boolean.class,
+        Duration.class,
+        Instant.class,
+        List.class,
+        Map.class
+      })
+  void shouldThrowExceptionForTypes2(Class<?> type) {
+    var ex = assertThrows(IllegalArgumentException.class, () -> JacksonSdkLiteralType.of(type));
+
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            String.format(
+                "Class [%s] not compatible with JacksonSdkLiteralType. Use SdkLiteralType.of instead",
+                type.getName())));
   }
 
   @AutoValue

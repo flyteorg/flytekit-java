@@ -18,6 +18,7 @@ package org.flyte.flytekit.jackson;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static org.flyte.flytekit.jackson.ObjectMapperUtils.createObjectMapper;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,8 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
@@ -43,6 +42,10 @@ import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.jackson.deserializers.CustomSdkBindingDataDeserializers;
 import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializer;
 
+/**
+ * Implementation of {@link org.flyte.flytekit.SdkType} for {@link com.google.auto.value.AutoValue}s
+ * and other java types with Jackson bindings annotations.
+ */
 public class JacksonSdkType<T> extends SdkType<T> {
 
   private static final ObjectMapper OBJECT_MAPPER = createObjectMapper(new SdkTypeModule());
@@ -63,6 +66,15 @@ public class JacksonSdkType<T> extends SdkType<T> {
     this.typesMap = Map.copyOf(requireNonNull(typesMap));
   }
 
+  /**
+   * Returns a {@link org.flyte.flytekit.SdkType} for {@code clazz}.
+   *
+   * @param clazz the java type for this {@link org.flyte.flytekit.SdkType}.
+   * @return the sdk type
+   * @throws IllegalArgumentException when Jackson cannot find a serializer for the supplied type.
+   *     For example, it is not an {@link com.google.auto.value.AutoValue} or Jackson cannot
+   *     discover properties or constructors.
+   */
   public static <T> JacksonSdkType<T> of(Class<T> clazz) {
     try {
       // preemptively check that serializer is known to throw exceptions earlier
@@ -92,6 +104,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, Literal> toLiteralMap(T value) {
     try {
@@ -112,14 +125,14 @@ public class JacksonSdkType<T> extends SdkType<T> {
 
       // this is how OBJECT_MAPPER creates deserialization context, otherwise, nested deserializers
       // don't work
-      DefaultDeserializationContext cctx =
+      DefaultDeserializationContext ctx =
           ((DefaultDeserializationContext) OBJECT_MAPPER.getDeserializationContext())
               .createInstance(
                   OBJECT_MAPPER.getDeserializationConfig(),
                   tokens,
                   OBJECT_MAPPER.getInjectableValues());
 
-      JacksonLiteralMap jacksonLiteralMap = deserializer.deserialize(tokens, cctx);
+      JacksonLiteralMap jacksonLiteralMap = deserializer.deserialize(tokens, ctx);
 
       return jacksonLiteralMap.getLiteralMap();
     } catch (IOException e) {
@@ -127,11 +140,13 @@ public class JacksonSdkType<T> extends SdkType<T> {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, Variable> getVariableMap() {
     return variableMap;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkLiteralType<?>> toLiteralTypes() {
     return typesMap;
@@ -141,6 +156,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
     return membersMap;
   }
 
+  /** {@inheritDoc} */
   @Override
   public T fromLiteralMap(Map<String, Literal> value) {
     try {
@@ -156,16 +172,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
     }
   }
 
-  /**
-   * Method used to create SdkBindingData output references/promises for SdkTransform outputs (e.g.,
-   * workflows and tasks outputs). We need to go from {@code Map<String, Variable>} to object of
-   * output class T. We leverage Jackson to help create the object of the output class T from the
-   * map. We use the BindingMapSerializer to serialize only the keys of the map to JsonNode, instead
-   * of recreating SdkBindingData objects we pass the bindingMap to the
-   * CustomSdkBindingDataDeserializers so it can get use the keys to retrieve the objects from the
-   * map. We need to create a new object mapper to use a different deserializer for SdkBindingData
-   * than the one used in other places.
-   */
+  /** {@inheritDoc} */
   @Override
   public T promiseFor(String nodeId) {
     try {
@@ -187,6 +194,7 @@ public class JacksonSdkType<T> extends SdkType<T> {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public Map<String, SdkBindingData<?>> toSdkBindingMap(T value) {
     return getMembersMap().entrySet().stream()
@@ -197,12 +205,5 @@ public class JacksonSdkType<T> extends SdkType<T> {
               return Map.entry(attrName, (SdkBindingData<?>) member.getValue(value));
             })
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  private static ObjectMapper createObjectMapper(SdkTypeModule bindingMap) {
-    return new ObjectMapper()
-        .registerModule(bindingMap)
-        .registerModule(new JavaTimeModule())
-        .registerModule(new ParameterNamesModule());
   }
 }

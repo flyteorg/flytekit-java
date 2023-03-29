@@ -18,6 +18,7 @@ package org.flyte.flytekit.jackson.deserializers;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
+import static org.flyte.flytekit.jackson.deserializers.JsonTokenUtil.verifyToken;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -54,7 +55,7 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
   }
 
   @Override
-  public JacksonLiteralMap deserialize(JsonParser p, DeserializationContext ctxt)
+  public JacksonLiteralMap deserialize(JsonParser p, DeserializationContext ctx)
       throws IOException {
     Map<String, Literal> literalMap = new HashMap<>();
 
@@ -72,7 +73,7 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
       }
 
       p.nextToken();
-      literalMap.put(fieldName, deserialize(p, ctxt, literalType));
+      literalMap.put(fieldName, deserialize(p, ctx, literalType));
 
       p.nextToken();
     }
@@ -81,7 +82,7 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
   }
 
   private static Literal deserialize(
-      JsonParser p, DeserializationContext ctxt, LiteralType literalType) throws IOException {
+      JsonParser p, DeserializationContext ctx, LiteralType literalType) throws IOException {
     switch (literalType.getKind()) {
       case SIMPLE_TYPE:
         return deserialize(p, literalType.simpleType());
@@ -92,7 +93,7 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
         verifyToken(p, JsonToken.START_ARRAY);
 
         while (p.nextToken() != JsonToken.END_ARRAY) {
-          collection.add(deserialize(p, ctxt, literalType.collectionType()));
+          collection.add(deserialize(p, ctx, literalType.collectionType()));
         }
 
         return Literal.ofCollection(unmodifiableList(collection));
@@ -108,7 +109,7 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
           String fieldName = p.currentName();
 
           p.nextToken();
-          map.put(fieldName, deserialize(p, ctxt, literalType.mapValueType()));
+          map.put(fieldName, deserialize(p, ctx, literalType.mapValueType()));
 
           p.nextToken();
         }
@@ -116,8 +117,8 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
         return Literal.ofMap(unmodifiableMap(map));
 
       case BLOB_TYPE:
-        JavaType type = ctxt.constructType(Blob.class);
-        Blob blob = (Blob) ctxt.findNonContextualValueDeserializer(type).deserialize(p, ctxt);
+        JavaType type = ctx.constructType(Blob.class);
+        Blob blob = (Blob) ctx.findNonContextualValueDeserializer(type).deserialize(p, ctx);
 
         return Literal.ofScalar(Scalar.ofBlob(blob));
 
@@ -240,13 +241,6 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
     }
 
     throw new AssertionError("Unexpected token: " + p.currentToken());
-  }
-
-  private static void verifyToken(JsonParser p, JsonToken token) {
-    if (p.currentToken() != token) {
-      throw new IllegalStateException(
-          String.format("Unexpected token [%s], expected [%s]", p.currentToken(), token));
-    }
   }
 
   // base class is serializable, but we can't serialize literalTypeMap, so throw exception instead

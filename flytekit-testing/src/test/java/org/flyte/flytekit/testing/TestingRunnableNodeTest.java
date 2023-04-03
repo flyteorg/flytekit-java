@@ -151,16 +151,17 @@ class TestingRunnableNodeTest {
           JacksonSdkType.of(Output.class),
           runFn,
           runFn != null,
-          fixedOutputs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new MockedOutput<>(e.getValue()))));
+          fixedOutputs.entrySet().stream()
+              .collect(Collectors.toMap(Map.Entry::getKey, e -> new MockedOutput<>(e.getValue()))));
     }
 
     protected TestNode(
-      PartialTaskIdentifier taskId,
-      SdkType<Input> inputType,
-      SdkType<Output> outputType,
-      Function<Input, Output> runFn,
-      boolean runFnProvided,
-      Map<Input, MockedOutput<Output>> fixedOutputs) {
+        PartialTaskIdentifier taskId,
+        SdkType<Input> inputType,
+        SdkType<Output> outputType,
+        Function<Input, Output> runFn,
+        boolean runFnProvided,
+        Map<Input, MockedOutput<Output>> fixedOutputs) {
       super(
           taskId,
           inputType,

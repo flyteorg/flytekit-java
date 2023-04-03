@@ -194,16 +194,32 @@ public abstract class SdkTestingExecutor {
         workflowTemplate.interface_().outputs().entrySet().stream()
             .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
 
-    launchPlanTestDoubles().forEach((key, value) -> value.fixedOutputs.forEach((in, mockedOutput) -> {
-      if (mockedOutput.unused()) {
-        throw new UnusedMockException("unused launchplan mock: " + key + "[" + in + "] -> [" + mockedOutput + "]");
-      }
-    }));
-    taskTestDoubles().forEach((key, value) -> value.fixedOutputs.forEach((in, mockedOutput) -> {
-      if (mockedOutput.unused()) {
-        throw new UnusedMockException("unused task mock: " + key + "[" + in + "] -> [" + mockedOutput + "]");
-      }
-    }));
+    launchPlanTestDoubles()
+        .forEach(
+            (key, value) ->
+                value.fixedOutputs.forEach(
+                    (in, mockedOutput) -> {
+                      if (mockedOutput.unused()) {
+                        throw new UnusedMockException(
+                            "unused launchplan mock: "
+                                + key
+                                + "["
+                                + in
+                                + "] -> ["
+                                + mockedOutput
+                                + "]");
+                      }
+                    }));
+    taskTestDoubles()
+        .forEach(
+            (key, value) ->
+                value.fixedOutputs.forEach(
+                    (in, mockedOutput) -> {
+                      if (mockedOutput.unused()) {
+                        throw new UnusedMockException(
+                            "unused task mock: " + key + "[" + in + "] -> [" + mockedOutput + "]");
+                      }
+                    }));
 
     return Result.create(outputLiteralMap, outputLiteralTypeMap);
   }

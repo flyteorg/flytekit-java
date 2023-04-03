@@ -150,7 +150,12 @@ public abstract class TestingRunnableNode<
   public T withFixedOutput(InputT input, OutputT output) {
     if (fixedOutputs.containsKey(input)) {
       throw new DuplicateMockException(
-          "a mock for this input is already defined and duplicate mocks are not allowed because order of execution is not guaranteed. input: [" + input + "], output: [" + output + "]");
+          "a mock for this input is already defined and duplicate mocks are not allowed because "
+              + "order of execution is not guaranteed. input: ["
+              + input
+              + "], output: ["
+              + output
+              + "]");
     }
     Map<InputT, MockedOutput<OutputT>> newFixedOutputs = new HashMap<>(fixedOutputs);
     newFixedOutputs.put(input, new MockedOutput<>(output));

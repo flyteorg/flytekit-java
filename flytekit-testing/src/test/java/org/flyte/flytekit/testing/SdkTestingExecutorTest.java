@@ -205,25 +205,27 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
           @Override
           public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
-            SdkBindingData<Long> sum = builder.apply(
-                new SumTask(),
-                SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)))
-                .getOutputs()
-                .c();
+            SdkBindingData<Long> sum =
+                builder
+                    .apply(
+                        new SumTask(),
+                        SumTask.SumInput.create(
+                            SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
+                    .getOutputs()
+                    .c();
             return SumTask.SumOutput.create(sum);
           }
         };
 
-    long result = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(
-            new SumTask(),
-            SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
-            // note the incorrect sum 1+1=3
-            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)))
-        .execute()
-        .getIntegerOutput("c");
+    long result =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+                // note the incorrect sum 1+1=3
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)))
+            .execute()
+            .getIntegerOutput("c");
 
     assertThat(result, equalTo(3L));
   }
@@ -236,33 +238,36 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
           @Override
           public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
-            SdkBindingData<Long> sum1 = builder.apply(
-                    new SumTask(),
-                    SumTask.SumInput.create(
-                        SdkBindingDataFactory.of(1L),
-                        SdkBindingDataFactory.of(1L)))
-                .getOutputs()
-                .c();
-            SdkBindingData<Long> sum2 = builder.apply(
-                new SumTask(),
-                SumTask.SumInput.create(
-                    // depend on earlier task to make sure mock has already been used once
-                    sum1,
-                    SdkBindingDataFactory.of(1L)))
-                .getOutputs()
-                .c();
+            SdkBindingData<Long> sum1 =
+                builder
+                    .apply(
+                        new SumTask(),
+                        SumTask.SumInput.create(
+                            SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
+                    .getOutputs()
+                    .c();
+            SdkBindingData<Long> sum2 =
+                builder
+                    .apply(
+                        new SumTask(),
+                        SumTask.SumInput.create(
+                            // depend on earlier task to make sure mock has already been used once
+                            sum1, SdkBindingDataFactory.of(1L)))
+                    .getOutputs()
+                    .c();
             return SumTask.SumOutput.create(sum2);
           }
         };
 
-    long result = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(
-            new SumTask(),
-            SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
-            // 1+1=1 to make it hit the same mock
-            SumTask.SumOutput.create(SdkBindingDataFactory.of(1L)))
-        .execute()
-        .getIntegerOutput("c");
+    long result =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+                // 1+1=1 to make it hit the same mock
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(1L)))
+            .execute()
+            .getIntegerOutput("c");
 
     assertThat(result, equalTo(1L));
   }
@@ -276,20 +281,22 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 new SumTask(),
                 SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)));
+                    SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)));
             builder.apply(
                 RemoteSumTask.create(),
                 RemoteSumTask.RemoteSumInput.create(
-                    SdkBindingDataFactory.of(2L),
-                    SdkBindingDataFactory.of(2L)));
+                    SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(2L)));
 
             return null;
           }
         };
 
-    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(RemoteSumTask.create(), RemoteSumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(2L)), RemoteSumOutput.create(4L));
+    SdkTestingExecutor executor =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                RemoteSumTask.create(),
+                RemoteSumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(2L)),
+                RemoteSumOutput.create(4L));
 
     executor.execute();
 
@@ -306,8 +313,7 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 new SumTask(),
                 SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)));
+                    SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)));
 
             return null;
           }
@@ -329,25 +335,22 @@ public class SdkTestingExecutorTest {
             builder.apply(
                 new SumTask(),
                 SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)));
+                    SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)));
             builder.apply(
-                    new SumTask(),
-                    SumTask.SumInput.create(
-                        SdkBindingDataFactory.of(2L),
-                        SdkBindingDataFactory.of(2L)));
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(2L)));
 
             return null;
           }
         };
 
-    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(
-            new SumTask(),
-            SumTask.SumInput.create(
-                SdkBindingDataFactory.of(1L),
-                SdkBindingDataFactory.of(1L)),
-            SumTask.SumOutput.create(SdkBindingDataFactory.of(2L)));
+    SdkTestingExecutor executor =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(2L)));
 
     assertThrows(IllegalArgumentException.class, executor::execute);
   }
@@ -358,33 +361,33 @@ public class SdkTestingExecutorTest {
         new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
           @Override
           public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
-            SdkBindingData<Long> sum = builder.apply(
-                new SumTask(),
-                SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)))
-                .getOutputs()
-                .c();
+            SdkBindingData<Long> sum =
+                builder
+                    .apply(
+                        new SumTask(),
+                        SumTask.SumInput.create(
+                            SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)))
+                    .getOutputs()
+                    .c();
             return SumTask.SumOutput.create(sum);
           }
         };
 
-    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(
-            new SumTask(),
-            SumTask.SumInput.create(
-                SdkBindingDataFactory.of(1L),
-                SdkBindingDataFactory.of(1L)),
-            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
-
-    assertThrows(TestingRunnableNode.DuplicateMockException.class, () ->
-        executor
-            // same input as above but other output
+    SdkTestingExecutor executor =
+        SdkTestingExecutor.of(workflow)
             .withTaskOutput(
                 new SumTask(),
-                SumTask.SumInput.create(
-                    SdkBindingDataFactory.of(1L),
-                    SdkBindingDataFactory.of(1L)),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
+
+    assertThrows(
+        TestingRunnableNode.DuplicateMockException.class,
+        () ->
+            executor
+                // same input as above but other output
+                .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
                 // note incorrect sum 1+1=4
                 SumTask.SumOutput.create(SdkBindingDataFactory.of(4L))));
   }
@@ -399,13 +402,12 @@ public class SdkTestingExecutorTest {
           }
         };
 
-    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
-        .withTaskOutput(
-            new SumTask(),
-            SumTask.SumInput.create(
-                SdkBindingDataFactory.of(1L),
-                SdkBindingDataFactory.of(2L)),
-            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
+    SdkTestingExecutor executor =
+        SdkTestingExecutor.of(workflow)
+            .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)),
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
 
     assertThrows(SdkTestingExecutor.UnusedMockException.class, executor::execute);
   }

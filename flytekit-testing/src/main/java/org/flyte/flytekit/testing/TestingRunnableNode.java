@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialIdentifier;
@@ -40,7 +41,7 @@ public abstract class TestingRunnableNode<
   protected final Function<InputT, OutputT> runFn;
   private final boolean runFnProvided;
 
-  protected final Map<InputT, OutputT> fixedOutputs;
+  protected final Map<InputT, MockedOutput<OutputT>> fixedOutputs;
   private final Creator<IdT, InputT, OutputT, T> creatorFn;
   private final String type;
   private final String testingSuggestion;
@@ -56,7 +57,39 @@ public abstract class TestingRunnableNode<
         SdkType<OutputT> outputType,
         Function<InputT, OutputT> runFn,
         boolean runFnProvided,
-        Map<InputT, OutputT> fixedOutputs);
+        Map<InputT, MockedOutput<OutputT>> fixedOutputs);
+  }
+
+  static class MockedOutput<T> {
+    private final T t;
+
+    private final AtomicLong numTimesUsed;
+
+    MockedOutput(T t) {
+      this.t = t;
+      this.numTimesUsed = new AtomicLong(0);
+    }
+
+    T acquire() {
+      numTimesUsed.incrementAndGet();
+
+      return t;
+    }
+
+    boolean unused() {
+      return numTimesUsed.get() == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "MockedOutput{" + "t=" + t + ", numTimesUsed=" + numTimesUsed.get() + "}";
+    }
+  }
+
+  static class DuplicateMockException extends RuntimeException {
+    DuplicateMockException(String message) {
+      super(message);
+    }
   }
 
   protected TestingRunnableNode(
@@ -65,7 +98,7 @@ public abstract class TestingRunnableNode<
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       boolean runFnProvided,
-      Map<InputT, OutputT> fixedOutputs,
+      Map<InputT, MockedOutput<OutputT>> fixedOutputs,
       Creator<IdT, InputT, OutputT, T> creatorFn,
       String type,
       String testingSuggestion) {
@@ -84,14 +117,14 @@ public abstract class TestingRunnableNode<
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
 
-    if (fixedOutputs.size() == 0) {
+    if (fixedOutputs.isEmpty()) {
       // No mocking via input matching, either run the real thing or run the provided lambda
       if (runFn != null) {
         return outputType.toLiteralMap(runFn.apply(input));
       }
     } else {
       if (fixedOutputs.containsKey(input)) {
-        return outputType.toLiteralMap(fixedOutputs.get(input));
+        return outputType.toLiteralMap(fixedOutputs.get(input).acquire());
       }
       // Inputs not matching, run the provided lambda
       if (runFn != null && runFnProvided) {
@@ -115,8 +148,12 @@ public abstract class TestingRunnableNode<
   }
 
   public T withFixedOutput(InputT input, OutputT output) {
-    Map<InputT, OutputT> newFixedOutputs = new HashMap<>(fixedOutputs);
-    newFixedOutputs.put(input, output);
+    if (fixedOutputs.containsKey(input)) {
+      throw new DuplicateMockException(
+          "a mock for this input is already defined and duplicate mocks are not allowed because order of execution is not guaranteed. input: [" + input + "], output: [" + output + "]");
+    }
+    Map<InputT, MockedOutput<OutputT>> newFixedOutputs = new HashMap<>(fixedOutputs);
+    newFixedOutputs.put(input, new MockedOutput<>(output));
 
     return creatorFn.create(id, inputType, outputType, runFn, runFnProvided, newFixedOutputs);
   }

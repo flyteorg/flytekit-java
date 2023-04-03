@@ -200,6 +200,132 @@ public class SdkTestingExecutorTest {
   }
 
   @Test
+  public void testWithTask_mockedRunnableTasksAreNotRun() {
+    SdkWorkflow<Void, SumTask.SumOutput> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
+          @Override
+          public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
+            SdkBindingData<Long> sum = builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)))
+                .getOutputs()
+                .c();
+            return SumTask.SumOutput.create(sum);
+          }
+        };
+
+    long result = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+            // note the incorrect sum 1+1=3
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)))
+        .execute()
+        .getIntegerOutput("c");
+
+    assertThat(result, equalTo(3L));
+  }
+
+  @Test
+  public void testWithTask_mocksCanBeUsedSeveralTimes() {
+    // TODO: make this configurable, like mockito verify
+    //  https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#verify-T-
+    SdkWorkflow<Void, SumTask.SumOutput> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
+          @Override
+          public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
+            SdkBindingData<Long> sum1 = builder.apply(
+                    new SumTask(),
+                    SumTask.SumInput.create(
+                        SdkBindingDataFactory.of(1L),
+                        SdkBindingDataFactory.of(1L)))
+                .getOutputs()
+                .c();
+            SdkBindingData<Long> sum2 = builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    // depend on earlier task to make sure mock has already been used once
+                    sum1,
+                    SdkBindingDataFactory.of(1L)))
+                .getOutputs()
+                .c();
+            return SumTask.SumOutput.create(sum2);
+          }
+        };
+
+    long result = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(1L)),
+            // 1+1=1 to make it hit the same mock
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(1L)))
+        .execute()
+        .getIntegerOutput("c");
+
+    assertThat(result, equalTo(1L));
+  }
+
+  @Test
+  public void testWithTask_duplicateMocksNotAllowed() {
+    SdkWorkflow<Void, SumTask.SumOutput> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {
+          @Override
+          public SumTask.SumOutput expand(SdkWorkflowBuilder builder, Void noInput) {
+            SdkBindingData<Long> sum = builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)))
+                .getOutputs()
+                .c();
+            return SumTask.SumOutput.create(sum);
+          }
+        };
+
+    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(
+                SdkBindingDataFactory.of(1L),
+                SdkBindingDataFactory.of(1L)),
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
+
+    assertThrows(TestingRunnableNode.DuplicateMockException.class, () ->
+        executor
+            // same input as above but other output
+            .withTaskOutput(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)),
+                // note incorrect sum 1+1=4
+                SumTask.SumOutput.create(SdkBindingDataFactory.of(4L))));
+  }
+
+  @Test
+  public void testWithTask_unusedMocksThrow() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            return null;
+          }
+        };
+
+    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(
+                SdkBindingDataFactory.of(1L),
+                SdkBindingDataFactory.of(2L)),
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(3L)));
+
+    assertThrows(SdkTestingExecutor.UnusedMockException.class, executor::execute);
+  }
+
+  @Test
   public void testWithTask_missingRemoteTask() {
     SdkWorkflow<Void, Void> workflow =
         new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {

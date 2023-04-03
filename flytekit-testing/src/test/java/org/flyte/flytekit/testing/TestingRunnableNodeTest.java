@@ -26,10 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.auto.value.AutoValue;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
+import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 import org.junit.jupiter.api.Test;
 
@@ -143,14 +145,30 @@ class TestingRunnableNodeTest {
       extends TestingRunnableNode<PartialTaskIdentifier, Input, Output, TestNode> {
 
     protected TestNode(Function<Input, Output> runFn, Map<Input, Output> fixedOutputs) {
-      super(
+      this(
           PartialTaskIdentifier.builder().name("TestTask").build(),
           JacksonSdkType.of(Input.class),
           JacksonSdkType.of(Output.class),
           runFn,
-          true,
+          runFn != null,
+          fixedOutputs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new MockedOutput<>(e.getValue()))));
+    }
+
+    protected TestNode(
+      PartialTaskIdentifier taskId,
+      SdkType<Input> inputType,
+      SdkType<Output> outputType,
+      Function<Input, Output> runFn,
+      boolean runFnProvided,
+      Map<Input, MockedOutput<Output>> fixedOutputs) {
+      super(
+          taskId,
+          inputType,
+          outputType,
+          runFn,
+          runFnProvided,
           fixedOutputs,
-          (id, inType, outType, f, fProvided, m) -> new TestNode(f, m),
+          TestNode::new,
           "test",
           "a magic wang");
     }

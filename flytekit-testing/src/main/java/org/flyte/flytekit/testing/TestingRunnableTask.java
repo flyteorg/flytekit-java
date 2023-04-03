@@ -37,12 +37,14 @@ class TestingRunnableTask<InputT, OutputT>
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
+      boolean runFnProvided,
       Map<InputT, OutputT> fixedOutputs) {
     super(
         taskId,
         inputType,
         outputType,
         runFn,
+        runFnProvided,
         fixedOutputs,
         TestingRunnableTask::new,
         "task",
@@ -54,14 +56,15 @@ class TestingRunnableTask<InputT, OutputT>
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(task.getName()).build();
 
     return new TestingRunnableTask<>(
-        taskId, task.getInputType(), task.getOutputType(), task::run, emptyMap());
+        taskId, task.getInputType(), task.getOutputType(), task::run, false, emptyMap());
   }
 
   static <InputT, OutputT> TestingRunnableTask<InputT, OutputT> create(
       String name, SdkType<InputT> inputType, SdkType<OutputT> outputType) {
     PartialTaskIdentifier taskId = PartialTaskIdentifier.builder().name(name).build();
 
-    return new TestingRunnableTask<>(taskId, inputType, outputType, /* runFn= */ null, emptyMap());
+    return new TestingRunnableTask<>(
+        taskId, inputType, outputType, /* runFn= */ null, false, emptyMap());
   }
 
   @Override

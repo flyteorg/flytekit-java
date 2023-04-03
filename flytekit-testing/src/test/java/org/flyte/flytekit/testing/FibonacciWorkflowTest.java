@@ -73,6 +73,7 @@ public class FibonacciWorkflowTest {
                 new SumTask(),
                 SumInput.create(SdkBindingDataFactory.of(3L), SdkBindingDataFactory.of(5L)),
                 SumOutput.create(SdkBindingDataFactory.of(42L)))
+            .withTask(new SumTask(), new SumTask()::run)
             .execute();
 
     assertThat(result.getIntegerOutput("fib2"), equalTo(2L));

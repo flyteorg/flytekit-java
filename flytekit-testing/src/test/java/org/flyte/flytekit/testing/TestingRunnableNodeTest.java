@@ -86,6 +86,17 @@ class TestingRunnableNodeTest {
   }
 
   @Test
+  void testRun_notFoundRunFnProvided() {
+    Function<Input, Output> fn = in -> Output.create(Long.parseLong(in.in().get()));
+    Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
+    TestNode node = new TestNode(fn, fixedOutputs);
+
+    Map<String, Literal> output = node.run(singletonMap("in", Literals.ofString("10")));
+
+    assertThat(output, hasEntry("out", Literals.ofInteger(10L)));
+  }
+
+  @Test
   void testWithFixedOutput() {
     TestNode node =
         new TestNode(null, emptyMap()).withFixedOutput(Input.create("7"), Output.create(7L));
@@ -106,6 +117,22 @@ class TestingRunnableNodeTest {
   }
 
   @Test
+  void testWithoutRunFn() {
+    TestNode node = new TestNode(null, emptyMap());
+
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> node.run(singletonMap("in", Literals.ofString("7"))));
+
+    assertThat(
+        ex.getMessage(),
+        equalTo(
+            "Can't find input Input{in=SdkBindingData{type=strings, value=7}} for remote test [TestTask] "
+                + "across known test inputs, use a magic wang to provide a test double"));
+  }
+
+  @Test
   void testGetNameShouldDeriveFromId() {
     TestNode node = new TestNode(null, emptyMap());
 
@@ -121,8 +148,9 @@ class TestingRunnableNodeTest {
           JacksonSdkType.of(Input.class),
           JacksonSdkType.of(Output.class),
           runFn,
+          true,
           fixedOutputs,
-          (id, inType, outType, f, m) -> new TestNode(f, m),
+          (id, inType, outType, f, fProvided, m) -> new TestNode(f, m),
           "test",
           "a magic wang");
     }

@@ -38,6 +38,7 @@ public abstract class TestingRunnableNode<
 
   // @Nullable - signal nullable field but without adding the dependency
   protected final Function<InputT, OutputT> runFn;
+  private final boolean runFnProvided;
 
   protected final Map<InputT, OutputT> fixedOutputs;
   private final Creator<IdT, InputT, OutputT, T> creatorFn;
@@ -54,6 +55,7 @@ public abstract class TestingRunnableNode<
         SdkType<InputT> inputType,
         SdkType<OutputT> outputType,
         Function<InputT, OutputT> runFn,
+        boolean runFnProvided,
         Map<InputT, OutputT> fixedOutputs);
   }
 
@@ -62,6 +64,7 @@ public abstract class TestingRunnableNode<
       SdkType<InputT> inputType,
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
+      boolean runFnProvided,
       Map<InputT, OutputT> fixedOutputs,
       Creator<IdT, InputT, OutputT, T> creatorFn,
       String type,
@@ -70,6 +73,7 @@ public abstract class TestingRunnableNode<
     this.inputType = requireNonNull(inputType, "inputType");
     this.outputType = requireNonNull(outputType, "outputType");
     this.runFn = runFn; // Nullable
+    this.runFnProvided = runFnProvided;
     this.fixedOutputs = requireNonNull(fixedOutputs, "fixedOutputs");
     this.creatorFn = requireNonNull(creatorFn, "creatorFn");
     this.type = requireNonNull(type, "type");
@@ -80,19 +84,28 @@ public abstract class TestingRunnableNode<
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
 
-    if (fixedOutputs.containsKey(input)) {
-      return outputType.toLiteralMap(fixedOutputs.get(input));
-    } else if (runFn != null) {
-      return outputType.toLiteralMap(runFn.apply(input));
+    if (fixedOutputs.size() == 0) {
+      // No mocking via input matching, either run the real thing or run the provided lambda
+      if (runFn != null) {
+        return outputType.toLiteralMap(runFn.apply(input));
+      }
+    } else {
+      if (fixedOutputs.containsKey(input)) {
+        return outputType.toLiteralMap(fixedOutputs.get(input));
+      }
+      // Inputs not matching, run the provided lambda
+      if (runFn != null && runFnProvided) {
+        return outputType.toLiteralMap(runFn.apply(input));
+      }
     }
 
-    // TODO see if we can improve this error message as input is hard to read
-    // We can improve the SdkBindingData toString method
     String message =
         String.format(
             "Can't find input %s for remote %s [%s] across known %s inputs, "
                 + "use %s to provide a test double",
             input, type, getName(), type, testingSuggestion);
+
+    // Not matching inputs and there is nothing to run
     throw new IllegalArgumentException(message);
   }
 
@@ -105,10 +118,10 @@ public abstract class TestingRunnableNode<
     Map<InputT, OutputT> newFixedOutputs = new HashMap<>(fixedOutputs);
     newFixedOutputs.put(input, output);
 
-    return creatorFn.create(id, inputType, outputType, runFn, newFixedOutputs);
+    return creatorFn.create(id, inputType, outputType, runFn, runFnProvided, newFixedOutputs);
   }
 
   public T withRunFn(Function<InputT, OutputT> runFn) {
-    return creatorFn.create(id, inputType, outputType, runFn, fixedOutputs);
+    return creatorFn.create(id, inputType, outputType, runFn, true, fixedOutputs);
   }
 }

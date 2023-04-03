@@ -84,7 +84,7 @@ class TestingRunnableNodeTest {
         ex.getMessage(),
         equalTo(
             "Can't find input Input{in=SdkBindingData{type=strings, value=not in fixed outputs}} for remote test [TestTask] "
-                + "across known test inputs, use a magic wang to provide a test double"));
+                + "across known test inputs, use a magic wand to provide a test double"));
   }
 
   @Test
@@ -131,7 +131,7 @@ class TestingRunnableNodeTest {
         ex.getMessage(),
         equalTo(
             "Can't find input Input{in=SdkBindingData{type=strings, value=7}} for remote test [TestTask] "
-                + "across known test inputs, use a magic wang to provide a test double"));
+                + "across known test inputs, use a magic wand to provide a test double"));
   }
 
   @Test
@@ -170,7 +170,7 @@ class TestingRunnableNodeTest {
           fixedOutputs,
           TestNode::new,
           "test",
-          "a magic wang");
+          "a magic wand");
     }
   }
 

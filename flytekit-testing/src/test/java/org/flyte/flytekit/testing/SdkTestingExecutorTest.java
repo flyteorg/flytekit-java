@@ -268,6 +268,91 @@ public class SdkTestingExecutorTest {
   }
 
   @Test
+  public void testWithTask_missingMocksRunActualTaskIfNoMocksOfSameTaskAreDefined() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)));
+            builder.apply(
+                RemoteSumTask.create(),
+                RemoteSumTask.RemoteSumInput.create(
+                    SdkBindingDataFactory.of(2L),
+                    SdkBindingDataFactory.of(2L)));
+
+            return null;
+          }
+        };
+
+    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(RemoteSumTask.create(), RemoteSumInput.create(SdkBindingDataFactory.of(2L), SdkBindingDataFactory.of(2L)), RemoteSumOutput.create(4L));
+
+    executor.execute();
+
+    // TODO: make this throw an exception
+    // assertThrows(IllegalArgumentException.class, executor::execute);
+  }
+
+  @Test
+  public void testWithTask_missingMocksRunActualTaskIfNoMocksAtAllAreDefined() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)));
+
+            return null;
+          }
+        };
+
+    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow);
+    executor.execute();
+
+    // TODO: make this throw an exception
+    // assertThrows(IllegalArgumentException.class, executor::execute);
+  }
+
+  @Test
+  public void testWithTask_missingMocksThrowWhenOtherMocksAreDefined() {
+    SdkWorkflow<Void, Void> workflow =
+        new SdkWorkflow<>(SdkTypes.nulls(), SdkTypes.nulls()) {
+          @Override
+          public Void expand(SdkWorkflowBuilder builder, Void noInput) {
+            builder.apply(
+                new SumTask(),
+                SumTask.SumInput.create(
+                    SdkBindingDataFactory.of(1L),
+                    SdkBindingDataFactory.of(1L)));
+            builder.apply(
+                    new SumTask(),
+                    SumTask.SumInput.create(
+                        SdkBindingDataFactory.of(2L),
+                        SdkBindingDataFactory.of(2L)));
+
+            return null;
+          }
+        };
+
+    SdkTestingExecutor executor = SdkTestingExecutor.of(workflow)
+        .withTaskOutput(
+            new SumTask(),
+            SumTask.SumInput.create(
+                SdkBindingDataFactory.of(1L),
+                SdkBindingDataFactory.of(1L)),
+            SumTask.SumOutput.create(SdkBindingDataFactory.of(2L)));
+
+    assertThrows(IllegalArgumentException.class, executor::execute);
+  }
+
+  @Test
   public void testWithTask_duplicateMocksNotAllowed() {
     SdkWorkflow<Void, SumTask.SumOutput> workflow =
         new SdkWorkflow<>(SdkTypes.nulls(), JacksonSdkType.of(SumTask.SumOutput.class)) {

@@ -201,13 +201,9 @@ public abstract class SdkTestingExecutor {
                     (in, mockedOutput) -> {
                       if (mockedOutput.unused()) {
                         throw new UnusedMockException(
-                            "unused launchplan mock: "
-                                + key
-                                + "["
-                                + in
-                                + "] -> ["
-                                + mockedOutput
-                                + "]");
+                            String.format(
+                                "unused launchplan mock name: [%s], input: [%s], output: [%s]",
+                                key, in, mockedOutput));
                       }
                     }));
     taskTestDoubles()
@@ -217,7 +213,9 @@ public abstract class SdkTestingExecutor {
                     (in, mockedOutput) -> {
                       if (mockedOutput.unused()) {
                         throw new UnusedMockException(
-                            "unused task mock: " + key + "[" + in + "] -> [" + mockedOutput + "]");
+                            String.format(
+                                "unused task mock name: [%s], input: [%s], output: [%s]",
+                                key, in, mockedOutput));
                       }
                     }));
 

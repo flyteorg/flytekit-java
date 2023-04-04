@@ -86,7 +86,7 @@ public abstract class TestingRunnableNode<
     }
   }
 
-  static class DuplicateMockException extends RuntimeException {
+  static class DuplicateMockException extends IllegalArgumentException {
     DuplicateMockException(String message) {
       super(message);
     }

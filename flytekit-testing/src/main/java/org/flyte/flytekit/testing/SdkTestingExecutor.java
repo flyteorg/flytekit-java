@@ -114,7 +114,7 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
-  public static class UnusedMockException extends RuntimeException {
+  public static class UnusedMockException extends IllegalArgumentException {
     UnusedMockException(String message) {
       super(message);
     }

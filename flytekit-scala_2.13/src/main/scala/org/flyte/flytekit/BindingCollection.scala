@@ -17,6 +17,7 @@
 package org.flyte.flytekit
 
 import org.flyte.api.v1.BindingData
+import org.flyte.flytekit.SdkBindingData.Literal
 import org.flyte.flytekitscala.SdkLiteralTypes.collections
 
 import java.util.function
@@ -39,7 +40,5 @@ private[flyte] class BindingCollection[T](
       newType: SdkLiteralType[NewT],
       castFunction: function.Function[List[T], NewT]
   ): SdkBindingData[NewT] =
-    throw new UnsupportedOperationException(
-      "SdkBindingData of binding collection cannot be casted"
-    )
+    SdkBindingData.literal(newType, castFunction.apply(get()))
 }

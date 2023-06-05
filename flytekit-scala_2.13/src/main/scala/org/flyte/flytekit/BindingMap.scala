@@ -17,6 +17,7 @@
 package org.flyte.flytekit
 
 import org.flyte.api.v1.BindingData
+import org.flyte.flytekit.SdkBindingData.Literal
 import org.flyte.flytekitscala.SdkLiteralTypes.maps
 
 import java.util.function
@@ -42,8 +43,6 @@ private[flyte] class BindingMap[T](
       newType: SdkLiteralType[NewT],
       castFunction: function.Function[Map[String, T], NewT]
   ): SdkBindingData[NewT] =
-    throw new UnsupportedOperationException(
-      "SdkBindingData of binding map cannot be casted"
-    )
+    SdkBindingData.literal(newType, castFunction.apply(get()))
 
 }

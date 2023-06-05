@@ -171,9 +171,21 @@ class SdkBindingDataConvertersTest {
       JavaSBD.of(
         JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
         ju.List.of(
-          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L))),
-          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L))),
-          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L)))
+          ju.List.of(
+            ju.Map.of("a", j.Long.valueOf(1L)),
+            ju.Map.of("b", j.Long.valueOf(2L)),
+            ju.Map.of("c", j.Long.valueOf(3L))
+          ),
+          ju.List.of(
+            ju.Map.of("a", j.Long.valueOf(1L)),
+            ju.Map.of("b", j.Long.valueOf(2L)),
+            ju.Map.of("c", j.Long.valueOf(3L))
+          ),
+          ju.List.of(
+            ju.Map.of("a", j.Long.valueOf(1L)),
+            ju.Map.of("b", j.Long.valueOf(2L)),
+            ju.Map.of("c", j.Long.valueOf(3L))
+          )
         )
       ),
       toJavaList(original)
@@ -203,10 +215,14 @@ class SdkBindingDataConvertersTest {
       SdkBindingData.literal(ScalaSLT.integers(), 2L),
       SdkBindingData.literal(ScalaSLT.integers(), 3L)
     )
-    val original = ScalaSBD.ofBindingCollection(ScalaSLT.integers(), scalaLongList)
+    val original =
+      ScalaSBD.ofBindingCollection(ScalaSLT.integers(), scalaLongList)
 
     assertEquals(
-      JavaSBD.of(JavaSLT.integers(), ju.List.of(j.Long.valueOf(1L), j.Long.valueOf(2L), j.Long.valueOf(3L))),
+      JavaSBD.of(
+        JavaSLT.integers(),
+        ju.List.of(j.Long.valueOf(1L), j.Long.valueOf(2L), j.Long.valueOf(3L))
+      ),
       toJavaList(original)
     )
   }
@@ -241,7 +257,17 @@ class SdkBindingDataConvertersTest {
     val original = ScalaSBD.ofBindingMap(ScalaSLT.integers(), scalaLongList)
 
     assertEquals(
-      JavaSBD.of(JavaSLT.integers(), ju.Map.of("a", j.Long.valueOf(1L), "b", j.Long.valueOf(2L), "c", j.Long.valueOf(3L))),
+      JavaSBD.of(
+        JavaSLT.integers(),
+        ju.Map.of(
+          "a",
+          j.Long.valueOf(1L),
+          "b",
+          j.Long.valueOf(2L),
+          "c",
+          j.Long.valueOf(3L)
+        )
+      ),
       toJavaMap(original)
     )
   }

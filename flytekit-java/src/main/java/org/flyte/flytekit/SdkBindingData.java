@@ -213,8 +213,7 @@ public abstract class SdkBindingData<T> {
     @Override
     public <NewT> SdkBindingData<NewT> as(
         SdkLiteralType<NewT> newElementType, Function<List<T>, NewT> castFunction) {
-      throw new UnsupportedOperationException(
-          "SdkBindingData of binding collections cannot be casted");
+      return Literal.create(newElementType, castFunction.apply(get()));
     }
 
     @Override
@@ -249,7 +248,7 @@ public abstract class SdkBindingData<T> {
     @Override
     public <NewT> SdkBindingData<NewT> as(
         SdkLiteralType<NewT> newType, Function<Map<String, T>, NewT> castFunction) {
-      throw new UnsupportedOperationException("SdkBindingData of binding map cannot be casted");
+      return Literal.create(newType, castFunction.apply(get()));
     }
 
     @Override

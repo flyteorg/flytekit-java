@@ -86,7 +86,54 @@ class SdkBindingDataConvertersTest {
   }
 
   @Test
-  def testToScalaListForBindCollectionsShouldThrowException(): Unit = {
+  def testToScalaListForComplexBindCollectionsShouldWork(): Unit = {
+    val javaLongList = ju.List.of(
+      SdkBindingData.literal(
+        JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
+        ju.List.of(
+          ju.Map.of("a", j.Long.valueOf(1L)),
+          ju.Map.of("b", j.Long.valueOf(2L)),
+          ju.Map.of("c", j.Long.valueOf(3L))
+        )
+      ),
+      SdkBindingData.literal(
+        JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
+        ju.List.of(
+          ju.Map.of("a", j.Long.valueOf(1L)),
+          ju.Map.of("b", j.Long.valueOf(2L)),
+          ju.Map.of("c", j.Long.valueOf(3L))
+        )
+      ),
+      SdkBindingData.literal(
+        JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
+        ju.List.of(
+          ju.Map.of("a", j.Long.valueOf(1L)),
+          ju.Map.of("b", j.Long.valueOf(2L)),
+          ju.Map.of("c", j.Long.valueOf(3L))
+        )
+      )
+    )
+
+    val original =
+      SdkBindingData.bindingCollection(
+        JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
+        javaLongList
+      )
+
+    assertEquals(
+      ScalaSBD.of(
+        List(
+          List(Map("a" -> 1L), Map("b" -> 2L), Map("c" -> 3L)),
+          List(Map("a" -> 1L), Map("b" -> 2L), Map("c" -> 3L)),
+          List(Map("a" -> 1L), Map("b" -> 2L), Map("c" -> 3L))
+        )
+      ),
+      toScalaList(original)
+    )
+  }
+
+  @Test
+  def testToScalaListForBindCollectionsShouldWork(): Unit = {
     val javaLongList = ju.List.of(
       SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(1L)),
       SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(2L)),
@@ -95,19 +142,14 @@ class SdkBindingDataConvertersTest {
     val original =
       SdkBindingData.bindingCollection(JavaSLT.integers(), javaLongList)
 
-    val exception = assertThrows(
-      classOf[UnsupportedOperationException],
-      () => toScalaList(original)
-    )
-
     assertEquals(
-      exception.getMessage,
-      "SdkBindingData of binding collections cannot be casted"
+      ScalaSBD.of(List(1L, 2L, 3L)),
+      toScalaList(original)
     )
   }
 
   @Test
-  def testToJavaListForBindCollectionsShouldThrowException(): Unit = {
+  def testToJavaListForBindCollectionsShouldWork(): Unit = {
     val scalaLongList = List(
       SdkBindingData.literal(ScalaSLT.integers(), 1L),
       SdkBindingData.literal(ScalaSLT.integers(), 2L),
@@ -119,19 +161,14 @@ class SdkBindingDataConvertersTest {
         scalaLongList.asJava
       )
 
-    val exception = assertThrows(
-      classOf[UnsupportedOperationException],
-      () => toScalaList(original)
-    )
-
     assertEquals(
-      exception.getMessage,
-      "SdkBindingData of binding collections cannot be casted"
+      ScalaSBD.of(List(1L, 2L, 3L)),
+      toScalaList(original)
     )
   }
 
   @Test
-  def testToScalaListForBindMapsShouldThrowException(): Unit = {
+  def testToScalaListForBindMapsShouldWork(): Unit = {
     val javaLongList = ju.Map.of(
       "a",
       SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(1L)),
@@ -143,19 +180,14 @@ class SdkBindingDataConvertersTest {
     val original =
       SdkBindingData.bindingMap(JavaSLT.integers(), javaLongList)
 
-    val exception = assertThrows(
-      classOf[UnsupportedOperationException],
-      () => toScalaMap(original)
-    )
-
     assertEquals(
-      exception.getMessage,
-      "SdkBindingData of binding map cannot be casted"
+      ScalaSBD.of(Map("a" -> 1L, "b" -> 2L, "c" -> 3L)),
+      toScalaMap(original)
     )
   }
 
   @Test
-  def testToJavaListForBindMapsShouldThrowException(): Unit = {
+  def testToJavaListForBindMapsShouldWork(): Unit = {
     val scalaLongList = Map(
       "a" -> SdkBindingData.literal(ScalaSLT.integers(), 1L),
       "b" -> SdkBindingData.literal(ScalaSLT.integers(), 2L),
@@ -164,14 +196,9 @@ class SdkBindingDataConvertersTest {
     val original =
       SdkBindingData.bindingMap(ScalaSLT.integers(), scalaLongList.asJava)
 
-    val exception = assertThrows(
-      classOf[UnsupportedOperationException],
-      () => toScalaMap(original)
-    )
-
     assertEquals(
-      exception.getMessage,
-      "SdkBindingData of binding map cannot be casted"
+      ScalaSBD.of(Map("a" -> 1L, "b" -> 2L, "c" -> 3L)),
+      toScalaMap(original)
     )
   }
 }

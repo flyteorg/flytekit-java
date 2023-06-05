@@ -133,6 +133,54 @@ class SdkBindingDataConvertersTest {
   }
 
   @Test
+  def testToJavaListForComplexBindCollectionsShouldWork(): Unit = {
+    val scalaLongList = List(
+      SdkBindingData.literal(
+        ScalaSLT.collections(ScalaSLT.maps(ScalaSLT.integers())),
+        List(
+          Map("a" -> 1L),
+          Map("b" -> 2L),
+          Map("c" -> 3L)
+        )
+      ),
+      SdkBindingData.literal(
+        ScalaSLT.collections(ScalaSLT.maps(ScalaSLT.integers())),
+        List(
+          Map("a" -> 1L),
+          Map("b" -> 2L),
+          Map("c" -> 3L)
+        )
+      ),
+      SdkBindingData.literal(
+        ScalaSLT.collections(ScalaSLT.maps(ScalaSLT.integers())),
+        List(
+          Map("a" -> 1L),
+          Map("b" -> 2L),
+          Map("c" -> 3L)
+        )
+      )
+    )
+
+    val original =
+      ScalaSBD.ofBindingCollection(
+        ScalaSLT.collections(ScalaSLT.maps(ScalaSLT.integers())),
+        scalaLongList
+      )
+
+    assertEquals(
+      JavaSBD.of(
+        JavaSLT.collections(JavaSLT.maps(JavaSLT.integers())),
+        ju.List.of(
+          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L))),
+          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L))),
+          ju.List.of(ju.Map.of("a" , j.Long.valueOf(1L)), ju.Map.of("b" , j.Long.valueOf(2L)), ju.Map.of("c" , j.Long.valueOf(3L)))
+        )
+      ),
+      toJavaList(original)
+    )
+  }
+
+  @Test
   def testToScalaListForBindCollectionsShouldWork(): Unit = {
     val javaLongList = ju.List.of(
       SdkBindingData.literal(JavaSLT.integers(), j.Long.valueOf(1L)),
@@ -155,15 +203,11 @@ class SdkBindingDataConvertersTest {
       SdkBindingData.literal(ScalaSLT.integers(), 2L),
       SdkBindingData.literal(ScalaSLT.integers(), 3L)
     )
-    val original =
-      SdkBindingData.bindingCollection(
-        ScalaSLT.integers(),
-        scalaLongList.asJava
-      )
+    val original = ScalaSBD.ofBindingCollection(ScalaSLT.integers(), scalaLongList)
 
     assertEquals(
-      ScalaSBD.of(List(1L, 2L, 3L)),
-      toScalaList(original)
+      JavaSBD.of(JavaSLT.integers(), ju.List.of(j.Long.valueOf(1L), j.Long.valueOf(2L), j.Long.valueOf(3L))),
+      toJavaList(original)
     )
   }
 
@@ -193,12 +237,12 @@ class SdkBindingDataConvertersTest {
       "b" -> SdkBindingData.literal(ScalaSLT.integers(), 2L),
       "c" -> SdkBindingData.literal(ScalaSLT.integers(), 3L)
     )
-    val original =
-      SdkBindingData.bindingMap(ScalaSLT.integers(), scalaLongList.asJava)
+
+    val original = ScalaSBD.ofBindingMap(ScalaSLT.integers(), scalaLongList)
 
     assertEquals(
-      ScalaSBD.of(Map("a" -> 1L, "b" -> 2L, "c" -> 3L)),
-      toScalaMap(original)
+      JavaSBD.of(JavaSLT.integers(), ju.Map.of("a", j.Long.valueOf(1L), "b", j.Long.valueOf(2L), "c", j.Long.valueOf(3L))),
+      toJavaMap(original)
     )
   }
 }

@@ -126,7 +126,7 @@ public abstract class SdkBindingData<T> {
   abstract static class Literal<T> extends SdkBindingData<T> {
     abstract T value();
 
-    private static <T> Literal<T> create(SdkLiteralType<T> type, T value) {
+    static <T> Literal<T> create(SdkLiteralType<T> type, T value) {
       return new AutoValue_SdkBindingData_Literal<>(type, value);
     }
 

@@ -187,7 +187,7 @@ class SdkBindingDataConvertersTest {
   }
 
   @Test
-  def testToJavaListForBindMapsShouldWorkn(): Unit = {
+  def testToJavaListForBindMapsShouldWork(): Unit = {
     val scalaLongList = Map(
       "a" -> SdkBindingData.literal(ScalaSLT.integers(), 1L),
       "b" -> SdkBindingData.literal(ScalaSLT.integers(), 2L),

@@ -43,6 +43,6 @@ private[flyte] class BindingMap[T](
       newType: SdkLiteralType[NewT],
       castFunction: function.Function[Map[String, T], NewT]
   ): SdkBindingData[NewT] =
-    Literal.create(newType, castFunction.apply(get()))
+    SdkBindingData.literal(newType, castFunction.apply(get()))
 
 }

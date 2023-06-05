@@ -40,5 +40,5 @@ private[flyte] class BindingCollection[T](
       newType: SdkLiteralType[NewT],
       castFunction: function.Function[List[T], NewT]
   ): SdkBindingData[NewT] =
-    Literal.create(newType, castFunction.apply(get()))
+    SdkBindingData.literal(newType, castFunction.apply(get()))
 }

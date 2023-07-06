@@ -24,7 +24,7 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Output> {
+public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SumWorkflow.Output> {
 
   @AutoValue
   public abstract static class Input {
@@ -47,27 +47,27 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SubWorkflow.Ou
   }
 
   public UberWorkflow() {
-    super(JacksonSdkType.of(UberWorkflow.Input.class), JacksonSdkType.of(SubWorkflow.Output.class));
+    super(JacksonSdkType.of(UberWorkflow.Input.class), JacksonSdkType.of(SumWorkflow.Output.class));
   }
 
   @Override
-  public SubWorkflow.Output expand(SdkWorkflowBuilder builder, Input input) {
+  public SumWorkflow.Output expand(SdkWorkflowBuilder builder, Input input) {
     SdkBindingData<Long> a = input.a();
     SdkBindingData<Long> b = input.b();
     SdkBindingData<Long> c = input.c();
     SdkBindingData<Long> d = input.d();
     SdkBindingData<Long> ab =
         builder
-            .apply("sub-1", new SubWorkflow(), SubWorkflow.Input.create(a, b))
+            .apply("sub-1", new SumWorkflow(), SumWorkflow.Input.create(a, b))
             .getOutputs()
             .result();
     SdkBindingData<Long> abc =
         builder
-            .apply("sub-2", new SubWorkflow(), SubWorkflow.Input.create(ab, c))
+            .apply("sub-2", new SumWorkflow(), SumWorkflow.Input.create(ab, c))
             .getOutputs()
             .result();
     SdkBindingData<Long> abcd =
         builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs();
-    return SubWorkflow.Output.create(abcd);
+    return SumWorkflow.Output.create(abcd);
   }
 }

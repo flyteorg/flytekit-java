@@ -16,23 +16,27 @@
  */
 package org.flyte.api.v1;
 
-import com.google.auto.value.AutoValue;
+import org.flyte.api.v1.ContainerError.Kind;
 
-/** Metadata for the entire workflow. */
-@AutoValue
-public abstract class WorkflowMetadata {
+/** Failure Handling Strategy. */
+public class OnFailurePolicy {
 
-  public abstract OnFailurePolicy onFailure();
+  private Kind kind;
 
-  public static Builder builder() {
-    return new AutoValue_WorkflowMetadata.Builder();
+  public enum Kind {
+    FAIL_IMMEDIATELY,
+    FAIL_AFTER_EXECUTABLE_NODES_COMPLETE
   }
 
-  @AutoValue.Builder
-  public abstract static class Builder {
+  private OnFailurePolicy(OnFailurePolicy.Kind kind) {
+    this.kind = kind;
+  }
 
-    public abstract Builder onFailure(OnFailurePolicy onFailure);
+  public static OnFailurePolicy create(OnFailurePolicy.Kind kind) {
+    return new OnFailurePolicy(kind);
+  }
 
-    public abstract WorkflowMetadata build();
+  public Kind getKind() {
+    return this.kind;
   }
 }

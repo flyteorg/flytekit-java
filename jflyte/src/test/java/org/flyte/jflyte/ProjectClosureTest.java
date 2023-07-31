@@ -473,7 +473,8 @@ public class ProjectClosureTest {
   public void testCreateTaskTemplateForRunnableTaskWithCustomJavaToolOptions() {
     // given
     RunnableTask task =
-        createRunnableTask(Resources.builder().build(), List.of("-CustomFlag", "-CustomFlag2"));
+        createRunnableTask(
+            Resources.builder().build(), List.of("-CustomFlag", "-AnotherCustomFlag"));
     String image = "my-image";
 
     // when
@@ -486,7 +487,8 @@ public class ProjectClosureTest {
     assertThat(
         container.env(),
         equalTo(
-            ImmutableList.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", "-CustomFlag -CustomFlag2"))));
+            ImmutableList.of(
+                KeyValuePair.of("JAVA_TOOL_OPTIONS", "-CustomFlag -AnotherCustomFlag"))));
     assertThat(
         result.interface_(),
         equalTo(

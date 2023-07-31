@@ -25,18 +25,15 @@ public interface RunnableTask extends Task, RunnableNode {
 
   @Override
   default String getType() {
-    // FIXME default only for backwards-compatibility, remove in 0.3.x
     return "java-task";
   }
 
   @Override
   default Struct getCustom() {
-    // FIXME default only for backwards-compatibility, remove in 0.3.x
     return Struct.of(emptyMap());
   }
 
   default Resources getResources() {
-    // FIXME default only for backwards-compatibility, remove in 0.3.x
     return Resources.builder().build();
   }
 

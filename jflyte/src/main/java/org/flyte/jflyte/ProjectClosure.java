@@ -506,9 +506,7 @@ abstract class ProjectClosure {
       javaToolOptions.add("-Xmx" + maxMemory);
     }
 
-    if (!task.getCustomJavaToolOptions().isEmpty()) {
-      javaToolOptions.addAll(task.getCustomJavaToolOptions());
-    }
+    javaToolOptions.addAll(task.getCustomJavaToolOptions());
 
     if (javaToolOptions.isEmpty()) {
       return Optional.empty();

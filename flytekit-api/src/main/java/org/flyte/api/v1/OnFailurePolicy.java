@@ -16,27 +16,28 @@
  */
 package org.flyte.api.v1;
 
+import com.google.auto.value.AutoValue;
+import org.flyte.api.v1.BlobType.Builder;
 import org.flyte.api.v1.ContainerError.Kind;
 
 /** Failure Handling Strategy. */
-public class OnFailurePolicy {
-
-  private Kind kind;
-
+@AutoValue
+public abstract class OnFailurePolicy {
   public enum Kind {
     FAIL_IMMEDIATELY,
     FAIL_AFTER_EXECUTABLE_NODES_COMPLETE
   }
 
-  private OnFailurePolicy(OnFailurePolicy.Kind kind) {
-    this.kind = kind;
+  public abstract Kind getKind();
+
+  public static OnFailurePolicy.Builder builder() {
+    return new AutoValue_OnFailurePolicy.Builder();
   }
 
-  public static OnFailurePolicy create(OnFailurePolicy.Kind kind) {
-    return new OnFailurePolicy(kind);
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder kind(Kind kind);
 
-  public Kind getKind() {
-    return this.kind;
+    public abstract OnFailurePolicy build();
   }
 }

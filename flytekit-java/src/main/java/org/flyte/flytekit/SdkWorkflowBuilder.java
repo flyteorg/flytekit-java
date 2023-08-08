@@ -41,7 +41,9 @@ public class SdkWorkflowBuilder {
   private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
   private WorkflowMetadata workflowMetadata =
-      WorkflowMetadata.builder().onFailure(OnFailurePolicy.create(Kind.FAIL_IMMEDIATELY)).build();
+      WorkflowMetadata.builder()
+          .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+          .build();
 
   /** Creates a new builder. */
   public SdkWorkflowBuilder() {

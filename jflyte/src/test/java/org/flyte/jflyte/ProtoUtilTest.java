@@ -78,6 +78,8 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.NodeMetadata;
+import org.flyte.api.v1.OnFailurePolicy;
+import org.flyte.api.v1.OnFailurePolicy.Kind;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
@@ -590,7 +592,10 @@ class ProtoUtilTest {
                     .build())
             .build();
 
-    WorkflowMetadata metadata = WorkflowMetadata.builder().build();
+    WorkflowMetadata metadata =
+        WorkflowMetadata.builder()
+            .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+            .build();
     TypedInterface interface_ =
         TypedInterface.builder().inputs(emptyMap()).outputs(emptyMap()).build();
     WorkflowTemplate template =

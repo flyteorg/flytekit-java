@@ -61,6 +61,8 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.OnFailurePolicy;
+import org.flyte.api.v1.OnFailurePolicy.Kind;
 import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
@@ -218,7 +220,10 @@ public class FlyteAdminClientTest {
     WorkflowTemplate template =
         WorkflowTemplate.builder()
             .nodes(ImmutableList.of(node))
-            .metadata(WorkflowMetadata.builder().build())
+            .metadata(
+                WorkflowMetadata.builder()
+                    .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+                    .build())
             .interface_(interface_)
             .outputs(ImmutableList.of())
             .build();

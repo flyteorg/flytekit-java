@@ -40,6 +40,8 @@ import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeError;
 import org.flyte.api.v1.NodeMetadata;
+import org.flyte.api.v1.OnFailurePolicy;
+import org.flyte.api.v1.OnFailurePolicy.Kind;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
@@ -129,7 +131,10 @@ class SdkWorkflowBuilderTest {
 
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
-            .metadata(WorkflowMetadata.builder().build())
+            .metadata(
+                WorkflowMetadata.builder()
+                    .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+                    .build())
             .interface_(expectedInterface())
             .outputs(expectedOutputs("foo-n1"))
             .nodes(List.of(node0, node1))
@@ -217,7 +222,10 @@ class SdkWorkflowBuilderTest {
 
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
-            .metadata(WorkflowMetadata.builder().build())
+            .metadata(
+                WorkflowMetadata.builder()
+                    .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+                    .build())
             .interface_(expectedInterface())
             .outputs(expectedOutputs("square"))
             .nodes(singletonList(expectedNode))

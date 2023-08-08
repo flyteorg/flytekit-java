@@ -28,7 +28,6 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.OnFailurePolicy;
 import org.flyte.api.v1.OnFailurePolicy.Kind;
-import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Builder used during {@link SdkWorkflow#expand(SdkWorkflowBuilder)}. */
@@ -40,8 +39,8 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> outputDescriptions;
   private final SdkNodeNamePolicy sdkNodeNamePolicy;
 
-  private WorkflowMetadata workflowMetadata =
-      WorkflowMetadata.builder()
+  private SdkWorkflowMetadata workflowMetadata =
+      SdkWorkflowMetadata.builder()
           .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
           .build();
 
@@ -63,11 +62,11 @@ public class SdkWorkflowBuilder {
     this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
 
-  public void setWorkflowMetadata(WorkflowMetadata workflowMetadata) {
+  public void setWorkflowMetadata(SdkWorkflowMetadata workflowMetadata) {
     this.workflowMetadata = workflowMetadata;
   }
 
-  public WorkflowMetadata getWorkflowMetadata() {
+  public SdkWorkflowMetadata getWorkflowMetadata() {
     return this.workflowMetadata;
   }
 

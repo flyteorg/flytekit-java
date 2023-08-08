@@ -26,6 +26,7 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.Variable;
+import org.flyte.api.v1.WorkflowMetadata;
 import org.flyte.api.v1.WorkflowTemplate;
 
 class WorkflowTemplateIdl {
@@ -37,7 +38,8 @@ class WorkflowTemplateIdl {
     List<Binding> outputs = getOutputBindings(builder);
 
     return WorkflowTemplate.builder()
-        .metadata(builder.getWorkflowMetadata())
+        .metadata(
+            WorkflowMetadata.builder().onFailure(builder.getWorkflowMetadata().onFailure()).build())
         .interface_(
             TypedInterface.builder()
                 .inputs(getInputVariableMap(builder))

@@ -14,28 +14,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.api.v1.OnFailurePolicy;
 
-/** Failure Handling Strategy. */
+/** Metadata for the entire workflow. */
 @AutoValue
-public abstract class OnFailurePolicy {
-  public enum Kind {
-    FAIL_IMMEDIATELY,
-    FAIL_AFTER_EXECUTABLE_NODES_COMPLETE
-  }
+public abstract class SdkWorkflowMetadata {
 
-  public abstract Kind getKind();
+  public abstract OnFailurePolicy onFailure();
 
-  public static OnFailurePolicy.Builder builder() {
-    return new AutoValue_OnFailurePolicy.Builder();
+  public static Builder builder() {
+    return new AutoValue_SdkWorkflowMetadata.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder kind(Kind kind);
 
-    public abstract OnFailurePolicy build();
+    public abstract Builder onFailure(OnFailurePolicy onFailure);
+
+    public abstract SdkWorkflowMetadata build();
   }
 }

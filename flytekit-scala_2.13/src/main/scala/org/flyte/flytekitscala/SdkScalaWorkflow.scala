@@ -23,6 +23,7 @@ import org.flyte.flytekit.{
   SdkType,
   SdkWorkflow,
   SdkWorkflowBuilder,
+  SdkWorkflowMetadata,
   SdkBindingData => SdkJavaBindingData
 }
 
@@ -66,9 +67,9 @@ abstract class SdkScalaWorkflow[InputT, OutputT](
 
 class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
 
-  def setWorkflowMetadata(workflowMetadata: WorkflowMetadata): Unit =
+  def setWorkflowMetadata(workflowMetadata: SdkWorkflowMetadata): Unit =
     builder.setWorkflowMetadata(workflowMetadata)
-  def getWorkflowMetadata(): WorkflowMetadata = builder.getWorkflowMetadata
+  def getWorkflowMetadata(): SdkWorkflowMetadata = builder.getWorkflowMetadata
 
   /** Get the nodes applied on the DAG.
     * @return

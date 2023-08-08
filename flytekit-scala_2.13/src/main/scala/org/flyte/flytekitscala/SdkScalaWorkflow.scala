@@ -157,6 +157,17 @@ class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
     builder.applyWithInputMap(nodeId, transform, inputs.asJava)
 
   /** Create a new node without inputs on the workflow DAG.
+   *
+   * @param transform
+   * The transformation that you want to apply to the DAG.
+   * @tparam OutputT
+   * The [[SdkTransform]] and [[SdkNode]] output class.
+   * @return
+   */
+  def apply[OutputT](transform: SdkTransform[Void, OutputT]): SdkNode[OutputT] =
+    builder.apply(transform, null)
+
+  /** Create a new node without inputs on the workflow DAG.
     *
     * @param transform
     *   The transformation that you want to apply to the DAG.

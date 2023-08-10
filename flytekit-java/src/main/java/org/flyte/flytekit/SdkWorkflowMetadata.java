@@ -26,7 +26,8 @@ public abstract class SdkWorkflowMetadata {
   public abstract OnFailurePolicy onFailure();
 
   public static Builder builder() {
-    return new AutoValue_SdkWorkflowMetadata.Builder();
+    return new AutoValue_SdkWorkflowMetadata.Builder()
+        .onFailure(OnFailurePolicy.builder().kind(OnFailurePolicy.Kind.FAIL_IMMEDIATELY).build());
   }
 
   @AutoValue.Builder

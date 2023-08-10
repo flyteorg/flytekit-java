@@ -29,8 +29,6 @@ import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.NodeMetadata;
-import org.flyte.api.v1.OnFailurePolicy;
-import org.flyte.api.v1.OnFailurePolicy.Kind;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialLaunchPlanIdentifier;
 import org.flyte.api.v1.TypedInterface;
@@ -82,10 +80,7 @@ public class SdkWorkflowWithSdkRemoteLaunchPlanTest {
             .build();
     WorkflowTemplate expected =
         WorkflowTemplate.builder()
-            .metadata(
-                WorkflowMetadata.builder()
-                    .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
-                    .build())
+            .metadata(WorkflowMetadata.builder().build())
             .interface_(expectedInterface())
             .outputs(expectedOutputs())
             .nodes(singletonList(expectedNode))

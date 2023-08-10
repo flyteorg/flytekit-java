@@ -17,6 +17,7 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
+import org.flyte.api.v1.OnFailurePolicy.Kind;
 
 /** Metadata for the entire workflow. */
 @AutoValue
@@ -25,7 +26,8 @@ public abstract class WorkflowMetadata {
   public abstract OnFailurePolicy onFailure();
 
   public static Builder builder() {
-    return new AutoValue_WorkflowMetadata.Builder();
+    return new AutoValue_WorkflowMetadata.Builder()
+        .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build());
   }
 
   @AutoValue.Builder

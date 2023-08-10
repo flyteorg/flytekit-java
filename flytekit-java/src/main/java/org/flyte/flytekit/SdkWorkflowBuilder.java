@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.flyte.api.v1.OnFailurePolicy;
+import org.flyte.api.v1.OnFailurePolicy.Kind;
 import org.flyte.api.v1.WorkflowTemplate;
 
 /** Builder used during {@link SdkWorkflow#expand(SdkWorkflowBuilder)}. */
@@ -36,6 +38,11 @@ public class SdkWorkflowBuilder {
   private final Map<String, String> inputDescriptions;
   private final Map<String, String> outputDescriptions;
   private final SdkNodeNamePolicy sdkNodeNamePolicy;
+
+  private SdkWorkflowMetadata workflowMetadata =
+      SdkWorkflowMetadata.builder()
+          .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build())
+          .build();
 
   /** Creates a new builder. */
   public SdkWorkflowBuilder() {
@@ -54,6 +61,15 @@ public class SdkWorkflowBuilder {
 
     this.sdkNodeNamePolicy = sdkNodeNamePolicy;
   }
+
+  public void setWorkflowMetadata(SdkWorkflowMetadata workflowMetadata) {
+    this.workflowMetadata = workflowMetadata;
+  }
+
+  public SdkWorkflowMetadata getWorkflowMetadata() {
+    return this.workflowMetadata;
+  }
+
   /**
    * Applies the given transformation and returns a new node with a given node id.
    *
@@ -99,7 +115,7 @@ public class SdkWorkflowBuilder {
    * @return the new {@link SdkNode}
    */
   public <OutputT> SdkNode<OutputT> apply(SdkTransform<Void, OutputT> transformWithoutInputs) {
-    return apply(/*nodeId=*/ (String) null, transformWithoutInputs);
+    return apply(/* nodeId= */ (String) null, transformWithoutInputs);
   }
 
   /**
@@ -112,7 +128,7 @@ public class SdkWorkflowBuilder {
    */
   public <InputT, OutputT> SdkNode<OutputT> apply(
       SdkTransform<InputT, OutputT> transform, InputT inputs) {
-    return apply(/*nodeId=*/ null, transform, inputs);
+    return apply(/* nodeId= */ null, transform, inputs);
   }
 
   /**
@@ -125,7 +141,7 @@ public class SdkWorkflowBuilder {
    */
   public <OutputT> SdkNode<OutputT> applyWithInputMap(
       SdkTransform<?, OutputT> transform, Map<String, SdkBindingData<?>> inputs) {
-    return applyWithInputMap(/*nodeId=*/ null, transform, inputs);
+    return applyWithInputMap(/* nodeId= */ null, transform, inputs);
   }
 
   protected <InputT, OutputT> SdkNode<OutputT> applyInternal(

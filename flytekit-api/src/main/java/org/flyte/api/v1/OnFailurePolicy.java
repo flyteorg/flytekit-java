@@ -17,24 +17,25 @@
 package org.flyte.api.v1;
 
 import com.google.auto.value.AutoValue;
-import org.flyte.api.v1.OnFailurePolicy.Kind;
 
-/** Metadata for the entire workflow. */
+/** Failure Handling Strategy. */
 @AutoValue
-public abstract class WorkflowMetadata {
+public abstract class OnFailurePolicy {
+  public enum Kind {
+    FAIL_IMMEDIATELY,
+    FAIL_AFTER_EXECUTABLE_NODES_COMPLETE
+  }
 
-  public abstract OnFailurePolicy onFailure();
+  public abstract Kind getKind();
 
-  public static Builder builder() {
-    return new AutoValue_WorkflowMetadata.Builder()
-        .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build());
+  public static OnFailurePolicy.Builder builder() {
+    return new AutoValue_OnFailurePolicy.Builder();
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
+    public abstract Builder kind(Kind kind);
 
-    public abstract Builder onFailure(OnFailurePolicy onFailure);
-
-    public abstract WorkflowMetadata build();
+    public abstract OnFailurePolicy build();
   }
 }

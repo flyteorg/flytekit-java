@@ -26,7 +26,7 @@ import org.flyte.flytekit.jackson.JacksonSdkType;
 
 /** Example workflow that takes a name and outputs a welcome message. */
 @AutoService(SdkWorkflow.class)
-public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuestionTask.Output> {
+public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, WelcomeWorkflow.Output> {
 
   @AutoValue
   public abstract static class Input {
@@ -38,14 +38,23 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
     }
   }
 
+  @AutoValue
+  public abstract static class Output {
+    public abstract SdkBindingData<String> greeting();
+
+    public static Output create(SdkBindingData<String> greeting) {
+      return new AutoValue_WelcomeWorkflow_Output(greeting);
+    }
+  }
+
   public WelcomeWorkflow() {
     super(
         JacksonSdkType.of(WelcomeWorkflow.Input.class),
-        JacksonSdkType.of(AddQuestionTask.Output.class));
+        JacksonSdkType.of(WelcomeWorkflow.Output.class));
   }
 
   @Override
-  public AddQuestionTask.Output expand(SdkWorkflowBuilder builder, Input input) {
+  public WelcomeWorkflow.Output expand(SdkWorkflowBuilder builder, Input input) {
     // uses the workflow input as the task input of the GreetTask
     SdkBindingData<String> greeting =
         builder
@@ -60,6 +69,6 @@ public class WelcomeWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, AddQuest
             .getOutputs()
             .greeting();
 
-    return AddQuestionTask.Output.create(greetingWithQuestion);
+    return WelcomeWorkflow.Output.create(greetingWithQuestion);
   }
 }

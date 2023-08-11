@@ -80,6 +80,15 @@ public abstract class SdkRunnableTask<InputT, OutputT> extends SdkTransform<Inpu
   }
 
   /**
+   * Specifies a custom JAVA_TOOL_OPTIONS.
+   *
+   * @return List with the custom java tool options.
+   */
+  public List<String> getCustomJavaToolOptions() {
+    return List.of();
+  }
+
+  /**
    * Number of retries. Retries will be consumed when the task fails with a recoverable error. The
    * number of retries must be less than or equals to 10.
    *

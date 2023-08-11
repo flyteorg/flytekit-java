@@ -409,7 +409,7 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForRunnableTask() {
     // given
-    RunnableTask task = createRunnableTask(null);
+    RunnableTask task = createRunnableTask(null, List.of());
     String image = "my-image";
     Resources expectedResources = Resources.builder().build();
 
@@ -443,7 +443,7 @@ public class ProjectClosureTest {
             .requests(ImmutableMap.of(CPU, "4"))
             .build();
 
-    RunnableTask task = createRunnableTask(expectedResources);
+    RunnableTask task = createRunnableTask(expectedResources, List.of());
     String image = "my-image";
 
     // when
@@ -457,6 +457,76 @@ public class ProjectClosureTest {
     assertThat(
         container.env(),
         equalTo(ImmutableList.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", "-Xmx16G"))));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("java-task"));
+  }
+
+  @Test
+  public void testCreateTaskTemplateForRunnableTaskWithCustomJavaToolOptions() {
+    // given
+    RunnableTask task =
+        createRunnableTask(
+            Resources.builder().build(), List.of("-CustomFlag", "-AnotherCustomFlag"));
+    String image = "my-image";
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(
+        container.env(),
+        equalTo(
+            ImmutableList.of(
+                KeyValuePair.of("JAVA_TOOL_OPTIONS", "-CustomFlag -AnotherCustomFlag"))));
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("java-task"));
+  }
+
+  @Test
+  public void testCreateTaskTemplateForRunnableTaskWithResourcesAndCustomJavaToolOptions() {
+    // given
+    Resources expectedResources =
+        Resources.builder()
+            .limits(ImmutableMap.of(MEMORY, "16G"))
+            .requests(ImmutableMap.of(CPU, "4"))
+            .build();
+
+    RunnableTask task =
+        createRunnableTask(expectedResources, List.of("-CustomFlag", "-CustomFlag2"));
+    String image = "my-image";
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    Container container = result.container();
+    assertNotNull(container);
+    assertThat(container.image(), equalTo(image));
+    assertThat(container.resources(), equalTo(expectedResources));
+    assertThat(
+        container.env(),
+        equalTo(
+            ImmutableList.of(
+                KeyValuePair.of("JAVA_TOOL_OPTIONS", "-Xmx16G -CustomFlag -CustomFlag2"))));
     assertThat(
         result.interface_(),
         equalTo(
@@ -509,7 +579,7 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForTasksWithDefaultCacheSettings() {
     // given
-    RunnableTask runnableTask = createRunnableTask(null);
+    RunnableTask runnableTask = createRunnableTask(null, List.of());
     ContainerTask containerTask =
         createContainerTask(
             Resources.builder().build(),
@@ -536,7 +606,7 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForTasksWithCache() {
     // given
-    RunnableTask runnableTask = createRunnableTask(null);
+    RunnableTask runnableTask = createRunnableTask(null, List.of());
     RunnableTask runnableTaskWithCache =
         wrapTaskWithRetries(RunnableTask.class, runnableTask, true);
     ContainerTask containerTask =
@@ -567,7 +637,7 @@ public class ProjectClosureTest {
   @Test
   public void testCreateTaskTemplateForTasksWithCacheDisabled() {
     // given
-    RunnableTask runnableTask = createRunnableTask(null);
+    RunnableTask runnableTask = createRunnableTask(null, List.of());
     RunnableTask runnableTaskWithNoCache =
         wrapTaskWithRetries(RunnableTask.class, runnableTask, false);
     ContainerTask containerTask =
@@ -595,7 +665,8 @@ public class ProjectClosureTest {
     }
   }
 
-  private RunnableTask createRunnableTask(Resources expectedResources) {
+  private RunnableTask createRunnableTask(
+      Resources expectedResources, List<String> customJavaToolOptions) {
     return new RunnableTask() {
       @Override
       public String getName() {
@@ -628,6 +699,11 @@ public class ProjectClosureTest {
         } else {
           return expectedResources;
         }
+      }
+
+      @Override
+      public List<String> getCustomJavaToolOptions() {
+        return customJavaToolOptions;
       }
     };
   }

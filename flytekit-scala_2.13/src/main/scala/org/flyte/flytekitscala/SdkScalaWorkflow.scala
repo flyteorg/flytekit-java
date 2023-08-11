@@ -16,14 +16,15 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.WorkflowTemplate
+import org.flyte.api.v1.{WorkflowMetadata, WorkflowTemplate}
 import org.flyte.flytekit.{
-  SdkBindingData => SdkJavaBindingData,
   SdkNode,
   SdkTransform,
   SdkType,
   SdkWorkflow,
-  SdkWorkflowBuilder
+  SdkWorkflowBuilder,
+  SdkWorkflowMetadata,
+  SdkBindingData => SdkJavaBindingData
 }
 
 import scala.collection.JavaConverters._
@@ -65,6 +66,10 @@ abstract class SdkScalaWorkflow[InputT, OutputT](
 }
 
 class SdkScalaWorkflowBuilder(builder: SdkWorkflowBuilder) {
+
+  def setWorkflowMetadata(workflowMetadata: SdkWorkflowMetadata): Unit =
+    builder.setWorkflowMetadata(workflowMetadata)
+  def getWorkflowMetadata(): SdkWorkflowMetadata = builder.getWorkflowMetadata
 
   /** Get the nodes applied on the DAG.
     * @return

@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import com.google.auto.service.AutoService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -109,6 +110,11 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
     @Override
     public Resources getResources() {
       return sdkTask.getResources().toIdl();
+    }
+
+    @Override
+    public List<String> getCustomJavaToolOptions() {
+      return sdkTask.getCustomJavaToolOptions();
     }
   }
 

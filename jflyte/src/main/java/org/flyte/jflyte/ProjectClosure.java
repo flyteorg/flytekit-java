@@ -35,6 +35,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -439,7 +440,6 @@ abstract class ProjectClosure {
 
   @VisibleForTesting
   static TaskTemplate createTaskTemplateForRunnableTask(RunnableTask task, String image) {
-    Resources resources = task.getResources();
     Container container =
         Container.builder()
             .command(ImmutableList.of())
@@ -456,8 +456,8 @@ abstract class ProjectClosure {
                     "--taskTemplatePath",
                     "{{.taskTemplatePath}}"))
             .image(image)
-            .env(javaToolOptionsEnv(resources).map(ImmutableList::of).orElse(ImmutableList.of()))
-            .resources(resources)
+            .env(javaToolOptionsEnv(task).map(ImmutableList::of).orElse(ImmutableList.of()))
+            .resources(task.getResources())
             .build();
 
     return createTaskTemplate(task, container);
@@ -496,13 +496,23 @@ abstract class ProjectClosure {
     return templateBuilder.build();
   }
 
-  private static Optional<KeyValuePair> javaToolOptionsEnv(Resources resources) {
+  private static Optional<KeyValuePair> javaToolOptionsEnv(RunnableTask task) {
+    List<String> javaToolOptions = new ArrayList<>();
+
+    Resources resources = task.getResources();
     Map<ResourceName, String> limits = resources.limits();
-    if (limits == null || !limits.containsKey(ResourceName.MEMORY)) {
-      return Optional.empty();
+    if (limits != null && limits.containsKey(ResourceName.MEMORY)) {
+      String maxMemory = asJavaQuantity(limits.get(ResourceName.MEMORY));
+      javaToolOptions.add("-Xmx" + maxMemory);
     }
-    String maxMemory = asJavaQuantity(limits.get(ResourceName.MEMORY));
-    return Optional.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", "-Xmx" + maxMemory));
+
+    javaToolOptions.addAll(task.getCustomJavaToolOptions());
+
+    if (javaToolOptions.isEmpty()) {
+      return Optional.empty();
+    } else {
+      return Optional.of(KeyValuePair.of("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions)));
+    }
   }
 
   private static TaskTemplate createTaskTemplateForDynamicWorkflow(

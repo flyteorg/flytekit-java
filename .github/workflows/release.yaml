@@ -51,7 +51,7 @@ jobs:
 
           mvn --batch-mode release:prepare -DgenerateBackupPoms=false
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          mvn --batch-mode release:perform -Ddockerfile.push -Prelease
+          mvn --batch-mode release:perform -Prelease
 
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}

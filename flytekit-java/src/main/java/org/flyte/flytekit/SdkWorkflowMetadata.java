@@ -14,20 +14,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.api.v1;
+package org.flyte.flytekit;
 
 import com.google.auto.value.AutoValue;
-import org.flyte.api.v1.OnFailurePolicy.Kind;
+import org.flyte.api.v1.OnFailurePolicy;
 
 /** Metadata for the entire workflow. */
 @AutoValue
-public abstract class WorkflowMetadata {
+public abstract class SdkWorkflowMetadata {
 
   public abstract OnFailurePolicy onFailure();
 
   public static Builder builder() {
-    return new AutoValue_WorkflowMetadata.Builder()
-        .onFailure(OnFailurePolicy.builder().kind(Kind.FAIL_IMMEDIATELY).build());
+    return new AutoValue_SdkWorkflowMetadata.Builder()
+        .onFailure(OnFailurePolicy.builder().kind(OnFailurePolicy.Kind.FAIL_IMMEDIATELY).build());
   }
 
   @AutoValue.Builder
@@ -35,6 +35,6 @@ public abstract class WorkflowMetadata {
 
     public abstract Builder onFailure(OnFailurePolicy onFailure);
 
-    public abstract WorkflowMetadata build();
+    public abstract SdkWorkflowMetadata build();
   }
 }

@@ -49,6 +49,7 @@ import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
+import flyteidl.core.Workflow.WorkflowMetadata.OnFailurePolicy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -741,7 +742,9 @@ class ProtoUtil {
 
   private static Workflow.WorkflowMetadata serialize(
       @SuppressWarnings("UnusedVariable") WorkflowMetadata metadata) {
-    return Workflow.WorkflowMetadata.newBuilder().build();
+    return Workflow.WorkflowMetadata.newBuilder()
+        .setOnFailure(OnFailurePolicy.valueOf(metadata.onFailure().getKind().name()))
+        .build();
   }
 
   @VisibleForTesting

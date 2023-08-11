@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.4.20-SNAPSHOT</version>
+    <version>0.4.21-SNAPSHOT</version>
   </parent>
 
   <!-- can't use properties, artifact name should be constant -->
@@ -33,7 +33,7 @@
 
   <properties>
     <scala.baseVersion>2.13</scala.baseVersion>
-    <scala.version>2.13.10</scala.version>
+    <scala.version>2.13.11</scala.version>
 
     <magnolia.version>1.0.0-M4</magnolia.version>
 
@@ -43,10 +43,6 @@
 
   <dependencies>
     <!-- compile -->
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>flytekit-api</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-java</artifactId>

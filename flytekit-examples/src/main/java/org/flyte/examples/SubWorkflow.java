@@ -17,50 +17,28 @@
 package org.flyte.examples;
 
 import com.google.auto.service.AutoService;
-import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
-import org.flyte.flytekit.jackson.Description;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
-public class SubWorkflow extends SdkWorkflow<SubWorkflow.Input, SubWorkflow.Output> {
+public class SubWorkflow extends SdkWorkflow<WelcomeWorkflow.Input, WelcomeWorkflow.Output> {
 
   public SubWorkflow() {
-    super(JacksonSdkType.of(SubWorkflow.Input.class), JacksonSdkType.of(SubWorkflow.Output.class));
+    super(
+        JacksonSdkType.of(WelcomeWorkflow.Input.class),
+        JacksonSdkType.of(WelcomeWorkflow.Output.class));
   }
 
   @Override
-  public Output expand(SdkWorkflowBuilder builder, Input input) {
-    SdkBindingData<Long> result =
+  public WelcomeWorkflow.Output expand(SdkWorkflowBuilder builder, WelcomeWorkflow.Input input) {
+    SdkBindingData<String> greeting =
         builder
-            .apply("sum", new SumTask(), SumTask.SumInput.create(input.left(), input.right()))
-            .getOutputs();
-    return Output.create(result);
-  }
+            .apply("greet", new WelcomeWorkflow(), WelcomeWorkflow.Input.create(input.name()))
+            .getOutputs()
+            .greeting();
 
-  // Used in testing to mock this workflow
-  @AutoValue
-  public abstract static class Input {
-    @Description("First operand")
-    abstract SdkBindingData<Long> left();
-
-    @Description("Second operand")
-    abstract SdkBindingData<Long> right();
-
-    public static Input create(SdkBindingData<Long> left, SdkBindingData<Long> right) {
-      return new AutoValue_SubWorkflow_Input(left, right);
-    }
-  }
-
-  @AutoValue
-  public abstract static class Output {
-    @Description("Summed results")
-    abstract SdkBindingData<Long> result();
-
-    public static Output create(SdkBindingData<Long> result) {
-      return new AutoValue_SubWorkflow_Output(result);
-    }
+    return WelcomeWorkflow.Output.create(greeting);
   }
 }

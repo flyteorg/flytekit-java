@@ -29,14 +29,9 @@ public class WorkflowTest {
   @Test
   public void testSubWorkflow() {
     SdkTestingExecutor.Result result =
-        SdkTestingExecutor.of(new UberWorkflow())
-            .withFixedInput("a", 1)
-            .withFixedInput("b", 2)
-            .withFixedInput("c", 3)
-            .withFixedInput("d", 4)
-            .execute();
+        SdkTestingExecutor.of(new SubWorkflow()).withFixedInput("name", "foo").execute();
 
-    assertEquals(10L, result.getIntegerOutput("result"));
+    assertEquals("Welcome, foo! How are you?", result.getStringOutput("greeting"));
   }
 
   @Test
@@ -75,19 +70,19 @@ public class WorkflowTest {
             // Deliberately mock with absurd values to make sure that we are not picking the
             // SumTask implementation
             .withWorkflowOutput(
-                new SubWorkflow(),
-                JacksonSdkType.of(SubWorkflow.Input.class),
-                SubWorkflow.Input.create(
+                new SumWorkflow(),
+                JacksonSdkType.of(SumWorkflow.Input.class),
+                SumWorkflow.Input.create(
                     SdkBindingDataFactory.of(1L), SdkBindingDataFactory.of(2L)),
-                JacksonSdkType.of(SubWorkflow.Output.class),
-                SubWorkflow.Output.create(SdkBindingDataFactory.of(5L)))
+                JacksonSdkType.of(SumWorkflow.Output.class),
+                SumWorkflow.Output.create(SdkBindingDataFactory.of(5L)))
             .withWorkflowOutput(
-                new SubWorkflow(),
-                JacksonSdkType.of(SubWorkflow.Input.class),
-                SubWorkflow.Input.create(
+                new SumWorkflow(),
+                JacksonSdkType.of(SumWorkflow.Input.class),
+                SumWorkflow.Input.create(
                     SdkBindingDataFactory.of(5L), SdkBindingDataFactory.of(3L)),
-                JacksonSdkType.of(SubWorkflow.Output.class),
-                SubWorkflow.Output.create(SdkBindingDataFactory.of(10L)))
+                JacksonSdkType.of(SumWorkflow.Output.class),
+                SumWorkflow.Output.create(SdkBindingDataFactory.of(10L)))
             .withTaskOutput(
                 new SumTask(),
                 SumInput.create(SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(4L)),

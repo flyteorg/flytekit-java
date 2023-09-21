@@ -91,7 +91,7 @@ class PackageLoader {
     FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
     try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
-      LOG.info("Copied {} to {}", artifact.location(), path);
+      LOG.debug("Copied {} to {}", artifact.location(), path);
 
       Files.copy(Channels.newInputStream(reader), path);
     } catch (IOException e) {

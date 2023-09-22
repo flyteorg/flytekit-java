@@ -220,7 +220,7 @@ public class SdkTestingExecutorTest {
     assertThat(
         e.getMessage(),
         equalTo(
-            "Can't execute remote task [remote_sum_task], use SdkTestingExecutor#withTaskOutput or "
+            "Can't execute remote task [remote_sum_task] for node [sum], use SdkTestingExecutor#withTaskOutput or "
                 + "SdkTestingExecutor#withTask to provide a test double"));
   }
 
@@ -427,6 +427,52 @@ public class SdkTestingExecutorTest {
             .execute();
 
     assertThat(result.getIntegerOutput("integer"), equalTo(35L));
+  }
+
+  @Test
+  public void testWithLaunchPlan_isMissingLaunchPlan() {
+    SdkRemoteLaunchPlan<SumLaunchPlanInput, SumLaunchPlanOutput> launchplanRef =
+        SdkRemoteLaunchPlan.create(
+            "development",
+            "flyte-warehouse",
+            "SumWorkflow",
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(SumLaunchPlanOutput.class));
+
+    SdkWorkflow<SumLaunchPlanInput, TestUnaryIntegerIO> workflow =
+        new SdkWorkflow<>(
+            JacksonSdkType.of(SumLaunchPlanInput.class),
+            JacksonSdkType.of(TestUnaryIntegerIO.class)) {
+          @Override
+          public TestUnaryIntegerIO expand(SdkWorkflowBuilder builder, SumLaunchPlanInput input) {
+            SdkBindingData<Long> c =
+                builder
+                    .apply(
+                        "mylaunchplan",
+                        launchplanRef,
+                        SumLaunchPlanInput.create(input.a(), input.b()))
+                    .getOutputs()
+                    .c();
+
+            return TestUnaryIntegerIO.create(c);
+          }
+        };
+
+    IllegalArgumentException e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () ->
+                SdkTestingExecutor.of(workflow)
+                    .withFixedInput("a", 30L)
+                    .withFixedInput("b", 5L)
+                    .execute());
+
+    assertThat(
+        e.getMessage(),
+        equalTo(
+            "Can't execute remote launch plan "
+                + "[SumWorkflow] for node [mylaunchplan], use SdkTestingExecutor#withLaunchPlanOutput or "
+                + "SdkTestingExecutor#withLaunchPlan to provide a test double"));
   }
 
   @Test

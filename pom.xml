@@ -60,6 +60,7 @@
     <module>jflyte-api</module>
     <module>jflyte-aws</module>
     <module>jflyte-google-cloud</module>
+    <module>jflyte-utils</module>
     <module>jflyte</module>
     <module>integration-tests</module>
   </modules>
@@ -171,6 +172,11 @@
       <dependency>
         <groupId>org.flyte</groupId>
         <artifactId>jflyte</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flyte</groupId>
+        <artifactId>jflyte-utils</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

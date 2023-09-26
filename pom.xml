@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2021 Flyte Authors.
+  Copyright 2020-2023 Flyte Authors.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@
     <picocli.version>4.7.2</picocli.version>
     <protobuf.version>3.21.12</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
-    <spotless.version>2.21.0</spotless.version>
+    <spotless.version>2.39.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
     <error_prone.version>2.19.1</error_prone.version>
     <!-- Using the error-prone-javac is required when running on JDK 8 -->
@@ -418,7 +418,7 @@
               <licenseHeader>
                 <!-- Specify either content or file, but not both -->
                 <content><![CDATA[/*
- * Copyright $YEAR Flyte Authors
+ * Copyright $YEAR Flyte Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -509,6 +509,8 @@
                 <endWithNewline />
               </format>
             </formats>
+
+            <ratchetFrom>origin/master</ratchetFrom>
           </configuration>
           <executions>
             <execution>

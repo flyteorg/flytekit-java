@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Flyte Authors.
+ * Copyright 2021-2023 Flyte Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,17 @@ import org.flyte.flytekitscala.{
   * |  start of workflow  |
   * |:-------------------:|
   * | input: name(string) |
-  * |
-  * |
-  * +--------------v-----------------+
+  * \| \| +--------------v-----------------+
   * | GreetTask                |
   * |:-------------------------|
   * | input: name(string)      |
   * | output: greeting(string) |
-  * |
-  * |
-  * +--------------v-----------------+
+  * \| \| +--------------v-----------------+
   * |     AddQuestionTask      |
   * |:------------------------:|
   * | input: greeting(string)  |
   * | output: greeting(string) |
-  * |
-  * |
-  * +--------------v-----------------+
+  * \| \| +--------------v-----------------+
   * | end of workflow          |
   * |:-------------------------|
   * | output: greeting(string) |

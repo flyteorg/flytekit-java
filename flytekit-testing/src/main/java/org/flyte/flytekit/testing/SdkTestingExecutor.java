@@ -219,25 +219,28 @@ public abstract class SdkTestingExecutor {
   private void checkTestDoublesForNodes(WorkflowTemplate template) {
     for (Node node : template.nodes()) {
       if (node.taskNode() != null) {
-        checkTestDoubleForTaskNode(node.taskNode());
+        checkTestDoubleForTaskNode(node);
       } else if (node.workflowNode() != null) {
-        checkTestDoubleForWorkflowNode(node.workflowNode());
+        checkTestDoubleForWorkflowNode(node);
       }
     }
   }
 
-  private void checkTestDoubleForTaskNode(TaskNode taskNode) {
+  private void checkTestDoubleForTaskNode(Node node) {
+    TaskNode taskNode = node.taskNode();
     String taskName = taskNode.referenceId().name();
 
     checkArgument(
         taskTestDoubles().containsKey(taskName),
-        "Can't execute remote task [%s], "
+        "Can't execute remote task [%s] for node [%s], "
             + "use SdkTestingExecutor#withTaskOutput or SdkTestingExecutor#withTask "
             + "to provide a test double",
-        taskName);
+        taskName,
+        node.id());
   }
 
-  private void checkTestDoubleForWorkflowNode(WorkflowNode workflowNode) {
+  private void checkTestDoubleForWorkflowNode(Node node) {
+    WorkflowNode workflowNode = node.workflowNode();
     Reference reference = workflowNode.reference();
     switch (reference.kind()) {
       case LAUNCH_PLAN_REF:
@@ -247,9 +250,10 @@ public abstract class SdkTestingExecutor {
         checkArgument(
             launchPlan != null,
             "Can't execute remote launch plan "
-                + "[%s], use SdkTestingExecutor#withLaunchPlanOutput or "
+                + "[%s] for node [%s], use SdkTestingExecutor#withLaunchPlanOutput or "
                 + "SdkTestingExecutor#withLaunchPlan to provide a test double",
-            launchPlanName);
+            launchPlanName,
+            node.id());
         return;
 
       case SUB_WORKFLOW_REF:
@@ -257,7 +261,10 @@ public abstract class SdkTestingExecutor {
         WorkflowTemplate subWorkflowTemplate = workflowTemplates().get(subWorkflowName);
 
         checkArgument(
-            subWorkflowTemplate != null, "Can't expand sub workflow [%s]", subWorkflowName);
+            subWorkflowTemplate != null,
+            "Can't expand sub workflow [%s] for node [%s]",
+            subWorkflowName,
+            node.id());
 
         checkTestDoublesForNodes(subWorkflowTemplate);
     }

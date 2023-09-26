@@ -24,18 +24,10 @@
     <version>0.4.23-SNAPSHOT</version>
   </parent>
 
-  <artifactId>jflyte</artifactId>
+  <artifactId>jflyte-utils</artifactId>
 
-  <name>JFlyte - Flytekit Java SDK implementation</name>
-  <description>Compiles developer's Tasks, Workflows and Launch plans into Flyte's protos.
-    Also
-    register the protos with Flyteadmin.</description>
-
-  <properties>
-    <docker.image>ghcr.io/flyteorg/flytekit-java</docker.image>
-    <docker.tag>${project.version}</docker.tag>
-    <maven.deploy.skip>true</maven.deploy.skip>
-  </properties>
+  <name>JFlyte Utils - Utilities for jflyte</name>
+  <description>Primarily used by jflyte, but can also be used to extend or build a jflyte alternative</description>
 
   <dependencies>
     <!-- compile -->
@@ -54,10 +46,6 @@
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>jflyte-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>jflyte-utils</artifactId>
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
@@ -188,64 +176,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>com.google.cloud.tools</groupId>
-        <artifactId>jib-maven-plugin</artifactId>
-        <configuration>
-          <from>
-            <image>gcr.io/distroless/java11:latest</image>
-          </from>
-          <container>
-            <environment>
-              <FLYTE_INTERNAL_MODULE_DIR>/jflyte/modules</FLYTE_INTERNAL_MODULE_DIR>
-              <FLYTE_INTERNAL_IMAGE>${docker.image}:${docker.tag}</FLYTE_INTERNAL_IMAGE>
-              <FLYTE_PLATFORM_URL>flyte:30081</FLYTE_PLATFORM_URL>
-              <FLYTE_PLATFORM_INSECURE>True</FLYTE_PLATFORM_INSECURE>
-            </environment>
-            <jvmFlags>
-              <jvmFlag>-Dorg.slf4j.simpleLogger.defaultLogLevel=INFO</jvmFlag>
-              <jvmFlag>-Dorg.slf4j.simpleLogger.log.org.flyte=DEBUG</jvmFlag>
-            </jvmFlags>
-            <mainClass>org.flyte.jflyte.Main</mainClass>
-            <appRoot>/jflyte/</appRoot>
-            <extraClasspath>/jflyte/modules/*</extraClasspath>
-          </container>
-          <to>
-            <image>${docker.image}</image>
-            <tags>
-              <tag>${docker.tag}</tag>
-            </tags>
-          </to>
-          <extraDirectories>
-            <paths>
-              <path>
-                <from>${project.parent.basedir}/jflyte-aws/target/lib</from>
-                <into>/jflyte/modules/jflyte-aws</into>
-              </path>
-              <path>
-                <from>${project.parent.basedir}/jflyte-google-cloud/target/lib</from>
-                <into>/jflyte/modules/jflyte-google-cloud</into>
-              </path>
-            </paths>
-          </extraDirectories>
-        </configuration>
-        <executions>
-          <execution>
-            <id>build-locally</id>
-            <goals>
-              <goal>dockerBuild</goal>
-            </goals>
-            <phase>package</phase>
-          </execution>
-          <execution>
-            <id>deploy</id>
-            <goals>
-              <goal>build</goal>
-            </goals>
-            <phase>deploy</phase>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

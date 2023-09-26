@@ -18,9 +18,9 @@ package org.flyte.jflyte;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
-import static org.flyte.jflyte.ClassLoaders.withClassLoader;
-import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
-import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+import static org.flyte.jflyte.utils.ClassLoaders.withClassLoader;
+import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableList;
+import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -37,6 +37,8 @@ import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.jflyte.utils.ClassLoaders;
+import org.flyte.jflyte.utils.Config;
 
 /** Utility class to load modules for execute-local mode. */
 public class ExecuteLocalLoader {

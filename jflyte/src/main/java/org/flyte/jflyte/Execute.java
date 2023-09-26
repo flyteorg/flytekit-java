@@ -16,8 +16,8 @@
  */
 package org.flyte.jflyte;
 
-import static org.flyte.jflyte.ClassLoaders.withClassLoader;
-import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+import static org.flyte.jflyte.utils.ClassLoaders.withClassLoader;
+import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableMap;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,6 +31,14 @@ import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.utils.ClassLoaders;
+import org.flyte.jflyte.utils.Config;
+import org.flyte.jflyte.utils.FileSystemLoader;
+import org.flyte.jflyte.utils.PackageLoader;
+import org.flyte.jflyte.utils.ProtoReader;
+import org.flyte.jflyte.utils.ProtoUtil;
+import org.flyte.jflyte.utils.ProtoWriter;
+import org.flyte.jflyte.utils.Registrars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;

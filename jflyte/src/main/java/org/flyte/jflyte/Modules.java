@@ -24,6 +24,7 @@ import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
+import org.flyte.jflyte.utils.Registrars;
 
 /** Utility class to load {@link WorkflowTemplate} and {@link RunnableTask}. */
 public class Modules {

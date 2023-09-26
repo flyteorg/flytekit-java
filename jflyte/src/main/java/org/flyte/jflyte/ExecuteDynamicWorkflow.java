@@ -18,9 +18,9 @@ package org.flyte.jflyte;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.flyte.jflyte.ClassLoaders.withClassLoader;
-import static org.flyte.jflyte.MoreCollectors.mapValues;
-import static org.flyte.jflyte.MoreCollectors.toUnmodifiableList;
+import static org.flyte.jflyte.utils.ClassLoaders.withClassLoader;
+import static org.flyte.jflyte.utils.MoreCollectors.mapValues;
+import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableList;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -53,6 +53,18 @@ import org.flyte.api.v1.WorkflowIdentifier;
 import org.flyte.api.v1.WorkflowTemplate;
 import org.flyte.api.v1.WorkflowTemplateRegistrar;
 import org.flyte.jflyte.api.FileSystem;
+import org.flyte.jflyte.utils.ClassLoaders;
+import org.flyte.jflyte.utils.Config;
+import org.flyte.jflyte.utils.ExecutionConfig;
+import org.flyte.jflyte.utils.FileSystemLoader;
+import org.flyte.jflyte.utils.JFlyteCustom;
+import org.flyte.jflyte.utils.PackageLoader;
+import org.flyte.jflyte.utils.ProjectClosure;
+import org.flyte.jflyte.utils.ProtoReader;
+import org.flyte.jflyte.utils.ProtoUtil;
+import org.flyte.jflyte.utils.ProtoWriter;
+import org.flyte.jflyte.utils.Registrars;
+import org.flyte.jflyte.utils.WorkflowNodeVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -231,7 +243,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     }
 
     @Override
-    PartialTaskIdentifier visitTaskIdentifier(PartialTaskIdentifier value) {
+    protected PartialTaskIdentifier visitTaskIdentifier(PartialTaskIdentifier value) {
       if (value.project() == null && value.domain() == null && value.version() == null) {
         return PartialTaskIdentifier.builder()
             .name(value.name())
@@ -246,7 +258,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     }
 
     @Override
-    PartialWorkflowIdentifier visitWorkflowIdentifier(PartialWorkflowIdentifier value) {
+    protected PartialWorkflowIdentifier visitWorkflowIdentifier(PartialWorkflowIdentifier value) {
       if (value.project() == null && value.domain() == null && value.version() == null) {
         return PartialWorkflowIdentifier.builder()
             .name(value.name())
@@ -264,7 +276,8 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     }
 
     @Override
-    PartialLaunchPlanIdentifier visitLaunchPlanIdentifier(PartialLaunchPlanIdentifier value) {
+    protected PartialLaunchPlanIdentifier visitLaunchPlanIdentifier(
+        PartialLaunchPlanIdentifier value) {
       if (value.project() == null && value.domain() == null && value.version() == null) {
         return PartialLaunchPlanIdentifier.builder()
             .name(value.name())

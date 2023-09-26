@@ -16,7 +16,7 @@
  */
 package org.flyte.jflyte;
 
-import static org.flyte.jflyte.MoreCollectors.toUnmodifiableMap;
+import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableMap;
 
 import com.google.common.collect.Maps;
 import java.util.List;

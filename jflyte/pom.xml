@@ -34,7 +34,6 @@
   <properties>
     <docker.image>ghcr.io/flyteorg/flytekit-java</docker.image>
     <docker.tag>${project.version}</docker.tag>
-    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencies>

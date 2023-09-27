@@ -29,10 +29,6 @@
   <name>Flytekit Java Examples</name>
   <description>Examples of Tasks, Workflows and Launch plans written in Java.</description>
 
-  <properties>
-    <maven.deploy.skip>true</maven.deploy.skip>
-  </properties>
-
   <dependencies>
     <!-- compile -->
     <dependency>

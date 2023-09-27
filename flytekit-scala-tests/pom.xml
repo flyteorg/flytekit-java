@@ -36,7 +36,6 @@
     <scala.baseVersion>2.13</scala.baseVersion>
     <scala.version>2.13.10</scala.version>
 
-    <maven.deploy.skip>true</maven.deploy.skip>
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
   </properties>

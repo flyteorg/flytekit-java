@@ -46,6 +46,7 @@
   </developers>
 
   <modules>
+    <module>flytekit-bom</module>
     <module>flytekit-api</module>
     <module>flytekit-jackson</module>
     <module>flytekit-java</module>

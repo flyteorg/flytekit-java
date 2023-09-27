@@ -54,6 +54,7 @@ import org.flyte.jflyte.utils.ClassLoaders;
 import org.flyte.jflyte.utils.Config;
 import org.flyte.jflyte.utils.ExecutionConfig;
 import org.flyte.jflyte.utils.FileSystemLoader;
+import org.flyte.jflyte.utils.FlyteAdminClient;
 import org.flyte.jflyte.utils.IdentifierRewrite;
 import org.flyte.jflyte.utils.JFlyteCustom;
 import org.flyte.jflyte.utils.PackageLoader;
@@ -206,6 +207,8 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
             .domain(config.domain())
             .project(config.project())
             .version(config.version())
+            .adminClient(
+                FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null))
             .build()
             .visitor();
 

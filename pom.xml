@@ -509,8 +509,6 @@
                 <endWithNewline />
               </format>
             </formats>
-
-            <ratchetFrom>origin/master</ratchetFrom>
           </configuration>
           <executions>
             <execution>

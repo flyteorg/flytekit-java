@@ -16,6 +16,9 @@
  */
 package org.flyte.examples;
 
+import static org.flyte.examples.FlyteEnvironment.DOMAIN;
+import static org.flyte.examples.FlyteEnvironment.PROJECT;
+
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import com.google.errorprone.annotations.Var;
@@ -23,6 +26,9 @@ import org.flyte.examples.SumTask.SumInput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkDynamicWorkflowTask;
+import org.flyte.flytekit.SdkNode;
+import org.flyte.flytekit.SdkRemoteTask;
+import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflowBuilder;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
@@ -59,11 +65,23 @@ public class DynamicFibonacciWorkflowTask
     } else if (input.n().get() == 0) {
       return Output.create(SdkBindingDataFactory.of(0));
     } else {
+      SdkNode<Void> hello =
+          builder.apply(
+              "hello",
+              SdkRemoteTask.create(
+                  DOMAIN,
+                  PROJECT,
+                  HelloWorldTask.class.getName(),
+                  SdkTypes.nulls(),
+                  SdkTypes.nulls()));
       @Var SdkBindingData<Long> prev = SdkBindingDataFactory.of(0);
       @Var SdkBindingData<Long> value = SdkBindingDataFactory.of(1);
       for (int i = 2; i <= input.n().get(); i++) {
         SdkBindingData<Long> next =
-            builder.apply("fib-" + i, new SumTask(), SumInput.create(value, prev)).getOutputs();
+            builder
+                .apply(
+                    "fib-" + i, new SumTask().withUpstreamNode(hello), SumInput.create(value, prev))
+                .getOutputs();
         prev = value;
         value = next;
       }

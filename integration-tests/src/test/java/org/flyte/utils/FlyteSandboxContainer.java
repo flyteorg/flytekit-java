@@ -33,7 +33,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContainer> {
 
-  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.1.0";
+  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.9.1";
 
   public static final FlyteSandboxContainer INSTANCE =
       new FlyteSandboxContainer()

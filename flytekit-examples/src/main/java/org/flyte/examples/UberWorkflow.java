@@ -68,6 +68,14 @@ public class UberWorkflow extends SdkWorkflow<UberWorkflow.Input, SumWorkflow.Ou
             .result();
     SdkBindingData<Long> abcd =
         builder.apply("post-sum", new SumTask(), SumTask.SumInput.create(abc, d)).getOutputs();
-    return SumWorkflow.Output.create(abcd);
+    SdkBindingData<Long> result =
+        builder
+            .apply(
+                "fibonacci",
+                new DynamicFibonacciWorkflowTask(),
+                DynamicFibonacciWorkflowTask.Input.create(abcd))
+            .getOutputs()
+            .output();
+    return SumWorkflow.Output.create(result);
   }
 }

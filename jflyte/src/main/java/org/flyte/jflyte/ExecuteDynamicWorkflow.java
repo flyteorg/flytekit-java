@@ -41,9 +41,6 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
-import org.flyte.api.v1.PartialLaunchPlanIdentifier;
-import org.flyte.api.v1.PartialTaskIdentifier;
-import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Struct;
@@ -57,6 +54,8 @@ import org.flyte.jflyte.utils.ClassLoaders;
 import org.flyte.jflyte.utils.Config;
 import org.flyte.jflyte.utils.ExecutionConfig;
 import org.flyte.jflyte.utils.FileSystemLoader;
+import org.flyte.jflyte.utils.FlyteAdminClient;
+import org.flyte.jflyte.utils.IdentifierRewrite;
 import org.flyte.jflyte.utils.JFlyteCustom;
 import org.flyte.jflyte.utils.PackageLoader;
 import org.flyte.jflyte.utils.ProjectClosure;
@@ -177,7 +176,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
               });
 
       DynamicJobSpec rewrittenFutures =
-          rewrite(executionConfig, futures, taskTemplates, workflowTemplates);
+          rewrite(config, executionConfig, futures, taskTemplates, workflowTemplates);
 
       if (rewrittenFutures.nodes().isEmpty()) {
         Map<String, Literal> outputs = getLiteralMap(rewrittenFutures.outputs());
@@ -198,15 +197,24 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
   }
 
   static DynamicJobSpec rewrite(
-      ExecutionConfig config,
+      Config config,
+      ExecutionConfig executionConfig,
       DynamicJobSpec spec,
       Map<TaskIdentifier, TaskTemplate> taskTemplates,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates) {
 
-    DynamicWorkflowIdentifierRewrite rewrite = new DynamicWorkflowIdentifierRewrite(config);
+    WorkflowNodeVisitor workflowNodeVisitor =
+        IdentifierRewrite.builder()
+            .domain(executionConfig.domain())
+            .project(executionConfig.project())
+            .version(executionConfig.version())
+            .adminClient(
+                FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null))
+            .build()
+            .visitor();
 
     List<Node> rewrittenNodes =
-        spec.nodes().stream().map(rewrite::visitNode).collect(toUnmodifiableList());
+        spec.nodes().stream().map(workflowNodeVisitor::visitNode).collect(toUnmodifiableList());
 
     Map<WorkflowIdentifier, WorkflowTemplate> usedSubWorkflows =
         ProjectClosure.collectSubWorkflows(rewrittenNodes, workflowTemplates);
@@ -218,7 +226,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     // and workflows
 
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenUsedSubWorkflows =
-        mapValues(usedSubWorkflows, rewrite::visitWorkflowTemplate);
+        mapValues(usedSubWorkflows, workflowNodeVisitor::visitWorkflowTemplate);
 
     return spec.toBuilder()
         .nodes(rewrittenNodes)
@@ -233,69 +241,6 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
                 .putAll(usedTaskTemplates)
                 .build())
         .build();
-  }
-
-  static class DynamicWorkflowIdentifierRewrite extends WorkflowNodeVisitor {
-    private final ExecutionConfig config;
-
-    DynamicWorkflowIdentifierRewrite(ExecutionConfig config) {
-      this.config = config;
-    }
-
-    @Override
-    protected PartialTaskIdentifier visitTaskIdentifier(PartialTaskIdentifier value) {
-      if (value.project() == null && value.domain() == null && value.version() == null) {
-        return PartialTaskIdentifier.builder()
-            .name(value.name())
-            .project(config.project())
-            .domain(config.domain())
-            .version(config.version())
-            .build();
-      }
-
-      throw new IllegalArgumentException(
-          "Dynamic workflow tasks don't support remote tasks: " + value);
-    }
-
-    @Override
-    protected PartialWorkflowIdentifier visitWorkflowIdentifier(PartialWorkflowIdentifier value) {
-      if (value.project() == null && value.domain() == null && value.version() == null) {
-        return PartialWorkflowIdentifier.builder()
-            .name(value.name())
-            .project(config.project())
-            .domain(config.domain())
-            .version(config.version())
-            .build();
-      }
-
-      // in these cases all referenced workflows are sub-workflows, and we can't include
-      // templates for tasks used in them
-
-      throw new IllegalArgumentException(
-          "Dynamic workflow tasks don't support remote workflows: " + value);
-    }
-
-    @Override
-    protected PartialLaunchPlanIdentifier visitLaunchPlanIdentifier(
-        PartialLaunchPlanIdentifier value) {
-      if (value.project() == null && value.domain() == null && value.version() == null) {
-        return PartialLaunchPlanIdentifier.builder()
-            .name(value.name())
-            .project(config.project())
-            .domain(config.domain())
-            .version(config.version())
-            .build();
-      }
-
-      // we don't need to fetch anything, so we can use this reference, because
-      // for launch plans we don't need to include task and workflow templates into closure
-      if (value.project() != null && value.domain() != null && value.version() != null) {
-        return value;
-      }
-
-      throw new IllegalArgumentException(
-          "Dynamic workflow tasks don't support remote launch plans: " + value);
-    }
   }
 
   private static DynamicWorkflowTask getDynamicWorkflowTask(String name) {

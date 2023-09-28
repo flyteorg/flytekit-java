@@ -33,7 +33,7 @@ import org.flyte.api.v1.WorkflowTemplate;
 
 /** Overrides project, domain and version for nodes in {@link WorkflowTemplate}. */
 @AutoValue
-abstract class IdentifierRewrite {
+public abstract class IdentifierRewrite {
 
   abstract String domain();
 
@@ -47,12 +47,11 @@ abstract class IdentifierRewrite {
     return visitor().visitWorkflowTemplate(template);
   }
 
-  @VisibleForTesting
-  Visitor visitor() {
+  public Visitor visitor() {
     return new Visitor();
   }
 
-  class Visitor extends WorkflowNodeVisitor {
+  public class Visitor extends WorkflowNodeVisitor {
     @Override
     protected PartialTaskIdentifier visitTaskIdentifier(PartialTaskIdentifier value) {
       return apply(value);
@@ -201,20 +200,20 @@ abstract class IdentifierRewrite {
     return value1 != null ? value1 : value2.get();
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new AutoValue_IdentifierRewrite.Builder();
   }
 
   @AutoValue.Builder
-  abstract static class Builder {
-    abstract Builder domain(String domain);
+  public abstract static class Builder {
+    public abstract Builder domain(String domain);
 
-    abstract Builder project(String project);
+    public abstract Builder project(String project);
 
-    abstract Builder version(String version);
+    public abstract Builder version(String version);
 
-    abstract Builder adminClient(FlyteAdminClient adminClient);
+    public abstract Builder adminClient(FlyteAdminClient adminClient);
 
-    abstract IdentifierRewrite build();
+    public abstract IdentifierRewrite build();
   }
 }

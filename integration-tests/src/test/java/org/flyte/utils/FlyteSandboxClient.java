@@ -16,6 +16,9 @@
  */
 package org.flyte.utils;
 
+import static org.flyte.examples.FlyteEnvironment.DOMAIN;
+import static org.flyte.examples.FlyteEnvironment.PROJECT;
+
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.core.Execution;
 import flyteidl.core.IdentifierOuterClass;
@@ -28,8 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.rnorth.ducttape.unreliables.Unreliables;
 
 public class FlyteSandboxClient {
-  private static final String DOMAIN = "development";
-  private static final String PROJECT = "flytesnacks";
   private static final int EXECUTION_TIMEOUT_SECONDS = 300;
 
   private final String version;

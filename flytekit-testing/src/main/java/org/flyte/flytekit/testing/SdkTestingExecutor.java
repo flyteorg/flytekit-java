@@ -42,9 +42,11 @@ import org.flyte.api.v1.Variable;
 import org.flyte.api.v1.WorkflowNode;
 import org.flyte.api.v1.WorkflowNode.Reference;
 import org.flyte.api.v1.WorkflowTemplate;
+import org.flyte.flytekit.SdkDynamicWorkflowTask;
 import org.flyte.flytekit.SdkRemoteLaunchPlan;
 import org.flyte.flytekit.SdkRemoteTask;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.SdkTransform;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.localengine.ExecutionContext;
@@ -321,12 +323,7 @@ public abstract class SdkTestingExecutor {
 
   public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
       SdkRunnableTask<InputT, OutputT> task, InputT input, OutputT output) {
-    TestingRunnableTask<InputT, OutputT> fixedTask =
-        getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
-
-    return toBuilder()
-        .putFixedTask(task.getName(), fixedTask.withFixedOutput(input, output))
-        .build();
+    return withTaskOutput0(task, input, output);
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
@@ -334,7 +331,24 @@ public abstract class SdkTestingExecutor {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.name(), task.inputs(), task.outputs());
 
-    return toBuilder().putFixedTask(task.name(), fixedTask.withFixedOutput(input, output)).build();
+    return toBuilder()
+        .putFixedTask(task.getName(), fixedTask.withFixedOutput(input, output))
+        .build();
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
+      SdkDynamicWorkflowTask<InputT, OutputT> task, InputT input, OutputT output) {
+    return withTaskOutput0(task, input, output);
+  }
+
+  private <InputT, OutputT> SdkTestingExecutor withTaskOutput0(
+      SdkTransform<InputT, OutputT> task, InputT input, OutputT output) {
+    TestingRunnableTask<InputT, OutputT> fixedTask =
+        getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
+
+    return toBuilder()
+        .putFixedTask(task.getName(), fixedTask.withFixedOutput(input, output))
+        .build();
   }
 
   public <InputT, OutputT> SdkTestingExecutor withLaunchPlanOutput(
@@ -361,6 +375,16 @@ public abstract class SdkTestingExecutor {
 
   public <InputT, OutputT> SdkTestingExecutor withTask(
       SdkRunnableTask<InputT, OutputT> task, Function<InputT, OutputT> runFn) {
+    return withTask0(task, runFn);
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withTask(
+      SdkDynamicWorkflowTask<InputT, OutputT> task, Function<InputT, OutputT> runFn) {
+    return withTask0(task, runFn);
+  }
+
+  private <InputT, OutputT> SdkTestingExecutor withTask0(
+      SdkTransform<InputT, OutputT> task, Function<InputT, OutputT> runFn) {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.getName(), task.getInputType(), task.getOutputType());
 

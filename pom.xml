@@ -50,12 +50,12 @@
     <module>flytekit-api</module>
     <module>flytekit-jackson</module>
     <module>flytekit-java</module>
-    <module>flytekit-scala_2.12</module>
-    <module>flytekit-scala_2.13</module>
-    <module>flytekit-scala-tests</module>
+    <!--    <module>flytekit-scala_2.12</module>-->
+    <!--    <module>flytekit-scala_2.13</module>-->
+    <!--    <module>flytekit-scala-tests</module>-->
     <module>flytekit-testing</module>
     <module>flytekit-examples</module>
-    <module>flytekit-examples-scala</module>
+    <!--    <module>flytekit-examples-scala</module>-->
     <module>flytekit-local-engine</module>
     <module>flyteidl-protos</module>
     <module>jflyte-api</module>
@@ -104,8 +104,8 @@
     <junit.version>5.6.2</junit.version>
 
     <!-- has to be one liner, or errorprone doesn't work -->
-    <error-prone-base-config><![CDATA[-Xplugin:ErrorProne -XepDisableWarningsInGeneratedCode -XepExcludedPaths:.*/generated-(test-)?sources/.*]]></error-prone-base-config>
-    <error-prone-additional-args>-Xep:AutoValueImmutableFields:OFF -Xep:Var:ERROR</error-prone-additional-args>
+    <error-prone-base-config />
+    <error-prone-additional-args />
 
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>

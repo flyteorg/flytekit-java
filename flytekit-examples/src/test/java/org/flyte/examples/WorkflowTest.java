@@ -54,9 +54,13 @@ public class WorkflowTest {
                 new SumTask(),
                 SumTask.SumInput.create(SdkBindingDataFactory.of(0L), SdkBindingDataFactory.of(4L)),
                 SdkBindingDataFactory.of(42L))
+            .withTaskOutput(
+                new DynamicFibonacciWorkflowTask(),
+                DynamicFibonacciWorkflowTask.Input.create(SdkBindingDataFactory.of(42L)),
+                DynamicFibonacciWorkflowTask.Output.create(SdkBindingDataFactory.of(123L)))
             .execute();
 
-    assertEquals(42L, result.getIntegerOutput("result"));
+    assertEquals(123L, result.getIntegerOutput("result"));
   }
 
   @Test
@@ -87,9 +91,12 @@ public class WorkflowTest {
                 new SumTask(),
                 SumInput.create(SdkBindingDataFactory.of(10L), SdkBindingDataFactory.of(4L)),
                 SdkBindingDataFactory.of(15L))
+            .withTask(
+                new DynamicFibonacciWorkflowTask(),
+                input -> DynamicFibonacciWorkflowTask.Output.create(SdkBindingDataFactory.of(42L)))
             .execute();
 
-    assertEquals(15L, result.getIntegerOutput("result"));
+    assertEquals(42L, result.getIntegerOutput("result"));
   }
 
   @Test

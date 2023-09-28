@@ -46,6 +46,7 @@
   </developers>
 
   <modules>
+    <module>flytekit-bom</module>
     <module>flytekit-api</module>
     <module>flytekit-jackson</module>
     <module>flytekit-java</module>
@@ -94,6 +95,7 @@
     <picocli.version>4.7.2</picocli.version>
     <protobuf.version>3.21.12</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
+    <!-- also remember to bump the version in flytekit-bom module -->
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
     <error_prone.version>2.19.1</error_prone.version>
@@ -749,6 +751,7 @@
     <profile>
       <id>release</id>
       <!-- Based on: https://central.sonatype.org/pages/apache-maven.html-->
+      <!-- Please also update the same profile in flytekit-bom module if needed -->
       <build>
         <plugins>
           <plugin>

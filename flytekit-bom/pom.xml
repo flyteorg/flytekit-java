@@ -92,7 +92,7 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
-        <artifactId>flytekit-scala-tests</artifactId>
+        <artifactId>flytekit-scala-tests_2.13</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

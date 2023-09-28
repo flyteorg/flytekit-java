@@ -176,7 +176,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
               });
 
       DynamicJobSpec rewrittenFutures =
-          rewrite(executionConfig, futures, taskTemplates, workflowTemplates);
+          rewrite(config, executionConfig, futures, taskTemplates, workflowTemplates);
 
       if (rewrittenFutures.nodes().isEmpty()) {
         Map<String, Literal> outputs = getLiteralMap(rewrittenFutures.outputs());
@@ -197,16 +197,17 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
   }
 
   static DynamicJobSpec rewrite(
-      ExecutionConfig config,
+      Config config,
+      ExecutionConfig executionConfig,
       DynamicJobSpec spec,
       Map<TaskIdentifier, TaskTemplate> taskTemplates,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates) {
 
     WorkflowNodeVisitor workflowNodeVisitor =
         IdentifierRewrite.builder()
-            .domain(config.domain())
-            .project(config.project())
-            .version(config.version())
+            .domain(executionConfig.domain())
+            .project(executionConfig.project())
+            .version(executionConfig.version())
             .adminClient(
                 FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null))
             .build()

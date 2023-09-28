@@ -30,8 +30,6 @@ class JFlyteContainer extends GenericContainer<JFlyteContainer> {
   static final String IMAGE_NAME;
   static final Map<String, String> envVars =
       ImmutableMap.<String, String>builder()
-          .put("FLYTE_PLATFORM_URL", "flyte:30081")
-          .put("FLYTE_PLATFORM_INSECURE", "True")
           .put("FLYTE_AWS_ENDPOINT", "http://flyte:30084")
           .put("FLYTE_AWS_ACCESS_KEY_ID", "minio")
           .put("FLYTE_AWS_SECRET_ACCESS_KEY", "miniostorage")

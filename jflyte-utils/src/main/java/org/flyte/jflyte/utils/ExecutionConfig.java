@@ -19,6 +19,7 @@ package org.flyte.jflyte.utils;
 import static java.lang.System.getenv;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.Nullable;
 
 /** Configuration values available only during task execution. */
 @AutoValue
@@ -31,18 +32,12 @@ public abstract class ExecutionConfig {
 
   public abstract String version();
 
-  public abstract String platformUrl();
-
-  public abstract boolean platformInsecure();
-
   public static ExecutionConfig load() {
     return ExecutionConfig.builder()
         .project(getenv("FLYTE_INTERNAL_PROJECT"))
         .domain(getenv("FLYTE_INTERNAL_DOMAIN"))
         .version(getenv("FLYTE_INTERNAL_VERSION"))
         .image(getenv("FLYTE_INTERNAL_IMAGE"))
-        .platformUrl(getenv("FLYTE_PLATFORM_URL"))
-        .platformInsecure(Boolean.parseBoolean(getenv("FLYTE_PLATFORM_INSECURE")))
         .build();
   }
 
@@ -60,10 +55,6 @@ public abstract class ExecutionConfig {
     public abstract Builder version(String version);
 
     public abstract Builder image(String image);
-
-    public abstract Builder platformUrl(String platformUrl);
-
-    public abstract Builder platformInsecure(boolean platformInsecure);
 
     public abstract ExecutionConfig build();
   }

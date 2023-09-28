@@ -327,6 +327,11 @@ public abstract class SdkTestingExecutor {
   }
 
   public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
+      SdkDynamicWorkflowTask<InputT, OutputT> task, InputT input, OutputT output) {
+    return withTaskOutput0(task, input, output);
+  }
+
+  public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
       SdkRemoteTask<InputT, OutputT> task, InputT input, OutputT output) {
     TestingRunnableTask<InputT, OutputT> fixedTask =
         getFixedTaskOrDefault(task.name(), task.inputs(), task.outputs());
@@ -334,11 +339,6 @@ public abstract class SdkTestingExecutor {
     return toBuilder()
         .putFixedTask(task.getName(), fixedTask.withFixedOutput(input, output))
         .build();
-  }
-
-  public <InputT, OutputT> SdkTestingExecutor withTaskOutput(
-      SdkDynamicWorkflowTask<InputT, OutputT> task, InputT input, OutputT output) {
-    return withTaskOutput0(task, input, output);
   }
 
   private <InputT, OutputT> SdkTestingExecutor withTaskOutput0(

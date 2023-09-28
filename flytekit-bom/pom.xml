@@ -82,11 +82,6 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
-        <artifactId>flytekit-scala_2.12</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.flyte</groupId>
         <artifactId>flytekit-scala_2.13</artifactId>
         <version>${project.version}</version>
       </dependency>

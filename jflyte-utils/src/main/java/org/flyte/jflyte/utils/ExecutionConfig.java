@@ -19,7 +19,6 @@ package org.flyte.jflyte.utils;
 import static java.lang.System.getenv;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 
 /** Configuration values available only during task execution. */
 @AutoValue

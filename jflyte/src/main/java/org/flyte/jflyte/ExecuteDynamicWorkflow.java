@@ -211,8 +211,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
               .domain(executionConfig.domain())
               .project(executionConfig.project())
               .version(executionConfig.version())
-              .adminClient(
-                  FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null))
+              .adminClient(flyteAdminClient)
               .build()
               .visitor();
 

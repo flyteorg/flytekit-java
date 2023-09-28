@@ -751,6 +751,7 @@
     <profile>
       <id>release</id>
       <!-- Based on: https://central.sonatype.org/pages/apache-maven.html-->
+      <!-- Please also update the same profile in flytekit-bom module if needed -->
       <build>
         <plugins>
           <plugin>

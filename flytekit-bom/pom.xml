@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2021 Flyte Authors.
+  Copyright 2023 Flyte Authors.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -44,6 +44,24 @@
       <organizationUrl>https://flyte.org</organizationUrl>
     </developer>
   </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
+    <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/flyteorg/flytekit-java</url>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -135,21 +153,63 @@
     </dependencies>
   </dependencyManagement>
 
-  <scm>
-    <connection>scm:git:https://github.com/flyteorg/flytekit-java.git</connection>
-    <developerConnection>scm:git:https://github.com/flyteorg/flytekit-java.git</developerConnection>
-    <tag>HEAD</tag>
-    <url>https://github.com/flyteorg/flytekit-java</url>
-  </scm>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>2.21.0</version>
+          <configuration>
+            <pom>
+              <licenseHeader>
+                <content><![CDATA[<!--
+  Copyright $YEAR Flyte Authors.
 
-  <distributionManagement>
-    <repository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->]]></content>
+                <delimiter><![CDATA[<project]]></delimiter>
+              </licenseHeader>
+
+              <sortPom>
+                <encoding>UTF-8</encoding>
+                <lineSeparator>${line.separator}</lineSeparator>
+                <expandEmptyElements>false</expandEmptyElements>
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <keepBlankLines>true</keepBlankLines>
+                <nrOfIndentSpace>2</nrOfIndentSpace>
+                <indentBlankLines>false</indentBlankLines>
+                <indentSchemaLocation>false</indentSchemaLocation>
+                <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                <sortProperties>false</sortProperties>
+                <sortModules>false</sortModules>
+                <sortExecutions>false</sortExecutions>
+              </sortPom>
+            </pom>
+
+            <formats>
+              <format>
+                <includes>
+                  <include>**/src/**.xml</include>
+                </includes>
+                <!-- Files must end with a newline -->
+                <endWithNewline />
+              </format>
+            </formats>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

@@ -33,15 +33,42 @@
     in the same module.</description>
 
   <properties>
-    <scala.baseVersion>2.13</scala.baseVersion>
-    <scala.version>2.13.10</scala.version>
-
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala213.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${scala213.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- test -->
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-examples</artifactId>
@@ -49,7 +76,7 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
+      <artifactId>flytekit-scala_2.13</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -81,10 +108,27 @@
               <goal>testCompile</goal>
             </goals>
           </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>doc-jar</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
+      <!-- Disabling the default javadoc plugin - we use scala-maven-plugin instead -->
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

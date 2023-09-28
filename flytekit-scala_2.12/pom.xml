@@ -32,14 +32,24 @@
     Scala 2.12.</description>
 
   <properties>
-    <scala.baseVersion>2.12</scala.baseVersion>
-    <scala.version>2.12.11</scala.version>
-
-    <magnolia.version>1.0.0-M4</magnolia.version>
-
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala212.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${scala212.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- compile -->
@@ -49,8 +59,7 @@
     </dependency>
     <dependency>
       <groupId>com.softwaremill.magnolia</groupId>
-      <artifactId>magnolia-core_${scala.baseVersion}</artifactId>
-      <version>${magnolia.version}</version>
+      <artifactId>magnolia-core_2.12</artifactId>
     </dependency>
 
     <!-- provided -->
@@ -61,8 +70,12 @@
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -74,7 +87,8 @@
         <artifactId>scala-maven-plugin</artifactId>
         <configuration>
           <sourceDir>../flytekit-scala_2.13/src/main/scala</sourceDir>
-          <scalaVersion>${scala.version}</scalaVersion>
+          <testSourceDir>../flytekit-scala_2.13/src/test/scala</testSourceDir>
+          <scalaVersion>${scala212.version}</scalaVersion>
           <args>
             <arg>-language:experimental.macros</arg>
           </args>
@@ -84,19 +98,30 @@
             <goals>
               <goal>compile</goal>
               <goal>testCompile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
               <goal>doc-jar</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
+      <!-- Disabling the default javadoc plugin - we use scala-maven-plugin instead -->
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
-    <sourceDirectory>../flytekit-scala_2.13/src/main/scala</sourceDirectory>
-    <testSourceDirectory>../flytekit-scala_2.13/src/test/scala</testSourceDirectory>
   </build>
 </project>

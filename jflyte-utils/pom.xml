@@ -48,20 +48,6 @@
       <artifactId>jflyte-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>jflyte-aws</artifactId>
-      <!-- We want to have the dependency, so it is already built before building the docker image,
-           but we want to avoid the artifacts from the module to pollute jflyte -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>jflyte-google-cloud</artifactId>
-      <!-- We want to have the dependency, so it is already built before building the docker image,
-           but we want to avoid the artifacts from the module to pollute jflyte -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -88,13 +74,6 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative-boringssl-static</artifactId>
-    </dependency>
-
-    <!-- runtime -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- provided -->
@@ -171,9 +150,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>

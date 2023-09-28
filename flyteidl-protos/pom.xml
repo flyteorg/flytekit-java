@@ -52,9 +52,8 @@
       <plugin>
         <groupId>org.xolstice.maven.plugins</groupId>
         <artifactId>protobuf-maven-plugin</artifactId>
-        <version>0.6.1</version>
         <configuration>
-          <protocArtifact>com.google.protobuf:protoc:3.21.1:exe:${os.detected.classifier}</protocArtifact>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
           <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
           <checkStaleness>true</checkStaleness>
@@ -70,52 +69,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
         <configuration>
-          <source>8</source>
-          <target>8</target>
-          <showWarnings>true</showWarnings>
-          <showDeprecation>true</showDeprecation>
-          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+          <!-- there are lots of deprecation in the protos but we don't want to fail -->
           <failOnWarning>false</failOnWarning>
-          <!-- Generated proto classes produce warnings -->
-          <!-- The semantics of this option are reversed, see MCOMPILER-209. -->
-          <useIncrementalCompilation>false</useIncrementalCompilation>
-          <encoding>utf-8</encoding>
-          <compilerArgs>
-            <!-- for AutoValue reflection -->
-            <arg>-parameters</arg>
-            <arg>-Xlint:all</arg>
-            <!-- disable not helpful warnings to fail on warnings -->
-            <arg>-Xlint:-path</arg>
-            <arg>-Xlint:-processing</arg>
-            <!-- we don't care about classes being deserialized with different classpath -->
-            <arg>-Xlint:-serial</arg>
-            <arg>-implicit:class</arg>
-            <!-- see https://stackoverflow.com/a/57004351 -->
-            <arg>-Xpkginfo:always</arg>
-          </compilerArgs>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>com.google.auto.value</groupId>
-              <artifactId>auto-value</artifactId>
-              <version>${auto-value.version}</version>
-            </path>
-            <path>
-              <groupId>com.google.auto.service</groupId>
-              <artifactId>auto-service</artifactId>
-              <version>${auto-service.version}</version>
-            </path>
-            <path>
-              <groupId>com.google.errorprone</groupId>
-              <artifactId>error_prone_core</artifactId>
-              <version>${error_prone.version}</version>
-            </path>
-          </annotationProcessorPaths>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>

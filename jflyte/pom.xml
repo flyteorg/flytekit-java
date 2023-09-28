@@ -59,20 +59,6 @@
       <artifactId>jflyte-utils</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>jflyte-aws</artifactId>
-      <!-- We want to have the dependency, so it is already built before building the docker image,
-           but we want to avoid the artifacts from the module to pollute jflyte -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
-      <artifactId>jflyte-google-cloud</artifactId>
-      <!-- We want to have the dependency, so it is already built before building the docker image,
-           but we want to avoid the artifacts from the module to pollute jflyte -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -109,6 +95,20 @@
     </dependency>
 
     <!-- provided -->
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>jflyte-aws</artifactId>
+      <!-- We want to have the dependency, so it is already built before building the docker image,
+           but we want to avoid the artifacts from the module to pollute jflyte -->
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>jflyte-google-cloud</artifactId>
+      <!-- We want to have the dependency, so it is already built before building the docker image,
+           but we want to avoid the artifacts from the module to pollute jflyte -->
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
@@ -171,20 +171,10 @@
       <artifactId>memoryfilesystem</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- ensure there is at least one slf4j implementation in test classpath so that we can test
-         org/slf4j/impl/StaticLoggerBinder.class is only discovered in child class loader -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>

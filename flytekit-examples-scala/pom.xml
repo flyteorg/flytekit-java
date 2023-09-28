@@ -24,23 +24,47 @@
     <version>0.4.25-SNAPSHOT</version>
   </parent>
 
-  <artifactId>flytekit-examples-scala</artifactId>
+  <artifactId>flytekit-examples-scala_2.13</artifactId>
 
   <name>Flytekit Java Examples in Scala</name>
   <description>Examples of Tasks, Workflows and Launch plans written in Scala.</description>
 
   <properties>
-    <scala.baseVersion>2.13</scala.baseVersion>
-    <scala.version>2.13.10</scala.version>
-
     <!-- spotbugs doesn't understand Scala code -->
     <spotbugs.skip>true</spotbugs.skip>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala213.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${scala213.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-scala_${scala.baseVersion}</artifactId>
+      <artifactId>flytekit-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-scala_2.13</artifactId>
     </dependency>
   </dependencies>
 

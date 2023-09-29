@@ -16,8 +16,9 @@
  */
 package org.flyte.examples;
 
-import static org.flyte.examples.FlyteEnvironment.DOMAIN;
+import static org.flyte.examples.FlyteEnvironment.DEVELOPMENT_DOMAIN;
 import static org.flyte.examples.FlyteEnvironment.PROJECT;
+import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
@@ -70,7 +71,7 @@ public class DynamicFibonacciWorkflowTask
           builder.apply(
               "hello",
               SdkRemoteTask.create(
-                  DOMAIN,
+                  DEVELOPMENT_DOMAIN,
                   PROJECT,
                   HelloWorldTask.class.getName(),
                   SdkTypes.nulls(),
@@ -80,7 +81,7 @@ public class DynamicFibonacciWorkflowTask
           builder.apply(
               "world",
               SdkRemoteTask.create(
-                      DOMAIN,
+                      STAGING_DOMAIN,
                       PROJECT,
                       "org.flyte.examples.flytekitscala.NoInputsTask",
                       SdkTypes.nulls(),

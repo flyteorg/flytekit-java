@@ -18,7 +18,8 @@ package org.flyte.examples;
 
 public final class FlyteEnvironment {
 
-  public static final String DOMAIN = "development";
+  public static final String DEVELOPMENT_DOMAIN = "development";
+  public static final String STAGING_DOMAIN = "staging";
   public static final String PROJECT = "flytesnacks";
 
   private FlyteEnvironment() {

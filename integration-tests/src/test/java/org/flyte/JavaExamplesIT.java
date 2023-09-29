@@ -17,6 +17,7 @@
 package org.flyte;
 
 import static org.flyte.FlyteContainer.CLIENT;
+import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 import static org.flyte.utils.Literal.ofIntegerMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,7 +36,7 @@ public class JavaExamplesIT {
   @BeforeAll
   public static void beforeAll() {
     CLIENT.registerWorkflows(CLASSPATH_EXAMPLES);
-    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES_SCALA);
+    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES_SCALA, STAGING_DOMAIN);
   }
 
   @Test

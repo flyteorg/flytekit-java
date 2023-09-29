@@ -29,11 +29,13 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavaExamplesIT {
-  private static final String CLASSPATH = "flytekit-examples/target/lib";
+  private static final String CLASSPATH_EXAMPLES = "flytekit-examples/target/lib";
+  private static final String CLASSPATH_EXAMPLES_SCALA = "flytekit-examples-scala/target/lib";
 
   @BeforeAll
   public static void beforeAll() {
-    CLIENT.registerWorkflows(CLASSPATH);
+    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES);
+    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES_SCALA);
   }
 
   @Test

@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.4.25</version>
+    <version>0.4.26-SNAPSHOT</version>
   </parent>
 
   <!-- can't use properties, artifact name should be constant -->

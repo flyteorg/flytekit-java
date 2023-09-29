@@ -25,7 +25,6 @@ import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.TaskOuterClass;
 import flyteidl.admin.WorkflowOuterClass;
-import flyteidl.core.IdentifierOuterClass;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
@@ -185,8 +184,15 @@ public class FlyteAdminClient implements AutoCloseable {
     return fetchLatestResource(
         taskId,
         request -> stub.listTasks(request).getTasksList(),
-        TaskOuterClass.Task::getId,
-        ProtoUtil::deserializeTaskId);
+        task -> ProtoUtil.deserializeTaskId(task.getId()));
+  }
+
+  @Nullable
+  public TaskTemplate fetchLatestTaskTemplate(NamedEntityIdentifier taskId) {
+    return fetchLatestResource(
+        taskId,
+        request -> stub.listTasks(request).getTasksList(),
+        task -> ProtoUtil.deserialize(task.getClosure().getCompiledTask().getTemplate()));
   }
 
   @Nullable
@@ -194,8 +200,7 @@ public class FlyteAdminClient implements AutoCloseable {
     return fetchLatestResource(
         workflowId,
         request -> stub.listWorkflows(request).getWorkflowsList(),
-        WorkflowOuterClass.Workflow::getId,
-        ProtoUtil::deserializeWorkflowId);
+        workflow -> ProtoUtil.deserializeWorkflowId(workflow.getId()));
   }
 
   @Nullable
@@ -203,16 +208,14 @@ public class FlyteAdminClient implements AutoCloseable {
     return fetchLatestResource(
         launchPlanId,
         request -> stub.listLaunchPlans(request).getLaunchPlansList(),
-        LaunchPlanOuterClass.LaunchPlan::getId,
-        ProtoUtil::deserializeLaunchPlanId);
+        launchPlan -> ProtoUtil.deserializeLaunchPlanId(launchPlan.getId()));
   }
 
   @Nullable
   private <T, RespT> T fetchLatestResource(
       NamedEntityIdentifier nameId,
       Function<ResourceListRequest, List<RespT>> performRequestFn,
-      Function<RespT, IdentifierOuterClass.Identifier> extractIdFn,
-      Function<IdentifierOuterClass.Identifier, T> deserializeFn) {
+      Function<RespT, T> deserializeFn) {
     ResourceListRequest request =
         ResourceListRequest.newBuilder()
             .setLimit(1)
@@ -230,8 +233,7 @@ public class FlyteAdminClient implements AutoCloseable {
       return null;
     }
 
-    IdentifierOuterClass.Identifier id = extractIdFn.apply(list.get(0));
-    return deserializeFn.apply(id);
+    return deserializeFn.apply(list.get(0));
   }
 
   private <T> void idempotentCreate(String label, Object id, GrpcRetries.Retryable<T> retryable) {

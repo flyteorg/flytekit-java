@@ -17,7 +17,9 @@
 package org.flyte.jflyte.utils;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
+import static org.flyte.jflyte.utils.Fixtures.COMMAND;
+import static org.flyte.jflyte.utils.Fixtures.IMAGE_NAME;
+import static org.flyte.jflyte.utils.Fixtures.TASK_TEMPLATE;
 import static org.flyte.jflyte.utils.FlyteAdminClient.TRIGGERING_PRINCIPAL;
 import static org.flyte.jflyte.utils.FlyteAdminClient.USER_TRIGGERED_EXECUTION_NESTING;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,7 +34,10 @@ import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.admin.LaunchPlanOuterClass;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.admin.TaskOuterClass;
+import flyteidl.admin.TaskOuterClass.Task;
+import flyteidl.admin.TaskOuterClass.TaskClosure;
 import flyteidl.admin.WorkflowOuterClass;
+import flyteidl.core.Compiler.CompiledTask;
 import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.IdentifierOuterClass.ResourceType;
 import flyteidl.core.Interface;
@@ -51,9 +56,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
-import org.flyte.api.v1.Container;
 import org.flyte.api.v1.CronSchedule;
-import org.flyte.api.v1.KeyValuePair;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
@@ -64,10 +67,8 @@ import org.flyte.api.v1.Parameter;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
-import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
-import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
@@ -95,8 +96,6 @@ public class FlyteAdminClientTest {
   private static final String WF_NAME = "workflow-foo";
   private static final String WF_VERSION = "version-wf-foo";
   private static final String WF_OLD_VERSION = "version-wf-bar";
-  private static final String IMAGE_NAME = "alpine:latest";
-  private static final String COMMAND = "date";
 
   private FlyteAdminClient client;
   private TestAdminService stubService;
@@ -138,33 +137,7 @@ public class FlyteAdminClientTest {
             .version(TASK_VERSION)
             .build();
 
-    TypedInterface interface_ =
-        TypedInterface.builder()
-            .inputs(ImmutableMap.of("x", ApiUtils.createVar(SimpleType.STRING)))
-            .outputs(ImmutableMap.of("y", ApiUtils.createVar(SimpleType.INTEGER)))
-            .build();
-
-    Container container =
-        Container.builder()
-            .command(ImmutableList.of(COMMAND))
-            .args(ImmutableList.of())
-            .image(IMAGE_NAME)
-            .env(ImmutableList.of(KeyValuePair.of("key", "value")))
-            .build();
-
-    RetryStrategy retries = RetryStrategy.builder().retries(4).build();
-    TaskTemplate template =
-        TaskTemplate.builder()
-            .container(container)
-            .type("custom-task")
-            .interface_(interface_)
-            .custom(Struct.of(emptyMap()))
-            .retries(retries)
-            .discoverable(false)
-            .cacheSerializable(false)
-            .build();
-
-    client.createTask(identifier, template);
+    client.createTask(identifier, TASK_TEMPLATE);
 
     assertThat(
         stubService.createTaskRequest,
@@ -398,6 +371,35 @@ public class FlyteAdminClientTest {
   }
 
   @Test
+  public void fetchLatestTaskShouldReturnFirstTaskFromList() {
+    stubService.taskLists =
+        Arrays.asList(
+            Task.newBuilder()
+                .setId(newIdentifier(ResourceType.TASK, TASK_NAME, TASK_VERSION))
+                .setClosure(
+                    TaskClosure.newBuilder()
+                        .setCompiledTask(
+                            CompiledTask.newBuilder()
+                                .setTemplate(ProtoUtil.serialize(TASK_TEMPLATE))
+                                .build())
+                        .build())
+                .build(),
+            TaskOuterClass.Task.newBuilder()
+                .setId(newIdentifier(ResourceType.TASK, TASK_NAME, TASK_OLD_VERSION))
+                .build());
+
+    TaskTemplate fetchLatestTaskTemplate =
+        client.fetchLatestTaskTemplate(
+            NamedEntityIdentifier.builder()
+                .project(PROJECT)
+                .domain(DOMAIN)
+                .name(TASK_NAME)
+                .build());
+
+    assertThat(fetchLatestTaskTemplate, equalTo(TASK_TEMPLATE));
+  }
+
+  @Test
   public void fetchLatestTaskIdShouldReturnNullWhenEmptyList() {
     stubService.taskLists = Collections.emptyList();
 
@@ -517,7 +519,7 @@ public class FlyteAdminClientTest {
             Tasks.TaskTemplate.newBuilder()
                 .setContainer(
                     Tasks.Container.newBuilder()
-                        .setImage(FlyteAdminClientTest.IMAGE_NAME)
+                        .setImage(IMAGE_NAME)
                         .addCommand(COMMAND)
                         .addEnv(
                             Literals.KeyValuePair.newBuilder()

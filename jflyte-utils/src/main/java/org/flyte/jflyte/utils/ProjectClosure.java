@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Container;
@@ -295,8 +296,8 @@ public abstract class ProjectClosure {
                     checkCycles(
                         workflowId,
                         allWorkflows,
-                        /*beingVisited=*/ new HashSet<>(),
-                        /*visited=*/ new HashSet<>()))
+                        /* beingVisited= */ new HashSet<>(),
+                        /* visited= */ new HashSet<>()))
             .findFirst();
     if (cycle.isPresent()) {
       throw new IllegalArgumentException(
@@ -374,8 +375,10 @@ public abstract class ProjectClosure {
         .collect(toUnmodifiableMap());
   }
 
-  public static Map<TaskIdentifier, TaskTemplate> collectTasks(
-      List<Node> rewrittenNodes, Map<TaskIdentifier, TaskTemplate> allTasks) {
+  public static Map<TaskIdentifier, TaskTemplate> collectDynamicWorkflowTasks(
+      List<Node> rewrittenNodes,
+      Map<TaskIdentifier, TaskTemplate> allTasks,
+      Function<TaskIdentifier, TaskTemplate> remoteTaskTemplateFetcher) {
     return collectTaskIds(rewrittenNodes).stream()
         // all identifiers should be rewritten at this point
         .map(
@@ -389,7 +392,9 @@ public abstract class ProjectClosure {
         .distinct()
         .map(
             taskId -> {
-              TaskTemplate taskTemplate = allTasks.get(taskId);
+              TaskTemplate taskTemplate =
+                  Optional.ofNullable(allTasks.get(taskId))
+                      .orElseGet(() -> remoteTaskTemplateFetcher.apply(taskId));
 
               if (taskTemplate == null) {
                 throw new NoSuchElementException("Can't find referenced task " + taskId);

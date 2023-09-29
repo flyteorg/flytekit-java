@@ -40,6 +40,7 @@ import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.Literal;
+import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
@@ -222,7 +223,8 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
           ProjectClosure.collectSubWorkflows(rewrittenNodes, workflowTemplates);
 
       Map<TaskIdentifier, TaskTemplate> usedTaskTemplates =
-          ProjectClosure.collectTasks(rewrittenNodes, taskTemplates);
+          ProjectClosure.collectDynamicWorkflowTasks(
+              rewrittenNodes, taskTemplates, id -> fetchTaskTemplate(flyteAdminClient, id));
 
       // FIXME one sub-workflow can use more sub-workflows, we should recursively collect used tasks
       // and workflows
@@ -244,6 +246,27 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
                   .build())
           .build();
     }
+  }
+
+  // note that there are cases we are making an unnecessary network call because we might have
+  // already got the task template when resolving the latest task version, but since it is also
+  // possible that user has provided a version for a remote task, and in that case we would not need
+  // to resolve the latest version, so we need to make this call;
+  // we accept the additional cost because it should be rare to have remote tasks in a dynamic
+  // workflow
+  private static TaskTemplate fetchTaskTemplate(
+      FlyteAdminClient flyteAdminClient, TaskIdentifier id) {
+    LOG.info("fetching task template remotely for {}", id);
+
+    TaskTemplate taskTemplate =
+        flyteAdminClient.fetchLatestTaskTemplate(
+            NamedEntityIdentifier.builder()
+                .domain(id.domain())
+                .project(id.project())
+                .name(id.name())
+                .build());
+
+    return taskTemplate;
   }
 
   private static DynamicWorkflowTask getDynamicWorkflowTask(String name) {

@@ -203,44 +203,47 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
       Map<TaskIdentifier, TaskTemplate> taskTemplates,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates) {
 
-    WorkflowNodeVisitor workflowNodeVisitor =
-        IdentifierRewrite.builder()
-            .domain(executionConfig.domain())
-            .project(executionConfig.project())
-            .version(executionConfig.version())
-            .adminClient(
-                FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null))
-            .build()
-            .visitor();
+    try (FlyteAdminClient flyteAdminClient =
+        FlyteAdminClient.create(config.platformUrl(), config.platformInsecure(), null)) {
 
-    List<Node> rewrittenNodes =
-        spec.nodes().stream().map(workflowNodeVisitor::visitNode).collect(toUnmodifiableList());
+      WorkflowNodeVisitor workflowNodeVisitor =
+          IdentifierRewrite.builder()
+              .domain(executionConfig.domain())
+              .project(executionConfig.project())
+              .version(executionConfig.version())
+              .adminClient(flyteAdminClient)
+              .build()
+              .visitor();
 
-    Map<WorkflowIdentifier, WorkflowTemplate> usedSubWorkflows =
-        ProjectClosure.collectSubWorkflows(rewrittenNodes, workflowTemplates);
+      List<Node> rewrittenNodes =
+          spec.nodes().stream().map(workflowNodeVisitor::visitNode).collect(toUnmodifiableList());
 
-    Map<TaskIdentifier, TaskTemplate> usedTaskTemplates =
-        ProjectClosure.collectTasks(rewrittenNodes, taskTemplates);
+      Map<WorkflowIdentifier, WorkflowTemplate> usedSubWorkflows =
+          ProjectClosure.collectSubWorkflows(rewrittenNodes, workflowTemplates);
 
-    // FIXME one sub-workflow can use more sub-workflows, we should recursively collect used tasks
-    // and workflows
+      Map<TaskIdentifier, TaskTemplate> usedTaskTemplates =
+          ProjectClosure.collectTasks(rewrittenNodes, taskTemplates);
 
-    Map<WorkflowIdentifier, WorkflowTemplate> rewrittenUsedSubWorkflows =
-        mapValues(usedSubWorkflows, workflowNodeVisitor::visitWorkflowTemplate);
+      // FIXME one sub-workflow can use more sub-workflows, we should recursively collect used tasks
+      // and workflows
 
-    return spec.toBuilder()
-        .nodes(rewrittenNodes)
-        .subWorkflows(
-            ImmutableMap.<WorkflowIdentifier, WorkflowTemplate>builder()
-                .putAll(spec.subWorkflows())
-                .putAll(rewrittenUsedSubWorkflows)
-                .build())
-        .tasks(
-            ImmutableMap.<TaskIdentifier, TaskTemplate>builder()
-                .putAll(spec.tasks())
-                .putAll(usedTaskTemplates)
-                .build())
-        .build();
+      Map<WorkflowIdentifier, WorkflowTemplate> rewrittenUsedSubWorkflows =
+          mapValues(usedSubWorkflows, workflowNodeVisitor::visitWorkflowTemplate);
+
+      return spec.toBuilder()
+          .nodes(rewrittenNodes)
+          .subWorkflows(
+              ImmutableMap.<WorkflowIdentifier, WorkflowTemplate>builder()
+                  .putAll(spec.subWorkflows())
+                  .putAll(rewrittenUsedSubWorkflows)
+                  .build())
+          .tasks(
+              ImmutableMap.<TaskIdentifier, TaskTemplate>builder()
+                  .putAll(spec.tasks())
+                  .putAll(usedTaskTemplates)
+                  .build())
+          .build();
+    }
   }
 
   private static DynamicWorkflowTask getDynamicWorkflowTask(String name) {

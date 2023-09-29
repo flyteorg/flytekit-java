@@ -107,7 +107,7 @@
       </dependency>
       <dependency>
         <groupId>org.flyte</groupId>
-        <artifactId>flytekit-examples-scala</artifactId>
+        <artifactId>flytekit-examples-scala_2.13</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

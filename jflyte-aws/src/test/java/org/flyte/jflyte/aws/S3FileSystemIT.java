@@ -36,12 +36,15 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 public class S3FileSystemIT {
 
   @Container
-  public final LocalStackContainer localStack = new LocalStackContainer().withServices(S3);
+  public final LocalStackContainer localStack =
+      new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("0.11.2"))
+          .withServices(S3);
 
   private AmazonS3 s3;
 

@@ -29,28 +29,6 @@
   <name>Flytekit Java - Integration tests</name>
   <description>Tests for Flytekit Java project.</description>
 
-  <properties>
-    <enforcer.skip>true</enforcer.skip>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers-bom</artifactId>
-        <version>1.15.3</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>net.java.dev.jna</groupId>
-        <artifactId>jna</artifactId>
-        <version>5.8.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <!-- compile -->
     <dependency>
@@ -74,7 +52,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- dependencies for integration-tests -->
+    <!-- dependencies for integration-tests to make sure these modules are built prior to integration-tests -->
     <dependency>
       <groupId>org.flyte</groupId>
       <artifactId>flytekit-examples</artifactId>
@@ -82,14 +60,8 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-examples-scala</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
       <artifactId>jflyte</artifactId>
       <scope>test</scope>
-      <optional>true</optional>
     </dependency>
 
     <!-- test -->
@@ -137,28 +109,37 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>integration-test</phase>
-            <configuration>
-              <excludes>
-                <exclude>none</exclude>
-              </excludes>
-              <includes>
-                <include>**/*IT</include>
-              </includes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>it</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <phase>integration-test</phase>
+                <configuration>
+                  <excludes>
+                    <exclude>none</exclude>
+                  </excludes>
+                  <includes>
+                    <include>**/*IT</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

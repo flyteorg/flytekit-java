@@ -51,9 +51,10 @@ jobs:
 
           mvn --batch-mode release:prepare -DgenerateBackupPoms=false
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          mvn --batch-mode release:perform -Prelease
+          mvn --batch-mode release:perform -Prelease -Pci
 
         env:
+          CI: true
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}

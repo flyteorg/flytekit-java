@@ -38,7 +38,7 @@ jobs:
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: mvn --batch-mode verify
+        run: mvn --batch-mode verify -Pci
 
       - name: Release snapshot with Maven
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -50,8 +50,9 @@ jobs:
           echo "test" | gpg --batch --clearsign --pinentry-mode loopback || true
 
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-          mvn --batch-mode deploy
+          mvn --batch-mode deploy -Pci
         env:
+          CI: true
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.SONATYPE_PASSPHRASE }}

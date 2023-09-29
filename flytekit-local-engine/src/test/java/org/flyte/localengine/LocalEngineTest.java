@@ -185,6 +185,7 @@ class LocalEngineTest {
     assertEquals(expectedOutput, outputs.get("outputStructData"));
   }*/
 
+  @SuppressWarnings("LockOnNonEnclosingClassLiteral")
   @Test
   public void testRetryableTask_completed() {
     String workflowName = new RetryableWorkflow().getName();
@@ -221,6 +222,7 @@ class LocalEngineTest {
     }
   }
 
+  @SuppressWarnings("LockOnNonEnclosingClassLiteral")
   @Test
   public void testRetryableTask_failed() {
     WorkflowTemplate workflow = new RetryableWorkflow().toIdlTemplate();

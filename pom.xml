@@ -95,7 +95,7 @@
     module that uses @AutoService, otherwise we get warning like "The following options were not recognized by any processor: '[verify]'",
     which again will fail the build because we have failOnWarning.
      -->
-    <auto-service.version>1.0.2</auto-service.version>
+    <auto-service.version>1.1.1</auto-service.version>
     <auto-value.version>1.10.4</auto-value.version>
     <common-proto.version>2.14.3</common-proto.version>
     <grpc.version>1.46.0</grpc.version>
@@ -508,7 +508,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <scala>
               <scalafmt>
@@ -576,7 +576,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -720,7 +720,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

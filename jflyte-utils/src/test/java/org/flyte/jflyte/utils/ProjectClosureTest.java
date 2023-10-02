@@ -18,8 +18,11 @@ package org.flyte.jflyte.utils;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static org.flyte.api.v1.Resources.ResourceName.CPU;
 import static org.flyte.api.v1.Resources.ResourceName.MEMORY;
+import static org.flyte.jflyte.utils.Fixtures.TASK_TEMPLATE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -48,6 +51,7 @@ import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Operand;
+import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Resources;
@@ -55,6 +59,8 @@ import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Task;
+import org.flyte.api.v1.TaskIdentifier;
+import org.flyte.api.v1.TaskNode;
 import org.flyte.api.v1.TaskTemplate;
 import org.flyte.api.v1.TypedInterface;
 import org.flyte.api.v1.WorkflowIdentifier;
@@ -663,6 +669,69 @@ public class ProjectClosureTest {
       assertThat(taskTemplate.cacheSerializable(), equalTo(false));
       assertThat(taskTemplate.discoveryVersion(), nullValue());
     }
+  }
+
+  @Test
+  void testCollectDynamicWorkflowTasks() {
+    Node node1 =
+        Node.builder()
+            .id("foo")
+            .upstreamNodeIds(singletonList("upstream-1"))
+            .inputs(List.of())
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .domain("domain1")
+                            .project("project1")
+                            .name("name1")
+                            .version("version1")
+                            .build())
+                    .build())
+            .build();
+    Node node2 =
+        Node.builder()
+            .id("bar")
+            .upstreamNodeIds(singletonList("upstream-1"))
+            .inputs(List.of())
+            .taskNode(
+                TaskNode.builder()
+                    .referenceId(
+                        PartialTaskIdentifier.builder()
+                            .domain("domain2")
+                            .project("project2")
+                            .name("nam2")
+                            .version("versio2")
+                            .build())
+                    .build())
+            .build();
+
+    TaskIdentifier taskIdentifier1 =
+        TaskIdentifier.builder()
+            .domain(requireNonNull(node1.taskNode()).referenceId().domain())
+            .project(requireNonNull(node1.taskNode()).referenceId().project())
+            .name(requireNonNull(node1.taskNode()).referenceId().name())
+            .version(requireNonNull(node1.taskNode()).referenceId().version())
+            .build();
+    TaskIdentifier taskIdentifier2 =
+        TaskIdentifier.builder()
+            .domain(requireNonNull(node2.taskNode()).referenceId().domain())
+            .project(requireNonNull(node2.taskNode()).referenceId().project())
+            .name(requireNonNull(node2.taskNode()).referenceId().name())
+            .version(requireNonNull(node2.taskNode()).referenceId().version())
+            .build();
+
+    Map<TaskIdentifier, TaskTemplate> taskTemplateMap = Map.of(taskIdentifier1, TASK_TEMPLATE);
+
+    TaskTemplate taskTemplate = TASK_TEMPLATE.toBuilder().type("foo-bar-task").build();
+
+    Map<TaskIdentifier, TaskTemplate> collectedTaskTemplateMap =
+        ProjectClosure.collectDynamicWorkflowTasks(
+            List.of(node1, node2), taskTemplateMap, taskIdentifier -> taskTemplate);
+
+    assertThat(
+        collectedTaskTemplateMap,
+        equalTo(Map.of(taskIdentifier1, TASK_TEMPLATE, taskIdentifier2, taskTemplate)));
   }
 
   private RunnableTask createRunnableTask(

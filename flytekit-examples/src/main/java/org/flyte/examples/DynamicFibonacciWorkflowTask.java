@@ -16,8 +16,9 @@
  */
 package org.flyte.examples;
 
-import static org.flyte.examples.FlyteEnvironment.DOMAIN;
+import static org.flyte.examples.FlyteEnvironment.DEVELOPMENT_DOMAIN;
 import static org.flyte.examples.FlyteEnvironment.PROJECT;
+import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 
 import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
@@ -65,22 +66,34 @@ public class DynamicFibonacciWorkflowTask
     } else if (input.n().get() == 0) {
       return Output.create(SdkBindingDataFactory.of(0));
     } else {
+      // remote task that is discoverable in current classpath
       SdkNode<Void> hello =
           builder.apply(
               "hello",
               SdkRemoteTask.create(
-                  DOMAIN,
+                  DEVELOPMENT_DOMAIN,
                   PROJECT,
                   HelloWorldTask.class.getName(),
                   SdkTypes.nulls(),
                   SdkTypes.nulls()));
+      // a fully remote task
+      SdkNode<Void> world =
+          builder.apply(
+              "world",
+              SdkRemoteTask.create(
+                      STAGING_DOMAIN,
+                      PROJECT,
+                      "org.flyte.examples.flytekitscala.NoInputsTask",
+                      SdkTypes.nulls(),
+                      SdkTypes.nulls())
+                  .withUpstreamNode(hello));
       @Var SdkBindingData<Long> prev = SdkBindingDataFactory.of(0);
       @Var SdkBindingData<Long> value = SdkBindingDataFactory.of(1);
       for (int i = 2; i <= input.n().get(); i++) {
         SdkBindingData<Long> next =
             builder
                 .apply(
-                    "fib-" + i, new SumTask().withUpstreamNode(hello), SumInput.create(value, prev))
+                    "fib-" + i, new SumTask().withUpstreamNode(world), SumInput.create(value, prev))
                 .getOutputs();
         prev = value;
         value = next;

@@ -16,7 +16,7 @@
  */
 package org.flyte.utils;
 
-import static org.flyte.examples.FlyteEnvironment.DOMAIN;
+import static org.flyte.examples.FlyteEnvironment.DEVELOPMENT_DOMAIN;
 import static org.flyte.examples.FlyteEnvironment.PROJECT;
 
 import flyteidl.admin.ExecutionOuterClass;
@@ -59,7 +59,7 @@ public class FlyteSandboxClient {
     return createExecution(
         IdentifierOuterClass.Identifier.newBuilder()
             .setResourceType(IdentifierOuterClass.ResourceType.TASK)
-            .setDomain(DOMAIN)
+            .setDomain(DEVELOPMENT_DOMAIN)
             .setProject(PROJECT)
             .setName(name)
             .setVersion(version)
@@ -71,7 +71,7 @@ public class FlyteSandboxClient {
     return createExecution(
         IdentifierOuterClass.Identifier.newBuilder()
             .setResourceType(IdentifierOuterClass.ResourceType.LAUNCH_PLAN)
-            .setDomain(DOMAIN)
+            .setDomain(DEVELOPMENT_DOMAIN)
             .setProject(PROJECT)
             .setName(name)
             .setVersion(version)
@@ -84,7 +84,7 @@ public class FlyteSandboxClient {
     ExecutionOuterClass.ExecutionCreateResponse response =
         stub.createExecution(
             ExecutionOuterClass.ExecutionCreateRequest.newBuilder()
-                .setDomain(DOMAIN)
+                .setDomain(DEVELOPMENT_DOMAIN)
                 .setProject(PROJECT)
                 .setInputs(inputs)
                 .setSpec(ExecutionOuterClass.ExecutionSpec.newBuilder().setLaunchPlan(id).build())
@@ -148,19 +148,23 @@ public class FlyteSandboxClient {
     return false;
   }
 
-  public void registerWorkflows(String classpath) {
+  public void registerWorkflows(String classpath, String domain) {
     try {
       jflyte(
           "jflyte",
           "register",
           "workflows",
           "-p=" + PROJECT,
-          "-d=" + DOMAIN,
+          "-d=" + domain,
           "-v=" + version,
           "-cp=" + classpath);
     } catch (Exception e) {
       throw new RuntimeException("Could not register workflows from: " + classpath, e);
     }
+  }
+
+  public void registerWorkflows(String classpath) {
+    registerWorkflows(classpath, DEVELOPMENT_DOMAIN);
   }
 
   public void serializeWorkflows(String classpath, String folder) {

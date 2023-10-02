@@ -2,3 +2,4 @@ org.flyte.examples.flytekitscala.HelloWorldTask
 org.flyte.examples.flytekitscala.SumTask
 org.flyte.examples.flytekitscala.GreetTask
 org.flyte.examples.flytekitscala.AddQuestionTask
+org.flyte.examples.flytekitscala.NoInputsTask

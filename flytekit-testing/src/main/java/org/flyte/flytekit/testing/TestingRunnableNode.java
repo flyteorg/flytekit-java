@@ -20,7 +20,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.PartialIdentifier;
 import org.flyte.api.v1.RunnableNode;
@@ -84,7 +86,7 @@ public abstract class TestingRunnableNode<
   public Map<String, Literal> run(Map<String, Literal> inputs) {
     InputT input = inputType.fromLiteralMap(inputs);
 
-    if (fixedOutputs.size() == 0) {
+    if (fixedOutputs.isEmpty()) {
       // No mocking via input matching, either run the real thing or run the provided lambda
       if (runFn != null) {
         return outputType.toLiteralMap(runFn.apply(input));
@@ -101,12 +103,29 @@ public abstract class TestingRunnableNode<
 
     String message =
         String.format(
-            "Can't find input %s for remote %s [%s] across known %s inputs, "
-                + "use %s to provide a test double",
-            input, type, getName(), type, testingSuggestion);
+                "Can't find input for remote %s [%s] across known %s inputs.%s",
+                type, getName(), type, System.lineSeparator())
+            + String.format(
+                "Input: %s%sKnown inputs: %s%sUse %s to provide a test double",
+                input,
+                System.lineSeparator(),
+                knownInputsString(),
+                System.lineSeparator(),
+                testingSuggestion);
 
     // Not matching inputs and there is nothing to run
     throw new IllegalArgumentException(message);
+  }
+
+  private String knownInputsString() {
+    String knownInputs =
+        fixedOutputs.keySet().stream()
+            .map(Objects::toString)
+            .collect(Collectors.joining(System.lineSeparator()));
+    if (knownInputs.isEmpty()) {
+      return "{}";
+    }
+    return knownInputs;
   }
 
   @Override

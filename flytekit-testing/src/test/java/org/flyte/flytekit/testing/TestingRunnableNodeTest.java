@@ -21,6 +21,7 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.auto.value.AutoValue;
@@ -70,7 +71,10 @@ class TestingRunnableNodeTest {
 
   @Test
   void testRun_notFound() {
-    Map<Input, Output> fixedOutputs = singletonMap(Input.create("7"), Output.create(7L));
+    Map<Input, Output> fixedOutputs =
+        Map.of(
+            Input.create("7"), Output.create(7L),
+            Input.create("8"), Output.create(8L));
     TestNode node = new TestNode(null, fixedOutputs);
 
     IllegalArgumentException ex =
@@ -80,9 +84,17 @@ class TestingRunnableNodeTest {
 
     assertThat(
         ex.getMessage(),
-        equalTo(
-            "Can't find input Input{in=SdkBindingData{type=strings, value=not in fixed outputs}} for remote test [TestTask] "
-                + "across known test inputs, use a magic wang to provide a test double"));
+        oneOf(
+            "Can't find input for remote test [TestTask] across known test inputs.\n"
+                + "Input: Input{in=SdkBindingData{type=strings, value=not in fixed outputs}}\n"
+                + "Known inputs: Input{in=SdkBindingData{type=strings, value=8}}\n"
+                + "Input{in=SdkBindingData{type=strings, value=7}}\n"
+                + "Use a magic wang to provide a test double",
+            "Can't find input for remote test [TestTask] across known test inputs.\n"
+                + "Input: Input{in=SdkBindingData{type=strings, value=not in fixed outputs}}\n"
+                + "Known inputs: Input{in=SdkBindingData{type=strings, value=7}}\n"
+                + "Input{in=SdkBindingData{type=strings, value=8}}\n"
+                + "Use a magic wang to provide a test double"));
   }
 
   @Test
@@ -128,8 +140,10 @@ class TestingRunnableNodeTest {
     assertThat(
         ex.getMessage(),
         equalTo(
-            "Can't find input Input{in=SdkBindingData{type=strings, value=7}} for remote test [TestTask] "
-                + "across known test inputs, use a magic wang to provide a test double"));
+            "Can't find input for remote test [TestTask] across known test inputs.\n"
+                + "Input: Input{in=SdkBindingData{type=strings, value=7}}\n"
+                + "Known inputs: {}\n"
+                + "Use a magic wang to provide a test double"));
   }
 
   @Test

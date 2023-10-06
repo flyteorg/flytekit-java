@@ -116,6 +116,12 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
+  public static class UnusedMockException extends IllegalArgumentException {
+    UnusedMockException(String message) {
+      super(message);
+    }
+  }
+
   @AutoValue
   public abstract static class Result {
     abstract Map<String, Literal> literalMap();
@@ -189,6 +195,31 @@ public abstract class SdkTestingExecutor {
     Map<String, LiteralType> outputLiteralTypeMap =
         workflowTemplate.interface_().outputs().entrySet().stream()
             .collect(toMap(Map.Entry::getKey, x -> x.getValue().literalType()));
+
+    launchPlanTestDoubles()
+        .forEach(
+            (key, value) ->
+                value.fixedOutputs.forEach(
+                    (in, mockedOutput) -> {
+                      if (mockedOutput.unused()) {
+                        throw new UnusedMockException(
+                            String.format(
+                                "unused launchplan mock name: [%s], input: [%s], output: [%s]",
+                                key, in, mockedOutput));
+                      }
+                    }));
+    taskTestDoubles()
+        .forEach(
+            (key, value) ->
+                value.fixedOutputs.forEach(
+                    (in, mockedOutput) -> {
+                      if (mockedOutput.unused()) {
+                        throw new UnusedMockException(
+                            String.format(
+                                "unused task mock name: [%s], input: [%s], output: [%s]",
+                                key, in, mockedOutput));
+                      }
+                    }));
 
     return Result.create(outputLiteralMap, outputLiteralTypeMap);
   }
@@ -399,17 +430,12 @@ public abstract class SdkTestingExecutor {
       OutputT output) {
     verifyInputOutputMatchesWorkflowInterface(workflow, inputType, outputType);
 
-    // fixed tasks
-    TestingRunnableTask<InputT, OutputT> fixedTask =
-        getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
-
     // replace workflow
     SdkWorkflow<InputT, OutputT> mockWorkflow =
         new TestingWorkflow<>(inputType, outputType, output);
 
     return toBuilder()
         .putWorkflowTemplate(workflow.getName(), mockWorkflow.toIdlTemplate())
-        .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
         .build();
   }
 

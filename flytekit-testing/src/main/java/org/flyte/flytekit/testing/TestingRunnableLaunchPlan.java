@@ -36,7 +36,7 @@ public class TestingRunnableLaunchPlan<InputT, OutputT>
       SdkType<OutputT> outputType,
       Function<InputT, OutputT> runFn,
       boolean runFnProvided,
-      Map<InputT, OutputT> fixedOutputs) {
+      Map<InputT, MockedOutput<OutputT>> fixedOutputs) {
     super(
         launchPlanId,
         inputType,

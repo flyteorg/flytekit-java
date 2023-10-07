@@ -1,2 +1,3 @@
 org.flyte.examples.flytekitscala.FibonacciWorkflow
 org.flyte.examples.flytekitscala.WelcomeWorkflow
+org.flyte.examples.flytekitscala.NestedIOWorkflow

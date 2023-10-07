@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 Flyte Authors.
+ * Copyright 2023 Flyte Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,16 @@
  */
 package org.flyte;
 
+import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
+
 import org.flyte.utils.FlyteSandboxClient;
 
-public class FlyteContainer {
-  static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
+class Fixtures {
+  protected static final FlyteSandboxClient CLIENT = FlyteSandboxClient.create();
+
+  static {
+    CLIENT.registerWorkflows("integration-tests/target/lib");
+    CLIENT.registerWorkflows("flytekit-examples/target/lib");
+    CLIENT.registerWorkflows("flytekit-examples-scala/target/lib", STAGING_DOMAIN);
+  }
 }

@@ -16,31 +16,19 @@
  */
 package org.flyte;
 
-import static org.flyte.FlyteContainer.CLIENT;
-import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 import static org.flyte.utils.Literal.ofIntegerMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class JavaExamplesIT {
-  private static final String CLASSPATH_EXAMPLES = "flytekit-examples/target/lib";
-  private static final String CLASSPATH_EXAMPLES_SCALA = "flytekit-examples-scala/target/lib";
-
-  @BeforeAll
-  public static void beforeAll() {
-    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES);
-    CLIENT.registerWorkflows(CLASSPATH_EXAMPLES_SCALA, STAGING_DOMAIN);
-  }
-
+class JavaExamplesIT extends Fixtures {
   @Test
-  public void testSumTask() {
+  void testSumTask() {
     Literals.LiteralMap output =
         CLIENT.createTaskExecution(
             "org.flyte.examples.SumTask",
@@ -53,7 +41,7 @@ public class JavaExamplesIT {
   }
 
   @Test
-  public void testFibonacciWorkflow() {
+  void testFibonacciWorkflow() {
     Literals.LiteralMap output =
         CLIENT.createExecution(
             "org.flyte.examples.FibonacciWorkflow",
@@ -66,7 +54,7 @@ public class JavaExamplesIT {
   }
 
   @Test
-  public void testDynamicFibonacciWorkflow() {
+  void testDynamicFibonacciWorkflow() {
     Literals.LiteralMap output =
         CLIENT.createExecution(
             "org.flyte.examples.DynamicFibonacciWorkflow", ofIntegerMap(ImmutableMap.of("n", 2L)));

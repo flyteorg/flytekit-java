@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -73,6 +75,8 @@ public class SdkLiteralTypes {
       return (SdkLiteralType<T>) datetimes();
     } else if (clazz.equals(Duration.class)) {
       return (SdkLiteralType<T>) durations();
+    } else if (clazz.equals(BlobType.class)) {
+      return null;
     }
     throw new IllegalArgumentException("Unsupported type: " + clazz);
   }
@@ -181,6 +185,15 @@ public class SdkLiteralTypes {
     return new MapSdkLiteralType<>(mapValueType);
   }
 
+  /**
+   * Returns a {@link SdkLiteralType} for blobs.
+   *
+   * @return the {@link SdkLiteralType}
+   */
+  public static SdkLiteralType<Blob> blobs(BlobType blobType) {
+    return new BlobSdkLiteralType(blobType);
+  }
+
   private static class IntegerSdkLiteralType extends PrimitiveSdkLiteralType<Long> {
     private static final IntegerSdkLiteralType INSTANCE = new IntegerSdkLiteralType();
 
@@ -202,6 +215,39 @@ public class SdkLiteralTypes {
     @Override
     public String toString() {
       return "integers";
+    }
+  }
+
+  private static class BlobSdkLiteralType extends SdkLiteralType<Blob> {
+    private final BlobType blobType;
+
+    public BlobSdkLiteralType(BlobType blobType) {
+      this.blobType = blobType;
+    }
+
+    @Override
+    public LiteralType getLiteralType() {
+      return LiteralType.ofBlobType(blobType);
+    }
+
+    @Override
+    public Literal toLiteral(Blob value) {
+      return Literals.ofBlob(value);
+    }
+
+    @Override
+    public Blob fromLiteral(Literal literal) {
+      return literal.scalar().blob();
+    }
+
+    @Override
+    public BindingData toBindingData(Blob value) {
+      return BindingData.ofScalar(Scalar.ofBlob(value));
+    }
+
+    @Override
+    public String toString() {
+      return "blobs";
     }
   }
 

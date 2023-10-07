@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
@@ -39,6 +38,10 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
+import org.flyte.api.v1.BlobType;
+import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -80,7 +83,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
     }
   }
 
-  private static SdkBindingData<? extends Serializable> transformScalar(JsonNode tree) {
+  private static SdkBindingData<?> transformScalar(JsonNode tree) {
     Scalar.Kind scalarKind = Scalar.Kind.valueOf(tree.get(SCALAR).asText());
     switch (scalarKind) {
       case PRIMITIVE:
@@ -102,12 +105,31 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         throw new UnsupportedOperationException(
             "Type contains an unsupported primitive: " + primitiveKind);
 
-      case GENERIC:
       case BLOB:
+        return transformBlob(tree);
+
+      case GENERIC:
       default:
         throw new UnsupportedOperationException(
             "Type contains an unsupported scalar: " + scalarKind);
     }
+  }
+
+  private static SdkBindingData<Blob> transformBlob(JsonNode tree) {
+    JsonNode value = tree.get(VALUE);
+    String uri = value.get("uri").asText();
+    JsonNode type = value.get("metadata").get("type");
+    String format = type.get("format").asText();
+    BlobDimensionality dimensionality =
+        BlobDimensionality.valueOf(type.get("dimensionality").asText());
+    return SdkBindingDataFactory.of(
+        Blob.builder()
+            .uri(uri)
+            .metadata(
+                BlobMetadata.builder()
+                    .type(BlobType.builder().format(format).dimensionality(dimensionality).build())
+                    .build())
+            .build());
   }
 
   @SuppressWarnings("unchecked")

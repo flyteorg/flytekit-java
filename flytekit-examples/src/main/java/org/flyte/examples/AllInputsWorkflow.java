@@ -24,6 +24,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobMetadata;
+import org.flyte.api.v1.BlobType;
+import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
@@ -31,6 +35,7 @@ import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.BlobTypeDescription;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -57,6 +62,18 @@ public class AllInputsWorkflow
                 SdkBindingDataFactory.of(true),
                 SdkBindingDataFactory.of(someInstant),
                 SdkBindingDataFactory.of(Duration.ofDays(1L)),
+                SdkBindingDataFactory.of(
+                    Blob.builder()
+                        .uri("file://test/test.csv")
+                        .metadata(
+                            BlobMetadata.builder()
+                                .type(
+                                    BlobType.builder()
+                                        .format("csv")
+                                        .dimensionality(BlobDimensionality.MULTIPART)
+                                        .build())
+                                .build())
+                        .build()),
                 SdkBindingDataFactory.ofStringCollection(Arrays.asList("foo", "bar")),
                 SdkBindingDataFactory.ofStringMap(Map.of("test", "test")),
                 SdkBindingDataFactory.ofStringCollection(Collections.emptyList()),
@@ -71,6 +88,7 @@ public class AllInputsWorkflow
         outputs.b(),
         outputs.t(),
         outputs.d(),
+        outputs.blob(),
         outputs.l(),
         outputs.m(),
         outputs.emptyList(),
@@ -92,8 +110,8 @@ public class AllInputsWorkflow
 
     public abstract SdkBindingData<Duration> d();
 
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
+    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
+    public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -110,12 +128,13 @@ public class AllInputsWorkflow
         SdkBindingData<Boolean> b,
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
+        SdkBindingData<Blob> blob,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsWorkflow_AllInputsWorkflowOutput(
-          i, f, s, b, t, d, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
     }
   }
 }

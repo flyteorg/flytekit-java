@@ -51,6 +51,11 @@
       <artifactId>auto-service-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.flyte</groupId>
+      <artifactId>flytekit-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- dependencies for integration-tests to make sure these modules are built prior to integration-tests -->
     <dependency>

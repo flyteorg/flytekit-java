@@ -19,6 +19,7 @@ package org.flyte.flytekitscala
 import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
+import org.flyte.api.v1.BlobType.BlobDimensionality
 import org.flyte.api.v1._
 import org.flyte.flytekit.{
   SdkBindingData,
@@ -229,6 +230,18 @@ object SdkScalaType {
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     DelegateLiteralType(SdkLiteralTypes.durations())
+
+  // fixme: create blob type from annotation
+  implicit def blobLiteralType: SdkScalaLiteralType[Blob] =
+    DelegateLiteralType(
+      SdkLiteralTypes.blobs(
+        BlobType
+          .builder()
+          .format("")
+          .dimensionality(BlobDimensionality.SINGLE)
+          .build()
+      )
+    )
 
   // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>
   //  This makes Scala dev mad when they are forced to use the java types instead of scala types

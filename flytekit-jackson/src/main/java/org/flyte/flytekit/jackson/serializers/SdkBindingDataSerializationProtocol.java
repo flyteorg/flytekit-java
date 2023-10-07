@@ -25,4 +25,5 @@ public class SdkBindingDataSerializationProtocol {
   public static final String TYPE = "type";
   public static final String KIND = "kind";
   public static final String PRIMITIVE = "primitive";
+  public static final String BLOB = "blob";
 }

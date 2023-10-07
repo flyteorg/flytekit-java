@@ -18,6 +18,7 @@ package org.flyte.flytekit;
 
 import java.time.Duration;
 import java.time.Instant;
+import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
@@ -47,6 +48,10 @@ class Literals {
 
   static Literal ofDuration(Duration value) {
     return ofPrimitive(Primitive.ofDuration(value));
+  }
+
+  static Literal ofBlob(Blob value) {
+    return Literal.ofScalar(Scalar.ofBlob(value));
   }
 
   private static Literal ofPrimitive(Primitive primitive) {

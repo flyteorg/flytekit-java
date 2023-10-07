@@ -16,9 +16,14 @@
  */
 package org.flyte.flytekitscala
 
+import org.flyte.api.v1.BlobType.BlobDimensionality
+
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import org.flyte.api.v1.{
+  Blob,
+  BlobMetadata,
+  BlobType,
   Literal,
   LiteralType,
   Primitive,
@@ -379,6 +384,23 @@ class SdkScalaTypeTest {
   def testUseAutoValueAttrIntoScalaClass(): Unit = {
     import SdkBindingDataConverters._
 
+    val blob = Blob
+      .builder()
+      .uri("file://test/test.csv")
+      .metadata(
+        BlobMetadata
+          .builder()
+          .`type`(
+            BlobType
+              .builder()
+              .format("csv")
+              .dimensionality(BlobDimensionality.MULTIPART)
+              .build()
+          )
+          .build()
+      )
+      .build()
+
     val input = AutoAllInputsInput.create(
       SdkJavaBindingDataFactory.of(2L),
       SdkJavaBindingDataFactory.of(2.0),
@@ -386,6 +408,7 @@ class SdkScalaTypeTest {
       SdkJavaBindingDataFactory.of(true),
       SdkJavaBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
       SdkJavaBindingDataFactory.of(Duration.ZERO),
+      SdkJavaBindingDataFactory.of(blob),
       SdkJavaBindingDataFactory.ofStringCollection(List("1", "2", "3").asJava),
       SdkJavaBindingDataFactory.ofStringMap(Map("a" -> "2", "b" -> "3").asJava),
       SdkJavaBindingDataFactory.ofStringCollection(List.empty[String].asJava),
@@ -401,6 +424,7 @@ class SdkScalaTypeTest {
         boolean: SdkBindingData[Boolean],
         instant: SdkBindingData[Instant],
         duration: SdkBindingData[Duration],
+        blob: SdkBindingData[Blob],
         list: SdkBindingData[List[String]],
         map: SdkBindingData[Map[String, String]],
         emptyList: SdkBindingData[List[String]],
@@ -414,6 +438,7 @@ class SdkScalaTypeTest {
       toScalaBoolean(input.b()),
       input.t(),
       input.d(),
+      input.blob(),
       toScalaList(input.l()),
       toScalaMap(input.m()),
       toScalaList(input.emptyList()),
@@ -427,6 +452,7 @@ class SdkScalaTypeTest {
       SdkBindingDataFactory.of(true),
       SdkBindingDataFactory.of(Instant.parse("2023-01-01T00:00:00Z")),
       SdkBindingDataFactory.of(Duration.ZERO),
+      SdkBindingDataFactory.of(blob),
       SdkBindingDataFactory.of(List("1", "2", "3")),
       SdkBindingDataFactory.of(Map("a" -> "2", "b" -> "3")),
       SdkBindingDataFactory.ofStringCollection(List.empty[String]),

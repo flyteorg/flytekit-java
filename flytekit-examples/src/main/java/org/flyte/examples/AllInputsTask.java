@@ -22,8 +22,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.jackson.BlobTypeDescription;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
@@ -48,8 +51,8 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
+    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
+    public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -66,13 +69,13 @@ public class AllInputsTask
         SdkBindingData<Boolean> b,
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
-        // Blob blob,
+        SdkBindingData<Blob> blob,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsInput(
-          i, f, s, b, t, d, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
     }
   }
 
@@ -91,8 +94,8 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
+    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
+    public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -109,12 +112,13 @@ public class AllInputsTask
         SdkBindingData<Boolean> b,
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
+        SdkBindingData<Blob> blob,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
-          i, f, s, b, t, d, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
     }
   }
 
@@ -127,6 +131,7 @@ public class AllInputsTask
         input.b(),
         input.t(),
         input.d(),
+        input.blob(),
         input.l(),
         input.m(),
         input.emptyList(),

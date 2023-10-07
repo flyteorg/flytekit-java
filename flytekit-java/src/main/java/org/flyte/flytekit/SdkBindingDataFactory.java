@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
 
 /** A utility class for creating {@link SdkBindingData} objects for different types. */
 public final class SdkBindingDataFactory {
@@ -121,6 +122,16 @@ public final class SdkBindingDataFactory {
    */
   public static <T> SdkBindingData<List<T>> of(SdkLiteralType<T> elementType, List<T> collection) {
     return SdkBindingData.literal(collections(elementType), collection);
+  }
+
+  /**
+   * Creates a {@code SdkBindingData} for a flyte Blob with the given value.
+   *
+   * @param value the simple value for this data
+   * @return the new {@code SdkBindingData}
+   */
+  public static SdkBindingData<Blob> of(Blob value) {
+    return SdkBindingData.literal(SdkLiteralTypes.blobs(value.metadata().type()), value);
   }
 
   /**

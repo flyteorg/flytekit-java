@@ -202,6 +202,14 @@ object SdkLiteralTypes {
     */
   def durations(): SdkLiteralType[Duration] = SdkJavaLiteralTypes.durations()
 
+  /** Returns a [[SdkLiteralType]] for blob.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
+  def blobs(blobType: BlobType): SdkLiteralType[Blob] =
+    SdkJavaLiteralTypes.blobs(blobType)
+
   /** Returns a [[SdkLiteralType]] for flyte collections.
     *
     * @param elementType

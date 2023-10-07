@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekit.jackson.serializers;
 
-import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.SCALAR;
+import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -24,7 +24,7 @@ import java.io.IOException;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
-import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Scalar.Kind;
 
 public class BlobSerializer extends ScalarSerializer {
   public BlobSerializer(
@@ -38,8 +38,8 @@ public class BlobSerializer extends ScalarSerializer {
 
   @Override
   void serializeScalar() throws IOException {
-    gen.writeFieldName(SCALAR);
-    gen.writeObject(Scalar.Kind.BLOB);
+    gen.writeObject(Kind.BLOB);
+    gen.writeFieldName(VALUE);
     serializerProvider
         .findValueSerializer(Blob.class)
         .serialize(value.scalar().blob(), gen, serializerProvider);

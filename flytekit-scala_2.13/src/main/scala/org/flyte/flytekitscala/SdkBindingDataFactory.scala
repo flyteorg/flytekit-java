@@ -16,6 +16,7 @@
  */
 package org.flyte.flytekitscala
 
+import org.flyte.api.v1.Blob
 import org.flyte.flytekit.{
   BindingCollection,
   BindingMap,
@@ -133,6 +134,16 @@ object SdkBindingDataFactory {
       collections(elementLiteralType),
       collection
     )
+
+  /** Creates a [[SdkBindingData]] for a flyte Blob with the given value.
+    *
+    * @param value
+    *   the simple value for this data
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def of(value: Blob): SdkBindingData[Blob] =
+    SdkBindingData.literal(SdkLiteralTypes.blobs(value.metadata.`type`), value)
 
   /** Creates a [[SdkBindingDataFactory]] for a flyte string collection given a
     * scala [[List]].

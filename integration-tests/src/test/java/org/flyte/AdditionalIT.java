@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.equalTo;
 import flyteidl.core.Literals;
 import org.flyte.utils.Literal;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -67,7 +66,6 @@ public class AdditionalIT {
     "table-exists,true",
     "non-existent,false",
   })
-  @Disabled("Not supporting struct with the strongly typed implementation.")
   public void testStructs(String name, boolean expected) {
     Literals.LiteralMap output =
         CLIENT.createExecution(

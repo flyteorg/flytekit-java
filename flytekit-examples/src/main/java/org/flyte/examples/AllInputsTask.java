@@ -36,7 +36,19 @@ public class AllInputsTask
   }
 
   @AutoValue
+  public abstract static class Nested {
+    public abstract String hello();
+
+    public abstract String world();
+
+    public static Nested create(String hello, String world) {
+      return new AutoValue_AllInputsTask_Nested(hello, world);
+    }
+  }
+
+  @AutoValue
   public abstract static class AutoAllInputsInput {
+
     public abstract SdkBindingData<Long> i();
 
     public abstract SdkBindingData<Double> f();
@@ -50,6 +62,8 @@ public class AllInputsTask
     public abstract SdkBindingData<Duration> d();
 
     public abstract SdkBindingData<Blob> blob();
+
+    public abstract SdkBindingData<Nested> generic();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -67,12 +81,13 @@ public class AllInputsTask
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
         SdkBindingData<Blob> blob,
+        SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsInput(
-          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, generic, l, m, emptyList, emptyMap);
     }
   }
 
@@ -93,6 +108,8 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Blob> blob();
 
+    public abstract SdkBindingData<Nested> generic();
+
     public abstract SdkBindingData<List<String>> l();
 
     public abstract SdkBindingData<Map<String, String>> m();
@@ -109,12 +126,13 @@ public class AllInputsTask
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
         SdkBindingData<Blob> blob,
+        SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
-          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, generic, l, m, emptyList, emptyMap);
     }
   }
 
@@ -128,6 +146,7 @@ public class AllInputsTask
         input.t(),
         input.d(),
         input.blob(),
+        input.generic(),
         input.l(),
         input.m(),
         input.emptyList(),

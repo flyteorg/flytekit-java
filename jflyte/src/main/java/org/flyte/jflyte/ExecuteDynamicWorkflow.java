@@ -25,6 +25,7 @@ import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -197,7 +198,7 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
     }
   }
 
-  static DynamicJobSpec rewrite(
+  private static DynamicJobSpec rewrite(
       Config config,
       ExecutionConfig executionConfig,
       DynamicJobSpec spec,
@@ -216,36 +217,77 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
               .build()
               .visitor();
 
-      List<Node> rewrittenNodes =
-          spec.nodes().stream().map(workflowNodeVisitor::visitNode).collect(toUnmodifiableList());
+      Map<TaskIdentifier, TaskTemplate> allUsedTaskTemplates = new HashMap<>();
+      Map<WorkflowIdentifier, WorkflowTemplate> allUsedSubWorkflows = new HashMap<>();
+      Map<TaskIdentifier, TaskTemplate> cache = new HashMap<>();
 
-      Map<WorkflowIdentifier, WorkflowTemplate> usedSubWorkflows =
-          ProjectClosure.collectSubWorkflows(rewrittenNodes, workflowTemplates);
-
-      Map<TaskIdentifier, TaskTemplate> usedTaskTemplates =
-          ProjectClosure.collectDynamicWorkflowTasks(
-              rewrittenNodes, taskTemplates, id -> fetchTaskTemplate(flyteAdminClient, id));
-
-      // FIXME one sub-workflow can use more sub-workflows, we should recursively collect used tasks
-      // and workflows
-
-      Map<WorkflowIdentifier, WorkflowTemplate> rewrittenUsedSubWorkflows =
-          mapValues(usedSubWorkflows, workflowNodeVisitor::visitWorkflowTemplate);
+      List<Node> nodes =
+          recursivelyCollect(
+              spec.nodes(),
+              allUsedTaskTemplates,
+              allUsedSubWorkflows,
+              taskTemplates,
+              workflowTemplates,
+              workflowNodeVisitor,
+              flyteAdminClient,
+              cache);
 
       return spec.toBuilder()
-          .nodes(rewrittenNodes)
+          .nodes(nodes)
           .subWorkflows(
               ImmutableMap.<WorkflowIdentifier, WorkflowTemplate>builder()
                   .putAll(spec.subWorkflows())
-                  .putAll(rewrittenUsedSubWorkflows)
+                  .putAll(allUsedSubWorkflows)
                   .build())
           .tasks(
               ImmutableMap.<TaskIdentifier, TaskTemplate>builder()
                   .putAll(spec.tasks())
-                  .putAll(usedTaskTemplates)
+                  .putAll(allUsedTaskTemplates)
                   .build())
           .build();
     }
+  }
+
+  private static List<Node> recursivelyCollect(
+      List<Node> startPoint,
+      Map<TaskIdentifier, TaskTemplate> allUsedTaskTemplates,
+      Map<WorkflowIdentifier, WorkflowTemplate> allUsedSubWorkflows,
+      Map<TaskIdentifier, TaskTemplate> allTaskTemplates,
+      Map<WorkflowIdentifier, WorkflowTemplate> allWorkflowTemplates,
+      WorkflowNodeVisitor workflowNodeVisitor,
+      FlyteAdminClient flyteAdminClient,
+      Map<TaskIdentifier, TaskTemplate> cache) {
+
+    List<Node> rewrittenNodes =
+        startPoint.stream().map(workflowNodeVisitor::visitNode).collect(toUnmodifiableList());
+
+    Map<TaskIdentifier, TaskTemplate> usedTaskTemplates =
+        ProjectClosure.collectDynamicWorkflowTasks(
+            rewrittenNodes, allTaskTemplates, id -> fetchTaskTemplate(flyteAdminClient, id, cache));
+    allUsedTaskTemplates.putAll(usedTaskTemplates);
+
+    Map<WorkflowIdentifier, WorkflowTemplate> usedSubWorkflows =
+        ProjectClosure.collectSubWorkflows(rewrittenNodes, allWorkflowTemplates);
+    Map<WorkflowIdentifier, WorkflowTemplate> rewrittenUsedSubWorkflows =
+        mapValues(usedSubWorkflows, workflowNodeVisitor::visitWorkflowTemplate);
+
+    rewrittenUsedSubWorkflows.forEach(
+        (key, value) -> {
+          if (!allUsedSubWorkflows.containsKey(key)) {
+            allUsedSubWorkflows.put(key, value);
+            recursivelyCollect(
+                value.nodes(),
+                allUsedTaskTemplates,
+                allUsedSubWorkflows,
+                allTaskTemplates,
+                allWorkflowTemplates,
+                workflowNodeVisitor,
+                flyteAdminClient,
+                cache);
+          }
+        });
+
+    return rewrittenNodes;
   }
 
   // note that there are cases we are making an unnecessary network call because we might have
@@ -255,18 +297,21 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
   // we accept the additional cost because it should be rare to have remote tasks in a dynamic
   // workflow
   private static TaskTemplate fetchTaskTemplate(
-      FlyteAdminClient flyteAdminClient, TaskIdentifier id) {
-    LOG.info("fetching task template remotely for {}", id);
+      FlyteAdminClient flyteAdminClient,
+      TaskIdentifier id,
+      Map<TaskIdentifier, TaskTemplate> cache) {
+    return cache.computeIfAbsent(
+        id,
+        taskIdentifier -> {
+          LOG.info("fetching task template remotely for {}", id);
 
-    TaskTemplate taskTemplate =
-        flyteAdminClient.fetchLatestTaskTemplate(
-            NamedEntityIdentifier.builder()
-                .domain(id.domain())
-                .project(id.project())
-                .name(id.name())
-                .build());
-
-    return taskTemplate;
+          return flyteAdminClient.fetchLatestTaskTemplate(
+              NamedEntityIdentifier.builder()
+                  .domain(id.domain())
+                  .project(id.project())
+                  .name(id.name())
+                  .build());
+        });
   }
 
   private static DynamicWorkflowTask getDynamicWorkflowTask(String name) {

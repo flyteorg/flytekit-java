@@ -343,8 +343,16 @@ public abstract class ProjectClosure {
   }
 
   @VisibleForTesting
+  static Map<WorkflowIdentifier, WorkflowTemplate> collectSubWorkflows(
+      List<Node> nodes, Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows) {
+    return collectSubWorkflows(nodes, allWorkflows, Function.identity());
+  }
+
   public static Map<WorkflowIdentifier, WorkflowTemplate> collectSubWorkflows(
-      List<Node> rewrittenNodes, Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows) {
+      List<Node> nodes,
+      Map<WorkflowIdentifier, WorkflowTemplate> allWorkflows,
+      Function<List<Node>, List<Node>> nodesRewriter) {
+    List<Node> rewrittenNodes = nodesRewriter.apply(nodes);
     return collectSubWorkflowIds(rewrittenNodes).stream()
         // all identifiers should be rewritten at this point
         .map(
@@ -366,7 +374,7 @@ public abstract class ProjectClosure {
               }
 
               Map<WorkflowIdentifier, WorkflowTemplate> nestedSubWorkflows =
-                  collectSubWorkflows(subWorkflow.nodes(), allWorkflows);
+                  collectSubWorkflows(subWorkflow.nodes(), allWorkflows, nodesRewriter);
 
               return Stream.concat(
                   Stream.of(Maps.immutableEntry(workflowId, subWorkflow)),
@@ -376,10 +384,10 @@ public abstract class ProjectClosure {
   }
 
   public static Map<TaskIdentifier, TaskTemplate> collectDynamicWorkflowTasks(
-      List<Node> rewrittenNodes,
+      List<Node> nodes,
       Map<TaskIdentifier, TaskTemplate> allTasks,
       Function<TaskIdentifier, TaskTemplate> remoteTaskTemplateFetcher) {
-    return collectTaskIds(rewrittenNodes).stream()
+    return collectTaskIds(nodes).stream()
         // all identifiers should be rewritten at this point
         .map(
             taskId ->

@@ -87,13 +87,19 @@ public class DynamicFibonacciWorkflowTask
                       SdkTypes.nulls(),
                       SdkTypes.nulls())
                   .withUpstreamNode(hello));
+      // subworkflow that contains another subworkflow
+      SdkNode<WelcomeWorkflow.Output> greet =
+          builder.apply(
+              "greet",
+              new SubWorkflow().withUpstreamNode(world),
+              WelcomeWorkflow.Input.create(SdkBindingDataFactory.of("greet")));
       @Var SdkBindingData<Long> prev = SdkBindingDataFactory.of(0);
       @Var SdkBindingData<Long> value = SdkBindingDataFactory.of(1);
       for (int i = 2; i <= input.n().get(); i++) {
         SdkBindingData<Long> next =
             builder
                 .apply(
-                    "fib-" + i, new SumTask().withUpstreamNode(world), SumInput.create(value, prev))
+                    "fib-" + i, new SumTask().withUpstreamNode(greet), SumInput.create(value, prev))
                 .getOutputs();
         prev = value;
         value = next;

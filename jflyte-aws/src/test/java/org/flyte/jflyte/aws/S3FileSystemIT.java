@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.util.IOUtils;
@@ -52,8 +55,12 @@ public class S3FileSystemIT {
   public void setUp() {
     s3 =
         AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(localStack.getEndpointConfiguration(S3))
-            .withCredentials(localStack.getDefaultCredentialsProvider())
+            .withEndpointConfiguration(
+                new EndpointConfiguration(
+                    localStack.getEndpointOverride(S3).toString(), localStack.getRegion()))
+            .withCredentials(
+                new AWSStaticCredentialsProvider(
+                    new BasicAWSCredentials(localStack.getAccessKey(), localStack.getSecretKey())))
             .build();
 
     s3.createBucket("flyteorg");

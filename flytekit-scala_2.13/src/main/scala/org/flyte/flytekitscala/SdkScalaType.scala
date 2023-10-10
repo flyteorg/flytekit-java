@@ -231,7 +231,8 @@ object SdkScalaType {
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     DelegateLiteralType(SdkLiteralTypes.durations())
 
-  // fixme: create blob type from annotation
+  // fixme: create blob type from annotation, or rethink how we could offer the offloaded data feature
+  // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
   implicit def blobLiteralType: SdkScalaLiteralType[Blob] =
     DelegateLiteralType(
       SdkLiteralTypes.blobs(

@@ -23,10 +23,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Blob;
-import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
-import org.flyte.flytekit.jackson.BlobTypeDescription;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkRunnableTask.class)
@@ -51,7 +49,6 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
     public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();
@@ -94,7 +91,6 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
     public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();

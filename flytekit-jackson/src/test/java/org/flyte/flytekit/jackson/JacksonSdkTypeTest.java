@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
-import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
@@ -545,7 +544,6 @@ public class JacksonSdkTypeTest {
 
     public abstract SdkBindingData<Duration> d();
 
-    @BlobTypeDescription(format = "", dimensionality = BlobDimensionality.SINGLE)
     public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();

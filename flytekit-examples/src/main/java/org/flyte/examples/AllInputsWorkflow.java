@@ -35,7 +35,6 @@ import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
-import org.flyte.flytekit.jackson.BlobTypeDescription;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -69,8 +68,8 @@ public class AllInputsWorkflow
                             BlobMetadata.builder()
                                 .type(
                                     BlobType.builder()
-                                        .format("csv")
-                                        .dimensionality(BlobDimensionality.MULTIPART)
+                                        .format("")
+                                        .dimensionality(BlobDimensionality.SINGLE)
                                         .build())
                                 .build())
                         .build()),
@@ -110,7 +109,6 @@ public class AllInputsWorkflow
 
     public abstract SdkBindingData<Duration> d();
 
-    @BlobTypeDescription(format = "csv", dimensionality = BlobDimensionality.MULTIPART)
     public abstract SdkBindingData<Blob> blob();
 
     public abstract SdkBindingData<List<String>> l();

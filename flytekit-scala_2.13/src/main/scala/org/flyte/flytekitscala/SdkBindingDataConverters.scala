@@ -172,6 +172,11 @@ object SdkBindingDataConverters {
               jf.Function.identity()
             )
         }
+      case LiteralType.Kind.BLOB_TYPE =>
+        TypeCastingResult(
+          SdkScalaLiteralTypes.blobs(lt.blobType()),
+          jf.Function.identity()
+        )
       case LiteralType.Kind.SCHEMA_TYPE => ??? // TODO not yet supported
       case LiteralType.Kind.COLLECTION_TYPE =>
         val TypeCastingResult(convertedElementType, convFunction) = toScalaType(
@@ -256,6 +261,11 @@ object SdkBindingDataConverters {
               jf.Function.identity()
             )
         }
+      case LiteralType.Kind.BLOB_TYPE =>
+        TypeCastingResult(
+          SdkJavaLiteralTypes.blobs(lt.blobType()),
+          jf.Function.identity()
+        )
       case LiteralType.Kind.SCHEMA_TYPE =>
         ??? // TODO do we support schema type?
       case LiteralType.Kind.COLLECTION_TYPE =>

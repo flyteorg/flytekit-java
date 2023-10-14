@@ -75,8 +75,6 @@ public class SdkLiteralTypes {
       return (SdkLiteralType<T>) datetimes();
     } else if (clazz.equals(Duration.class)) {
       return (SdkLiteralType<T>) durations();
-    } else if (clazz.equals(BlobType.class)) {
-      return null;
     }
     throw new IllegalArgumentException("Unsupported type: " + clazz);
   }

@@ -141,13 +141,13 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
+      case BLOB_TYPE:
         List<T> collection =
             (List<T>)
                 streamOf(elements).map(this::transform).map(SdkBindingData::get).collect(toList());
         return SdkBindingDataFactory.of(literalType, collection);
 
       case SCHEMA_TYPE:
-      case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
             "Type contains a collection of an supported literal type: " + literalType);
@@ -166,6 +166,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       case SIMPLE_TYPE:
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
+      case BLOB_TYPE:
         Map<String, T> bindingDataMap =
             entries.stream()
                 .map(entry -> Map.entry(entry.getKey(), (T) transform(entry.getValue()).get()))
@@ -173,7 +174,6 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         return SdkBindingDataFactory.of(literalType, bindingDataMap);
 
       case SCHEMA_TYPE:
-      case BLOB_TYPE:
       default:
         throw new UnsupportedOperationException(
             "Type contains a map of an supported literal type: " + literalType);
@@ -207,9 +207,14 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         return SdkLiteralTypes.maps(readLiteralType(typeNode.get(VALUE).get(TYPE)));
       case COLLECTION_TYPE:
         return SdkLiteralTypes.collections(readLiteralType(typeNode.get(VALUE).get(TYPE)));
-
-      case SCHEMA_TYPE:
       case BLOB_TYPE:
+        return SdkLiteralTypes.blobs(
+            BlobType.builder()
+                .format(typeNode.get(VALUE).get("format").asText())
+                .dimensionality(
+                    BlobDimensionality.valueOf(typeNode.get(VALUE).get("dimensionality").asText()))
+                .build());
+      case SCHEMA_TYPE:
       default:
         throw new UnsupportedOperationException(
             "Type contains a collection/map of an supported literal type: " + kind);

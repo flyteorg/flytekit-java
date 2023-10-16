@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Network;
-import org.testcontainers.utility.ResourceReaper;
 
 // see https://github.com/testcontainers/testcontainers-java/issues/3081
 
@@ -79,7 +78,7 @@ class FlyteSandboxNetwork extends ExternalResource implements Network {
   @Override
   public void close() {
     if (initialized.getAndSet(false)) {
-      ResourceReaper.instance().removeNetworkById(NAME);
+      DockerClientFactory.instance().client().removeNetworkCmd(NAME).exec();
     }
   }
 }

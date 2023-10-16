@@ -44,7 +44,7 @@ public class FlyteSandboxClient {
   public static FlyteSandboxClient create() {
     String version = String.valueOf(System.currentTimeMillis());
 
-    String address = FlyteSandboxContainer.INSTANCE.getContainerIpAddress();
+    String address = FlyteSandboxContainer.INSTANCE.getHost();
     int port = FlyteSandboxContainer.INSTANCE.getMappedPort(30081);
 
     ManagedChannel channel =

@@ -58,6 +58,10 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
         IOUtils.copy(imageInputStream, outputStream);
       }
 
+      // for some reason, when running on Mac, the above copied file is not fully ready after the
+      // stream being closed; sleeping a little bit could work around that
+      Thread.sleep(1000);
+
       ExecResult execResult =
           INSTANCE.execInContainer(
               "docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
@@ -106,9 +110,8 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
     logger().info("Flyte is ready!");
 
-    String consoleUri =
-        String.format("http://%s:%d/console", getContainerIpAddress(), getMappedPort(30081));
-    String k8sUri = String.format("http://%s:%d", getContainerIpAddress(), getMappedPort(30082));
+    String consoleUri = String.format("http://%s:%d/console", getHost(), getMappedPort(30081));
+    String k8sUri = String.format("http://%s:%d", getHost(), getMappedPort(30082));
 
     logger().info("Flyte UI is available at " + consoleUri);
     logger().info("K8s dashboard is available at " + k8sUri);

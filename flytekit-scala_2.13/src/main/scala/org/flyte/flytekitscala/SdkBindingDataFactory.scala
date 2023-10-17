@@ -145,6 +145,18 @@ object SdkBindingDataFactory {
   def of(value: Blob): SdkBindingData[Blob] =
     SdkBindingData.literal(SdkLiteralTypes.blobs(value.metadata.`type`), value)
 
+  /** Creates a [[SdkBindingData]] for a flyte type with the given value.
+    *
+    * @param type
+    *   the flyte type
+    * @param value
+    *   the simple value for this data
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def of[T](`type`: SdkLiteralType[T], value: T): SdkBindingData[T] =
+    SdkBindingData.literal(`type`, value)
+
   /** Creates a [[SdkBindingDataFactory]] for a flyte string collection given a
     * scala [[List]].
     *

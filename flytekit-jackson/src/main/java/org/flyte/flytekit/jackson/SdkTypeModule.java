@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
-import org.flyte.flytekit.jackson.deserializers.LiteralMapDeserializers;
 import org.flyte.flytekit.jackson.deserializers.SdkBindingDataDeserializers;
 import org.flyte.flytekit.jackson.serializers.BindingMapSerializers;
 import org.flyte.flytekit.jackson.serializers.LiteralMapSerializers;
@@ -60,7 +59,6 @@ class SdkTypeModule extends Module {
     context.addSerializers(serializers);
 
     context.addSerializers(new LiteralMapSerializers());
-    context.addDeserializers(new LiteralMapDeserializers());
     context.addSerializers(new BindingMapSerializers());
     context.addDeserializers(sdkbindingDeserializers);
 

@@ -125,6 +125,17 @@ public final class SdkBindingDataFactory {
   }
 
   /**
+   * Creates a {@code SdkBindingData} for a flyte type with the given value.
+   *
+   * @param type the flyte type
+   * @param value the simple value for this data
+   * @return the new {@code SdkBindingData}
+   */
+  public static <T> SdkBindingData<T> of(SdkLiteralType<T> type, T value) {
+    return SdkBindingData.literal(type, value);
+  }
+
+  /**
    * Creates a {@code SdkBindingData} for a flyte Blob with the given value.
    *
    * @param value the simple value for this data

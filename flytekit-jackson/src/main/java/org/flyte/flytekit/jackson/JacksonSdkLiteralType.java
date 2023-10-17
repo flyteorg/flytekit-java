@@ -33,6 +33,7 @@ import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkLiteralType;
+import org.flyte.flytekit.jackson.deserializers.StructDeserializer.StructWrapper;
 
 /**
  * Implementation of {@link org.flyte.flytekit.SdkLiteralType} for {@link
@@ -102,7 +103,8 @@ public class JacksonSdkLiteralType<T> extends SdkLiteralType<T> {
     var tree = OBJECT_MAPPER.valueToTree(value);
 
     try {
-      return OBJECT_MAPPER.treeToValue(tree, Literal.class);
+      return Literal.ofScalar(
+          Scalar.ofGeneric(OBJECT_MAPPER.treeToValue(tree, StructWrapper.class).unwrap()));
     } catch (IOException e) {
       throw new UncheckedIOException("toLiteral failed for [" + clazz.getName() + "]: " + value, e);
     }

@@ -20,13 +20,26 @@ import com.google.auto.value.AutoValue;
 
 @AutoValue
 public abstract class BQReference {
+  @AutoValue
+  public abstract static class Nested {
+    public abstract String project();
+
+    public abstract String dataset();
+
+    public abstract String tableName();
+  }
+
   public abstract String project();
 
   public abstract String dataset();
 
   public abstract String tableName();
 
+  // this is only to test nested nested auto-value
+  public abstract Nested nested();
+
   public static BQReference create(String project, String dataset, String tableName) {
-    return new AutoValue_BQReference(project, dataset, tableName);
+    return new AutoValue_BQReference(
+        project, dataset, tableName, new AutoValue_BQReference_Nested(project, dataset, tableName));
   }
 }

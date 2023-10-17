@@ -19,6 +19,7 @@ package org.flyte.flytekitscala
 import java.time.{Duration, Instant}
 import java.{util => ju}
 import magnolia.{CaseClass, Magnolia, Param, SealedTrait}
+import org.flyte.api.v1.BlobType.BlobDimensionality
 import org.flyte.api.v1._
 import org.flyte.flytekit.{
   SdkBindingData,
@@ -29,6 +30,8 @@ import org.flyte.flytekit.{
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
+import scala.reflect.{ClassTag, classTag}
+import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
 /** Type class to map between Flyte `Variable` and `Literal` and Scala case
   * classes.
@@ -229,6 +232,28 @@ object SdkScalaType {
 
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     DelegateLiteralType(SdkLiteralTypes.durations())
+
+  // more specific matching to fail the usage of SdkBindingData[Option[_]]
+  implicit def optionLiteralType: SdkScalaLiteralType[Option[_]] = ???
+
+  // fixme: using Product is just an approximation for case class because Product
+  // is also super class of, for example, Option and Tuple
+  implicit def productLiteralType[T <: Product: TypeTag: ClassTag]
+      : SdkScalaLiteralType[T] =
+    DelegateLiteralType(SdkLiteralTypes.generics())
+
+  // fixme: create blob type from annotation, or rethink how we could offer the offloaded data feature
+  // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
+  implicit def blobLiteralType: SdkScalaLiteralType[Blob] =
+    DelegateLiteralType(
+      SdkLiteralTypes.blobs(
+        BlobType
+          .builder()
+          .format("")
+          .dimensionality(BlobDimensionality.SINGLE)
+          .build()
+      )
+    )
 
   // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>
   //  This makes Scala dev mad when they are forced to use the java types instead of scala types

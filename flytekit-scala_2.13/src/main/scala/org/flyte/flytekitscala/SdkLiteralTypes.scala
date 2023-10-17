@@ -24,7 +24,18 @@ import org.flyte.flytekit.{
 
 import java.time.{Duration, Instant}
 import scala.collection.JavaConverters._
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
+import scala.reflect.api.{Mirror, TypeCreator, Universe}
+import scala.reflect.runtime.universe
+import scala.reflect.{ClassTag, classTag}
+import scala.reflect.runtime.universe.{
+  NoPrefix,
+  Symbol,
+  Type,
+  TypeTag,
+  runtimeMirror,
+  termNames,
+  typeOf
+}
 
 object SdkLiteralTypes {
 
@@ -201,6 +212,193 @@ object SdkLiteralTypes {
     *   the [[SdkLiteralType]]
     */
   def durations(): SdkLiteralType[Duration] = SdkJavaLiteralTypes.durations()
+
+  /** Returns a [[SdkLiteralType]] for products.
+    * @return
+    *   the [[SdkLiteralType]]
+    */
+  def generics[T <: Product: TypeTag: ClassTag](): SdkLiteralType[T] = {
+    ScalaLiteralType[T](
+      LiteralType.ofSimpleType(SimpleType.STRUCT),
+      (value: T) => Literal.ofScalar(Scalar.ofGeneric(toStruct(value))),
+      (x: Literal) => toProduct(x.scalar().generic()),
+      (v: T) => BindingData.ofScalar(Scalar.ofGeneric(toStruct(v))),
+      "generics"
+    )
+  }
+
+  private def toStruct(product: Product): Struct = {
+    def productToMap(product: Product): Map[String, Any] = {
+      // by spec getDeclaredFields is not ordered but in practice it works fine
+      // it's a lot better since Scala 2.13 because productElementNames was introduced
+      //   (product.productElementNames zip product.productIterator).toMap
+      product.getClass.getDeclaredFields
+        .map(_.getName)
+        .zip(product.productIterator.toList)
+        .toMap
+    }
+
+    def mapToStruct(map: Map[String, Any]): Struct = {
+      val fields = map.map({ case (key, value) =>
+        (key, anyToStructValue(value))
+      })
+      Struct.of(fields.asJava)
+    }
+
+    def anyToStructValue(value: Any): Struct.Value = {
+      def anyToStructureValue0(value: Any): Struct.Value = {
+        value match {
+          case s: String => Struct.Value.ofStringValue(s)
+          case n @ (_: Byte | _: Short | _: Int | _: Long | _: Float |
+              _: Double) =>
+            Struct.Value.ofNumberValue(n.toString.toDouble)
+          case b: Boolean => Struct.Value.ofBoolValue(b)
+          case l: List[Any] =>
+            Struct.Value.ofListValue(l.map(anyToStructValue).asJava)
+          case m: Map[_, _] =>
+            Struct.Value.ofStructValue(
+              mapToStruct(m.asInstanceOf[Map[String, Any]])
+            )
+          case null => Struct.Value.ofNullValue()
+          case p: Product =>
+            Struct.Value.ofStructValue(mapToStruct(productToMap(p)))
+          case _ =>
+            throw new IllegalArgumentException(
+              s"Unsupported type: ${value.getClass}"
+            )
+        }
+      }
+
+      value match {
+        case Some(v) => anyToStructureValue0(v)
+        case None    => Struct.Value.ofNullValue()
+        case _       => anyToStructureValue0(value)
+      }
+    }
+
+    mapToStruct(productToMap(product))
+  }
+
+  private def toProduct[T <: Product: TypeTag: ClassTag](
+      struct: Struct
+  ): T = {
+    def structToMap(struct: Struct): Map[String, Any] = {
+      struct
+        .fields()
+        .asScala
+        .map({ case (key, value) =>
+          (key, structValueToAny(value))
+        })
+        .toMap
+    }
+
+    def mapToProduct[S <: Product: TypeTag: ClassTag](
+        map: Map[String, Any]
+    ): S = {
+      val mirror = runtimeMirror(classTag[S].runtimeClass.getClassLoader)
+
+      def valueToParamValue(value: Any, param: Symbol): Any = {
+        def valueToParamValue0(value: Any, param: Symbol): Any = {
+          if (param.typeSignature =:= typeOf[Byte]) {
+            value.asInstanceOf[Double].toByte
+          } else if (param.typeSignature =:= typeOf[Short]) {
+            value.asInstanceOf[Double].toShort
+          } else if (param.typeSignature =:= typeOf[Int]) {
+            value.asInstanceOf[Double].toInt
+          } else if (param.typeSignature =:= typeOf[Long]) {
+            value.asInstanceOf[Double].toLong
+          } else if (param.typeSignature =:= typeOf[Float]) {
+            value.asInstanceOf[Double].toFloat
+          } else if (param.typeSignature <:< typeOf[Product]) {
+            val typeTag = createTypeTag(param.typeSignature)
+            val classTag = ClassTag(
+              typeTag.mirror.runtimeClass(param.typeSignature)
+            )
+            mapToProduct(value.asInstanceOf[Map[String, Any]])(
+              typeTag,
+              classTag
+            )
+          } else {
+            value
+          }
+        }
+
+        if (param.typeSignature <:< typeOf[Option[Any]]) {
+          Some(
+            valueToParamValue0(
+              value,
+              param.typeSignature.dealias.typeArgs.head.typeSymbol
+            )
+          )
+        } else {
+          valueToParamValue0(value, param)
+        }
+      }
+
+      def createTypeTag[U <: Product](tpe: Type): TypeTag[U] = {
+        val typSym = mirror.staticClass(tpe.typeSymbol.fullName)
+        // note: this uses internal API, otherwise we will need to depend on scala-compiler at runtime
+        val typeRef =
+          universe.internal.typeRef(NoPrefix, typSym, List.empty)
+
+        TypeTag(
+          mirror,
+          new TypeCreator {
+            override def apply[V <: Universe with Singleton](
+                m: Mirror[V]
+            ): V#Type = {
+              assert(
+                m == mirror,
+                s"TypeTag[$typeRef] defined in $mirror cannot be migrated to $m."
+              )
+              typeRef.asInstanceOf[V#Type]
+            }
+          }
+        )
+      }
+
+      val clazz = typeOf[S].typeSymbol.asClass
+      val classMirror = mirror.reflectClass(clazz)
+      val constructor = typeOf[S].decl(termNames.CONSTRUCTOR).asMethod
+      val constructorMirror = classMirror.reflectConstructor(constructor)
+
+      val constructorArgs =
+        constructor.paramLists.flatten.map((param: Symbol) => {
+          val paramName = param.name.toString
+          val value = map.getOrElse(
+            paramName,
+            throw new IllegalArgumentException(
+              s"Map is missing required parameter named $paramName"
+            )
+          )
+          valueToParamValue(value, param)
+        })
+
+      constructorMirror(constructorArgs: _*).asInstanceOf[S]
+    }
+
+    def structValueToAny(value: Struct.Value): Any = {
+      value.kind() match {
+        case Struct.Value.Kind.STRING_VALUE => value.stringValue()
+        case Struct.Value.Kind.NUMBER_VALUE => value.numberValue()
+        case Struct.Value.Kind.BOOL_VALUE   => value.boolValue()
+        case Struct.Value.Kind.LIST_VALUE =>
+          value.listValue().asScala.map(structValueToAny).toList
+        case Struct.Value.Kind.STRUCT_VALUE => structToMap(value.structValue())
+        case Struct.Value.Kind.NULL_VALUE   => None
+      }
+    }
+
+    mapToProduct[T](structToMap(struct))
+  }
+
+  /** Returns a [[SdkLiteralType]] for blob.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
+  def blobs(blobType: BlobType): SdkLiteralType[Blob] =
+    SdkJavaLiteralTypes.blobs(blobType)
 
   /** Returns a [[SdkLiteralType]] for flyte collections.
     *

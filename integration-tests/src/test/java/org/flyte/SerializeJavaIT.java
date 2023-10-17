@@ -16,7 +16,6 @@
  */
 package org.flyte;
 
-import static org.flyte.FlyteContainer.CLIENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -29,13 +28,13 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SerializeJavaIT {
+class SerializeJavaIT extends Fixtures {
   private static final String CLASSPATH = "flytekit-examples/target/lib";
 
   @TempDir Path managed;
 
   @Test
-  public void testSerializeWorkflows() {
+  void testSerializeWorkflows() {
     try {
       File current = new File("target/protos");
       File tempDir = managed.resolve(current.getAbsolutePath()).toFile();

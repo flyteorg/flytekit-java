@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.BindingData;
@@ -79,7 +80,14 @@ class JacksonSdkLiteralTypeTest {
         arguments(
             SomeType.class,
             SomeType.create(
-                1, 2.0, "3", true, null, List.of("4", "5", "6"), EmbeddedType.create(7, 8)),
+                1,
+                2.0,
+                "3",
+                true,
+                null,
+                List.of("4", "5", "6"),
+                EmbeddedType.create(7, 8),
+                Optional.empty()),
             Literal.ofScalar(
                 Scalar.ofGeneric(
                     Struct.of(
@@ -105,7 +113,9 @@ class JacksonSdkLiteralTypeTest {
                                 Struct.of(
                                     Map.of(
                                         "a", Value.ofNumberValue(7),
-                                        "b", Value.ofNumberValue(8))))))))),
+                                        "b", Value.ofNumberValue(8)))),
+                            "optionalS",
+                            Value.ofNullValue()))))),
         arguments(
             TypeWithMap.class,
             TypeWithMap.create(Map.of("x", 1L, "y", 2L)),
@@ -147,7 +157,14 @@ class JacksonSdkLiteralTypeTest {
         arguments(
             SomeType.class,
             SomeType.create(
-                1, 2.0, "3", true, null, List.of("4", "5", "6"), EmbeddedType.create(7, 8)),
+                1,
+                2.0,
+                "3",
+                true,
+                null,
+                List.of("4", "5", "6"),
+                EmbeddedType.create(7, 8),
+                Optional.of("hello")),
             BindingData.ofScalar(
                 Scalar.ofGeneric(
                     Struct.of(
@@ -173,7 +190,9 @@ class JacksonSdkLiteralTypeTest {
                                 Struct.of(
                                     Map.of(
                                         "a", Value.ofNumberValue(7),
-                                        "b", Value.ofNumberValue(8))))))))),
+                                        "b", Value.ofNumberValue(8)))),
+                            "optionalS",
+                            Value.ofStringValue("hello")))))),
         arguments(
             TypeWithMap.class,
             TypeWithMap.create(Map.of("a", 1L, "b", 2L)),
@@ -274,6 +293,8 @@ class JacksonSdkLiteralTypeTest {
 
     abstract EmbeddedType subTest();
 
+    abstract Optional<String> optionalS();
+
     public static SomeType create(
         long i,
         double f,
@@ -281,8 +302,10 @@ class JacksonSdkLiteralTypeTest {
         boolean b,
         String null_,
         List<String> list,
-        EmbeddedType subTest) {
-      return new AutoValue_JacksonSdkLiteralTypeTest_SomeType(i, f, s, b, null_, list, subTest);
+        EmbeddedType subTest,
+        Optional<String> optionalS) {
+      return new AutoValue_JacksonSdkLiteralTypeTest_SomeType(
+          i, f, s, b, null_, list, subTest, optionalS);
     }
   }
 

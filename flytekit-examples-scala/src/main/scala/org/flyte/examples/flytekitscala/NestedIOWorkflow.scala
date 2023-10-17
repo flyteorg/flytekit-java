@@ -14,16 +14,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.flyte.flytekit.jackson.serializers;
+package org.flyte.examples.flytekitscala
 
-public class SdkBindingDataSerializationProtocol {
-  public static final String VALUE = "value";
-  public static final String SCALAR = "scalar";
-  public static final String LITERAL = "literal";
-  public static final String STRUCT_TYPE = "structType";
-  public static final String STRUCT_VALUE = "structValue";
-  public static final String TYPE = "type";
-  public static final String KIND = "kind";
-  public static final String PRIMITIVE = "primitive";
-  public static final String BLOB = "blob";
+import org.flyte.flytekitscala.{
+  SdkScalaType,
+  SdkScalaWorkflow,
+  SdkScalaWorkflowBuilder
+}
+
+class NestedIOWorkflow
+    extends SdkScalaWorkflow[NestedIOTaskInput, Unit](
+      SdkScalaType[NestedIOTaskInput],
+      SdkScalaType.unit
+    ) {
+
+  override def expand(
+      builder: SdkScalaWorkflowBuilder,
+      input: NestedIOTaskInput
+  ): Unit = {
+    builder.apply(new NestedIOTask(), input)
+  }
 }

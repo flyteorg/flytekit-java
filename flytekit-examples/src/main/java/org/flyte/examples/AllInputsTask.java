@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.jackson.JacksonSdkType;
@@ -35,7 +36,19 @@ public class AllInputsTask
   }
 
   @AutoValue
+  public abstract static class Nested {
+    public abstract String hello();
+
+    public abstract String world();
+
+    public static Nested create(String hello, String world) {
+      return new AutoValue_AllInputsTask_Nested(hello, world);
+    }
+  }
+
+  @AutoValue
   public abstract static class AutoAllInputsInput {
+
     public abstract SdkBindingData<Long> i();
 
     public abstract SdkBindingData<Double> f();
@@ -48,8 +61,9 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
+    public abstract SdkBindingData<Blob> blob();
+
+    public abstract SdkBindingData<Nested> generic();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -66,13 +80,14 @@ public class AllInputsTask
         SdkBindingData<Boolean> b,
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
-        // Blob blob,
+        SdkBindingData<Blob> blob,
+        SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsInput(
-          i, f, s, b, t, d, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, generic, l, m, emptyList, emptyMap);
     }
   }
 
@@ -91,8 +106,9 @@ public class AllInputsTask
 
     public abstract SdkBindingData<Duration> d();
 
-    // TODO add blobs to sdkbinding data
-    // public abstract SdkBindingData<Blob> blob();
+    public abstract SdkBindingData<Blob> blob();
+
+    public abstract SdkBindingData<Nested> generic();
 
     public abstract SdkBindingData<List<String>> l();
 
@@ -109,12 +125,14 @@ public class AllInputsTask
         SdkBindingData<Boolean> b,
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
+        SdkBindingData<Blob> blob,
+        SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsTask_AutoAllInputsOutput(
-          i, f, s, b, t, d, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, generic, l, m, emptyList, emptyMap);
     }
   }
 
@@ -127,6 +145,8 @@ public class AllInputsTask
         input.b(),
         input.t(),
         input.d(),
+        input.blob(),
+        input.generic(),
         input.l(),
         input.m(),
         input.emptyList(),

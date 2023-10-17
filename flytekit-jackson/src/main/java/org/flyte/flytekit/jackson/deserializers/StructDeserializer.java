@@ -29,23 +29,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.flyte.api.v1.Literal;
-import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.Struct;
 import org.flyte.api.v1.Struct.Value;
+import org.flyte.flytekit.jackson.deserializers.StructDeserializer.StructWrapper;
 
-public class LiteralStructDeserializer extends StdDeserializer<Literal> {
+public class StructDeserializer extends StdDeserializer<StructWrapper> {
   private static final long serialVersionUID = -6835948754469626304L;
 
-  public LiteralStructDeserializer() {
-    super(Literal.class);
+  // we cannot use Struct directly because it is an auto-value class so this deserializer will not
+  // be used by Jackson
+  public static class StructWrapper {
+
+    private final Struct struct;
+
+    public StructWrapper(Struct struct) {
+      this.struct = struct;
+    }
+
+    public Struct unwrap() {
+      return struct;
+    }
+  }
+
+  public StructDeserializer() {
+    super(StructWrapper.class);
   }
 
   @Override
-  public Literal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-
-    Struct generic = readValueAsStruct(p);
-    return Literal.ofScalar(Scalar.ofGeneric(generic));
+  public StructWrapper deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    return new StructWrapper(readValueAsStruct(p));
   }
 
   private static Struct readValueAsStruct(JsonParser p) throws IOException {
@@ -67,7 +79,7 @@ public class LiteralStructDeserializer extends StdDeserializer<Literal> {
     return Struct.of(unmodifiableMap(fields));
   }
 
-  private static Struct.Value readValueAsStructValue(JsonParser p) throws IOException {
+  private static Value readValueAsStructValue(JsonParser p) throws IOException {
     switch (p.currentToken()) {
       case START_ARRAY:
         p.nextToken();
@@ -75,38 +87,38 @@ public class LiteralStructDeserializer extends StdDeserializer<Literal> {
         List<Value> valuesList = new ArrayList<>();
 
         while (p.currentToken() != JsonToken.END_ARRAY) {
-          Struct.Value value = readValueAsStructValue(p);
+          Value value = readValueAsStructValue(p);
           p.nextToken();
 
           valuesList.add(value);
         }
 
-        return Struct.Value.ofListValue(unmodifiableList(valuesList));
+        return Value.ofListValue(unmodifiableList(valuesList));
 
       case START_OBJECT:
         Struct struct = readValueAsStruct(p);
 
-        return Struct.Value.ofStructValue(struct);
+        return Value.ofStructValue(struct);
 
       case VALUE_STRING:
         String stringValue = p.readValueAs(String.class);
 
-        return Struct.Value.ofStringValue(stringValue);
+        return Value.ofStringValue(stringValue);
 
       case VALUE_NUMBER_FLOAT:
       case VALUE_NUMBER_INT:
         Double doubleValue = p.readValueAs(Double.class);
 
-        return Struct.Value.ofNumberValue(doubleValue);
+        return Value.ofNumberValue(doubleValue);
 
       case VALUE_NULL:
-        return Struct.Value.ofNullValue();
+        return Value.ofNullValue();
 
       case VALUE_FALSE:
-        return Struct.Value.ofBoolValue(false);
+        return Value.ofBoolValue(false);
 
       case VALUE_TRUE:
-        return Struct.Value.ofBoolValue(true);
+        return Value.ofBoolValue(true);
 
       case FIELD_NAME:
       case NOT_AVAILABLE:

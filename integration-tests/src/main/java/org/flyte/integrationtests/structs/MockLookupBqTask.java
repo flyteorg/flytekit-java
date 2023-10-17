@@ -16,13 +16,15 @@
  */
 package org.flyte.integrationtests.structs;
 
+import com.google.auto.service.AutoService;
 import com.google.auto.value.AutoValue;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkRunnableTask;
+import org.flyte.flytekit.jackson.JacksonSdkLiteralType;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
-// @AutoService(SdkRunnableTask.class)
+@AutoService(SdkRunnableTask.class)
 public class MockLookupBqTask
     extends SdkRunnableTask<MockLookupBqTask.Input, MockLookupBqTask.Output> {
   private static final long serialVersionUID = 604843235716487166L;
@@ -39,21 +41,25 @@ public class MockLookupBqTask
 
     public static Input create(
         SdkBindingData<BQReference> ref, SdkBindingData<Boolean> checkIfExists) {
-      return null; // TODO
+      return new AutoValue_MockLookupBqTask_Input(ref, checkIfExists);
     }
   }
 
   @AutoValue
   public abstract static class Output {
+    public abstract SdkBindingData<BQReference> ref();
+
     public abstract SdkBindingData<Boolean> exists();
 
-    public static Output create(boolean exists) {
-      return new AutoValue_MockLookupBqTask_Output(SdkBindingDataFactory.of(exists));
+    public static Output create(BQReference ref, boolean exists) {
+      return new AutoValue_MockLookupBqTask_Output(
+          SdkBindingDataFactory.of(JacksonSdkLiteralType.of(BQReference.class), ref),
+          SdkBindingDataFactory.of(exists));
     }
   }
 
   @Override
   public Output run(Input input) {
-    return Output.create(input.ref().get().tableName().contains("table-exists"));
+    return Output.create(input.ref().get(), input.ref().get().tableName().contains("table-exists"));
   }
 }

@@ -49,8 +49,11 @@ class LiteralTypeSerializer {
         serialize(literalType.mapValueType(), gen);
         gen.writeEndObject();
         break;
-      case SCHEMA_TYPE:
       case BLOB_TYPE:
+        // {type: {kind: blob, value: {format: string, dimensionality: string}}}}
+        gen.writeObject(literalType.blobType());
+        break;
+      case SCHEMA_TYPE:
         throw new IllegalArgumentException(
             String.format("Unsupported LiteralType.Kind: [%s]", literalType.getKind()));
     }

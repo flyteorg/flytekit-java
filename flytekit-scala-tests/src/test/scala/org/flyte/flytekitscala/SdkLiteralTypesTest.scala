@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekitscala
 
+import org.flyte.api.v1.{Blob, BlobType}
+import org.flyte.api.v1.BlobType.BlobDimensionality
 import org.flyte.flytekit.SdkLiteralType
 import org.flyte.flytekitscala.SdkLiteralTypes.{of, _}
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}

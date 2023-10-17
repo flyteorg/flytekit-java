@@ -30,6 +30,9 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Blob;
+import org.flyte.api.v1.BlobType;
+import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkLiteralType;
@@ -63,11 +66,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     String propName = prop.getName();
     AnnotatedMember member = prop.getMember();
     SdkLiteralType<?> literalType =
-        toLiteralType(
-            handledType,
-            /*rootLevel=*/ true,
-            propName,
-            member.getMember().getDeclaringClass().getName());
+        toLiteralType(handledType, /* rootLevel= */ true, propName, member);
 
     String description = getDescription(member);
 
@@ -132,18 +131,17 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
 
   @SuppressWarnings("AlreadyChecked")
   private SdkLiteralType<?> toLiteralType(
-      JavaType javaType, boolean rootLevel, String propName, String declaringClassName) {
+      JavaType javaType, boolean rootLevel, String propName, AnnotatedMember member) {
     Class<?> type = javaType.getRawClass();
 
     if (SdkBindingData.class.isAssignableFrom(type)) {
-      return toLiteralType(
-          javaType.getBindings().getBoundType(0), false, propName, declaringClassName);
+      return toLiteralType(javaType.getBindings().getBoundType(0), false, propName, member);
     } else if (rootLevel) {
       throw new UnsupportedOperationException(
           String.format(
               "Field '%s' from class '%s' is declared as '%s' and it is not matching any of the supported types. "
                   + "Please make sure your variable declared type is wrapped in 'SdkBindingData<>'.",
-              propName, declaringClassName, type));
+              propName, member.getMember().getDeclaringClass().getName(), type));
     } else if (isPrimitiveAssignableFrom(Long.class, type)) {
       return SdkLiteralTypes.integers();
     } else if (isPrimitiveAssignableFrom(Double.class, type)) {
@@ -159,8 +157,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
     } else if (List.class.isAssignableFrom(type)) {
       JavaType elementType = javaType.getBindings().getBoundType(0);
 
-      return SdkLiteralTypes.collections(
-          toLiteralType(elementType, false, propName, declaringClassName));
+      return SdkLiteralTypes.collections(toLiteralType(elementType, false, propName, member));
     } else if (Map.class.isAssignableFrom(type)) {
       JavaType keyType = javaType.getBindings().getBoundType(0);
       JavaType valueType = javaType.getBindings().getBoundType(1);
@@ -170,11 +167,20 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
             "Only Map<String, ?> is supported, got [" + javaType.getGenericSignature() + "]");
       }
 
-      return SdkLiteralTypes.maps(toLiteralType(valueType, false, propName, declaringClassName));
+      return SdkLiteralTypes.maps(toLiteralType(valueType, false, propName, member));
+    } else if (Blob.class.isAssignableFrom(type)) {
+      // fixme: create blob type from annotation, or rethink how we could offer the offloaded data
+      // feature
+      // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
+      return SdkLiteralTypes.blobs(
+          BlobType.builder().format("").dimensionality(BlobDimensionality.SINGLE).build());
     }
-    // TODO: Support blobs and structs
-    throw new UnsupportedOperationException(
-        String.format("Unsupported type: [%s]", type.getName()));
+    try {
+      return JacksonSdkLiteralType.of(type);
+    } catch (Exception e) {
+      throw new UnsupportedOperationException(
+          String.format("Unsupported type: [%s]", type.getName()), e);
+    }
   }
 
   private static boolean isPrimitiveAssignableFrom(Class<?> fromClass, Class<?> toClass) {

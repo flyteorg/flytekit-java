@@ -29,12 +29,14 @@ import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
+import org.flyte.examples.AllInputsTask.Nested;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkNode;
 import org.flyte.flytekit.SdkTypes;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
+import org.flyte.flytekit.jackson.JacksonSdkLiteralType;
 import org.flyte.flytekit.jackson.JacksonSdkType;
 
 @AutoService(SdkWorkflow.class)
@@ -73,6 +75,8 @@ public class AllInputsWorkflow
                                         .build())
                                 .build())
                         .build()),
+                SdkBindingDataFactory.of(
+                    JacksonSdkLiteralType.of(Nested.class), Nested.create("hello", "world")),
                 SdkBindingDataFactory.ofStringCollection(Arrays.asList("foo", "bar")),
                 SdkBindingDataFactory.ofStringMap(Map.of("test", "test")),
                 SdkBindingDataFactory.ofStringCollection(Collections.emptyList()),
@@ -88,6 +92,7 @@ public class AllInputsWorkflow
         outputs.t(),
         outputs.d(),
         outputs.blob(),
+        outputs.generic(),
         outputs.l(),
         outputs.m(),
         outputs.emptyList(),
@@ -111,6 +116,8 @@ public class AllInputsWorkflow
 
     public abstract SdkBindingData<Blob> blob();
 
+    public abstract SdkBindingData<Nested> generic();
+
     public abstract SdkBindingData<List<String>> l();
 
     public abstract SdkBindingData<Map<String, String>> m();
@@ -127,12 +134,13 @@ public class AllInputsWorkflow
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
         SdkBindingData<Blob> blob,
+        SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<List<String>> emptyList,
         SdkBindingData<Map<String, Long>> emptyMap) {
       return new AutoValue_AllInputsWorkflow_AllInputsWorkflowOutput(
-          i, f, s, b, t, d, blob, l, m, emptyList, emptyMap);
+          i, f, s, b, t, d, blob, generic, l, m, emptyList, emptyMap);
     }
   }
 }

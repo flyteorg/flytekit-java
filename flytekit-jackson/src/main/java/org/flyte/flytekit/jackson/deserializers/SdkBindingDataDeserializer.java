@@ -24,8 +24,12 @@ import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerialization
 import static org.flyte.flytekit.jackson.serializers.SdkBindingDataSerializationProtocol.VALUE;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.Duration;
@@ -46,36 +50,48 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.Scalar.Kind;
 import org.flyte.api.v1.SimpleType;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkBindingDataFactory;
 import org.flyte.flytekit.SdkLiteralType;
 import org.flyte.flytekit.SdkLiteralTypes;
+import org.flyte.flytekit.jackson.JacksonSdkLiteralType;
 
-class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
+class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
+    implements ContextualDeserializer {
   private static final long serialVersionUID = 0L;
 
+  private final JavaType type;
+
   public SdkBindingDataDeserializer() {
+    this(null);
+  }
+
+  private SdkBindingDataDeserializer(JavaType type) {
     super(SdkBindingData.class);
+
+    this.type = type;
   }
 
   @Override
   public SdkBindingData<?> deserialize(
       JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
     JsonNode tree = jsonParser.readValueAsTree();
-    return transform(tree);
+    return transform(tree, deserializationContext, type);
   }
 
-  private SdkBindingData<?> transform(JsonNode tree) {
+  private SdkBindingData<?> transform(
+      JsonNode tree, DeserializationContext deserializationContext, JavaType type) {
     Literal.Kind literalKind = Literal.Kind.valueOf(tree.get(LITERAL).asText());
     switch (literalKind) {
       case SCALAR:
-        return transformScalar(tree);
+        return transformScalar(tree, deserializationContext, type);
       case COLLECTION:
-        return transformCollection(tree);
+        return transformCollection(tree, deserializationContext, type);
 
       case MAP:
-        return transformMap(tree);
+        return transformMap(tree, deserializationContext, type);
 
       default:
         throw new UnsupportedOperationException(
@@ -83,7 +99,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
     }
   }
 
-  private static SdkBindingData<?> transformScalar(JsonNode tree) {
+  private SdkBindingData<?> transformScalar(
+      JsonNode tree, DeserializationContext deserializationContext, JavaType type) {
     Scalar.Kind scalarKind = Scalar.Kind.valueOf(tree.get(SCALAR).asText());
     switch (scalarKind) {
       case PRIMITIVE:
@@ -109,6 +126,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
         return transformBlob(tree);
 
       case GENERIC:
+        return transformGeneric(tree, deserializationContext, scalarKind, type);
+
       default:
         throw new UnsupportedOperationException(
             "Type contains an unsupported scalar: " + scalarKind);
@@ -132,8 +151,31 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
             .build());
   }
 
+  private SdkBindingData<Object> transformGeneric(
+      JsonNode tree,
+      DeserializationContext deserializationContext,
+      Kind scalarKind,
+      JavaType type) {
+    JsonParser jsonParser = tree.get(VALUE).traverse();
+    try {
+      jsonParser.nextToken();
+      Object object =
+          deserializationContext
+              .findNonContextualValueDeserializer(type)
+              .deserialize(jsonParser, deserializationContext);
+      @SuppressWarnings("unchecked")
+      SdkLiteralType<Object> jacksonSdkLiteralType =
+          (SdkLiteralType<Object>) JacksonSdkLiteralType.of(type.getRawClass());
+      return SdkBindingData.literal(jacksonSdkLiteralType, object);
+    } catch (IOException e) {
+      throw new UnsupportedOperationException(
+          "Type contains an unsupported generic: " + scalarKind, e);
+    }
+  }
+
   @SuppressWarnings("unchecked")
-  private <T> SdkBindingData<List<T>> transformCollection(JsonNode tree) {
+  private <T> SdkBindingData<List<T>> transformCollection(
+      JsonNode tree, DeserializationContext deserializationContext, JavaType type) {
     SdkLiteralType<T> literalType = (SdkLiteralType<T>) readLiteralType(tree.get(TYPE));
     Iterator<JsonNode> elements = tree.get(VALUE).elements();
 
@@ -142,9 +184,14 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
       case BLOB_TYPE:
+        JavaType realJavaType =
+            literalType instanceof JacksonSdkLiteralType ? type.getContentType() : type;
         List<T> collection =
             (List<T>)
-                streamOf(elements).map(this::transform).map(SdkBindingData::get).collect(toList());
+                streamOf(elements)
+                    .map((JsonNode tree1) -> transform(tree1, deserializationContext, realJavaType))
+                    .map(SdkBindingData::get)
+                    .collect(toList());
         return SdkBindingDataFactory.of(literalType, collection);
 
       case SCHEMA_TYPE:
@@ -155,7 +202,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   }
 
   @SuppressWarnings("unchecked")
-  private <T> SdkBindingData<Map<String, T>> transformMap(JsonNode tree) {
+  private <T> SdkBindingData<Map<String, T>> transformMap(
+      JsonNode tree, DeserializationContext deserializationContext, JavaType type) {
     SdkLiteralType<T> literalType = (SdkLiteralType<T>) readLiteralType(tree.get(TYPE));
     JsonNode valueNode = tree.get(VALUE);
     List<Map.Entry<String, JsonNode>> entries =
@@ -167,9 +215,17 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
       case MAP_VALUE_TYPE:
       case COLLECTION_TYPE:
       case BLOB_TYPE:
+        JavaType realJavaType =
+            literalType instanceof JacksonSdkLiteralType ? type.getContentType() : type;
         Map<String, T> bindingDataMap =
             entries.stream()
-                .map(entry -> Map.entry(entry.getKey(), (T) transform(entry.getValue()).get()))
+                .map(
+                    entry ->
+                        Map.entry(
+                            entry.getKey(),
+                            (T)
+                                transform(entry.getValue(), deserializationContext, realJavaType)
+                                    .get()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return SdkBindingDataFactory.of(literalType, bindingDataMap);
 
@@ -199,7 +255,7 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
           case DURATION:
             return SdkLiteralTypes.durations();
           case STRUCT:
-            // not yet supported, fallthrough
+            return JacksonSdkLiteralType.of(type.getContentType().getRawClass());
         }
         throw new UnsupportedOperationException(
             "Type contains a collection/map of an supported literal type: " + kind);
@@ -224,5 +280,10 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>> {
   private <T> Stream<T> streamOf(Iterator<T> nodes) {
     return StreamSupport.stream(
         Spliterators.spliteratorUnknownSize(nodes, Spliterator.ORDERED), false);
+  }
+
+  @Override
+  public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+    return new SdkBindingDataDeserializer(property.getType().containedType(0));
   }
 }

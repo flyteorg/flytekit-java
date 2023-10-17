@@ -20,8 +20,8 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
-import org.flyte.api.v1.Literal;
-import org.flyte.flytekit.jackson.deserializers.LiteralStructDeserializer;
+import org.flyte.flytekit.jackson.deserializers.StructDeserializer;
+import org.flyte.flytekit.jackson.deserializers.StructDeserializer.StructWrapper;
 import org.flyte.flytekit.jackson.serializers.StructSerializer;
 
 class SdkLiteralTypeModule extends Module {
@@ -43,7 +43,7 @@ class SdkLiteralTypeModule extends Module {
     context.addSerializers(serializers);
 
     var deserializers = new SimpleDeserializers();
-    deserializers.addDeserializer(Literal.class, new LiteralStructDeserializer());
+    deserializers.addDeserializer(StructWrapper.class, new StructDeserializer());
     context.addDeserializers(deserializers);
 
     // append with the lowest priority to use as fallback, if builtin annotations aren't present

@@ -175,9 +175,12 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       return SdkLiteralTypes.blobs(
           BlobType.builder().format("").dimensionality(BlobDimensionality.SINGLE).build());
     }
-    // TODO: Support structs
-    throw new UnsupportedOperationException(
-        String.format("Unsupported type: [%s]", type.getName()));
+    try {
+      return JacksonSdkLiteralType.of(type);
+    } catch (Exception e) {
+      throw new UnsupportedOperationException(
+          String.format("Unsupported type: [%s]", type.getName()), e);
+    }
   }
 
   private static boolean isPrimitiveAssignableFrom(Class<?> fromClass, Class<?> toClass) {

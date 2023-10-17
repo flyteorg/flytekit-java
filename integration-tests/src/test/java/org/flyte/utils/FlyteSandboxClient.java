@@ -22,7 +22,9 @@ import static org.flyte.examples.FlyteEnvironment.PROJECT;
 import flyteidl.admin.ExecutionOuterClass;
 import flyteidl.core.Execution;
 import flyteidl.core.IdentifierOuterClass;
+import flyteidl.core.IdentifierOuterClass.ResourceType;
 import flyteidl.core.Literals;
+import flyteidl.core.Literals.LiteralMap;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -55,6 +57,19 @@ public class FlyteSandboxClient {
     return new FlyteSandboxClient(version, stub);
   }
 
+  public Literals.LiteralMap createExecution(String name, String domain) {
+    return createExecution(
+        IdentifierOuterClass.Identifier.newBuilder()
+            .setResourceType(ResourceType.LAUNCH_PLAN)
+            .setDomain(domain)
+            .setProject(PROJECT)
+            .setName(name)
+            .setVersion(version)
+            .build(),
+        LiteralMap.getDefaultInstance(),
+        domain);
+  }
+
   public Literals.LiteralMap createTaskExecution(String name, Literals.LiteralMap inputs) {
     return createExecution(
         IdentifierOuterClass.Identifier.newBuilder()
@@ -64,7 +79,8 @@ public class FlyteSandboxClient {
             .setName(name)
             .setVersion(version)
             .build(),
-        inputs);
+        inputs,
+        DEVELOPMENT_DOMAIN);
   }
 
   public Literals.LiteralMap createExecution(String name, Literals.LiteralMap inputs) {
@@ -76,15 +92,16 @@ public class FlyteSandboxClient {
             .setName(name)
             .setVersion(version)
             .build(),
-        inputs);
+        inputs,
+        DEVELOPMENT_DOMAIN);
   }
 
   private Literals.LiteralMap createExecution(
-      IdentifierOuterClass.Identifier id, Literals.LiteralMap inputs) {
+      IdentifierOuterClass.Identifier id, Literals.LiteralMap inputs, String domain) {
     ExecutionOuterClass.ExecutionCreateResponse response =
         stub.createExecution(
             ExecutionOuterClass.ExecutionCreateRequest.newBuilder()
-                .setDomain(DEVELOPMENT_DOMAIN)
+                .setDomain(domain)
                 .setProject(PROJECT)
                 .setInputs(inputs)
                 .setSpec(ExecutionOuterClass.ExecutionSpec.newBuilder().setLaunchPlan(id).build())

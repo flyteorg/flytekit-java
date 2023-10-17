@@ -20,8 +20,9 @@ import org.flyte.flytekit.{SdkLaunchPlan, SimpleSdkLaunchPlanRegistry}
 import org.flyte.flytekitscala.SdkScalaType
 
 case class FibonacciLaunchPlanInput(fib0: Long, fib1: Long)
+case class NestedIOLaunchPlanInput(name: String, generic: Nested)
 
-class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
+class LaunchPlanRegistry extends SimpleSdkLaunchPlanRegistry {
   // Register default launch plans for all workflows
   registerDefaultLaunchPlans()
 
@@ -52,5 +53,36 @@ class FibonacciLaunchPlan extends SimpleSdkLaunchPlanRegistry {
       .withName("FibonacciWorkflowLaunchPlan3")
       .withDefaultInput("fib0", 0L)
       .withDefaultInput("fib1", 1L)
+  )
+
+  registerLaunchPlan(
+    SdkLaunchPlan
+      .of(new NestedIOWorkflow)
+      .withName("NestedIOWorkflowLaunchPlan")
+      .withDefaultInput(
+        SdkScalaType[NestedIOLaunchPlanInput],
+        NestedIOLaunchPlanInput(
+          "yo",
+          Nested(
+            boolean = true,
+            1.toByte,
+            2.toShort,
+            3,
+            4L,
+            5.toFloat,
+            6.toDouble,
+            "hello",
+            List("1", "2"),
+            List(NestedNested(7.toDouble, NestedNestedNested("world"))),
+            Map("1" -> "1", "2" -> "2"),
+            Map("foo" -> NestedNested(7.toDouble, NestedNestedNested("world"))),
+            Some(false),
+            None,
+            Some(List("3", "4")),
+            Some(Map("3" -> "3", "4" -> "4")),
+            NestedNested(7.toDouble, NestedNestedNested("world"))
+          )
+        )
+      )
   )
 }

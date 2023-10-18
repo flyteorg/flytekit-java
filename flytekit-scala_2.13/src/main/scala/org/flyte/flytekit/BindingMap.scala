@@ -17,7 +17,6 @@
 package org.flyte.flytekit
 
 import org.flyte.api.v1.BindingData
-import org.flyte.flytekit.SdkBindingData.Literal
 import org.flyte.flytekitscala.SdkLiteralTypes.maps
 
 import java.util.function

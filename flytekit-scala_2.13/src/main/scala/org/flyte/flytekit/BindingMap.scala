@@ -23,7 +23,7 @@ import org.flyte.flytekitscala.SdkLiteralTypes.maps
 import java.util.function
 import scala.collection.JavaConverters._
 
-private[flyte] class BindingMap[T](
+private[flyte] case class BindingMap[T](
     valuesType: SdkLiteralType[T],
     bindingMap: Map[String, SdkBindingData[T]]
 ) extends SdkBindingData[Map[String, T]] {

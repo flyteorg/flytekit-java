@@ -17,13 +17,12 @@
 package org.flyte.flytekit
 
 import org.flyte.api.v1.BindingData
-import org.flyte.flytekit.SdkBindingData.Literal
 import org.flyte.flytekitscala.SdkLiteralTypes.collections
 
 import java.util.function
 import scala.collection.JavaConverters._
 
-private[flyte] class BindingCollection[T](
+private[flyte] case class BindingCollection[T](
     elementType: SdkLiteralType[T],
     bindingCollection: List[SdkBindingData[T]]
 ) extends SdkBindingData[List[T]] {

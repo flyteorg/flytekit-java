@@ -353,7 +353,7 @@ object SdkBindingDataFactory {
       elementType: SdkLiteralType[T],
       elements: List[SdkBindingData[T]]
   ): SdkBindingData[List[T]] = {
-    new BindingCollection(elementType, elements)
+    BindingCollection(elementType, elements)
   }
 
   /** Creates a [[SdkBindingData]] for a flyte map given a java
@@ -372,7 +372,7 @@ object SdkBindingDataFactory {
       valuesType: SdkLiteralType[T],
       valueMap: Map[String, SdkBindingData[T]]
   ): SdkBindingData[Map[String, T]] =
-    new BindingMap(valuesType, valueMap)
+    BindingMap(valuesType, valueMap)
 
   private def toSdkLiteralType(
       value: Any,

@@ -18,10 +18,9 @@ package org.flyte
 
 /** Contains subclasses for [[SdkBindingData]]. We are forced to define this
   * package here because [[SdkBindingData#idl()]] is package private (we don´t
-  * want to expose it to users). We cannot make it protected either as it would
-  * be good for the own object but both implementations deal with list or maps
-  * of [[SdkBindingData]] and therefore cannot call this method because it is in
-  * a different class.
+  * want to expose it to users). Making it protected doesn't help either because
+  * list or map needs to call this method of elements so that requires it to be
+  * public.
   *
   * This is not ideal because we are splitting the flytekit package in two maven
   * modules. This would create problems when we decide to add java 9 style

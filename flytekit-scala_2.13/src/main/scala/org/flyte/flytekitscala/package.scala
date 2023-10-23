@@ -29,7 +29,7 @@ package object flytekitscala {
         .toList
     } catch {
       case _: Throwable =>
-        // fall back to java's way but less reliable
+        // fall back to java's way, less reliable and with limitations
         product.getClass.getDeclaredFields.map(_.getName).toList
     }
   }

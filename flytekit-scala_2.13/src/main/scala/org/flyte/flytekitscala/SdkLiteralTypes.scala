@@ -229,11 +229,7 @@ object SdkLiteralTypes {
 
   private def toStruct(product: Product): Struct = {
     def productToMap(product: Product): Map[String, Any] = {
-      // by spec getDeclaredFields is not ordered but in practice it works fine
-      // it's a lot better since Scala 2.13 because productElementNames was introduced
-      //   (product.productElementNames zip product.productIterator).toMap
-      product.getClass.getDeclaredFields
-        .map(_.getName)
+      productElementNames(product)
         .zip(product.productIterator.toList)
         .toMap
     }

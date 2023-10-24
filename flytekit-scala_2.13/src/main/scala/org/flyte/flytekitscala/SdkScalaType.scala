@@ -165,8 +165,7 @@ object SdkScalaType {
       ): ju.Map[String, SdkBindingData[_]] = {
         value match {
           case product: Product =>
-            value.getClass.getDeclaredFields
-              .map(_.getName)
+            productElementNames(product)
               .zip(product.productIterator.toSeq)
               .toMap
               .mapValues {

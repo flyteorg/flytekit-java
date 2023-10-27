@@ -21,6 +21,10 @@ import com.google.auto.value.AutoValue;
 /** Defines type behavior for blob objects. */
 @AutoValue
 public abstract class BlobType {
+
+  public static final BlobType DEFAULT =
+      BlobType.builder().dimensionality(BlobDimensionality.SINGLE).format("").build();
+
   public enum BlobDimensionality {
     SINGLE,
     MULTIPART

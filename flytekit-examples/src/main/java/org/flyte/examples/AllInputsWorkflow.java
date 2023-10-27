@@ -27,7 +27,6 @@ import java.util.Map;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
-import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.examples.AllInputsTask.AutoAllInputsOutput;
 import org.flyte.examples.AllInputsTask.Nested;
 import org.flyte.flytekit.SdkBindingData;
@@ -66,14 +65,7 @@ public class AllInputsWorkflow
                 SdkBindingDataFactory.of(
                     Blob.builder()
                         .uri("file://test/test.csv")
-                        .metadata(
-                            BlobMetadata.builder()
-                                .type(
-                                    BlobType.builder()
-                                        .format("")
-                                        .dimensionality(BlobDimensionality.SINGLE)
-                                        .build())
-                                .build())
+                        .metadata(BlobMetadata.builder().type(BlobType.DEFAULT).build())
                         .build()),
                 SdkBindingDataFactory.of(
                     JacksonSdkLiteralType.of(Nested.class), Nested.create("hello", "world")),

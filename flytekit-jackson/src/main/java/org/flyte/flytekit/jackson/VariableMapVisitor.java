@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobType;
-import org.flyte.api.v1.BlobType.BlobDimensionality;
 import org.flyte.api.v1.Variable;
 import org.flyte.flytekit.SdkBindingData;
 import org.flyte.flytekit.SdkLiteralType;
@@ -172,8 +171,7 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       // fixme: create blob type from annotation, or rethink how we could offer the offloaded data
       // feature
       // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
-      return SdkLiteralTypes.blobs(
-          BlobType.builder().format("").dimensionality(BlobDimensionality.SINGLE).build());
+      return SdkLiteralTypes.blobs(BlobType.DEFAULT);
     }
     try {
       return JacksonSdkLiteralType.of(type);

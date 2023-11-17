@@ -150,7 +150,10 @@ object SdkBindingDataConverters {
               SdkScalaLiteralTypes.strings(),
               jf.Function.identity()
             )
-          case SimpleType.STRUCT => ??? // TODO not yet supported
+          case SimpleType.STRUCT =>
+            throw new UnsupportedOperationException(
+              "Converting Scala case class instance to Java object is not supported"
+            )
           case SimpleType.BOOLEAN =>
             TypeCastingResult(
               SdkScalaLiteralTypes.booleans(),
@@ -239,7 +242,9 @@ object SdkBindingDataConverters {
               jf.Function.identity()
             )
           case SimpleType.STRUCT =>
-            ??? // TODO how to handle? do we support structs already?
+            throw new UnsupportedOperationException(
+              "Converting Java object to Scala case class instance is not supported"
+            )
           case SimpleType.BOOLEAN =>
             TypeCastingResult(
               SdkJavaLiteralTypes.booleans(),

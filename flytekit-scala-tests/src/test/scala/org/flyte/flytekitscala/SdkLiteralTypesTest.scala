@@ -66,6 +66,8 @@ class TestOfReturnsProperTypeProvider extends ArgumentsProvider {
       Arguments.of(booleans(), of[Boolean]()),
       Arguments.of(datetimes(), of[Instant]()),
       Arguments.of(durations(), of[Duration]()),
+      Arguments.of(blobs(BlobType.DEFAULT), of[Blob]()),
+      Arguments.of(generics(), of[ScalarNested]()),
       Arguments.of(collections(integers()), of[List[Long]]()),
       Arguments.of(collections(floats()), of[List[Double]]()),
       Arguments.of(collections(strings()), of[List[String]]()),

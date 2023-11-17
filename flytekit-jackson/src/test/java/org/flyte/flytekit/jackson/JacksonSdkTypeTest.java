@@ -56,8 +56,7 @@ import org.junit.jupiter.api.Test;
 
 public class JacksonSdkTypeTest {
 
-  private static final BlobType BLOB_TYPE =
-      BlobType.builder().format("").dimensionality(BlobType.BlobDimensionality.SINGLE).build();
+  private static final BlobType BLOB_TYPE = BlobType.DEFAULT;
 
   private static final Blob BLOB =
       Blob.builder()

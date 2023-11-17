@@ -30,8 +30,8 @@ import org.flyte.flytekit.{
 
 import scala.annotation.implicitNotFound
 import scala.collection.JavaConverters._
-import scala.reflect.{ClassTag, classTag}
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
 
 /** Type class to map between Flyte `Variable` and `Literal` and Scala case
   * classes.
@@ -245,13 +245,7 @@ object SdkScalaType {
   // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
   implicit def blobLiteralType: SdkScalaLiteralType[Blob] =
     DelegateLiteralType(
-      SdkLiteralTypes.blobs(
-        BlobType
-          .builder()
-          .format("")
-          .dimensionality(BlobDimensionality.SINGLE)
-          .build()
-      )
+      SdkLiteralTypes.blobs(BlobType.DEFAULT)
     )
 
   // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>

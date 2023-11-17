@@ -66,6 +66,10 @@ object SdkLiteralTypes {
         datetimes().asInstanceOf[SdkLiteralType[T]]
       case t if t =:= typeOf[Duration] =>
         durations().asInstanceOf[SdkLiteralType[T]]
+      case t if t =:= typeOf[Blob] =>
+        blobs(BlobType.DEFAULT).asInstanceOf[SdkLiteralType[T]]
+      case t if t <:< typeOf[Product] && !(t =:= typeOf[Option[_]]) =>
+        generics().asInstanceOf[SdkLiteralType[T]]
 
       case t if t =:= typeOf[List[Long]] =>
         collections(integers()).asInstanceOf[SdkLiteralType[T]]

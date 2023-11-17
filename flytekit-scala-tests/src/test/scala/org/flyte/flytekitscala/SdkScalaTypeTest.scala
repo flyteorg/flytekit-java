@@ -29,6 +29,7 @@ import org.flyte.api.v1.{
   Primitive,
   Scalar,
   SimpleType,
+  Struct,
   Variable
 }
 import org.flyte.flytekit.{
@@ -40,9 +41,22 @@ import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
 import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.{AutoAllInputsInput, Nested}
 import org.flyte.flytekit.jackson.JacksonSdkLiteralType
-import org.flyte.flytekitscala.SdkLiteralTypes.{collections, maps, strings}
+import org.flyte.flytekitscala.SdkLiteralTypes.{
+  blobs,
+  collections,
+  maps,
+  strings
+}
+
+// The constructor is reflectedly invoked so it cannot be an inner class
+case class ScalarNested(foo: String, bar: String)
 
 class SdkScalaTypeTest {
+
+  private val blob = Blob.builder
+    .metadata(BlobMetadata.builder.`type`(BlobType.DEFAULT).build)
+    .uri("file://test")
+    .build
 
   case class ScalarInput(
       string: SdkBindingData[String],
@@ -50,7 +64,9 @@ class SdkScalaTypeTest {
       float: SdkBindingData[Double],
       boolean: SdkBindingData[Boolean],
       datetime: SdkBindingData[Instant],
-      duration: SdkBindingData[Duration]
+      duration: SdkBindingData[Duration],
+      blob: SdkBindingData[Blob],
+      generic: SdkBindingData[ScalarNested]
   )
 
   case class CollectionInput(
@@ -116,7 +132,13 @@ class SdkScalaTypeTest {
       "float" -> createVar(SimpleType.FLOAT),
       "boolean" -> createVar(SimpleType.BOOLEAN),
       "datetime" -> createVar(SimpleType.DATETIME),
-      "duration" -> createVar(SimpleType.DURATION)
+      "duration" -> createVar(SimpleType.DURATION),
+      "blob" -> Variable
+        .builder()
+        .literalType(LiteralType.ofBlobType(BlobType.DEFAULT))
+        .description("")
+        .build(),
+      "generic" -> createVar(SimpleType.STRUCT)
     ).asJava
 
     val output = SdkScalaType[ScalarInput].getVariableMap
@@ -149,6 +171,17 @@ class SdkScalaTypeTest {
       ),
       "duration" -> Literal.ofScalar(
         Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      ),
+      "blob" -> Literal.ofScalar(Scalar.ofBlob(blob)),
+      "generic" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(
+            Map(
+              "foo" -> Struct.Value.ofStringValue("foo"),
+              "bar" -> Struct.Value.ofStringValue("bar")
+            ).asJava
+          )
+        )
       )
     ).asJava
 
@@ -159,7 +192,12 @@ class SdkScalaTypeTest {
         float = SdkBindingDataFactory.of(42.0),
         boolean = SdkBindingDataFactory.of(true),
         datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
-        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
+        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456)),
+        blob = SdkBindingDataFactory.of(blob),
+        generic = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics(),
+          ScalarNested("foo", "bar")
+        )
       )
 
     val output = SdkScalaType[ScalarInput].fromLiteralMap(input)
@@ -176,7 +214,12 @@ class SdkScalaTypeTest {
         float = SdkBindingDataFactory.of(42.0),
         boolean = SdkBindingDataFactory.of(true),
         datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
-        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
+        duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456)),
+        blob = SdkBindingDataFactory.of(blob),
+        generic = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics(),
+          ScalarNested("foo", "bar")
+        )
       )
 
     val expected = Map(
@@ -195,6 +238,17 @@ class SdkScalaTypeTest {
       ),
       "duration" -> Literal.ofScalar(
         Scalar.ofPrimitive(Primitive.ofDuration(Duration.ofSeconds(123, 456)))
+      ),
+      "blob" -> Literal.ofScalar(Scalar.ofBlob(blob)),
+      "generic" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(
+            Map(
+              "foo" -> Struct.Value.ofStringValue("foo"),
+              "bar" -> Struct.Value.ofStringValue("bar")
+            ).asJava
+          )
+        )
       )
     ).asJava
 
@@ -227,7 +281,12 @@ class SdkScalaTypeTest {
       float = SdkBindingDataFactory.of(42.0),
       boolean = SdkBindingDataFactory.of(true),
       datetime = SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
-      duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
+      duration = SdkBindingDataFactory.of(Duration.ofSeconds(123, 456)),
+      blob = SdkBindingDataFactory.of(blob),
+      generic = SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics(),
+        ScalarNested("foo", "bar")
+      )
     )
 
     val output = SdkScalaType[ScalarInput].toSdkBindingMap(input)
@@ -238,7 +297,12 @@ class SdkScalaTypeTest {
       "float" -> SdkBindingDataFactory.of(42.0),
       "boolean" -> SdkBindingDataFactory.of(true),
       "datetime" -> SdkBindingDataFactory.of(Instant.ofEpochMilli(123456L)),
-      "duration" -> SdkBindingDataFactory.of(Duration.ofSeconds(123, 456))
+      "duration" -> SdkBindingDataFactory.of(Duration.ofSeconds(123, 456)),
+      "blob" -> SdkBindingDataFactory.of(blob),
+      "generic" -> SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics[ScalarNested](),
+        ScalarNested("foo", "bar")
+      )
     ).asJava
 
     assertEquals(expected, output)

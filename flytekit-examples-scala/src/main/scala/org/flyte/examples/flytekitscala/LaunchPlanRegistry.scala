@@ -73,14 +73,19 @@ class LaunchPlanRegistry extends SimpleSdkLaunchPlanRegistry {
             6.toDouble,
             "hello",
             List("1", "2"),
-            List(NestedNested(7.toDouble, NestedNestedNested("world"))),
+            List(NestedNested(7.toDouble, Some(NestedNestedNested("world")))),
             Map("1" -> "1", "2" -> "2"),
-            Map("foo" -> NestedNested(7.toDouble, NestedNestedNested("world"))),
+            Map(
+              "foo" -> NestedNested(
+                7.toDouble,
+                Some(NestedNestedNested("world"))
+              )
+            ),
             Some(false),
             None,
             Some(List("3", "4")),
             Some(Map("3" -> "3", "4" -> "4")),
-            NestedNested(7.toDouble, NestedNestedNested("world"))
+            NestedNested(7.toDouble, Some(NestedNestedNested("world")))
           )
         )
       )

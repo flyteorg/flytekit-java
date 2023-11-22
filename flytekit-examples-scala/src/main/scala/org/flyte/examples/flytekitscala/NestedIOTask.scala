@@ -24,7 +24,7 @@ import org.flyte.flytekitscala.{
 }
 
 case class NestedNestedNested(string: String)
-case class NestedNested(double: Double, nested: NestedNestedNested)
+case class NestedNested(double: Double, nested: Option[NestedNestedNested])
 case class Nested(
     boolean: Boolean,
     byte: Byte,

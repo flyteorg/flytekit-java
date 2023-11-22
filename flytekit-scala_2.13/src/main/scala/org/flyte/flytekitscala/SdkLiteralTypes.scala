@@ -309,12 +309,16 @@ object SdkLiteralTypes {
         } else if (tpe =:= typeOf[Float]) {
           value.asInstanceOf[Double].toFloat
         } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check because Option is a Product
-          Some(
-            valueToParamValue(
-              value,
-              tpe.dealias.typeArgs.head
+          if (value == None) { // None is used to represent Struct.Value.Kind.NULL_VALUE when converting struct to map
+            None
+          } else {
+            Some(
+              valueToParamValue(
+                value,
+                tpe.dealias.typeArgs.head
+              )
             )
-          )
+          }
         } else if (tpe <:< typeOf[Product]) {
           val typeTag = createTypeTag(tpe)
           val classTag = ClassTag(

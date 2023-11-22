@@ -183,7 +183,7 @@ class SdkScalaTypeTest {
           Struct.of(
             Map(
               "foo" -> Struct.Value.ofStringValue("foo"),
-              "bar" -> Struct.Value.ofStringValue("bar"),
+              "bar" -> Struct.Value.ofNullValue(),
               "nestedNested" -> Struct.Value.ofStructValue(
                 Struct.of(
                   Map(
@@ -211,7 +211,7 @@ class SdkScalaTypeTest {
           SdkLiteralTypes.generics(),
           ScalarNested(
             "foo",
-            Some("bar"),
+            None,
             Some(ScalarNestedNested("foo", Some("bar")))
           )
         )

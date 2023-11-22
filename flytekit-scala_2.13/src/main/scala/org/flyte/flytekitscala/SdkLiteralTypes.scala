@@ -308,7 +308,7 @@ object SdkLiteralTypes {
           value.asInstanceOf[Double].toLong
         } else if (tpe =:= typeOf[Float]) {
           value.asInstanceOf[Double].toFloat
-        } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check
+        } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check because Option is a Product
           Some(
             valueToParamValue(
               value,

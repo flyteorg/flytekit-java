@@ -297,41 +297,35 @@ object SdkLiteralTypes {
     ): S = {
       val mirror = runtimeMirror(classTag[S].runtimeClass.getClassLoader)
 
-      def valueToParamValue(value: Any, param: Symbol): Any = {
-        def valueToParamValue0(value: Any, param: Symbol): Any = {
-          if (param.typeSignature =:= typeOf[Byte]) {
-            value.asInstanceOf[Double].toByte
-          } else if (param.typeSignature =:= typeOf[Short]) {
-            value.asInstanceOf[Double].toShort
-          } else if (param.typeSignature =:= typeOf[Int]) {
-            value.asInstanceOf[Double].toInt
-          } else if (param.typeSignature =:= typeOf[Long]) {
-            value.asInstanceOf[Double].toLong
-          } else if (param.typeSignature =:= typeOf[Float]) {
-            value.asInstanceOf[Double].toFloat
-          } else if (param.typeSignature <:< typeOf[Product]) {
-            val typeTag = createTypeTag(param.typeSignature)
-            val classTag = ClassTag(
-              typeTag.mirror.runtimeClass(param.typeSignature)
-            )
-            mapToProduct(value.asInstanceOf[Map[String, Any]])(
-              typeTag,
-              classTag
-            )
-          } else {
-            value
-          }
-        }
-
-        if (param.typeSignature <:< typeOf[Option[Any]]) {
+      def valueToParamValue(value: Any, tpe: Type): Any = {
+        if (tpe =:= typeOf[Byte]) {
+          value.asInstanceOf[Double].toByte
+        } else if (tpe =:= typeOf[Short]) {
+          value.asInstanceOf[Double].toShort
+        } else if (tpe =:= typeOf[Int]) {
+          value.asInstanceOf[Double].toInt
+        } else if (tpe =:= typeOf[Long]) {
+          value.asInstanceOf[Double].toLong
+        } else if (tpe =:= typeOf[Float]) {
+          value.asInstanceOf[Double].toFloat
+        } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check
           Some(
-            valueToParamValue0(
+            valueToParamValue(
               value,
-              param.typeSignature.dealias.typeArgs.head.typeSymbol
+              tpe.dealias.typeArgs.head
             )
           )
+        } else if (tpe <:< typeOf[Product]) {
+          val typeTag = createTypeTag(tpe)
+          val classTag = ClassTag(
+            typeTag.mirror.runtimeClass(tpe)
+          )
+          mapToProduct(value.asInstanceOf[Map[String, Any]])(
+            typeTag,
+            classTag
+          )
         } else {
-          valueToParamValue0(value, param)
+          value
         }
       }
 
@@ -371,7 +365,7 @@ object SdkLiteralTypes {
               s"Map is missing required parameter named $paramName"
             )
           )
-          valueToParamValue(value, param)
+          valueToParamValue(value, param.typeSignature.dealias)
         })
 
       constructorMirror(constructorArgs: _*).asInstanceOf[S]

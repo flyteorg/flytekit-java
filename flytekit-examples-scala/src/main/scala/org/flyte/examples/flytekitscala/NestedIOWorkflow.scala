@@ -32,6 +32,7 @@ class NestedIOWorkflow
       builder: SdkScalaWorkflowBuilder,
       input: NestedIOTaskInput
   ): Unit = {
-    builder.apply(new NestedIOTask(), input)
+    val output = builder.apply(new NestedIOTask(), input)
+    builder.apply(new NestedIOTaskNoop(), output.getOutputs)
   }
 }

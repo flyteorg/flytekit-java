@@ -57,9 +57,6 @@ case class NestedIOTaskOutput(
     generic: SdkBindingData[Nested]
 )
 
-/** Example Flyte task that takes a name as the input and outputs a simple
-  * greeting message.
-  */
 class NestedIOTask
     extends SdkRunnableTask[
       NestedIOTaskInput,
@@ -69,17 +66,21 @@ class NestedIOTask
       SdkScalaType[NestedIOTaskOutput]
     ) {
 
-  /** Defines task behavior. This task takes a name as the input, wraps it in a
-    * welcome message, and outputs the message.
-    *
-    * @param input
-    *   the name of the person to be greeted
-    * @return
-    *   the welcome message
-    */
   override def run(input: NestedIOTaskInput): NestedIOTaskOutput =
     NestedIOTaskOutput(
       input.name,
       input.generic
     )
+}
+
+class NestedIOTaskNoop
+    extends SdkRunnableTask[
+      NestedIOTaskOutput,
+      NestedIOTaskOutput
+    ](
+      SdkScalaType[NestedIOTaskOutput],
+      SdkScalaType[NestedIOTaskOutput]
+    ) {
+
+  override def run(input: NestedIOTaskOutput): NestedIOTaskOutput = input
 }

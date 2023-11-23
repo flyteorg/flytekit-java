@@ -52,7 +52,9 @@ import org.flyte.flytekitscala.SdkLiteralTypes.{
 case class ScalarNested(
     foo: String,
     bar: Option[String],
-    nestedNested: Option[ScalarNestedNested]
+    nestedNested: Option[ScalarNestedNested],
+    nestedNestedList: List[ScalarNestedNested],
+    nestedNestedMap: Map[String, ScalarNestedNested]
 )
 case class ScalarNestedNested(foo: String, bar: Option[String])
 
@@ -191,6 +193,32 @@ class SdkScalaTypeTest {
                     "bar" -> Struct.Value.ofStringValue("bar")
                   ).asJava
                 )
+              ),
+              "nestedNestedList" -> Struct.Value.ofListValue(
+                List(
+                  Struct.Value.ofStructValue(
+                    Struct.of(
+                      Map(
+                        "foo" -> Struct.Value.ofStringValue("foo"),
+                        "bar" -> Struct.Value.ofStringValue("bar")
+                      ).asJava
+                    )
+                  )
+                ).asJava
+              ),
+              "nestedNestedMap" -> Struct.Value.ofStructValue(
+                Struct.of(
+                  Map(
+                    "foo" -> Struct.Value.ofStructValue(
+                      Struct.of(
+                        Map(
+                          "foo" -> Struct.Value.ofStringValue("foo"),
+                          "bar" -> Struct.Value.ofStringValue("bar")
+                        ).asJava
+                      )
+                    )
+                  ).asJava
+                )
               )
             ).asJava
           )
@@ -212,7 +240,9 @@ class SdkScalaTypeTest {
           ScalarNested(
             "foo",
             None,
-            Some(ScalarNestedNested("foo", Some("bar")))
+            Some(ScalarNestedNested("foo", Some("bar"))),
+            List(ScalarNestedNested("foo", Some("bar"))),
+            Map("foo" -> ScalarNestedNested("foo", Some("bar")))
           )
         )
       )
@@ -238,7 +268,9 @@ class SdkScalaTypeTest {
           ScalarNested(
             "foo",
             Some("bar"),
-            Some(ScalarNestedNested("foo", Some("bar")))
+            Some(ScalarNestedNested("foo", Some("bar"))),
+            List(ScalarNestedNested("foo", Some("bar"))),
+            Map("foo" -> ScalarNestedNested("foo", Some("bar")))
           )
         )
       )
@@ -272,6 +304,32 @@ class SdkScalaTypeTest {
                   Map(
                     "foo" -> Struct.Value.ofStringValue("foo"),
                     "bar" -> Struct.Value.ofStringValue("bar")
+                  ).asJava
+                )
+              ),
+              "nestedNestedList" -> Struct.Value.ofListValue(
+                List(
+                  Struct.Value.ofStructValue(
+                    Struct.of(
+                      Map(
+                        "foo" -> Struct.Value.ofStringValue("foo"),
+                        "bar" -> Struct.Value.ofStringValue("bar")
+                      ).asJava
+                    )
+                  )
+                ).asJava
+              ),
+              "nestedNestedMap" -> Struct.Value.ofStructValue(
+                Struct.of(
+                  Map(
+                    "foo" -> Struct.Value.ofStructValue(
+                      Struct.of(
+                        Map(
+                          "foo" -> Struct.Value.ofStringValue("foo"),
+                          "bar" -> Struct.Value.ofStringValue("bar")
+                        ).asJava
+                      )
+                    )
                   ).asJava
                 )
               )
@@ -317,7 +375,9 @@ class SdkScalaTypeTest {
         ScalarNested(
           "foo",
           Some("bar"),
-          Some(ScalarNestedNested("foo", Some("bar")))
+          Some(ScalarNestedNested("foo", Some("bar"))),
+          List(ScalarNestedNested("foo", Some("bar"))),
+          Map("foo" -> ScalarNestedNested("foo", Some("bar")))
         )
       )
     )
@@ -337,7 +397,9 @@ class SdkScalaTypeTest {
         ScalarNested(
           "foo",
           Some("bar"),
-          Some(ScalarNestedNested("foo", Some("bar")))
+          Some(ScalarNestedNested("foo", Some("bar"))),
+          List(ScalarNestedNested("foo", Some("bar"))),
+          Map("foo" -> ScalarNestedNested("foo", Some("bar")))
         )
       )
     ).asJava

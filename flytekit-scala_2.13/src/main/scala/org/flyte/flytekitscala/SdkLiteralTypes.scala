@@ -311,15 +311,15 @@ object SdkLiteralTypes {
         } else if (tpe <:< typeOf[List[Any]]) {
           value
             .asInstanceOf[List[Any]]
-            .map(value => {
-              valueToParamValue(value, tpe.typeArgs.head)
+            .map(v => {
+              valueToParamValue(v, tpe.typeArgs.head)
             })
         } else if (tpe <:< typeOf[Map[String, Any]]) {
           value
             .asInstanceOf[Map[String, Any]]
             .view
-            .mapValues(value => {
-              valueToParamValue(value, tpe.typeArgs(1))
+            .mapValues(v => {
+              valueToParamValue(v, tpe.typeArgs(1))
             })
             .toMap
         } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check because Option is a Product

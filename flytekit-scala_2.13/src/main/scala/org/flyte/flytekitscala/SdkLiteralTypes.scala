@@ -308,6 +308,19 @@ object SdkLiteralTypes {
           value.asInstanceOf[Double].toLong
         } else if (tpe =:= typeOf[Float]) {
           value.asInstanceOf[Double].toFloat
+        } else if (tpe <:< typeOf[List[Any]]) {
+          value
+            .asInstanceOf[List[Any]]
+            .map(v => {
+              valueToParamValue(v, tpe.typeArgs.head)
+            })
+        } else if (tpe <:< typeOf[Map[String, Any]]) {
+          value
+            .asInstanceOf[Map[String, Any]]
+            .mapValues(v => {
+              valueToParamValue(v, tpe.typeArgs(1))
+            })
+            .toMap
         } else if (tpe <:< typeOf[Option[Any]]) { // this has to be before Product check because Option is a Product
           if (value == None) { // None is used to represent Struct.Value.Kind.NULL_VALUE when converting struct to map
             None

@@ -317,7 +317,6 @@ object SdkLiteralTypes {
         } else if (tpe <:< typeOf[Map[String, Any]]) {
           value
             .asInstanceOf[Map[String, Any]]
-            .view
             .mapValues(v => {
               valueToParamValue(v, tpe.typeArgs(1))
             })

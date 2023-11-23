@@ -49,7 +49,12 @@ import org.flyte.flytekitscala.SdkLiteralTypes.{
 }
 
 // The constructor is reflectedly invoked so it cannot be an inner class
-case class ScalarNested(foo: String, bar: String)
+case class ScalarNested(
+    foo: String,
+    bar: Option[String],
+    nestedNested: Option[ScalarNestedNested]
+)
+case class ScalarNestedNested(foo: String, bar: Option[String])
 
 class SdkScalaTypeTest {
 
@@ -178,7 +183,15 @@ class SdkScalaTypeTest {
           Struct.of(
             Map(
               "foo" -> Struct.Value.ofStringValue("foo"),
-              "bar" -> Struct.Value.ofStringValue("bar")
+              "bar" -> Struct.Value.ofNullValue(),
+              "nestedNested" -> Struct.Value.ofStructValue(
+                Struct.of(
+                  Map(
+                    "foo" -> Struct.Value.ofStringValue("foo"),
+                    "bar" -> Struct.Value.ofStringValue("bar")
+                  ).asJava
+                )
+              )
             ).asJava
           )
         )
@@ -196,7 +209,11 @@ class SdkScalaTypeTest {
         blob = SdkBindingDataFactory.of(blob),
         generic = SdkBindingDataFactory.of(
           SdkLiteralTypes.generics(),
-          ScalarNested("foo", "bar")
+          ScalarNested(
+            "foo",
+            None,
+            Some(ScalarNestedNested("foo", Some("bar")))
+          )
         )
       )
 
@@ -218,7 +235,11 @@ class SdkScalaTypeTest {
         blob = SdkBindingDataFactory.of(blob),
         generic = SdkBindingDataFactory.of(
           SdkLiteralTypes.generics(),
-          ScalarNested("foo", "bar")
+          ScalarNested(
+            "foo",
+            Some("bar"),
+            Some(ScalarNestedNested("foo", Some("bar")))
+          )
         )
       )
 
@@ -245,7 +266,15 @@ class SdkScalaTypeTest {
           Struct.of(
             Map(
               "foo" -> Struct.Value.ofStringValue("foo"),
-              "bar" -> Struct.Value.ofStringValue("bar")
+              "bar" -> Struct.Value.ofStringValue("bar"),
+              "nestedNested" -> Struct.Value.ofStructValue(
+                Struct.of(
+                  Map(
+                    "foo" -> Struct.Value.ofStringValue("foo"),
+                    "bar" -> Struct.Value.ofStringValue("bar")
+                  ).asJava
+                )
+              )
             ).asJava
           )
         )
@@ -285,7 +314,11 @@ class SdkScalaTypeTest {
       blob = SdkBindingDataFactory.of(blob),
       generic = SdkBindingDataFactory.of(
         SdkLiteralTypes.generics(),
-        ScalarNested("foo", "bar")
+        ScalarNested(
+          "foo",
+          Some("bar"),
+          Some(ScalarNestedNested("foo", Some("bar")))
+        )
       )
     )
 
@@ -301,7 +334,11 @@ class SdkScalaTypeTest {
       "blob" -> SdkBindingDataFactory.of(blob),
       "generic" -> SdkBindingDataFactory.of(
         SdkLiteralTypes.generics[ScalarNested](),
-        ScalarNested("foo", "bar")
+        ScalarNested(
+          "foo",
+          Some("bar"),
+          Some(ScalarNestedNested("foo", Some("bar")))
+        )
       )
     ).asJava
 

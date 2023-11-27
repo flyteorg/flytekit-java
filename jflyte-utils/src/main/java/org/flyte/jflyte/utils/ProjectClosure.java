@@ -106,6 +106,7 @@ public abstract class ProjectClosure {
     int sizeDigits = (int) (Math.log10(size) + 1);
     AtomicInteger counter = new AtomicInteger();
 
+    // Serialization of the tasks
     taskSpecs()
         .forEach(
             (id, spec) -> {
@@ -207,6 +208,7 @@ public abstract class ProjectClosure {
             .build();
 
     // 1. load classes, and create templates
+    // Discovering and loading all the tasks, workflows, and launch plans
     Map<TaskIdentifier, RunnableTask> runnableTasks =
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(RunnableTaskRegistrar.class, env));
@@ -443,7 +445,9 @@ public abstract class ProjectClosure {
 
     containerTasks.forEach(
         (id, task) -> {
-          TaskTemplate taskTemplate = createTaskTemplateForContainerTask(task);
+          TaskTemplate taskTemplate =
+              createTaskTemplateForContainerTask(
+                  task); // container image already specified inside Contat
 
           taskTemplates.put(id, taskTemplate);
         });

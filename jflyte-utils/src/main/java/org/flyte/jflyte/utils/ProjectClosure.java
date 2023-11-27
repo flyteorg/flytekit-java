@@ -64,6 +64,8 @@ import org.flyte.api.v1.LaunchPlanRegistrar;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.PluginTask;
+import org.flyte.api.v1.PluginTaskRegistrar;
 import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.Resources.ResourceName;
 import org.flyte.api.v1.RunnableTask;
@@ -219,6 +221,10 @@ public abstract class ProjectClosure {
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(ContainerTaskRegistrar.class, env));
 
+    Map<TaskIdentifier, PluginTask> pluginTasks =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(PluginTaskRegistrar.class, env));
+
     Map<WorkflowIdentifier, WorkflowTemplate> workflows =
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
@@ -233,6 +239,7 @@ public abstract class ProjectClosure {
         runnableTasks,
         dynamicWorkflowTasks,
         containerTasks,
+        pluginTasks,
         workflows,
         launchPlans);
   }
@@ -243,10 +250,12 @@ public abstract class ProjectClosure {
       Map<TaskIdentifier, RunnableTask> runnableTasks,
       Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<TaskIdentifier, ContainerTask> containerTasks,
+      Map<TaskIdentifier, PluginTask> pluginTasks,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates,
       Map<LaunchPlanIdentifier, LaunchPlan> launchPlans) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates =
-        createTaskTemplates(config, runnableTasks, dynamicWorkflowTasks, containerTasks);
+        createTaskTemplates(
+            config, runnableTasks, dynamicWorkflowTasks, containerTasks, pluginTasks);
 
     // 2. rewrite workflows and launch plans
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenWorkflowTemplates =
@@ -424,7 +433,8 @@ public abstract class ProjectClosure {
       ExecutionConfig config,
       Map<TaskIdentifier, RunnableTask> runnableTasks,
       Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<TaskIdentifier, ContainerTask> containerTasks) {
+      Map<TaskIdentifier, ContainerTask> containerTasks,
+      Map<TaskIdentifier, PluginTask> pluginTasks) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates = new HashMap<>();
 
     runnableTasks.forEach(
@@ -444,6 +454,13 @@ public abstract class ProjectClosure {
     containerTasks.forEach(
         (id, task) -> {
           TaskTemplate taskTemplate = createTaskTemplateForContainerTask(task);
+
+          taskTemplates.put(id, taskTemplate);
+        });
+
+    pluginTasks.forEach(
+        (id, task) -> {
+          TaskTemplate taskTemplate = createTaskTemplateForPluginTask(task);
 
           taskTemplates.put(id, taskTemplate);
         });
@@ -473,7 +490,7 @@ public abstract class ProjectClosure {
             .resources(task.getResources())
             .build();
 
-    return createTaskTemplate(task, container);
+    return createTaskTemplateBuilder(task).container(container).build();
   }
 
   @VisibleForTesting
@@ -488,25 +505,30 @@ public abstract class ProjectClosure {
             .resources(resources)
             .build();
 
-    return createTaskTemplate(task, container);
+    return createTaskTemplateBuilder(task).container(container).build();
   }
 
-  private static TaskTemplate createTaskTemplate(Task task, Container container) {
+  @VisibleForTesting
+  static TaskTemplate createTaskTemplateForPluginTask(PluginTask task) {
+    return createTaskTemplateBuilder(task).isSyncPlugin(task.isSyncPlugin()).build();
+  }
+
+  private static TaskTemplate.Builder createTaskTemplateBuilder(Task task) {
     TaskTemplate.Builder templateBuilder =
         TaskTemplate.builder()
-            .container(container)
             .interface_(task.getInterface())
             .retries(task.getRetries())
             .type(task.getType())
             .custom(task.getCustom())
             .discoverable(task.isCached())
-            .cacheSerializable(task.isCacheSerializable());
+            .cacheSerializable(task.isCacheSerializable())
+            .isSyncPlugin(false);
 
     if (task.getCacheVersion() != null) {
       templateBuilder.discoveryVersion(task.getCacheVersion());
     }
 
-    return templateBuilder.build();
+    return templateBuilder;
   }
 
   private static Optional<KeyValuePair> javaToolOptionsEnv(RunnableTask task) {
@@ -559,6 +581,7 @@ public abstract class ProjectClosure {
         //      it or change this comment to explicitly say no cache for dynamic tasks
         .discoverable(false)
         .cacheSerializable(false)
+        .isSyncPlugin(false)
         .build();
   }
 

@@ -45,6 +45,7 @@ import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
+import flyteidl.core.Tasks.PluginMetadata;
 import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
@@ -439,6 +440,7 @@ class ProtoUtilTest {
             .discoverable(true)
             .discoveryVersion("0.0.1")
             .cacheSerializable(true)
+            .isSyncPlugin(false)
             .build();
 
     Tasks.TaskTemplate templateProto =
@@ -458,6 +460,8 @@ class ProtoUtilTest {
                             .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
                             .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
                             .setVersion(ProtoUtil.RUNTIME_VERSION)
+                            .setPluginMetadata(
+                                PluginMetadata.newBuilder().setIsSyncPlugin(false).build())
                             .build())
                     .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
                     .setDiscoverable(true)
@@ -522,6 +526,7 @@ class ProtoUtilTest {
             .discoverable(false)
             .cacheSerializable(false)
             .discoveryVersion(null)
+            .isSyncPlugin(false)
             .build();
 
     Tasks.TaskTemplate protoTemplate = ProtoUtil.serialize(apiTemplate);
@@ -548,6 +553,7 @@ class ProtoUtilTest {
             .discoverable(true)
             .cacheSerializable(true)
             .discoveryVersion("1")
+            .isSyncPlugin(false)
             .build();
 
     Tasks.TaskTemplate protoTemplate = ProtoUtil.serialize(apiTemplate);

@@ -130,14 +130,38 @@ public class SdkRunnableTaskRegistrar extends RunnableTaskRegistrar {
   @Override
   @SuppressWarnings("rawtypes")
   public Map<TaskIdentifier, RunnableTask> load(Map<String, String> env, ClassLoader classLoader) {
+
+    Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
+
     ServiceLoader<SdkRunnableTask> loader = ServiceLoader.load(SdkRunnableTask.class, classLoader);
+    ServiceLoader<SdkMapTask> mapLoader = ServiceLoader.load(SdkMapTask.class, classLoader);
 
     LOG.fine("Discovering SdkRunnableTask");
 
-    Map<TaskIdentifier, RunnableTask> tasks = new HashMap<>();
     SdkConfig sdkConfig = SdkConfig.load(env);
 
     for (SdkRunnableTask<?, ?> sdkTask : loader) {
+      String name = sdkTask.getName();
+      TaskIdentifier taskId =
+          TaskIdentifier.builder()
+              .domain(sdkConfig.domain())
+              .project(sdkConfig.project())
+              .name(name)
+              .version(sdkConfig.version())
+              .build();
+      LOG.fine(String.format("Discovered [%s]", name));
+
+      RunnableTask task = new RunnableTaskImpl<>(sdkTask);
+      RunnableTask previous = tasks.put(taskId, task);
+
+      if (previous != null) {
+        throw new IllegalArgumentException(
+            String.format("Discovered a duplicate task [%s] [%s] [%s]", name, task, previous));
+      }
+    }
+    /// ------
+
+    for (SdkRunnableTask<?, ?> sdkTask : mapLoader) {
       String name = sdkTask.getName();
       TaskIdentifier taskId =
           TaskIdentifier.builder()

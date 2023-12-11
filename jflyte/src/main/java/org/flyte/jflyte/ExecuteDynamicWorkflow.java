@@ -44,6 +44,8 @@ import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.PluginTask;
+import org.flyte.api.v1.PluginTaskRegistrar;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.RunnableTaskRegistrar;
 import org.flyte.api.v1.Struct;
@@ -150,6 +152,10 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
           ClassLoaders.withClassLoader(
               packageClassLoader, () -> Registrars.loadAll(ContainerTaskRegistrar.class, env));
 
+      Map<TaskIdentifier, PluginTask> pluginTasks =
+          ClassLoaders.withClassLoader(
+              packageClassLoader, () -> Registrars.loadAll(PluginTaskRegistrar.class, env));
+
       // before we run anything, switch class loader, otherwise,
       // ServiceLoaders and other things wouldn't work, for instance,
       // FileSystemRegister in Apache Beam
@@ -162,7 +168,11 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
       Map<TaskIdentifier, TaskTemplate> taskTemplates =
           mapValues(
               ProjectClosure.createTaskTemplates(
-                  executionConfig, runnableTasks, dynamicWorkflowTasks, containerTasks),
+                  executionConfig,
+                  runnableTasks,
+                  dynamicWorkflowTasks,
+                  containerTasks,
+                  pluginTasks),
               template ->
                   template.toBuilder()
                       .custom(ProjectClosure.merge(template.custom(), custom))

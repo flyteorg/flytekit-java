@@ -534,6 +534,10 @@ public class FlyteAdminClientTest {
                                 .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
                                 .setFlavor(ProtoUtil.RUNTIME_FLAVOR)
                                 .setVersion(ProtoUtil.RUNTIME_VERSION)
+                                .setPluginMetadata(
+                                    Tasks.PluginMetadata.newBuilder()
+                                        .setIsSyncPlugin(false)
+                                        .build())
                                 .build())
                         .setRetries(Literals.RetryStrategy.newBuilder().setRetries(4).build())
                         .build())

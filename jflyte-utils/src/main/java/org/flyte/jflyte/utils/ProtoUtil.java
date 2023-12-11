@@ -45,9 +45,6 @@ import flyteidl.core.IdentifierOuterClass;
 import flyteidl.core.Interface;
 import flyteidl.core.Literals;
 import flyteidl.core.Tasks;
-import flyteidl.core.Tasks.PluginMetadata;
-import flyteidl.core.Tasks.RuntimeMetadata;
-import flyteidl.core.Tasks.RuntimeMetadata.RuntimeType;
 import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
@@ -330,12 +327,10 @@ public class ProtoUtil {
 
   private static TaskMetadata serializeTaskMetadata(TaskTemplate taskTemplate) {
     Tasks.RuntimeMetadata runtime =
-        RuntimeMetadata.newBuilder()
-            .setType(RuntimeType.FLYTE_SDK)
+        Tasks.RuntimeMetadata.newBuilder()
+            .setType(Tasks.RuntimeMetadata.RuntimeType.FLYTE_SDK)
             .setFlavor(RUNTIME_FLAVOR)
             .setVersion(RUNTIME_VERSION)
-            .setPluginMetadata(
-                PluginMetadata.newBuilder().setIsSyncPlugin(taskTemplate.isSyncPlugin()).build())
             .build();
 
     return TaskMetadata.newBuilder()
@@ -359,7 +354,6 @@ public class ProtoUtil {
         // Proto uses empty strings instead of null, we use null in TaskTemplate
         .discoveryVersion(emptyToNull(proto.getMetadata().getDiscoveryVersion()))
         .cacheSerializable(proto.getMetadata().getCacheSerializable())
-        .isSyncPlugin(proto.getMetadata().getRuntime().getPluginMetadata().getIsSyncPlugin())
         .build();
   }
 

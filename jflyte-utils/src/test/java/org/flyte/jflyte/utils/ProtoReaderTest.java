@@ -89,7 +89,6 @@ class ProtoReaderTest {
                 .custom(Struct.of(emptyMap()))
                 .discoverable(false)
                 .cacheSerializable(false)
-                .isSyncPlugin(false)
                 .build()));
   }
 

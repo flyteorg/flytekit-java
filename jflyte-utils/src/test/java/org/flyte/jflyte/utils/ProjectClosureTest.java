@@ -26,7 +26,6 @@ import static org.flyte.jflyte.utils.Fixtures.TASK_TEMPLATE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -603,7 +602,6 @@ public class ProjectClosureTest {
     assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
     assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
     assertThat(result.type(), equalTo("test-plugin-task"));
-    assertThat(result.isSyncPlugin(), is(true));
   }
 
   @Test
@@ -855,11 +853,6 @@ public class ProjectClosureTest {
 
   private PluginTask createPluginTask() {
     return new PluginTask() {
-      @Override
-      public boolean isSyncPlugin() {
-        return true;
-      }
-
       @Override
       public String getName() {
         return "foo";

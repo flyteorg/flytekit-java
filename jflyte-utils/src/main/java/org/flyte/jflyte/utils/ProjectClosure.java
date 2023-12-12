@@ -510,7 +510,7 @@ public abstract class ProjectClosure {
 
   @VisibleForTesting
   static TaskTemplate createTaskTemplateForPluginTask(PluginTask task) {
-    return createTaskTemplateBuilder(task).isSyncPlugin(task.isSyncPlugin()).build();
+    return createTaskTemplateBuilder(task).build();
   }
 
   private static TaskTemplate.Builder createTaskTemplateBuilder(Task task) {
@@ -521,8 +521,7 @@ public abstract class ProjectClosure {
             .type(task.getType())
             .custom(task.getCustom())
             .discoverable(task.isCached())
-            .cacheSerializable(task.isCacheSerializable())
-            .isSyncPlugin(false);
+            .cacheSerializable(task.isCacheSerializable());
 
     if (task.getCacheVersion() != null) {
       templateBuilder.discoveryVersion(task.getCacheVersion());
@@ -581,7 +580,6 @@ public abstract class ProjectClosure {
         //      it or change this comment to explicitly say no cache for dynamic tasks
         .discoverable(false)
         .cacheSerializable(false)
-        .isSyncPlugin(false)
         .build();
   }
 

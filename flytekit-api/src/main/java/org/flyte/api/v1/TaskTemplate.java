@@ -67,9 +67,6 @@ public abstract class TaskTemplate {
    */
   public abstract boolean cacheSerializable();
 
-  /** Indicates whether to use sync plugin or async plugin to handle this task. */
-  public abstract boolean isSyncPlugin();
-
   public abstract Builder toBuilder();
 
   public static Builder builder() {
@@ -94,8 +91,6 @@ public abstract class TaskTemplate {
     public abstract Builder discoveryVersion(String discoveryVersion);
 
     public abstract Builder cacheSerializable(boolean cacheSerializable);
-
-    public abstract Builder isSyncPlugin(boolean isSyncPlugin);
 
     public abstract TaskTemplate build();
   }

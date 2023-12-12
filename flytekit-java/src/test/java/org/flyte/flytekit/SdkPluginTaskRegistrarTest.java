@@ -68,7 +68,7 @@ public class SdkPluginTaskRegistrarTest {
     RetryStrategy retries = RetryStrategy.builder().retries(0).build();
     RetryStrategy otherRetries = RetryStrategy.builder().retries(1).build();
 
-    PluginTask expectedTask = createPluginTask(testTaskName, typedInterface, retries, false);
+    PluginTask expectedTask = createPluginTask(testTaskName, typedInterface, retries);
 
     TaskIdentifier expectedOtherTestTaskId =
         TaskIdentifier.builder()
@@ -78,7 +78,7 @@ public class SdkPluginTaskRegistrarTest {
             .version("version")
             .build();
     PluginTask expectedOtherTask =
-        createPluginTask(otherTestTaskName, typedInterface, otherRetries, true);
+        createPluginTask(otherTestTaskName, typedInterface, otherRetries);
 
     // when
     Map<TaskIdentifier, PluginTask> tasks = registrar.load(ENV);
@@ -92,13 +92,8 @@ public class SdkPluginTaskRegistrarTest {
   }
 
   private PluginTask createPluginTask(
-      String taskName, TypedInterface typedInterface, RetryStrategy retries, boolean isSyncPlugin) {
+      String taskName, TypedInterface typedInterface, RetryStrategy retries) {
     return new PluginTask() {
-      @Override
-      public boolean isSyncPlugin() {
-        return isSyncPlugin;
-      }
-
       @Override
       public String getName() {
         return taskName;
@@ -161,11 +156,6 @@ public class SdkPluginTaskRegistrarTest {
     @Override
     public int getRetries() {
       return 1;
-    }
-
-    @Override
-    public boolean isSyncPlugin() {
-      return true;
     }
   }
 }

@@ -95,11 +95,6 @@ public class SdkPluginTaskRegistrar extends PluginTaskRegistrar {
     public String getName() {
       return sdkTask.getName();
     }
-
-    @Override
-    public boolean isSyncPlugin() {
-      return sdkTask.isSyncPlugin();
-    }
   }
 
   /**

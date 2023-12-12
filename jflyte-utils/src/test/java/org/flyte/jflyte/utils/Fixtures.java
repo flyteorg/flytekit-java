@@ -54,7 +54,6 @@ final class Fixtures {
           .retries(RETRIES)
           .discoverable(false)
           .cacheSerializable(false)
-          .isSyncPlugin(false)
           .build();
 
   private Fixtures() {

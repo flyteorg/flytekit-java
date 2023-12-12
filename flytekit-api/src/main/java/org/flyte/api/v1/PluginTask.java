@@ -17,6 +17,4 @@
 package org.flyte.api.v1;
 
 /** A task that is handled by a Flyte backend plugin instead of run as a container. */
-public interface PluginTask extends Task {
-  boolean isSyncPlugin();
-}
+public interface PluginTask extends Task {}

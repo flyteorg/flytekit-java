@@ -104,12 +104,4 @@ public abstract class SdkPluginTask<InputT, OutputT> extends SdkTransform<InputT
     return new SdkTaskNode<>(
         builder, nodeId, taskId, upstreamNodeIds, metadata, inputs, outputType);
   }
-
-  /**
-   * Signaling whether this task is supposed to be handled by a synchronous backend plugin,
-   * defaulting to false.
-   */
-  public boolean isSyncPlugin() {
-    return false;
-  }
 }

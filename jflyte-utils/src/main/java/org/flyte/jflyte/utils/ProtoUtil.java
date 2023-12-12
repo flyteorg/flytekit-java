@@ -19,7 +19,6 @@ package org.flyte.jflyte.utils;
 import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.base.Strings.nullToEmpty;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-import static java.util.Objects.requireNonNull;
 import static org.flyte.jflyte.utils.MoreCollectors.mapValues;
 import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableList;
 import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableMap;
@@ -312,19 +311,18 @@ public class ProtoUtil {
   }
 
   static Tasks.TaskTemplate serialize(TaskTemplate taskTemplate) {
-    Container container =
-        requireNonNull(
-            taskTemplate.container(), "Only container based task templates are supported");
-
     TaskMetadata metadata = serializeTaskMetadata(taskTemplate);
 
-    return Tasks.TaskTemplate.newBuilder()
-        .setContainer(serialize(container))
-        .setMetadata(metadata)
-        .setInterface(serialize(taskTemplate.interface_()))
-        .setType(taskTemplate.type())
-        .setCustom(serializeStruct(taskTemplate.custom()))
-        .build();
+    Tasks.TaskTemplate.Builder builder =
+        Tasks.TaskTemplate.newBuilder()
+            .setMetadata(metadata)
+            .setInterface(serialize(taskTemplate.interface_()))
+            .setType(taskTemplate.type())
+            .setCustom(serializeStruct(taskTemplate.custom()));
+    if (taskTemplate.container() == null) {
+      return builder.build();
+    }
+    return builder.setContainer(serialize(taskTemplate.container())).build();
   }
 
   private static TaskMetadata serializeTaskMetadata(TaskTemplate taskTemplate) {

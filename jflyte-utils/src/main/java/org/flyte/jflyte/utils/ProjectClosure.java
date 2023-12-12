@@ -137,6 +137,10 @@ public abstract class ProjectClosure {
   }
 
   private static TaskSpec applyCustom(TaskSpec taskSpec, JFlyteCustom custom) {
+    if (taskSpec.taskTemplate().container() == null) {
+      return taskSpec;
+    }
+
     Struct rewrittenCustom = merge(custom.serializeToStruct(), taskSpec.taskTemplate().custom());
     TaskTemplate rewrittenTaskTemplate =
         taskSpec.taskTemplate().toBuilder().custom(rewrittenCustom).build();
@@ -163,25 +167,26 @@ public abstract class ProjectClosure {
 
     ProjectClosure closure = ProjectClosure.load(config, rewrite, packageClassLoader);
 
-    List<Artifact> artifacts;
     if (isStagingRequired(closure)) {
-      artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
-    } else {
-      artifacts = emptyList();
-      LOG.info(
-          "Skipping artifact staging because there are no runnable tasks or dynamic workflow tasks");
+      List<Artifact> artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
+      JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
+      return closure.applyCustom(custom);
     }
 
-    JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
+    LOG.info(
+        "Skipping artifact staging because there are no runnable tasks or dynamic workflow tasks");
 
-    return closure.applyCustom(custom);
+    return closure;
   }
 
   private static boolean isStagingRequired(ProjectClosure closure) {
     return closure.taskSpecs().values().stream()
         .map(TaskSpec::taskTemplate)
-        .map(TaskTemplate::type)
-        .anyMatch(type -> !type.equals("raw-container"));
+        .anyMatch(ProjectClosure::isRunnableOrDynamicWorkflowTask);
+  }
+
+  private static boolean isRunnableOrDynamicWorkflowTask(TaskTemplate taskTemplate) {
+    return taskTemplate.container() != null && !taskTemplate.type().equals("raw-container");
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {

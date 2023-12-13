@@ -21,7 +21,12 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.PartialTaskIdentifier;
 
-/** A task that is handled by a Flyte backend plugin instead of run as a container. */
+/**
+ * A task that is handled by a Flyte backend plugin instead of run as a container. Note that a
+ * plugin task template does not have a container defined, neither all the jars captured in
+ * classpath, so if this is a requirement, one should use SdkRunnableTask overriding run method to
+ * simply return null.
+ */
 public abstract class SdkPluginTask<InputT, OutputT> extends SdkTransform<InputT, OutputT> {
 
   private final SdkType<InputT> inputType;

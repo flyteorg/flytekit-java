@@ -22,6 +22,9 @@ import javax.annotation.Nullable;
 /**
  * A Task structure that uniquely identifies a task in the system. Tasks are registered as a first
  * step in the system.
+ *
+ * <p>FIXME: consider offering TaskMetadata instead of having everything in TaskTemplate, see
+ * https://github.com/flyteorg/flyte/blob/ea72bbd12578d64087221592554fb71c368f8057/flyteidl/protos/flyteidl/core/tasks.proto#L90
  */
 @AutoValue
 public abstract class TaskTemplate {

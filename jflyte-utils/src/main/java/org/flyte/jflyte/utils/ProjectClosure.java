@@ -64,6 +64,8 @@ import org.flyte.api.v1.LaunchPlanRegistrar;
 import org.flyte.api.v1.Node;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.PluginTask;
+import org.flyte.api.v1.PluginTaskRegistrar;
 import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.Resources.ResourceName;
 import org.flyte.api.v1.RunnableTask;
@@ -135,6 +137,10 @@ public abstract class ProjectClosure {
   }
 
   private static TaskSpec applyCustom(TaskSpec taskSpec, JFlyteCustom custom) {
+    if (taskSpec.taskTemplate().container() == null) {
+      return taskSpec;
+    }
+
     Struct rewrittenCustom = merge(custom.serializeToStruct(), taskSpec.taskTemplate().custom());
     TaskTemplate rewrittenTaskTemplate =
         taskSpec.taskTemplate().toBuilder().custom(rewrittenCustom).build();
@@ -161,25 +167,26 @@ public abstract class ProjectClosure {
 
     ProjectClosure closure = ProjectClosure.load(config, rewrite, packageClassLoader);
 
-    List<Artifact> artifacts;
     if (isStagingRequired(closure)) {
-      artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
-    } else {
-      artifacts = emptyList();
-      LOG.info(
-          "Skipping artifact staging because there are no runnable tasks or dynamic workflow tasks");
+      List<Artifact> artifacts = stagePackageFiles(stagerSupplier.get(), packageDir);
+      JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
+      return closure.applyCustom(custom);
     }
 
-    JFlyteCustom custom = JFlyteCustom.builder().artifacts(artifacts).build();
+    LOG.info(
+        "Skipping artifact staging because there are no runnable tasks or dynamic workflow tasks");
 
-    return closure.applyCustom(custom);
+    return closure;
   }
 
   private static boolean isStagingRequired(ProjectClosure closure) {
     return closure.taskSpecs().values().stream()
         .map(TaskSpec::taskTemplate)
-        .map(TaskTemplate::type)
-        .anyMatch(type -> !type.equals("raw-container"));
+        .anyMatch(ProjectClosure::isRunnableOrDynamicWorkflowTask);
+  }
+
+  private static boolean isRunnableOrDynamicWorkflowTask(TaskTemplate taskTemplate) {
+    return taskTemplate.container() != null && !taskTemplate.type().equals("raw-container");
   }
 
   private static List<Artifact> stagePackageFiles(ArtifactStager stager, String packageDir) {
@@ -219,6 +226,10 @@ public abstract class ProjectClosure {
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(ContainerTaskRegistrar.class, env));
 
+    Map<TaskIdentifier, PluginTask> pluginTasks =
+        ClassLoaders.withClassLoader(
+            packageClassLoader, () -> Registrars.loadAll(PluginTaskRegistrar.class, env));
+
     Map<WorkflowIdentifier, WorkflowTemplate> workflows =
         ClassLoaders.withClassLoader(
             packageClassLoader, () -> Registrars.loadAll(WorkflowTemplateRegistrar.class, env));
@@ -233,6 +244,7 @@ public abstract class ProjectClosure {
         runnableTasks,
         dynamicWorkflowTasks,
         containerTasks,
+        pluginTasks,
         workflows,
         launchPlans);
   }
@@ -243,10 +255,12 @@ public abstract class ProjectClosure {
       Map<TaskIdentifier, RunnableTask> runnableTasks,
       Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
       Map<TaskIdentifier, ContainerTask> containerTasks,
+      Map<TaskIdentifier, PluginTask> pluginTasks,
       Map<WorkflowIdentifier, WorkflowTemplate> workflowTemplates,
       Map<LaunchPlanIdentifier, LaunchPlan> launchPlans) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates =
-        createTaskTemplates(config, runnableTasks, dynamicWorkflowTasks, containerTasks);
+        createTaskTemplates(
+            config, runnableTasks, dynamicWorkflowTasks, containerTasks, pluginTasks);
 
     // 2. rewrite workflows and launch plans
     Map<WorkflowIdentifier, WorkflowTemplate> rewrittenWorkflowTemplates =
@@ -424,7 +438,8 @@ public abstract class ProjectClosure {
       ExecutionConfig config,
       Map<TaskIdentifier, RunnableTask> runnableTasks,
       Map<TaskIdentifier, DynamicWorkflowTask> dynamicWorkflowTasks,
-      Map<TaskIdentifier, ContainerTask> containerTasks) {
+      Map<TaskIdentifier, ContainerTask> containerTasks,
+      Map<TaskIdentifier, PluginTask> pluginTasks) {
     Map<TaskIdentifier, TaskTemplate> taskTemplates = new HashMap<>();
 
     runnableTasks.forEach(
@@ -444,6 +459,13 @@ public abstract class ProjectClosure {
     containerTasks.forEach(
         (id, task) -> {
           TaskTemplate taskTemplate = createTaskTemplateForContainerTask(task);
+
+          taskTemplates.put(id, taskTemplate);
+        });
+
+    pluginTasks.forEach(
+        (id, task) -> {
+          TaskTemplate taskTemplate = createTaskTemplateForPluginTask(task);
 
           taskTemplates.put(id, taskTemplate);
         });
@@ -473,7 +495,7 @@ public abstract class ProjectClosure {
             .resources(task.getResources())
             .build();
 
-    return createTaskTemplate(task, container);
+    return createTaskTemplateBuilder(task).container(container).build();
   }
 
   @VisibleForTesting
@@ -488,13 +510,17 @@ public abstract class ProjectClosure {
             .resources(resources)
             .build();
 
-    return createTaskTemplate(task, container);
+    return createTaskTemplateBuilder(task).container(container).build();
   }
 
-  private static TaskTemplate createTaskTemplate(Task task, Container container) {
+  @VisibleForTesting
+  static TaskTemplate createTaskTemplateForPluginTask(PluginTask task) {
+    return createTaskTemplateBuilder(task).build();
+  }
+
+  private static TaskTemplate.Builder createTaskTemplateBuilder(Task task) {
     TaskTemplate.Builder templateBuilder =
         TaskTemplate.builder()
-            .container(container)
             .interface_(task.getInterface())
             .retries(task.getRetries())
             .type(task.getType())
@@ -506,7 +532,7 @@ public abstract class ProjectClosure {
       templateBuilder.discoveryVersion(task.getCacheVersion());
     }
 
-    return templateBuilder.build();
+    return templateBuilder;
   }
 
   private static Optional<KeyValuePair> javaToolOptionsEnv(RunnableTask task) {

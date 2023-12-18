@@ -53,6 +53,7 @@ import org.flyte.api.v1.Node;
 import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.PartialTaskIdentifier;
 import org.flyte.api.v1.PartialWorkflowIdentifier;
+import org.flyte.api.v1.PluginTask;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
@@ -583,6 +584,27 @@ public class ProjectClosureTest {
   }
 
   @Test
+  public void testCreateTaskTemplateForPluginTask() {
+    // given
+    PluginTask task = createPluginTask();
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForPluginTask(task);
+
+    // then
+    assertThat(
+        result.interface_(),
+        equalTo(
+            TypedInterface.builder()
+                .inputs(SdkTypes.nulls().getVariableMap())
+                .outputs(SdkTypes.nulls().getVariableMap())
+                .build()));
+    assertThat(result.custom(), equalTo(Struct.of(emptyMap())));
+    assertThat(result.retries(), equalTo(RetryStrategy.builder().retries(0).build()));
+    assertThat(result.type(), equalTo("test-plugin-task"));
+  }
+
+  @Test
   public void testCreateTaskTemplateForTasksWithDefaultCacheSettings() {
     // given
     RunnableTask runnableTask = createRunnableTask(null, List.of());
@@ -825,6 +847,33 @@ public class ProjectClosureTest {
       @Override
       public List<KeyValuePair> getEnv() {
         return env;
+      }
+    };
+  }
+
+  private PluginTask createPluginTask() {
+    return new PluginTask() {
+      @Override
+      public String getName() {
+        return "foo";
+      }
+
+      @Override
+      public String getType() {
+        return "test-plugin-task";
+      }
+
+      @Override
+      public TypedInterface getInterface() {
+        return TypedInterface.builder()
+            .inputs(SdkTypes.nulls().getVariableMap())
+            .outputs(SdkTypes.nulls().getVariableMap())
+            .build();
+      }
+
+      @Override
+      public RetryStrategy getRetries() {
+        return RetryStrategy.builder().retries(0).build();
       }
     };
   }

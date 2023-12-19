@@ -25,10 +25,18 @@ import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
+import org.flyte.api.v1.BooleanExpression;
+import org.flyte.api.v1.BranchNode;
+import org.flyte.api.v1.ComparisonExpression;
+import org.flyte.api.v1.ComparisonExpression.Operator;
+import org.flyte.api.v1.IfBlock;
+import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Operand;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.PartialTaskIdentifier;
+import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.RunnableTask;
 import org.flyte.api.v1.TaskNode;
@@ -134,6 +142,131 @@ class ExecutionNodeCompilerTest {
   }
 
   @Test
+  void testcompileUpstreamNodeIds_branchNode_ifOthersElse() {
+    var caseNode =
+        createNode(
+            "node-1",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-1", "node-1-output")));
+
+    var elseNode =
+        createNode(
+            "node-2",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-2", "node-2-output")));
+
+    var otherNode =
+        createNode(
+            "node-3",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-3", "node-3-output")));
+
+    var falseCondition =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .leftValue(Operand.ofPrimitive(Primitive.ofBooleanValue(true)))
+                .operator(Operator.EQ)
+                .rightValue(Operand.ofPrimitive(Primitive.ofBooleanValue(false)))
+                .build());
+
+    var ifElse =
+        IfElseBlock.builder()
+            .case_(IfBlock.builder().condition(falseCondition).thenNode(caseNode).build())
+            .elseNode(elseNode)
+            .other(
+                ImmutableList.of(
+                    IfBlock.builder().condition(falseCondition).thenNode(otherNode).build()))
+            .build();
+
+    Node branchNode =
+        Node.builder()
+            .id("branch-node")
+            .branchNode(BranchNode.builder().ifElse(ifElse).build())
+            .upstreamNodeIds(ImmutableList.of())
+            .inputs(ImmutableList.of())
+            .build();
+
+    assertEquals(
+        ImmutableList.of("node-1", "node-2", "node-3"),
+        ExecutionNodeCompiler.compileUpstreamNodeIds(branchNode));
+  }
+
+  @Test
+  void testcompileUpstreamNodeIds_branchNode_ifNotElse() {
+    var caseNode =
+        createNode(
+            "node-2",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-2", "node-2-output")));
+
+    var falseCondition =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .leftValue(Operand.ofPrimitive(Primitive.ofBooleanValue(true)))
+                .operator(Operator.EQ)
+                .rightValue(Operand.ofPrimitive(Primitive.ofBooleanValue(false)))
+                .build());
+
+    var ifElse =
+        IfElseBlock.builder()
+            .case_(IfBlock.builder().condition(falseCondition).thenNode(caseNode).build())
+            .other(ImmutableList.of())
+            .build();
+
+    Node branchNode =
+        Node.builder()
+            .id("branch-node")
+            .branchNode(BranchNode.builder().ifElse(ifElse).build())
+            .upstreamNodeIds(ImmutableList.of())
+            .inputs(ImmutableList.of())
+            .build();
+
+    assertEquals(
+        ImmutableList.of("node-2"), ExecutionNodeCompiler.compileUpstreamNodeIds(branchNode));
+  }
+
+  @Test
+  void testcompileUpstreamNodeIds_branchNode_ifElse() {
+    var caseNode =
+        createNode(
+            "node-2",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-1", "node-1-output")));
+    var elseNode =
+        createNode(
+            "node-3",
+            ImmutableList.of(START_NODE_ID),
+            ImmutableList.of(createOutputReferenceBinding("input", "node-2", "node-2-output")));
+
+    var falseCondition =
+        BooleanExpression.ofComparison(
+            ComparisonExpression.builder()
+                .leftValue(Operand.ofPrimitive(Primitive.ofBooleanValue(true)))
+                .operator(Operator.EQ)
+                .rightValue(Operand.ofPrimitive(Primitive.ofBooleanValue(false)))
+                .build());
+
+    var ifElse =
+        IfElseBlock.builder()
+            .case_(IfBlock.builder().condition(falseCondition).thenNode(caseNode).build())
+            .elseNode(elseNode)
+            .other(ImmutableList.of())
+            .build();
+
+    Node branchNode =
+        Node.builder()
+            .id("branch-node")
+            .branchNode(BranchNode.builder().ifElse(ifElse).build())
+            .upstreamNodeIds(ImmutableList.of())
+            .inputs(ImmutableList.of())
+            .build();
+
+    assertEquals(
+        ImmutableList.of("node-1", "node-2"),
+        ExecutionNodeCompiler.compileUpstreamNodeIds(branchNode));
+  }
+
+  @Test
   void testCompile_unknownTask() {
     Node node = createNode("node-1", ImmutableList.of(START_NODE_ID));
 
@@ -196,6 +329,16 @@ class ExecutionNodeCompilerTest {
     assertEquals(ImmutableList.of("node-1", "node-2", "node-3"), execNode.upstreamNodeIds());
   }
 
+  private static Binding createOutputReferenceBinding(
+      String varName, String referenceNodeId, String referenceVarName) {
+    return Binding.builder()
+        .var_(varName)
+        .binding(
+            BindingData.ofOutputReference(
+                OutputReference.builder().nodeId(referenceNodeId).var(referenceVarName).build()))
+        .build();
+  }
+
   private static List<String> getNodeIds(List<ExecutionNode> nodes) {
     return nodes.stream().map(ExecutionNode::nodeId).collect(toList());
   }
@@ -211,6 +354,11 @@ class ExecutionNodeCompilerTest {
   }
 
   private static Node createNode(String nodeId, List<String> upstreamNodeIds) {
+    return createNode(nodeId, upstreamNodeIds, ImmutableList.of());
+  }
+
+  private static Node createNode(
+      String nodeId, List<String> upstreamNodeIds, List<Binding> inputs) {
     return Node.builder()
         .id(nodeId)
         .taskNode(
@@ -218,7 +366,7 @@ class ExecutionNodeCompilerTest {
                 .referenceId(PartialTaskIdentifier.builder().name("unknownTask").build())
                 .build())
         .upstreamNodeIds(upstreamNodeIds)
-        .inputs(ImmutableList.of())
+        .inputs(inputs)
         .build();
   }
 

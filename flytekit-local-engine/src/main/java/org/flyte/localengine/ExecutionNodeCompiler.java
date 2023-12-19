@@ -91,14 +91,33 @@ class ExecutionNodeCompiler {
         String.format("Node [%s] must be a task, branch or workflow node", node.id()));
   }
 
-  private static List<String> compileUpstreamNodeIds(Node node) {
-    List<String> upstreamNodeIds = new ArrayList<>();
-    node.inputs().stream()
+  private static List<String> getUpstreamsFromInputs(List<Binding> inputs) {
+    return inputs.stream()
         .map(Binding::binding)
         .flatMap(ExecutionNodeCompiler::unpackBindingData)
         .filter(x -> x.kind() == BindingData.Kind.PROMISE)
         .map(x -> x.promise().nodeId())
-        .forEach(upstreamNodeIds::add);
+        .collect(toList());
+  }
+
+  static List<String> compileUpstreamNodeIds(Node node) {
+    List<String> upstreamNodeIds = new ArrayList<>(getUpstreamsFromInputs(node.inputs()));
+
+    if (node.branchNode() != null) {
+      var ifElse = node.branchNode().ifElse();
+      upstreamNodeIds.addAll(getUpstreamsFromInputs(ifElse.case_().thenNode().inputs()));
+
+      if (ifElse.elseNode() != null) {
+        upstreamNodeIds.addAll(getUpstreamsFromInputs(ifElse.elseNode().inputs()));
+      }
+
+      ifElse
+          .other()
+          .forEach(
+              other -> {
+                upstreamNodeIds.addAll(getUpstreamsFromInputs(other.thenNode().inputs()));
+              });
+    }
 
     upstreamNodeIds.addAll(node.upstreamNodeIds());
     if (upstreamNodeIds.isEmpty()) {

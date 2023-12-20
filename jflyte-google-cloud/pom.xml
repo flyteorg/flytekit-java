@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-parent</artifactId>
-    <version>0.4.38-SNAPSHOT</version>
+    <version>0.4.38</version>
   </parent>
 
   <artifactId>jflyte-google-cloud</artifactId>

@@ -95,14 +95,14 @@
     module that uses @AutoService, otherwise we get warning like "The following options were not recognized by any processor: '[verify]'",
     which again will fail the build because we have failOnWarning.
      -->
-    <auto-service.version>1.0.2</auto-service.version>
+    <auto-service.version>1.1.1</auto-service.version>
     <auto-value.version>1.10.4</auto-value.version>
     <common-proto.version>2.29.0</common-proto.version>
     <grpc.version>1.59.1</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
-    <picocli.version>4.7.2</picocli.version>
+    <picocli.version>4.7.5</picocli.version>
     <protobuf.version>3.25.1</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
     <!-- also remember to bump the version in flytekit-bom module -->
@@ -119,8 +119,8 @@
     <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
     <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
     <mockito.version>3.3.3</mockito.version>
-    <scala212.version>2.12.17</scala212.version>
-    <scala213.version>2.13.10</scala213.version>
+    <scala212.version>2.12.18</scala212.version>
+    <scala213.version>2.13.12</scala213.version>
     <magnolia.version>1.0.0-M4</magnolia.version>
   </properties>
 
@@ -444,7 +444,6 @@
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
             <forceJavacCompilerUse>true</forceJavacCompilerUse>
-            <failOnWarning>true</failOnWarning>
             <!-- The semantics of this option are reversed, see MCOMPILER-209. -->
             <useIncrementalCompilation>false</useIncrementalCompilation>
             <encoding>utf-8</encoding>

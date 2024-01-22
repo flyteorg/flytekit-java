@@ -26,17 +26,22 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
   private final Map<InputT, OutputT> outputs;
+  private final String name;
 
   TestingWorkflow(
-      SdkType<InputT> inputType, SdkType<OutputT> outputType, Map<InputT, OutputT> outputs) {
+      SdkType<InputT> inputType,
+      SdkType<OutputT> outputType,
+      Map<InputT, OutputT> outputs,
+      String name) {
     super(inputType, outputType);
     this.outputs = outputs;
+    this.name = name;
   }
 
   @Override
   public OutputT expand(SdkWorkflowBuilder builder, InputT input) {
     return builder
-        .apply(new TestingSdkRunnableTask<>(getInputType(), getOutputType(), outputs), input)
+        .apply(new TestingSdkRunnableTask<>(getInputType(), getOutputType(), outputs, name), input)
         .getOutputs();
   }
 
@@ -45,11 +50,21 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
     private static final long serialVersionUID = 6106269076155338045L;
 
     private final Map<InputT, OutputT> outputs;
+    private final String name;
+
+    @Override
+    public String getName() {
+      return name;
+    }
 
     public TestingSdkRunnableTask(
-        SdkType<InputT> inputType, SdkType<OutputT> outputType, Map<InputT, OutputT> outputs) {
+        SdkType<InputT> inputType,
+        SdkType<OutputT> outputType,
+        Map<InputT, OutputT> outputs,
+        String name) {
       super(inputType, outputType);
       this.outputs = outputs;
+      this.name = name;
     }
 
     @Override

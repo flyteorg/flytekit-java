@@ -406,12 +406,11 @@ public abstract class SdkTestingExecutor {
 
     // replace workflow
     SdkWorkflow<InputT, OutputT> mockWorkflow =
-        new TestingWorkflow<>(inputType, outputType, fixedTask.fixedOutputs);
+        new TestingWorkflow<>(inputType, outputType, fixedTask.fixedOutputs, workflow.getName());
 
     return toBuilder()
         .putWorkflowTemplate(workflow.getName(), mockWorkflow.toIdlTemplate())
         .putFixedTask(workflow.getName(), fixedTask)
-        .putFixedTask(TestingWorkflow.TestingSdkRunnableTask.class.getName(), fixedTask)
         .build();
   }
 

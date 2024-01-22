@@ -42,6 +42,8 @@ class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
   public static class TestingSdkRunnableTask<InputT, OutputT>
       extends SdkRunnableTask<InputT, OutputT> {
+    private static final long serialVersionUID = 6106269076155338045L;
+
     private final Map<InputT, OutputT> outputs;
 
     public TestingSdkRunnableTask(

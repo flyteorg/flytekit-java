@@ -66,11 +66,9 @@ public class MockSubWorkflowsTest {
               .apply(
                   "sub", new SubWorkflow(), SubWorkflowInputs.create(SdkBindingDataFactory.of(1)))
               .getOutputs();
-      var subOut2 =
-          builder
-              .apply(
-                  "sub1", new SubWorkflow(), SubWorkflowInputs.create(SdkBindingDataFactory.of(2)))
-              .getOutputs();
+      builder
+          .apply("sub1", new SubWorkflow(), SubWorkflowInputs.create(SdkBindingDataFactory.of(2)))
+          .getOutputs();
 
       return SubWorkflowOutputs.create(subOut1.o());
     }

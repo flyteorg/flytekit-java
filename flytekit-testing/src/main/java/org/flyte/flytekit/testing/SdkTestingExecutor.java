@@ -401,15 +401,17 @@ public abstract class SdkTestingExecutor {
 
     // fixed tasks
     TestingRunnableTask<InputT, OutputT> fixedTask =
-        getFixedTaskOrDefault(workflow.getName(), inputType, outputType);
+        getFixedTaskOrDefault(workflow.getName(), inputType, outputType)
+            .withFixedOutput(input, output);
 
     // replace workflow
     SdkWorkflow<InputT, OutputT> mockWorkflow =
-        new TestingWorkflow<>(inputType, outputType, output);
+        new TestingWorkflow<>(inputType, outputType, fixedTask.fixedOutputs);
 
     return toBuilder()
         .putWorkflowTemplate(workflow.getName(), mockWorkflow.toIdlTemplate())
-        .putFixedTask(workflow.getName(), fixedTask.withFixedOutput(input, output))
+        .putFixedTask(workflow.getName(), fixedTask)
+        .putFixedTask(TestingWorkflow.TestingSdkRunnableTask.class.getName(), fixedTask)
         .build();
   }
 

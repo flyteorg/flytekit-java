@@ -16,6 +16,8 @@
  */
 package org.flyte.flytekit.testing;
 
+import java.util.Map;
+import org.flyte.flytekit.SdkRunnableTask;
 import org.flyte.flytekit.SdkType;
 import org.flyte.flytekit.SdkWorkflow;
 import org.flyte.flytekit.SdkWorkflowBuilder;
@@ -23,15 +25,34 @@ import org.flyte.flytekit.SdkWorkflowBuilder;
 /** {@link SdkWorkflow} that can fix output for specific input. */
 class TestingWorkflow<InputT, OutputT> extends SdkWorkflow<InputT, OutputT> {
 
-  private final OutputT output;
+  private final Map<InputT, OutputT> outputs;
 
-  TestingWorkflow(SdkType<InputT> inputType, SdkType<OutputT> outputType, OutputT output) {
+  TestingWorkflow(
+      SdkType<InputT> inputType, SdkType<OutputT> outputType, Map<InputT, OutputT> outputs) {
     super(inputType, outputType);
-    this.output = output;
+    this.outputs = outputs;
   }
 
   @Override
   public OutputT expand(SdkWorkflowBuilder builder, InputT input) {
-    return output;
+    return builder
+        .apply(new TestingSdkRunnableTask<>(getInputType(), getOutputType(), outputs), input)
+        .getOutputs();
+  }
+
+  public static class TestingSdkRunnableTask<InputT, OutputT>
+      extends SdkRunnableTask<InputT, OutputT> {
+    private final Map<InputT, OutputT> outputs;
+
+    public TestingSdkRunnableTask(
+        SdkType<InputT> inputType, SdkType<OutputT> outputType, Map<InputT, OutputT> outputs) {
+      super(inputType, outputType);
+      this.outputs = outputs;
+    }
+
+    @Override
+    public OutputT run(InputT input) {
+      return outputs.get(input);
+    }
   }
 }

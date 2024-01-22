@@ -42,6 +42,12 @@ public class MockSubWorkflowsTest {
                 JacksonSdkType.of(SubWorkflowOutputs.class),
                 SubWorkflowOutputs.create(SdkBindingDataFactory.of(10)))
             .withWorkflowOutput(
+                new SubWorkflow1(),
+                JacksonSdkType.of(SubWorkflowInputs1.class),
+                SubWorkflowInputs1.create(SdkBindingDataFactory.of(11)),
+                JacksonSdkType.of(SubWorkflowOutputs1.class),
+                SubWorkflowOutputs1.create(SdkBindingDataFactory.of(110)))
+            .withWorkflowOutput(
                 new SubWorkflow(),
                 JacksonSdkType.of(SubWorkflowInputs.class),
                 SubWorkflowInputs.create(SdkBindingDataFactory.of(2)),
@@ -64,10 +70,22 @@ public class MockSubWorkflowsTest {
       var subOut1 =
           builder
               .apply(
-                  "sub", new SubWorkflow(), SubWorkflowInputs.create(SdkBindingDataFactory.of(1)))
+                  "subworkflow-1",
+                  new SubWorkflow(),
+                  SubWorkflowInputs.create(SdkBindingDataFactory.of(1)))
               .getOutputs();
       builder
-          .apply("sub1", new SubWorkflow(), SubWorkflowInputs.create(SdkBindingDataFactory.of(2)))
+          .apply(
+              "subworkflow1-1",
+              new SubWorkflow1(),
+              SubWorkflowInputs1.create(SdkBindingDataFactory.of(11)))
+          .getOutputs();
+
+      builder
+          .apply(
+              "subworkflow-2",
+              new SubWorkflow(),
+              SubWorkflowInputs.create(SdkBindingDataFactory.of(2)))
           .getOutputs();
 
       return SubWorkflowOutputs.create(subOut1.o());
@@ -102,6 +120,38 @@ public class MockSubWorkflowsTest {
 
     public static MockSubWorkflowsTest.SubWorkflowOutputs create(SdkBindingData<Long> o) {
       return new AutoValue_MockSubWorkflowsTest_SubWorkflowOutputs(o);
+    }
+  }
+
+  public static class SubWorkflow1 extends SdkWorkflow<SubWorkflowInputs1, SubWorkflowOutputs1> {
+    public SubWorkflow1() {
+      super(
+          JacksonSdkType.of(SubWorkflowInputs1.class),
+          JacksonSdkType.of(SubWorkflowOutputs1.class));
+    }
+
+    @Override
+    public SubWorkflowOutputs1 expand(SdkWorkflowBuilder builder, SubWorkflowInputs1 inputs) {
+
+      return SubWorkflowOutputs1.create(inputs.a1());
+    }
+  }
+
+  @AutoValue
+  public abstract static class SubWorkflowInputs1 {
+    public abstract SdkBindingData<Long> a1();
+
+    public static MockSubWorkflowsTest.SubWorkflowInputs1 create(SdkBindingData<Long> a1) {
+      return new AutoValue_MockSubWorkflowsTest_SubWorkflowInputs1(a1);
+    }
+  }
+
+  @AutoValue
+  public abstract static class SubWorkflowOutputs1 {
+    public abstract SdkBindingData<Long> o1();
+
+    public static MockSubWorkflowsTest.SubWorkflowOutputs1 create(SdkBindingData<Long> o1) {
+      return new AutoValue_MockSubWorkflowsTest_SubWorkflowOutputs1(o1);
     }
   }
 }

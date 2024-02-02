@@ -447,7 +447,6 @@ public class ProjectClosureTest {
     // given
     RunnableTask task = createRunnableTask("NameWith$AsTaskName", null, List.of());
     String image = "my-image";
-    Resources expectedResources = Resources.builder().build();
 
     // when
     TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);

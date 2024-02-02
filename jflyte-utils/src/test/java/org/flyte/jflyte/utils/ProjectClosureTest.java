@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -442,6 +443,20 @@ public class ProjectClosureTest {
   }
 
   @Test
+  public void testCreateTaskTemplateForRunnableTaskWith$Name() {
+    // given
+    RunnableTask task = createRunnableTask("NameWith$AsTaskName", null, List.of());
+    String image = "my-image";
+
+    // when
+    TaskTemplate result = ProjectClosure.createTaskTemplateForRunnableTask(task, image);
+
+    // then
+    assertTrue(
+        result.container().args().stream().anyMatch(s -> s.contains("NameWith\\$AsTaskName")));
+  }
+
+  @Test
   public void testCreateTaskTemplateForRunnableTaskWithResources() {
     // given
     Resources expectedResources =
@@ -758,10 +773,15 @@ public class ProjectClosureTest {
 
   private RunnableTask createRunnableTask(
       Resources expectedResources, List<String> customJavaToolOptions) {
+    return createRunnableTask("my-test-task", expectedResources, customJavaToolOptions);
+  }
+
+  private RunnableTask createRunnableTask(
+      String name, Resources expectedResources, List<String> customJavaToolOptions) {
     return new RunnableTask() {
       @Override
       public String getName() {
-        return "my-test-task";
+        return name;
       }
 
       @Override

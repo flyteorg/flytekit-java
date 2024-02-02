@@ -28,6 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.escape.Escaper;
+import com.google.common.escape.Escapers;
 import com.google.protobuf.ByteString;
 import java.io.File;
 import java.io.IOException;
@@ -91,6 +93,8 @@ public abstract class ProjectClosure {
   public abstract Map<WorkflowIdentifier, WorkflowSpec> workflowSpecs();
 
   public abstract Map<LaunchPlanIdentifier, LaunchPlan> launchPlans();
+
+  private static final Escaper ESCAPER = Escapers.builder().addEscape('$', "\\$").build();
 
   ProjectClosure applyCustom(JFlyteCustom custom) {
     Map<TaskIdentifier, TaskSpec> rewrittenTaskSpecs =
@@ -483,7 +487,7 @@ public abstract class ProjectClosure {
                     "jflyte",
                     "execute",
                     "--task",
-                    task.getName(),
+                    ESCAPER.escape(task.getName()),
                     "--inputs",
                     "{{.input}}",
                     "--outputPrefix",

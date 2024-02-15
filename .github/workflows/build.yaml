@@ -23,10 +23,10 @@ jobs:
           java-version: 11.0
           distribution: 'adopt'
           server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
+          server-username: ${{ secrets.SONATYPE_USERNAME }}
+          server-password: ${{ secrets.SONATYPE_PASSWORD }}
           gpg-private-key: ${{ secrets.SONATYPE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-passphrase: ${{ secrets.SONATYPE_PASSPHRASE }}
 
       - name: Log in to Docker Hub
         if: ${{ github.ref == 'refs/heads/master' }}

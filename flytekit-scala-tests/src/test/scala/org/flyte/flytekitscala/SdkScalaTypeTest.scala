@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.{AutoAllInputsInput, Nested}
 import org.flyte.flytekit.jackson.JacksonSdkLiteralType
 import org.flyte.flytekitscala.SdkLiteralTypes.{
+  __TYPE,
   blobs,
   collections,
   maps,
@@ -57,6 +58,29 @@ case class ScalarNested(
     nestedNestedMap: Map[String, ScalarNestedNested]
 )
 case class ScalarNestedNested(foo: String, bar: Option[String])
+
+sealed trait TestTrait {
+  val traitData: String
+}
+
+case class TestTraitClass1(
+    traitData: String,
+    data: String
+) extends TestTrait
+
+case class TestTraitClass2(
+    traitData: String,
+    n: Long
+) extends TestTrait
+
+case class TestInnerCaseClass(
+    subTestList: List[TestTrait],
+    subTestMap: Map[String, TestTrait]
+)
+
+case class TestCaseClass(
+    subTest: SdkBindingData[List[TestInnerCaseClass]]
+)
 
 class SdkScalaTypeTest {
 
@@ -109,6 +133,33 @@ class SdkScalaTypeTest {
       @Description(null)
       name: String
   )
+
+  @Test
+  def testTraitCaseClass(): Unit = {
+    val expected = TestCaseClass(
+      SdkBindingDataFactory.of(
+        SdkLiteralTypes.collections(
+          SdkLiteralTypes.generics[TestInnerCaseClass]()
+        ),
+        List(
+          TestInnerCaseClass(
+            List(
+              TestTraitClass1("traitData", "data1"),
+              TestTraitClass2("traitData", 222)
+            ),
+            Map(
+              "key1" -> TestTraitClass1("traitData", "data1"),
+              "key2" -> TestTraitClass2("traitData", 222)
+            )
+          )
+        )
+      )
+    )
+    val map = SdkScalaType[TestCaseClass].toLiteralMap(expected)
+    val output = SdkScalaType[TestCaseClass].fromLiteralMap(map)
+
+    assertEquals(expected, output)
+  }
 
   @Test
   def testFieldDescription(): Unit = {
@@ -301,11 +352,17 @@ class SdkScalaTypeTest {
             Map(
               "foo" -> Struct.Value.ofStringValue("foo"),
               "bar" -> Struct.Value.ofStringValue("bar"),
+              __TYPE -> Struct.Value.ofStringValue(
+                classOf[ScalarNested].getTypeName
+              ),
               "nestedNested" -> Struct.Value.ofStructValue(
                 Struct.of(
                   Map(
                     "foo" -> Struct.Value.ofStringValue("foo"),
-                    "bar" -> Struct.Value.ofStringValue("bar")
+                    "bar" -> Struct.Value.ofStringValue("bar"),
+                    __TYPE -> Struct.Value.ofStringValue(
+                      classOf[ScalarNestedNested].getTypeName
+                    )
                   ).asJava
                 )
               ),
@@ -315,7 +372,10 @@ class SdkScalaTypeTest {
                     Struct.of(
                       Map(
                         "foo" -> Struct.Value.ofStringValue("foo"),
-                        "bar" -> Struct.Value.ofStringValue("bar")
+                        "bar" -> Struct.Value.ofStringValue("bar"),
+                        __TYPE -> Struct.Value.ofStringValue(
+                          classOf[ScalarNestedNested].getTypeName
+                        )
                       ).asJava
                     )
                   )
@@ -328,7 +388,10 @@ class SdkScalaTypeTest {
                       Struct.of(
                         Map(
                           "foo" -> Struct.Value.ofStringValue("foo"),
-                          "bar" -> Struct.Value.ofStringValue("bar")
+                          "bar" -> Struct.Value.ofStringValue("bar"),
+                          __TYPE -> Struct.Value.ofStringValue(
+                            classOf[ScalarNestedNested].getTypeName
+                          )
                         ).asJava
                       )
                     )

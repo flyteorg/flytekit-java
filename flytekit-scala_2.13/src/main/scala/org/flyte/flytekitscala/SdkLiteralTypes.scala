@@ -36,8 +36,10 @@ import scala.reflect.runtime.universe.{
   termNames,
   typeOf
 }
+import scala.tools.nsc.doc.model.Trait
 
 object SdkLiteralTypes {
+  val __TYPE = "__type"
 
   /** [[SdkLiteralType]] for the specified Scala type.
     *
@@ -235,7 +237,11 @@ object SdkLiteralTypes {
     def productToMap(product: Product): Map[String, Any] = {
       productElementNames(product)
         .zip(product.productIterator.toList)
-        .toMap
+        .toMap ++
+        // Add the type of the product to the map, this could be used later to convert
+        // the struct back to the product if the type can not be inferred from the scala type.
+        // For example: when the product is a trait or an abstract class.
+        Map(__TYPE -> product.getClass.getTypeName)
     }
 
     def mapToStruct(map: Map[String, Any]): Struct = {
@@ -342,7 +348,22 @@ object SdkLiteralTypes {
             classTag
           )
         } else {
-          value
+          value match {
+            // This is a special case where the type of the product can not be inferred from the scala type.
+            // This can happen when the product is a trait or an abstract class.
+            // In this case, we use the __TYPE field to get the type of the product.
+            case map: Map[String, Any] if map.contains(__TYPE) =>
+              val typeTag = createTypeTag(
+                mirror
+                  .staticClass(map(__TYPE).asInstanceOf[String])
+                  .typeSignature
+              )
+              val classTag = ClassTag(
+                typeTag.mirror.runtimeClass(typeTag.tpe)
+              )
+              mapToProduct(map)(typeTag, classTag)
+            case _ => value
+          }
         }
       }
 

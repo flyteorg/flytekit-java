@@ -94,8 +94,8 @@ Scala 2.12 and Scala 2.13 are supported.
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.flyte" % "flytekit-java" % "0.3.15",
-  "org.flyte" %% "flytekit-scala" % "0.3.15"
+  "org.flyte" % "flytekit-java" % "0.4.35",
+  "org.flyte" %% "flytekit-scala" % "0.4.35"
 )
 ```
 

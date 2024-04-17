@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobType;
@@ -31,6 +32,7 @@ import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
 import org.flyte.api.v1.Primitive;
 import org.flyte.api.v1.Scalar;
+import org.flyte.api.v1.SimpleType;
 
 /** A utility class for creating {@link SdkLiteralType} objects for different types. */
 public class SdkLiteralTypes {
@@ -184,6 +186,15 @@ public class SdkLiteralTypes {
   }
 
   /**
+   * Returns a {@link SdkLiteralType} for binary.
+   *
+   * @return the {@link SdkLiteralType}
+   */
+  public static SdkLiteralType<Binary> binary() {
+    return BinarySdkLiteralType.INSTANCE;
+  }
+
+  /**
    * Returns a {@link SdkLiteralType} for blobs.
    *
    * @return the {@link SdkLiteralType}
@@ -213,6 +224,30 @@ public class SdkLiteralTypes {
     @Override
     public String toString() {
       return "integers";
+    }
+  }
+
+  private static class BinarySdkLiteralType extends SdkLiteralType<Binary> {
+    private static final BinarySdkLiteralType INSTANCE = new BinarySdkLiteralType();
+
+    @Override
+    public LiteralType getLiteralType() {
+      return LiteralType.ofSimpleType(SimpleType.BINARY);
+    }
+
+    @Override
+    public final Literal toLiteral(Binary value) {
+      return Literal.ofScalar(Scalar.ofBinary(value));
+    }
+
+    @Override
+    public final Binary fromLiteral(Literal literal) {
+      return literal.scalar().binary();
+    }
+
+    @Override
+    public final BindingData toBindingData(Binary value) {
+      return BindingData.ofScalar(Scalar.ofBinary(value));
     }
   }
 

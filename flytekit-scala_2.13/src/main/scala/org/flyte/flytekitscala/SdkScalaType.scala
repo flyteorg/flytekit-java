@@ -248,6 +248,11 @@ object SdkScalaType {
       SdkLiteralTypes.blobs(BlobType.DEFAULT)
     )
 
+  implicit def binaryLiteralType: SdkScalaLiteralType[Binary] =
+    DelegateLiteralType(
+      SdkLiteralTypes.binary()
+    )
+
   // TODO we are forced to do this because SdkDataBinding.ofInteger returns a SdkBindingData<java.util.Long>
   //  This makes Scala dev mad when they are forced to use the java types instead of scala types
   //  We need to think what to do, maybe move the factory methods out of SdkDataBinding into their own class

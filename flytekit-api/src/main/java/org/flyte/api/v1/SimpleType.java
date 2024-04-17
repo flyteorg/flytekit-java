@@ -24,5 +24,6 @@ public enum SimpleType {
   BOOLEAN,
   DATETIME,
   DURATION,
-  STRUCT
+  STRUCT,
+  BINARY
 }

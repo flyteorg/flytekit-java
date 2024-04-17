@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobType;
 import org.flyte.api.v1.Variable;
@@ -172,6 +173,8 @@ class VariableMapVisitor extends JsonObjectFormatVisitor.Base {
       // feature
       // https://docs.flyte.org/projects/flytekit/en/latest/generated/flytekit.BlobType.html#flytekit-blobtype
       return SdkLiteralTypes.blobs(BlobType.DEFAULT);
+    } else if (Binary.class.isAssignableFrom(type)) {
+      return SdkLiteralTypes.binary();
     }
     try {
       return JacksonSdkLiteralType.of(type);

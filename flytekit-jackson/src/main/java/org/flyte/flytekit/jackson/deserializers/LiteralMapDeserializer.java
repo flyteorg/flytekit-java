@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -167,9 +169,54 @@ public class LiteralMapDeserializer extends StdDeserializer<JacksonLiteralMap> {
         Struct generic = readValueAsStruct(p);
 
         return Literal.ofScalar(Scalar.ofGeneric(generic));
+
+      case BINARY:
+        Binary binary = readValueAsBinary(p);
+
+        return Literal.ofScalar(Scalar.ofBinary(binary));
     }
 
     throw new AssertionError(String.format("Unexpected SimpleType: [%s]", simpleType));
+  }
+
+  private static Binary readValueAsBinary(JsonParser p) throws IOException {
+    verifyToken(p, JsonToken.START_OBJECT);
+    p.nextToken();
+
+    Binary.Builder binaryBuilder = Binary.builder();
+
+    while (p.currentToken() != JsonToken.END_OBJECT) {
+      verifyToken(p, JsonToken.FIELD_NAME);
+      String fieldName = p.currentName();
+      p.nextToken();
+
+      switch (fieldName) {
+        case Binary.TAG_FIELD:
+          binaryBuilder.tag(p.readValueAs(String.class));
+          break;
+        case Binary.VALUE_FIELD:
+          ByteArrayOutputStream value = new ByteArrayOutputStream();
+          p.readBinaryValue(value);
+          binaryBuilder.value(value.toByteArray());
+          break;
+        default:
+          throw new IllegalStateException("Unexpected field [" + fieldName + "]");
+      }
+
+      p.nextToken();
+    }
+
+    Binary binary = binaryBuilder.build();
+
+    if (binary.tag() == null) {
+      throw new IllegalStateException("Missing field [" + Binary.TAG_FIELD + "]");
+    }
+
+    if (binary.value().length == 0) {
+      throw new IllegalStateException("Missing field [" + Binary.VALUE_FIELD + "]");
+    }
+
+    return binary;
   }
 
   private static Struct readValueAsStruct(JsonParser p) throws IOException {

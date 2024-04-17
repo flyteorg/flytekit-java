@@ -52,6 +52,8 @@ public class LiteralSerializerFactory {
         return new GenericSerializer(gen, key, value, serializerProvider, literalType);
       case BLOB:
         return new BlobSerializer(gen, key, value, serializerProvider, literalType);
+      case BINARY:
+        return new BinarySerializer(gen, key, value, serializerProvider, literalType);
     }
     throw new AssertionError("Unexpected Literal.Kind: [" + value.scalar().kind() + "]");
   }

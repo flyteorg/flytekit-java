@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Timestamp;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -163,6 +165,8 @@ public class ProtoUtil {
         return Scalar.ofBlob(deserialize(scalar.getBlob()));
 
       case BINARY:
+        return Scalar.ofBinary(deserialize(scalar.getBinary()));
+
       case ERROR:
       case NONE_TYPE:
       case SCHEMA:
@@ -201,6 +205,10 @@ public class ProtoUtil {
     }
 
     throw new UnsupportedOperationException(String.format("Unsupported Primitive [%s]", primitive));
+  }
+
+  static Binary deserialize(Literals.Binary binary) {
+    return Binary.builder().tag(binary.getTag()).value(binary.getValue().toByteArray()).build();
   }
 
   @VisibleForTesting
@@ -479,6 +487,8 @@ public class ProtoUtil {
         return Types.SimpleType.DURATION;
       case STRUCT:
         return Types.SimpleType.STRUCT;
+      case BINARY:
+        return Types.SimpleType.BINARY;
     }
 
     return Types.SimpleType.UNRECOGNIZED;
@@ -500,8 +510,9 @@ public class ProtoUtil {
         return SimpleType.DURATION;
       case STRUCT:
         return SimpleType.STRUCT;
-      case ERROR:
       case BINARY:
+        return SimpleType.BINARY;
+      case ERROR:
       case NONE:
         throw new IllegalArgumentException("Unsupported SimpleType: " + proto);
 
@@ -987,6 +998,11 @@ public class ProtoUtil {
         Blob blob = scalar.blob();
 
         return Literals.Scalar.newBuilder().setBlob(serialize(blob)).build();
+
+      case BINARY:
+        Binary binary = scalar.binary();
+
+        return Literals.Scalar.newBuilder().setBinary(serialize(binary)).build();
     }
 
     throw new AssertionError("Unexpected Scalar.Kind: " + scalar.kind());
@@ -1110,6 +1126,14 @@ public class ProtoUtil {
               "Datetime out of range, maximum allowed value [%s] but was [%s]",
               DATETIME_MAX, datetime));
     }
+  }
+
+  @VisibleForTesting
+  static Literals.Binary serialize(Binary binary) {
+    return Literals.Binary.newBuilder()
+        .setTag(binary.tag())
+        .setValue(ByteString.copyFrom(binary.value()))
+        .build();
   }
 
   @VisibleForTesting

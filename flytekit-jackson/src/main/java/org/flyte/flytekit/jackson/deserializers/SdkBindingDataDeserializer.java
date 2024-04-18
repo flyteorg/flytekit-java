@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
@@ -128,10 +130,22 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
       case GENERIC:
         return transformGeneric(tree, deserializationContext, scalarKind, type);
 
+      case BINARY:
+        return transformBinary(tree);
+
       default:
         throw new UnsupportedOperationException(
             "Type contains an unsupported scalar: " + scalarKind);
     }
+  }
+
+  private static SdkBindingData<Binary> transformBinary(JsonNode tree) {
+    JsonNode value = tree.get(VALUE);
+    String tag = value.get(Binary.TAG_FIELD).asText();
+    String base64Value = value.get(Binary.VALUE_FIELD).asText();
+
+    return SdkBindingDataFactory.of(
+        Binary.builder().tag(tag).value(Base64.getDecoder().decode(base64Value)).build());
   }
 
   private static SdkBindingData<Blob> transformBlob(JsonNode tree) {
@@ -256,6 +270,8 @@ class SdkBindingDataDeserializer extends StdDeserializer<SdkBindingData<?>>
             return SdkLiteralTypes.durations();
           case STRUCT:
             return JacksonSdkLiteralType.of(type.getContentType().getRawClass());
+          case BINARY:
+            return SdkLiteralTypes.binary();
         }
         throw new UnsupportedOperationException(
             "Type contains a collection/map of an supported literal type: " + kind);

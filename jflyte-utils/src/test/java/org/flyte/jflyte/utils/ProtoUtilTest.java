@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
@@ -49,12 +50,14 @@ import flyteidl.core.Tasks.TaskMetadata;
 import flyteidl.core.Types;
 import flyteidl.core.Types.SchemaType.SchemaColumn.SchemaColumnType;
 import flyteidl.core.Workflow;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.Blob;
@@ -901,6 +904,9 @@ class ProtoUtilTest {
   static Stream<Arguments> createSerializeComplexLiteralArguments() {
     return Stream.of(
         Arguments.of(
+            LiteralType.ofSimpleType(SimpleType.BINARY),
+            Types.LiteralType.newBuilder().setSimple(Types.SimpleType.BINARY).build()),
+        Arguments.of(
             LiteralType.ofBlobType(
                 BlobType.builder()
                     .format("avro")
@@ -1036,6 +1042,21 @@ class ProtoUtilTest {
   }
 
   @Test
+  void shouldSerializeBinary() {
+    String tag = "tag";
+    byte[] data = "data".getBytes(StandardCharsets.UTF_8);
+
+    Binary binary = Binary.builder().tag(tag).value(data).build();
+
+    Literals.Binary proto = ProtoUtil.serialize(binary);
+
+    assertThat(
+        proto,
+        equalTo(
+            Literals.Binary.newBuilder().setTag(tag).setValue(ByteString.copyFrom(data)).build()));
+  }
+
+  @Test
   void shouldSerializeBlob() {
     BlobType type =
         BlobType.builder()
@@ -1123,6 +1144,17 @@ class ProtoUtilTest {
                 .name(WORKFLOW_NAME)
                 .version(VERSION)
                 .build()));
+  }
+
+  @Test
+  void shouldDeserializeBinary() {
+    String tag = "tag";
+    byte[] data = "data".getBytes(StandardCharsets.UTF_8);
+    Literals.Binary binary =
+        Literals.Binary.newBuilder().setTag(tag).setValue(ByteString.copyFrom(data)).build();
+
+    assertThat(
+        ProtoUtil.deserialize(binary), equalTo(Binary.builder().tag(tag).value(data).build()));
   }
 
   @Test

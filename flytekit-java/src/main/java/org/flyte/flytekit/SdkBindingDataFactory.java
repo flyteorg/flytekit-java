@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Blob;
 
 /** A utility class for creating {@link SdkBindingData} objects for different types. */
@@ -133,6 +134,16 @@ public final class SdkBindingDataFactory {
    */
   public static <T> SdkBindingData<T> of(SdkLiteralType<T> type, T value) {
     return SdkBindingData.literal(type, value);
+  }
+
+  /**
+   * Creates a {@code SdkBindingData} for a flyte Binary with the given value.
+   *
+   * @param value the simple value for this data
+   * @return the new {@code SdkBindingData}
+   */
+  public static SdkBindingData<Binary> of(Binary value) {
+    return SdkBindingData.literal(SdkLiteralTypes.binary(), value);
   }
 
   /**

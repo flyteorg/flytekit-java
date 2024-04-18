@@ -16,7 +16,7 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.Blob
+import org.flyte.api.v1.{Binary, Blob}
 import org.flyte.flytekit.{
   BindingCollection,
   BindingMap,
@@ -144,6 +144,16 @@ object SdkBindingDataFactory {
     */
   def of(value: Blob): SdkBindingData[Blob] =
     SdkBindingData.literal(SdkLiteralTypes.blobs(value.metadata.`type`), value)
+
+  /** Creates a [[SdkBindingData]] for a flyte Binary with the given value.
+    *
+    * @param value
+    *   the simple value for this data
+    * @return
+    *   the new [[SdkBindingData]]
+    */
+  def of(value: Binary): SdkBindingData[Binary] =
+    SdkBindingData.literal(SdkLiteralTypes.binary(), value)
 
   /** Creates a [[SdkBindingData]] for a flyte type with the given value.
     *

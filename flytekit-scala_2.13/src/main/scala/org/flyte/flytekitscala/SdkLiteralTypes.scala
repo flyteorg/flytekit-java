@@ -70,6 +70,8 @@ object SdkLiteralTypes {
         durations().asInstanceOf[SdkLiteralType[T]]
       case t if t =:= typeOf[Blob] =>
         blobs(BlobType.DEFAULT).asInstanceOf[SdkLiteralType[T]]
+      case t if t =:= typeOf[Binary] =>
+        binary().asInstanceOf[SdkLiteralType[T]]
       case t if t <:< typeOf[Product] && !(t =:= typeOf[Option[_]]) =>
         generics().asInstanceOf[SdkLiteralType[T]]
 
@@ -423,6 +425,14 @@ object SdkLiteralTypes {
 
     mapToProduct[T](structToMap(struct))
   }
+
+  /** Returns a [[SdkLiteralType]] for binary.
+    *
+    * @return
+    *   the [[SdkLiteralType]]
+    */
+  def binary(): SdkLiteralType[Binary] =
+    SdkJavaLiteralTypes.binary()
 
   /** Returns a [[SdkLiteralType]] for blob.
     *

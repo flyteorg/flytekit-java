@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.auto.value.AutoValue;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Blob;
 import org.flyte.api.v1.BlobMetadata;
 import org.flyte.api.v1.BlobType;
@@ -64,6 +66,12 @@ public class JacksonSdkTypeTest {
           .uri("file://test")
           .build();
 
+  private static final Binary BINARY =
+      Binary.builder()
+          .tag("this-is-a-custom-tag")
+          .value("file://test".getBytes(StandardCharsets.UTF_8))
+          .build();
+
   public static AutoValueInput createAutoValueInput(
       long i,
       double f,
@@ -72,12 +80,15 @@ public class JacksonSdkTypeTest {
       Instant t,
       Duration d,
       Blob blob,
+      Binary binary,
       Nested generic,
       List<String> l,
       List<Blob> lb,
+      List<Binary> lbinary,
       List<Nested> lg,
       Map<String, String> m,
       Map<String, Blob> mb,
+      Map<String, Binary> mbinary,
       Map<String, Nested> mg,
       List<List<String>> ll,
       List<Map<String, String>> lm,
@@ -91,12 +102,15 @@ public class JacksonSdkTypeTest {
         SdkBindingDataFactory.of(t),
         SdkBindingDataFactory.of(d),
         SdkBindingDataFactory.of(blob),
+        SdkBindingDataFactory.of(binary),
         SdkBindingDataFactory.of(JacksonSdkLiteralType.of(Nested.class), generic),
         SdkBindingDataFactory.ofStringCollection(l),
         SdkBindingDataFactory.of(SdkLiteralTypes.blobs(BLOB_TYPE), lb),
+        SdkBindingDataFactory.of(SdkLiteralTypes.binary(), lbinary),
         SdkBindingDataFactory.of(JacksonSdkLiteralType.of(Nested.class), lg),
         SdkBindingDataFactory.ofStringMap(m),
         SdkBindingDataFactory.of(SdkLiteralTypes.blobs(BLOB_TYPE), mb),
+        SdkBindingDataFactory.of(SdkLiteralTypes.binary(), mbinary),
         SdkBindingDataFactory.of(JacksonSdkLiteralType.of(Nested.class), mg),
         SdkBindingDataFactory.of(SdkLiteralTypes.collections(SdkLiteralTypes.strings()), ll),
         SdkBindingDataFactory.of(SdkLiteralTypes.maps(SdkLiteralTypes.strings()), lm),
@@ -146,6 +160,7 @@ public class JacksonSdkTypeTest {
     literalMap.put("t", literalOf(Primitive.ofDatetime(datetime)));
     literalMap.put("d", literalOf(Primitive.ofDuration(duration)));
     literalMap.put("blob", literalOf(BLOB));
+    literalMap.put("binary", literalOf(BINARY));
     literalMap.put(
         "generic",
         literalOf(
@@ -157,12 +172,14 @@ public class JacksonSdkTypeTest {
                     Value.ofStringValue("world")))));
     literalMap.put("l", Literal.ofCollection(List.of(literalOf(Primitive.ofStringValue("123")))));
     literalMap.put("lb", Literal.ofCollection(List.of(literalOf(BLOB))));
+    literalMap.put("lbinary", Literal.ofCollection(List.of(literalOf(BINARY))));
     literalMap.put(
         "lg",
         Literal.ofCollection(
             List.of(literalOf(Struct.of(Map.of("hello", Value.ofStringValue("hello")))))));
     literalMap.put("m", Literal.ofMap(Map.of("marco", literalOf(Primitive.ofStringValue("polo")))));
     literalMap.put("mb", Literal.ofMap(Map.of("blob", literalOf(BLOB))));
+    literalMap.put("mbinary", Literal.ofMap(Map.of("binary", literalOf(BINARY))));
     literalMap.put(
         "mg",
         Literal.ofMap(
@@ -210,12 +227,15 @@ public class JacksonSdkTypeTest {
                 /* t= */ datetime,
                 /* d= */ duration,
                 /* blob= */ BLOB,
+                /* binary= */ BINARY,
                 /* generic= */ Nested.create("hello", "world"),
                 /* l= */ List.of("123"),
                 /* lb= */ List.of(BLOB),
+                /* lbinary= */ List.of(BINARY),
                 /* lg= */ List.of(Nested.create("hello")),
                 /* m= */ Map.of("marco", "polo"),
                 /* mb= */ Map.of("blob", BLOB),
+                /* mbinary= */ Map.of("binary", BINARY),
                 /* mg= */ Map.of("generic", Nested.create("hello")),
                 /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
                 /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
@@ -244,12 +264,15 @@ public class JacksonSdkTypeTest {
                     /* t= */ Instant.ofEpochSecond(42, 1),
                     /* d= */ Duration.ofSeconds(1, 42),
                     /* blob= */ BLOB,
+                    /* binary= */ BINARY,
                     /* generic= */ Nested.create("hello"),
                     /* l= */ List.of("foo"),
                     /* lb= */ List.of(BLOB),
+                    /* lbinary= */ List.of(BINARY),
                     /* lg= */ List.of(Nested.create("hello")),
                     /* m= */ Map.of("marco", "polo"),
                     /* mb= */ Map.of("blob", BLOB),
+                    /* mbinary= */ Map.of("binary", BINARY),
                     /* mg= */ Map.of("generic", Nested.create("hello")),
                     /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
                     /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
@@ -311,7 +334,8 @@ public class JacksonSdkTypeTest {
                                     "pi", stringLiteralOf("3.14"), "e", stringLiteralOf("2.72"))),
                             "pokemon",
                             Literal.ofMap(Map.of("ash", stringLiteralOf("pikachu")))))),
-                hasEntry("blob", literalOf(BLOB)))));
+                hasEntry("blob", literalOf(BLOB)),
+                hasEntry("binary", literalOf(BINARY)))));
   }
 
   @Test
@@ -325,12 +349,15 @@ public class JacksonSdkTypeTest {
             /* t= */ Instant.ofEpochSecond(42, 1),
             /* d= */ Duration.ofSeconds(1, 42),
             /* blob= */ BLOB,
+            /* binary= */ BINARY,
             /* generic= */ Nested.create("hello"),
             /* l= */ List.of("foo"),
             /* lb= */ List.of(BLOB),
+            /* lbinary= */ List.of(BINARY),
             /* lg= */ List.of(Nested.create("hello")),
             /* m= */ Map.of("marco", "polo"),
             /* mb= */ Map.of("blob", BLOB),
+            /* mbinary= */ Map.of("binary", BINARY),
             /* mg= */ Map.of("generic", Nested.create("hello")),
             /* ll= */ List.of(List.of("foo", "bar"), List.of("a", "b", "c")),
             /* lm= */ List.of(Map.of("A", "a", "B", "b"), Map.of("a", "A", "b", "B")),
@@ -349,12 +376,15 @@ public class JacksonSdkTypeTest {
     expected.put("t", input.t());
     expected.put("d", input.d());
     expected.put("blob", input.blob());
+    expected.put("binary", input.binary());
     expected.put("generic", input.generic());
     expected.put("l", input.l());
     expected.put("lb", input.lb());
+    expected.put("lbinary", input.lbinary());
     expected.put("lg", input.lg());
     expected.put("m", input.m());
     expected.put("mb", input.mb());
+    expected.put("mbinary", input.mbinary());
     expected.put("mg", input.mg());
     expected.put("ll", input.ll());
     expected.put("lm", input.lm());
@@ -578,17 +608,23 @@ public class JacksonSdkTypeTest {
 
     public abstract SdkBindingData<Blob> blob();
 
+    public abstract SdkBindingData<Binary> binary();
+
     public abstract SdkBindingData<Nested> generic();
 
     public abstract SdkBindingData<List<String>> l();
 
     public abstract SdkBindingData<List<Blob>> lb();
 
+    public abstract SdkBindingData<List<Binary>> lbinary();
+
     public abstract SdkBindingData<List<Nested>> lg();
 
     public abstract SdkBindingData<Map<String, String>> m();
 
     public abstract SdkBindingData<Map<String, Blob>> mb();
+
+    public abstract SdkBindingData<Map<String, Binary>> mbinary();
 
     public abstract SdkBindingData<Map<String, Nested>> mg();
 
@@ -608,19 +644,23 @@ public class JacksonSdkTypeTest {
         SdkBindingData<Instant> t,
         SdkBindingData<Duration> d,
         SdkBindingData<Blob> blob,
+        SdkBindingData<Binary> binary,
         SdkBindingData<Nested> generic,
         SdkBindingData<List<String>> l,
         SdkBindingData<List<Blob>> lb,
+        SdkBindingData<List<Binary>> lbinary,
         SdkBindingData<List<Nested>> lg,
         SdkBindingData<Map<String, String>> m,
         SdkBindingData<Map<String, Blob>> mb,
+        SdkBindingData<Map<String, Binary>> mbinary,
         SdkBindingData<Map<String, Nested>> mg,
         SdkBindingData<List<List<String>>> ll,
         SdkBindingData<List<Map<String, String>>> lm,
         SdkBindingData<Map<String, List<String>>> ml,
         SdkBindingData<Map<String, Map<String, String>>> mm) {
       return new AutoValue_JacksonSdkTypeTest_AutoValueInput(
-          i, f, s, b, t, d, blob, generic, l, lb, lg, m, mb, mg, ll, lm, ml, mm);
+          i, f, s, b, t, d, blob, binary, generic, l, lb, lbinary, lg, m, mb, mbinary, mg, ll, lm,
+          ml, mm);
     }
   }
 
@@ -725,6 +765,10 @@ public class JacksonSdkTypeTest {
 
   private static Literal literalOf(Blob blob) {
     return Literal.ofScalar(Scalar.ofBlob(blob));
+  }
+
+  private static Literal literalOf(Binary binary) {
+    return Literal.ofScalar(Scalar.ofBinary(binary));
   }
 
   private static Literal literalOf(Struct generic) {

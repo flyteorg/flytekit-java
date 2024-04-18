@@ -25,7 +25,8 @@ public abstract class Scalar {
   public enum Kind {
     PRIMITIVE,
     GENERIC,
-    BLOB
+    BLOB,
+    BINARY
   }
 
   public abstract Kind kind();
@@ -35,6 +36,8 @@ public abstract class Scalar {
   public abstract Struct generic();
 
   public abstract Blob blob();
+
+  public abstract Binary binary();
 
   // TODO: add the rest of the cases from src/main/proto/flyteidl/core/literals.proto
 
@@ -48,5 +51,9 @@ public abstract class Scalar {
 
   public static Scalar ofBlob(Blob blob) {
     return AutoOneOf_Scalar.blob(blob);
+  }
+
+  public static Scalar ofBinary(Binary binary) {
+    return AutoOneOf_Scalar.binary(binary);
   }
 }

@@ -174,6 +174,11 @@ object SdkBindingDataConverters {
               SdkScalaLiteralTypes.durations(),
               jf.Function.identity()
             )
+          case SimpleType.BINARY =>
+            TypeCastingResult(
+              SdkScalaLiteralTypes.binary(),
+              jf.Function.identity()
+            )
         }
       case LiteralType.Kind.BLOB_TYPE =>
         TypeCastingResult(

@@ -36,14 +36,12 @@ import org.flyte.flytekit.{
   SdkBindingData,
   SdkBindingDataFactory => SdkJavaBindingDataFactory
 }
-import org.flyte.flytekitscala.SdkBindingDataFactory
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
 import org.junit.jupiter.api.Test
 import org.flyte.examples.AllInputsTask.{AutoAllInputsInput, Nested}
 import org.flyte.flytekit.jackson.JacksonSdkLiteralType
 import org.flyte.flytekitscala.SdkLiteralTypes.{
   __TYPE,
-  blobs,
   collections,
   maps,
   strings

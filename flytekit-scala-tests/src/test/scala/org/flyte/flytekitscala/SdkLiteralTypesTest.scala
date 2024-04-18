@@ -16,8 +16,7 @@
  */
 package org.flyte.flytekitscala
 
-import org.flyte.api.v1.{Blob, BlobType}
-import org.flyte.api.v1.BlobType.BlobDimensionality
+import org.flyte.api.v1.{Binary, Blob, BlobType}
 import org.flyte.flytekit.SdkLiteralType
 import org.flyte.flytekitscala.SdkLiteralTypes.{of, _}
 import org.junit.jupiter.api.Assertions.{assertEquals, assertThrows}
@@ -67,6 +66,7 @@ class TestOfReturnsProperTypeProvider extends ArgumentsProvider {
       Arguments.of(datetimes(), of[Instant]()),
       Arguments.of(durations(), of[Duration]()),
       Arguments.of(blobs(BlobType.DEFAULT), of[Blob]()),
+      Arguments.of(binary(), of[Binary]()),
       Arguments.of(generics(), of[ScalarNested]()),
       Arguments.of(collections(integers()), of[List[Long]]()),
       Arguments.of(collections(floats()), of[List[Double]]()),

@@ -119,7 +119,7 @@
     <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
     <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
     <mockito.version>3.3.3</mockito.version>
-    <scala212.version>2.12.18</scala212.version>
+    <scala212.version>2.13.13</scala212.version>
     <scala213.version>2.13.13</scala213.version>
     <magnolia.version>1.0.0-M4</magnolia.version>
   </properties>

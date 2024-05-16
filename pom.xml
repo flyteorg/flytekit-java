@@ -97,13 +97,13 @@
      -->
     <auto-service.version>1.1.1</auto-service.version>
     <auto-value.version>1.10.4</auto-value.version>
-    <common-proto.version>2.30.0</common-proto.version>
+    <common-proto.version>2.36.0</common-proto.version>
     <grpc.version>1.59.1</grpc.version>
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
     <picocli.version>4.7.5</picocli.version>
-    <protobuf.version>3.25.1</protobuf.version>
+    <protobuf.version>3.25.2</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
     <!-- also remember to bump the version in flytekit-bom module -->
     <spotless.version>2.21.0</spotless.version>

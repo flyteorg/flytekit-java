@@ -108,7 +108,7 @@
     <!-- also remember to bump the version in flytekit-bom module -->
     <spotless.version>2.21.0</spotless.version>
     <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
-    <error_prone.version>2.24.0</error_prone.version>
+    <error_prone.version>2.26.1</error_prone.version>
     <junit.version>5.7.0</junit.version>
 
     <!-- has to be one liner, or errorprone doesn't work -->

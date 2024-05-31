@@ -102,7 +102,7 @@
     <!-- must be aligned with netty version -->
     <!-- see: https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty -->
     <netty.tcnative.version>2.0.52.Final</netty.tcnative.version>
-    <picocli.version>4.7.5</picocli.version>
+    <picocli.version>4.7.6</picocli.version>
     <protobuf.version>3.25.2</protobuf.version>
     <sl4j.version>1.7.36</sl4j.version>
     <!-- also remember to bump the version in flytekit-bom module -->
@@ -512,7 +512,7 @@
                 <version>1.8</version>
                 <style>GOOGLE</style>
               </googleJavaFormat>
-              <removeUnusedImports />
+              <removeUnusedImports/>
             </java>
             <scala>
               <scalafmt>
@@ -580,7 +580,7 @@
                   <include>**/src/**.xml</include>
                 </includes>
                 <!-- Files must end with a newline -->
-                <endWithNewline />
+                <endWithNewline/>
               </format>
             </formats>
           </configuration>
@@ -724,7 +724,7 @@
                   <requireMavenVersion>
                     <version>[3.5.4,)</version>
                   </requireMavenVersion>
-                  <requireUpperBoundDeps />
+                  <requireUpperBoundDeps/>
                 </rules>
               </configuration>
             </execution>

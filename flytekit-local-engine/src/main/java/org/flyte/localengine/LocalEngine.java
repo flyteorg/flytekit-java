@@ -102,7 +102,9 @@ public class LocalEngine {
     Map<String, Literal> previous = nodeOutputs.put(executionNode.nodeId(), outputs);
 
     if (previous != null) {
-      throw new IllegalStateException("invariant failed");
+      throw new IllegalStateException(
+          String.format(
+              "invariant failed: node with same %s has already ran", executionNode.nodeId()));
     }
 
     executionListener.completed(executionNode, inputs, outputs);

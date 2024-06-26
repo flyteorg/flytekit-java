@@ -113,6 +113,7 @@ import org.flyte.api.v1.WorkflowTemplate;
 /** Utility to serialize between flytekit-api and flyteidl proto. */
 @SuppressWarnings("PreferJavaTimeOverload")
 public class ProtoUtil {
+
   public static final String RUNTIME_FLAVOR = "java";
   public static final String RUNTIME_VERSION = "0.0.1";
 
@@ -716,6 +717,8 @@ public class ProtoUtil {
             .setWorkflowId(ProtoUtil.serialize(launchPlan.workflowId()))
             .setFixedInputs(ProtoUtil.serialize(launchPlan.fixedInputs()))
             .setDefaultInputs(ProtoUtil.serializeParameters(launchPlan.defaultInputs()));
+
+    launchPlan.maxParallelism().ifPresent(specBuilder::setMaxParallelism);
 
     if (launchPlan.cronSchedule() != null) {
       ScheduleOuterClass.Schedule schedule = ProtoUtil.serialize(launchPlan.cronSchedule());

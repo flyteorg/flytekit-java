@@ -42,7 +42,7 @@ public abstract class LaunchPlan {
   public abstract Map<String, Parameter> defaultInputs();
 
   /**
-   * Controls the maximum number of tasknodes that can be run in parallel for the entire workflow
+   * Controls the maximum number of tasknodes that can be run in parallel for the entire workflow.
    */
   public abstract Optional<Integer> maxParallelism();
 

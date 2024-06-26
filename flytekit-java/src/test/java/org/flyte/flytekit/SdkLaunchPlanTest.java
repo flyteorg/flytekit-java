@@ -31,6 +31,7 @@ import com.google.auto.value.AutoValue;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Literal;
@@ -89,6 +90,14 @@ class SdkLaunchPlanTest {
     assertThat(plan.cronSchedule(), notNullValue());
     assertThat(plan.cronSchedule().schedule(), equalTo("*/5 * * * *"));
     assertThat(plan.cronSchedule().offset(), equalTo(Duration.ofHours(1)));
+  }
+
+  @Test
+  void shouldCreateLaunchPlanWithMaxParallelism() {
+    SdkLaunchPlan plan = SdkLaunchPlan.of(new TestWorkflow()).withMaxParallelism(Optional.of(123));
+
+    assertThat(plan.maxParallelism(), notNullValue());
+    assertThat(plan.maxParallelism().get(), equalTo(123));
   }
 
   @Test

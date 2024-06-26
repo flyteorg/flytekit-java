@@ -96,7 +96,8 @@ public class SdkLaunchPlanRegistrar extends LaunchPlanRegistrar {
                 .name(sdkLaunchPlan.name())
                 .workflowId(getWorkflowIdentifier(sdkLaunchPlan))
                 .fixedInputs(sdkLaunchPlan.fixedInputs())
-                .defaultInputs(sdkLaunchPlan.defaultInputs());
+                .defaultInputs(sdkLaunchPlan.defaultInputs())
+                .maxParallelism(sdkLaunchPlan.maxParallelism());
 
         if (sdkLaunchPlan.cronSchedule() != null) {
           builder.cronSchedule(getCronSchedule(sdkLaunchPlan.cronSchedule()));

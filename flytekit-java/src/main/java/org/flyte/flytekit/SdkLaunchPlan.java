@@ -328,17 +328,14 @@ public abstract class SdkLaunchPlan {
   }
 
   /**
-   *
-   * @param maxParallelism Optional Integer for the max parallelism (cannot be negative).
-   *                       Default Value: Empty, it will default to what's set in the Flyte Platform.
-   *                       0: It will try to use as much as allowed.
+   * @param maxParallelism Optional Integer for the max parallelism (cannot be negative). Default
+   *     Value: Empty, it will default to what's set in the Flyte Platform. 0: It will try to use as
+   *     much as allowed.
    * @return the new launch plan
    */
   public SdkLaunchPlan withMaxParallelism(Optional<Integer> maxParallelism) {
     return withMaxParallelism0(maxParallelism);
   }
-
-
 
   private SdkLaunchPlan withDefaultInputs0(Map<String, Parameter> newDefaultInputs) {
 
@@ -412,8 +409,6 @@ public abstract class SdkLaunchPlan {
       }
     }
   }
-
-
 
   static Builder builder() {
     return new AutoValue_SdkLaunchPlan.Builder()

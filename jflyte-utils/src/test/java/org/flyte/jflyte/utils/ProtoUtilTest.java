@@ -25,6 +25,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.flyte.jflyte.utils.ProtoUtil.serialize;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,6 +39,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
+import flyteidl.admin.LaunchPlanOuterClass.LaunchPlanSpec;
 import flyteidl.admin.ScheduleOuterClass;
 import flyteidl.core.Condition;
 import flyteidl.core.DynamicJob;
@@ -56,6 +58,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.flyte.api.v1.Binary;
 import org.flyte.api.v1.Binding;
@@ -75,6 +78,7 @@ import org.flyte.api.v1.Identifier;
 import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.IfElseBlock;
 import org.flyte.api.v1.KeyValuePair;
+import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.LiteralType;
@@ -990,6 +994,27 @@ class ProtoUtilTest {
   }
 
   @Test
+  public void shouldSerializeLaunchPlanMaxParallelism() {
+    Optional<Integer> maxParallelism = Optional.of(10);
+    LaunchPlan launchPlan =
+        LaunchPlan.builder()
+            .name("name")
+            .workflowId(
+                PartialWorkflowIdentifier.builder()
+                    .project("test-project")
+                    .domain("test-domain")
+                    .version("a-version")
+                    .name("name")
+                    .build())
+            .maxParallelism(maxParallelism)
+            .build();
+
+    LaunchPlanSpec res = serialize(launchPlan);
+
+    assertThat(res.getMaxParallelism(), equalTo(10));
+  }
+
+  @Test
   public void shouldSerializeCronScheduleNoOffset() {
     CronSchedule cronSchedule = CronSchedule.builder().schedule("* * */5 * *").build();
 
@@ -1252,7 +1277,7 @@ class ProtoUtilTest {
                         Resources.ResourceName.CPU, "8", Resources.ResourceName.MEMORY, "32G"))
                 .build());
 
-    Tasks.Container actual = ProtoUtil.serialize(container);
+    Tasks.Container actual = serialize(container);
 
     assertThat(
         actual,
@@ -1296,7 +1321,7 @@ class ProtoUtilTest {
                 .limits(ImmutableMap.of(Resources.ResourceName.CPU, quantity))
                 .build());
 
-    Tasks.Container actual = ProtoUtil.serialize(container);
+    Tasks.Container actual = serialize(container);
 
     assertThat(
         actual,
@@ -1326,7 +1351,7 @@ class ProtoUtilTest {
                 .build());
 
     IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> ProtoUtil.serialize(container));
+        assertThrows(IllegalArgumentException.class, () -> serialize(container));
 
     assertEquals(
         "Resource requests [CPU] has invalid quantity: " + quantity, exception.getMessage());

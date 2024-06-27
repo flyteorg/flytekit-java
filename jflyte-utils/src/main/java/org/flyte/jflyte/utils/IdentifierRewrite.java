@@ -112,6 +112,7 @@ public abstract class IdentifierRewrite {
         .defaultInputs(launchPlan.defaultInputs())
         .workflowId(apply(launchPlan.workflowId()))
         .cronSchedule(launchPlan.cronSchedule())
+        .maxParallelism(launchPlan.maxParallelism())
         .build();
   }
 

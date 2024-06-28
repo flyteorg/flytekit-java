@@ -19,6 +19,7 @@ package org.flyte.api.v1;
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 
 /** User-provided launch plan definition and configuration values. */
@@ -39,6 +40,11 @@ public abstract class LaunchPlan {
    * created with this launch plan.
    */
   public abstract Map<String, Parameter> defaultInputs();
+
+  /**
+   * Controls the maximum number of tasknodes that can be run in parallel for the entire workflow.
+   */
+  public abstract Optional<Integer> maxParallelism();
 
   @Nullable
   public abstract CronSchedule cronSchedule();
@@ -63,6 +69,8 @@ public abstract class LaunchPlan {
     public abstract Builder defaultInputs(Map<String, Parameter> defaultInputs);
 
     public abstract Builder cronSchedule(CronSchedule cronSchedule);
+
+    public abstract Builder maxParallelism(Optional<Integer> maxParallelism);
 
     public abstract LaunchPlan build();
   }

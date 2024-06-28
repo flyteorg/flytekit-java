@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.CronSchedule;
@@ -219,6 +220,7 @@ public class FlyteAdminClientTest {
     LaunchPlan launchPlan =
         LaunchPlan.builder()
             .workflowId(wfIdentifier)
+            .maxParallelism(Optional.of(20))
             .name(LP_NAME)
             .fixedInputs(
                 Collections.singletonMap(
@@ -249,6 +251,7 @@ public class FlyteAdminClientTest {
                 .setSpec(
                     LaunchPlanOuterClass.LaunchPlanSpec.newBuilder()
                         .setWorkflowId(newIdentifier(ResourceType.WORKFLOW, WF_NAME, WF_VERSION))
+                        .setMaxParallelism(20)
                         .setFixedInputs(
                             Literals.LiteralMap.newBuilder()
                                 .putLiterals(

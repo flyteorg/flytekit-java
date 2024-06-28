@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.Literal;
@@ -80,6 +81,10 @@ public abstract class SdkLaunchPlan {
   /** Returns the cron schedule of the launch plan. */
   @Nullable
   public abstract SdkCronSchedule cronSchedule();
+
+  /** Returns the max parallelism of the launch plan. */
+  @Nullable
+  public abstract Optional<Integer> maxParallelism();
 
   /**
    * Creates a launch plan for specified {@link SdkLaunchPlan} with default naming, no inputs and no
@@ -322,6 +327,16 @@ public abstract class SdkLaunchPlan {
                     v -> createParameter(v.getValue(), literalMap.get(v.getKey())))));
   }
 
+  /**
+   * @param maxParallelism Optional Integer for the max parallelism (cannot be negative). Default
+   *     Value: Empty, it will default to what's set in the Flyte Platform. 0: It will try to use as
+   *     much as allowed.
+   * @return the new launch plan
+   */
+  public SdkLaunchPlan withMaxParallelism(Optional<Integer> maxParallelism) {
+    return withMaxParallelism0(maxParallelism);
+  }
+
   private SdkLaunchPlan withDefaultInputs0(Map<String, Parameter> newDefaultInputs) {
 
     verifyNonEmptyWorkflowInput(newDefaultInputs, "default");
@@ -334,6 +349,17 @@ public abstract class SdkLaunchPlan {
         mergeInputs(defaultInputs(), newDefaultInputs, "default");
 
     return toBuilder().defaultInputs(newCompleteDefaultInputs).build();
+  }
+
+  private SdkLaunchPlan withMaxParallelism0(Optional<Integer> maxParallelism) {
+    if (maxParallelism.isPresent() && maxParallelism.get() < 0) {
+      String message =
+          String.format(
+              "invalid max parallelism %s, expected a positive integer", maxParallelism.get());
+      throw new IllegalArgumentException(message);
+    }
+
+    return toBuilder().maxParallelism(maxParallelism).build();
   }
 
   private <T> Map<String, T> mergeInputs(
@@ -388,7 +414,8 @@ public abstract class SdkLaunchPlan {
     return new AutoValue_SdkLaunchPlan.Builder()
         .fixedInputs(Collections.emptyMap())
         .defaultInputs(Collections.emptyMap())
-        .workflowInputTypeMap(Collections.emptyMap());
+        .workflowInputTypeMap(Collections.emptyMap())
+        .maxParallelism(Optional.empty());
   }
 
   abstract Builder toBuilder();
@@ -413,6 +440,8 @@ public abstract class SdkLaunchPlan {
     abstract Builder cronSchedule(SdkCronSchedule cronSchedule);
 
     abstract Builder workflowInputTypeMap(Map<String, LiteralType> workflowInputTypeMap);
+
+    abstract Builder maxParallelism(Optional<Integer> maxParallelism);
 
     abstract SdkLaunchPlan build();
   }

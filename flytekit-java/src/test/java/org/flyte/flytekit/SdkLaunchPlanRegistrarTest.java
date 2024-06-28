@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.flyte.api.v1.CronSchedule;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -138,6 +139,34 @@ class SdkLaunchPlanRegistrarTest {
   }
 
   @Test
+  void shouldTestLaunchPlansWithMaxParallelism() {
+    Map<LaunchPlanIdentifier, LaunchPlan> launchPlans =
+        registrar.load(ENV, singletonList(new TestRegistryWithMaxParallelism()));
+
+    LaunchPlanIdentifier expectedIdentifierWithOffset =
+        LaunchPlanIdentifier.builder()
+            .project("project")
+            .domain("domain")
+            .name("TestPlanScheduleWithMaxParallelism")
+            .version("version")
+            .build();
+
+    LaunchPlan planWithOffset =
+        LaunchPlan.builder()
+            .name("TestPlanScheduleWithMaxParallelism")
+            .workflowId(
+                PartialWorkflowIdentifier.builder()
+                    .name("org.flyte.flytekit.SdkLaunchPlanRegistrarTest$TestWorkflow")
+                    .build())
+            .fixedInputs(Collections.emptyMap())
+            .defaultInputs(Collections.emptyMap())
+            .maxParallelism(Optional.of(10))
+            .build();
+
+    assertThat(launchPlans, allOf(hasEntry(expectedIdentifierWithOffset, planWithOffset)));
+  }
+
+  @Test
   void shouldRejectLoadingLaunchPlanDuplicatesInSameRegistry() {
     IllegalArgumentException exception =
         assertThrows(
@@ -205,6 +234,17 @@ class SdkLaunchPlanRegistrarTest {
           SdkLaunchPlan.of(new TestWorkflow())
               .withName("TestPlanScheduleWithOffset")
               .withCronSchedule(SdkCronSchedule.of("daily", Duration.ofHours(1))));
+    }
+  }
+
+  public static class TestRegistryWithMaxParallelism implements SdkLaunchPlanRegistry {
+
+    @Override
+    public List<SdkLaunchPlan> getLaunchPlans() {
+      return Arrays.asList(
+          SdkLaunchPlan.of(new TestWorkflow())
+              .withName("TestPlanScheduleWithMaxParallelism")
+              .withMaxParallelism(Optional.of(10)));
     }
   }
 

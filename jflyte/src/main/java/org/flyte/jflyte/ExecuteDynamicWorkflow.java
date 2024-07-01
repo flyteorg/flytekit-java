@@ -24,6 +24,7 @@ import static org.flyte.jflyte.utils.MoreCollectors.toUnmodifiableList;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.flyte.api.v1.ContainerTaskRegistrar;
 import org.flyte.api.v1.DynamicJobSpec;
 import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
+import org.flyte.api.v1.IfBlock;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.NamedEntityIdentifier;
 import org.flyte.api.v1.Node;
@@ -279,6 +281,28 @@ public class ExecuteDynamicWorkflow implements Callable<Integer> {
             allTaskTemplates,
             flyteAdminClient,
             cache);
+
+    // collect task templates used by conditionals
+    spec.nodes().stream()
+        .filter(node -> node.branchNode() != null)
+        .forEach(
+            node -> {
+              List<Node> nodes = new ArrayList<>();
+              nodes.add(node.branchNode().ifElse().case_().thenNode());
+              nodes.add(node.branchNode().ifElse().elseNode());
+              nodes.addAll(
+                  node.branchNode().ifElse().other().stream()
+                      .map(IfBlock::thenNode)
+                      .collect(toList()));
+
+              collectTaskTemplates(
+                  nodes,
+                  nodesRewriter,
+                  allUsedTaskTemplates,
+                  allTaskTemplates,
+                  flyteAdminClient,
+                  cache);
+            });
 
     // collect task templates used by subworkflows
     allUsedSubWorkflows

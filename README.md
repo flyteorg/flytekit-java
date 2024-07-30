@@ -22,6 +22,7 @@
 Java/Scala library for easily authoring Flyte tasks and workflows.
 
 Current development status:
+
 - MVP features are developed
 - Missing user documentation
 - Project being tested, and collecting feedback
@@ -29,8 +30,8 @@ Current development status:
 
 To learn more about Flyte refer to:
 
- - [Flyte homepage](https://flyte.org)
- - [Flyte master repository](https://github.com/lyft/flyte)
+- [Flyte homepage](https://flyte.org)
+- [Flyte master repository](https://github.com/lyft/flyte)
 
 ## Build from source
 
@@ -49,7 +50,7 @@ mvn dependency:resolve-plugins
 
 ## How to run examples
 
-You can build und run examples yourself. 
+You can build und run examples yourself.
 
 Create `.env.local` with:
 
@@ -62,7 +63,9 @@ FLYTE_STAGING_LOCATION=s3://my-s3-bucket
 FLYTE_PLATFORM_INSECURE=True
 ```
 
-Package and run:
+**Note**: If you're registering against [the local Demo Flyte Cluster](https://docs.flyte.org/en/latest/user_guide/environment_setup.html#create-a-local-demo-flyte-cluster), you'll need to adjust the ports to align with it.
+
+Package and register:
 
 ```bash
 $ mvn package
@@ -73,10 +76,9 @@ $ scripts/jflyte register workflows \
   -cp=flytekit-examples/target/lib
 ```
 
-**Note**: `scripts/jflyte` requires `jq` to run, in adition to `docker`
+**Note**: `scripts/jflyte` requires `jq` to run, in addition to `docker`
 
 ## Usage
-
 
 ### Maven
 
@@ -84,7 +86,7 @@ $ scripts/jflyte register workflows \
 <dependency>
     <groupId>org.flyte</groupId>
     <artifactId>flytekit-java</artifactId>
-    <version>0.3.15</version>
+    <version>0.4.58</version>
 </dependency>
 ```
 
@@ -94,20 +96,20 @@ Scala 2.12 and Scala 2.13 are supported.
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.flyte" % "flytekit-java" % "0.4.35",
-  "org.flyte" %% "flytekit-scala" % "0.4.35"
+  "org.flyte" % "flytekit-java" % "0.4.58",
+  "org.flyte" %% "flytekit-scala" % "0.4.58"
 )
 ```
 
-## Contributing 
+## Contributing
 
-Run `mvn spotless:apply` before committing. 
+Run `mvn spotless:apply` before committing.
 
-Also use `git commit --signoff "Commit message"` to comply with DCO. 
+Also use `git commit --signoff "Commit message"` to comply with DCO.
 
 ## Releasing
 
-* Go to [Actions: Create flytekit-java release](https://github.com/flyteorg/flytekit-java/actions/workflows/release.yaml) and click "Run workflow"
-* Wait until the workflow finishes; in the meanwhile prepare a release note
-* Making sure the new release is visible in [Maven central](https://repo1.maven.org/maven2/org/flyte/flytekit-java/)
-* Publish the release note associating with the latest tag created by the release workflow
+- Go to [Actions: Create flytekit-java release](https://github.com/flyteorg/flytekit-java/actions/workflows/release.yaml) and click "Run workflow"
+- Wait until the workflow finishes; in the meanwhile prepare a release note
+- Making sure the new release is visible in [Maven central](https://repo1.maven.org/maven2/org/flyte/flytekit-java/)
+- Publish the release note associating with the latest tag created by the release workflow

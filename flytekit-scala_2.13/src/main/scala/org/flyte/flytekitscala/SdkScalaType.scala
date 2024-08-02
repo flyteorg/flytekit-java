@@ -232,11 +232,8 @@ object SdkScalaType {
   implicit def durationLiteralType: SdkScalaLiteralType[Duration] =
     DelegateLiteralType(SdkLiteralTypes.durations())
 
-  // more specific matching to fail the usage of SdkBindingData[Option[_]]
-  implicit def optionLiteralType: SdkScalaLiteralType[Option[_]] = ???
-
   // fixme: using Product is just an approximation for case class because Product
-  // is also super class of, for example, Option and Tuple
+  // is also super class of, for example, Either or Try
   implicit def productLiteralType[T <: Product: TypeTag: ClassTag]
       : SdkScalaLiteralType[T] =
     DelegateLiteralType(SdkLiteralTypes.generics())

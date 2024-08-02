@@ -95,7 +95,9 @@ class SdkScalaTypeTest {
       datetime: SdkBindingData[Instant],
       duration: SdkBindingData[Duration],
       blob: SdkBindingData[Blob],
-      generic: SdkBindingData[ScalarNested]
+      generic: SdkBindingData[ScalarNested],
+      none: SdkBindingData[Option[String]],
+      some: SdkBindingData[Option[String]]
   )
 
   case class CollectionInput(
@@ -105,7 +107,8 @@ class SdkScalaTypeTest {
       booleans: SdkBindingData[List[Boolean]],
       datetimes: SdkBindingData[List[Instant]],
       durations: SdkBindingData[List[Duration]],
-      generics: SdkBindingData[List[ScalarNested]]
+      generics: SdkBindingData[List[ScalarNested]],
+      options: SdkBindingData[List[Option[String]]]
   )
 
   case class MapInput(
@@ -115,7 +118,8 @@ class SdkScalaTypeTest {
       booleanMap: SdkBindingData[Map[String, Boolean]],
       datetimeMap: SdkBindingData[Map[String, Instant]],
       durationMap: SdkBindingData[Map[String, Duration]],
-      genericMap: SdkBindingData[Map[String, ScalarNested]]
+      genericMap: SdkBindingData[Map[String, ScalarNested]],
+      optionMap: SdkBindingData[Map[String, Option[String]]]
   )
 
   case class ComplexInput(
@@ -196,7 +200,9 @@ class SdkScalaTypeTest {
         .literalType(LiteralType.ofBlobType(BlobType.DEFAULT))
         .description("")
         .build(),
-      "generic" -> createVar(SimpleType.STRUCT)
+      "generic" -> createVar(SimpleType.STRUCT),
+      "none" -> createVar(SimpleType.STRUCT),
+      "some" -> createVar(SimpleType.STRUCT)
     ).asJava
 
     val output = SdkScalaType[ScalarInput].getVariableMap
@@ -274,6 +280,16 @@ class SdkScalaTypeTest {
             ).asJava
           )
         )
+      ),
+      "none" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(Map.empty[String, Struct.Value].asJava)
+        )
+      ),
+      "some" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(Map("value" -> Struct.Value.ofStringValue("hello")).asJava)
+        )
       )
     ).asJava
 
@@ -295,6 +311,14 @@ class SdkScalaTypeTest {
             List(ScalarNestedNested("foo", Some("bar"))),
             Map("foo" -> ScalarNestedNested("foo", Some("bar")))
           )
+        ),
+        none = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics[Option[String]](),
+          Option(null)
+        ),
+        some = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics[Option[String]](),
+          Option("hello")
         )
       )
 
@@ -323,7 +347,11 @@ class SdkScalaTypeTest {
             List(ScalarNestedNested("foo", Some("bar"))),
             Map("foo" -> ScalarNestedNested("foo", Some("bar")))
           )
-        )
+        ),
+        none =
+          SdkBindingDataFactory.of(SdkLiteralTypes.generics(), Option(null)),
+        some =
+          SdkBindingDataFactory.of(SdkLiteralTypes.generics(), Option("hello"))
       )
 
     val expected = Map(
@@ -399,6 +427,23 @@ class SdkScalaTypeTest {
             ).asJava
           )
         )
+      ),
+      "none" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(
+            Map(__TYPE -> Struct.Value.ofStringValue("scala.None$")).asJava
+          )
+        )
+      ),
+      "some" -> Literal.ofScalar(
+        Scalar.ofGeneric(
+          Struct.of(
+            Map(
+              "value" -> Struct.Value.ofStringValue("hello"),
+              __TYPE -> Struct.Value.ofStringValue("scala.Some")
+            ).asJava
+          )
+        )
       )
     ).asJava
 
@@ -416,7 +461,8 @@ class SdkScalaTypeTest {
       "booleans" -> createCollectionVar(SimpleType.BOOLEAN),
       "datetimes" -> createCollectionVar(SimpleType.DATETIME),
       "durations" -> createCollectionVar(SimpleType.DURATION),
-      "generics" -> createCollectionVar(SimpleType.STRUCT)
+      "generics" -> createCollectionVar(SimpleType.STRUCT),
+      "options" -> createCollectionVar(SimpleType.STRUCT)
     ).asJava
 
     val output = SdkScalaType[CollectionInput].getVariableMap
@@ -443,6 +489,14 @@ class SdkScalaTypeTest {
           List(ScalarNestedNested("foo", Some("bar"))),
           Map("foo" -> ScalarNestedNested("foo", Some("bar")))
         )
+      ),
+      none = SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics[Option[String]](),
+        Option(null)
+      ),
+      some = SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics[Option[String]](),
+        Option("hello")
       )
     )
 
@@ -465,6 +519,14 @@ class SdkScalaTypeTest {
           List(ScalarNestedNested("foo", Some("bar"))),
           Map("foo" -> ScalarNestedNested("foo", Some("bar")))
         )
+      ),
+      "none" -> SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics[Option[String]](),
+        Option(null)
+      ),
+      "some" -> SdkBindingDataFactory.of(
+        SdkLiteralTypes.generics[Option[String]](),
+        Option("hello")
       )
     ).asJava
 
@@ -531,6 +593,10 @@ class SdkScalaTypeTest {
               Map("foo2" -> ScalarNestedNested("foo2", Some("bar2")))
             )
           )
+        ),
+        options = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics[Option[String]](),
+          List(Option("hello"), Option(null))
         )
       )
 
@@ -550,7 +616,8 @@ class SdkScalaTypeTest {
       "booleanMap" -> createMapVar(SimpleType.BOOLEAN),
       "datetimeMap" -> createMapVar(SimpleType.DATETIME),
       "durationMap" -> createMapVar(SimpleType.DURATION),
-      "genericMap" -> createMapVar(SimpleType.STRUCT)
+      "genericMap" -> createMapVar(SimpleType.STRUCT),
+      "optionMap" -> createMapVar(SimpleType.STRUCT)
     ).asJava
 
     val output = SdkScalaType[MapInput].getVariableMap
@@ -598,6 +665,10 @@ class SdkScalaTypeTest {
               Map("foo2" -> ScalarNestedNested("foo2", Some("bar2")))
             )
           )
+        ),
+        optionMap = SdkBindingDataFactory.of(
+          SdkLiteralTypes.generics[Option[String]](),
+          Map("none" -> Option(null), "some" -> Option("hello"))
         )
       )
 

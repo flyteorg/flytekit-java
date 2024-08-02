@@ -68,6 +68,71 @@ message WorkflowNode {
     }
 }
 
+// ApproveCondition represents a dependency on an external approval. During execution, this will manifest as a boolean
+// signal with the provided signal_id.
+message ApproveCondition {
+    // A unique identifier for the requested boolean signal.
+    string signal_id = 1;
+}
+
+// SignalCondition represents a dependency on an signal.
+message SignalCondition {
+    // A unique identifier for the requested signal.
+    string signal_id = 1;
+
+    // A type denoting the required value type for this signal.
+    LiteralType type = 2;
+
+    // The variable name for the signal value in this nodes outputs.
+    string output_variable_name = 3;
+}
+
+// SleepCondition represents a dependency on waiting for the specified duration.
+message SleepCondition {
+    // The overall duration for this sleep.
+    google.protobuf.Duration duration = 1;
+}
+
+// GateNode refers to the condition that is required for the gate to successfully complete.
+message GateNode {
+    oneof condition {
+        // ApproveCondition represents a dependency on an external approval provided by a boolean signal.
+        ApproveCondition approve = 1;
+
+        // SignalCondition represents a dependency on an signal.
+        SignalCondition signal = 2;
+
+        // SleepCondition represents a dependency on waiting for the specified duration.
+        SleepCondition sleep = 3;
+    }
+}
+
+// ArrayNode is a Flyte node type that simplifies the execution of a sub-node over a list of input
+// values. An ArrayNode can be executed with configurable parallelism (separate from the parent
+// workflow) and can be configured to succeed when a certain number of sub-nodes succeed.
+message ArrayNode {
+    // node is the sub-node that will be executed for each element in the array.
+    Node node = 1;
+
+    // parallelism defines the minimum number of instances to bring up concurrently at any given
+    // point. Note that this is an optimistic restriction and that, due to network partitioning or
+    // other failures, the actual number of currently running instances might be more. This has to
+    // be a positive number if assigned. Default value is size.
+    uint32 parallelism = 2;
+
+    oneof success_criteria {
+        // min_successes is an absolute number of the minimum number of successful completions of
+        // sub-nodes. As soon as this criteria is met, the ArrayNode will be marked as successful
+        // and outputs will be computed. This has to be a non-negative number if assigned. Default
+        // value is size (if specified).
+        uint32 min_successes = 3;
+
+        // If the array job size is not known beforehand, the min_success_ratio can instead be used
+        // to determine when an ArrayNode can be marked successful.
+        float min_success_ratio = 4;
+    }
+}
+
 // Defines extra information about the Node.
 message NodeMetadata {
     // A friendly name for the Node
@@ -129,6 +194,13 @@ message Node {
 
         // Information about the branch node to evaluate in this node.
         BranchNode branch_node = 8;
+
+        // Information about the condition to evaluate in this node.
+        GateNode gate_node = 9;
+
+        // Information about the sub-node executions for each value in the list of this nodes
+        // inputs values.
+        ArrayNode array_node = 10;
     }
 }
 
@@ -154,6 +226,9 @@ message WorkflowMetadata {
 
     // Defines how the system should behave when a failure is detected in the workflow execution.
     OnFailurePolicy on_failure = 2;
+
+    // Arbitrary tags that allow users and the platform to store small but arbitrary labels
+    map<string, string> tags = 3; 
 }
 
 // The difference between these settings and the WorkflowMetadata ones is that these are meant to be passed down to

@@ -129,6 +129,10 @@ class TestOfReturnsProperTypeProvider extends ArgumentsProvider {
       Arguments.of(
         collections(maps(durations())),
         of[List[Map[String, Duration]]]()
+      ),
+      Arguments.of(
+        collections(maps(collections(maps(collections(strings()))))),
+        of[List[Map[String, List[Map[String, List[String]]]]]]()
       )
     )
   }
@@ -142,11 +146,7 @@ class testOfThrowExceptionsForUnsupportedTypesProvider
     Stream.of(
       Arguments
         .of("java type, must use java factory", () => of[java.lang.Long]()),
-      Arguments.of("not a supported type", () => of[Object]()),
-      Arguments.of(
-        "triple nesting not supported in of",
-        () => of[List[List[List[Long]]]]()
-      )
+      Arguments.of("not a supported type", () => of[Object]())
     )
   }
 }

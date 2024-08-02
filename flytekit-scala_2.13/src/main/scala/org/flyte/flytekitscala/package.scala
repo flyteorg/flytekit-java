@@ -30,7 +30,11 @@ package object flytekitscala {
     } catch {
       case _: Throwable =>
         // fall back to java's way, less reliable and with limitations
-        product.getClass.getDeclaredFields.map(_.getName).toList
+        val methodNames = product.getClass.getDeclaredMethods.map(_.getName)
+        product.getClass.getDeclaredFields
+          .map(_.getName)
+          .filter(methodNames.contains)
+          .toList
     }
   }
 }

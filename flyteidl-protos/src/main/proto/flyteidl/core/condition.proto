@@ -11,17 +11,13 @@ import "flyteidl/core/literals.proto";
 message ComparisonExpression {
     // Binary Operator for each expression
     enum Operator {
-        // Equal to
         EQ = 0;
-        // Not equal to
         NEQ = 1;
         // Greater Than
         GT = 2;
-        // Greater than or equal to
         GTE = 3;
         // Less Than
         LT = 4;
-        // Less than or equal to
         LTE = 5;
     }
 
@@ -34,9 +30,11 @@ message ComparisonExpression {
 message Operand {
     oneof val {
         // Can be a constant
-        core.Primitive primitive = 1;
+        core.Primitive primitive = 1 [deprecated = true];
         // Or one of this node's input variables
         string var = 2;
+        // Replace the primitive field
+        core.Scalar scalar = 3;
     }
 }
 
@@ -56,7 +54,6 @@ message ConjunctionExpression {
     enum LogicalOperator {
         // Conjunction
         AND = 0;
-        // Disjunction
         OR = 1;
     }
 

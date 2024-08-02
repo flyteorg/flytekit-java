@@ -77,7 +77,6 @@ message StructuredDataset {
     StructuredDatasetMetadata metadata = 2;
 }
 
-// A simple value.
 message Scalar {
     oneof value {
         Primitive primitive = 1;

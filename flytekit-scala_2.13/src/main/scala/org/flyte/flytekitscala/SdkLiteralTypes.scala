@@ -28,6 +28,7 @@ import scala.reflect.api.{Mirror, TypeCreator, Universe}
 import scala.reflect.runtime.universe
 import scala.reflect.{ClassTag, classTag}
 import scala.reflect.runtime.universe.{
+  ClassSymbol,
   NoPrefix,
   Symbol,
   Type,
@@ -73,7 +74,7 @@ object SdkLiteralTypes {
         blobs(BlobType.DEFAULT).asInstanceOf[SdkLiteralType[T]]
       case t if t =:= typeOf[Binary] =>
         binary().asInstanceOf[SdkLiteralType[T]]
-      case t if t <:< typeOf[Product] && !(t =:= typeOf[Option[_]]) =>
+      case t if t <:< typeOf[Product] =>
         generics().asInstanceOf[SdkLiteralType[T]]
 
       case t if t <:< typeOf[List[Any]] =>
@@ -301,23 +302,37 @@ object SdkLiteralTypes {
       }
 
       val clazz = typeOf[S].typeSymbol.asClass
-      val classMirror = mirror.reflectClass(clazz)
-      val constructor = typeOf[S].decl(termNames.CONSTRUCTOR).asMethod
-      val constructorMirror = classMirror.reflectConstructor(constructor)
 
-      val constructorArgs =
-        constructor.paramLists.flatten.map((param: Symbol) => {
-          val paramName = param.name.toString
-          val value = map.getOrElse(
-            paramName,
-            throw new IllegalArgumentException(
-              s"Map is missing required parameter named $paramName"
+      def instantiateViaConstructor(cls: ClassSymbol): S = {
+        val classMirror = mirror.reflectClass(cls)
+        val constructor = typeOf[S].decl(termNames.CONSTRUCTOR).asMethod
+        val constructorMirror = classMirror.reflectConstructor(constructor)
+
+        val constructorArgs =
+          constructor.paramLists.flatten.map((param: Symbol) => {
+            val paramName = param.name.toString
+            val value = map.getOrElse(
+              paramName,
+              throw new IllegalArgumentException(
+                s"Map is missing required parameter named $paramName"
+              )
             )
-          )
-          valueToParamValue(value, param.typeSignature.dealias)
-        })
+            valueToParamValue(value, param.typeSignature.dealias)
+          })
 
-      constructorMirror(constructorArgs: _*).asInstanceOf[S]
+        constructorMirror(constructorArgs: _*).asInstanceOf[S]
+      }
+
+      // special handling of scala.Option as it is a Product, but can't be instantiated like common
+      // case classes
+      if (clazz.name.toString == "Option")
+        map
+          .get("value")
+          .map(valueToParamValue(_, typeOf[S].typeArgs.head))
+          .asInstanceOf[S]
+      else
+        instantiateViaConstructor(clazz)
+
     }
 
     def structValueToAny(value: Struct.Value): Any = {

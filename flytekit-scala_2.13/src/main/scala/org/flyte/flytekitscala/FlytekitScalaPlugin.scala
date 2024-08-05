@@ -1,5 +1,4 @@
 package org.flyte.flytekitscala
-
 import io.github.classgraph.{ClassGraph, ClassInfo, ClassInfoList, ScanResult}
 import sbt.Keys._
 import sbt._

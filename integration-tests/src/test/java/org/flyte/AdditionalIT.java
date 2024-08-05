@@ -31,17 +31,18 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdditionalIT extends Fixtures {
+
   @ParameterizedTest
   @CsvSource({
-    "0,0,0,0,a == b && c == d",
-    "0,1,0,0,a < b && c == d",
-    "1,0,0,0,a > b && c == d",
-    "0,0,1,0,a == b && c > d",
-    "0,1,1,0,a < b && c > d",
-    "1,0,1,0,a > b && c > d",
-    "0,0,0,1,a == b && c < d",
-    "0,1,0,1,a < b && c < d",
-    "1,0,0,1,a > b && c < d",
+      "0,0,0,0,a == b && c == d",
+      "0,1,0,0,a < b && c == d",
+      "1,0,0,0,a > b && c == d",
+      "0,0,1,0,a == b && c > d",
+      "0,1,1,0,a < b && c > d",
+      "1,0,1,0,a > b && c > d",
+      "0,0,0,1,a == b && c < d",
+      "0,1,0,1,a < b && c < d",
+      "1,0,0,1,a > b && c < d",
   })
   void testBranchNodeWorkflow(long a, long b, long c, long d, String expected) {
     Literals.LiteralMap output =
@@ -59,8 +60,8 @@ class AdditionalIT extends Fixtures {
 
   @ParameterizedTest
   @CsvSource({
-    "table-exists,true",
-    "non-existent,false",
+      "table-exists,true",
+      "non-existent,false",
   })
   void testStructs(String name, boolean expected) {
     Literals.LiteralMap output =

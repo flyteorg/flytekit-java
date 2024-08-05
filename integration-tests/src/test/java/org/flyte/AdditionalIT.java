@@ -16,14 +16,11 @@
  */
 package org.flyte;
 
-import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import flyteidl.core.Literals.LiteralMap;
 import org.flyte.utils.Literal;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -34,15 +31,15 @@ class AdditionalIT extends Fixtures {
 
   @ParameterizedTest
   @CsvSource({
-      "0,0,0,0,a == b && c == d",
-      "0,1,0,0,a < b && c == d",
-      "1,0,0,0,a > b && c == d",
-      "0,0,1,0,a == b && c > d",
-      "0,1,1,0,a < b && c > d",
-      "1,0,1,0,a > b && c > d",
-      "0,0,0,1,a == b && c < d",
-      "0,1,0,1,a < b && c < d",
-      "1,0,0,1,a > b && c < d",
+    "0,0,0,0,a == b && c == d",
+    "0,1,0,0,a < b && c == d",
+    "1,0,0,0,a > b && c == d",
+    "0,0,1,0,a == b && c > d",
+    "0,1,1,0,a < b && c > d",
+    "1,0,1,0,a > b && c > d",
+    "0,0,0,1,a == b && c < d",
+    "0,1,0,1,a < b && c < d",
+    "1,0,0,1,a > b && c < d",
   })
   void testBranchNodeWorkflow(long a, long b, long c, long d, String expected) {
     Literals.LiteralMap output =
@@ -60,8 +57,8 @@ class AdditionalIT extends Fixtures {
 
   @ParameterizedTest
   @CsvSource({
-      "table-exists,true",
-      "non-existent,false",
+    "table-exists,true",
+    "non-existent,false",
   })
   void testStructs(String name, boolean expected) {
     Literals.LiteralMap output =

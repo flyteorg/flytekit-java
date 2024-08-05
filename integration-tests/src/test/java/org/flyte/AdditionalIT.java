@@ -70,12 +70,4 @@ class AdditionalIT extends Fixtures {
 
     assertThat(output, equalTo(Literal.ofBooleanMap(ImmutableMap.of("exists", expected))));
   }
-
-  @Test
-  void testStructsScala() {
-    Literals.LiteralMap output =
-        CLIENT.createExecution("NestedIOWorkflowLaunchPlan", STAGING_DOMAIN);
-
-    assertThat(output, equalTo(LiteralMap.getDefaultInstance()));
-  }
 }

@@ -26,6 +26,5 @@ class Fixtures {
   static {
     CLIENT.registerWorkflows("integration-tests/target/lib");
     CLIENT.registerWorkflows("flytekit-examples/target/lib");
-    CLIENT.registerWorkflows("flytekit-examples-scala/target/lib", STAGING_DOMAIN);
   }
 }

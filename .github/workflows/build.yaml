@@ -36,6 +36,10 @@ jobs:
           username: ${{ secrets.FLYTE_BOT_USERNAME }}
           password: ${{ secrets.FLYTE_BOT_PAT }}
 
+      - name: Pack with SBT
+        if: ${{ github.ref != 'refs/heads/master' }}
+        run: cd flytekit-examples-scala && sbt clean package
+
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
         run: mvn --batch-mode verify -Pci

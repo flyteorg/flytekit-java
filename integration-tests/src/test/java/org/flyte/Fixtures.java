@@ -16,8 +16,6 @@
  */
 package org.flyte;
 
-import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
-
 import org.flyte.utils.FlyteSandboxClient;
 
 class Fixtures {

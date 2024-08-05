@@ -55,7 +55,6 @@
     <module>flytekit-scala-tests</module>
     <module>flytekit-testing</module>
     <module>flytekit-examples</module>
-    <module>flytekit-examples-scala</module>
     <module>flytekit-local-engine</module>
     <module>flyteidl-protos</module>
     <module>jflyte-api</module>

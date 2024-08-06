@@ -16,6 +16,8 @@
  */
 package org.flyte;
 
+import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
+
 import org.flyte.utils.FlyteSandboxClient;
 
 class Fixtures {
@@ -24,5 +26,6 @@ class Fixtures {
   static {
     CLIENT.registerWorkflows("integration-tests/target/lib");
     CLIENT.registerWorkflows("flytekit-examples/target/lib");
+    CLIENT.registerWorkflows("flytekit-examples-scala/target/pack/lib", STAGING_DOMAIN);
   }
 }

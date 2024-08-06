@@ -17,8 +17,10 @@
 package org.flyte.flytekitscala
 
 import io.github.classgraph.{ClassGraph, ClassInfo, ClassInfoList, ScanResult}
-import sbt.Keys._
-import sbt._
+import sbt.Keys.*
+import sbt.*
+import xerial.sbt.pack.PackPlugin
+import xerial.sbt.pack.PackPlugin.autoImport.{packCopyDependenciesTarget, packDir, packLibJars, packResourceDir, packTargetDir}
 
 import scala.collection.JavaConverters.*
 
@@ -36,6 +38,7 @@ object FlytekitScalaPlugin extends AutoPlugin {
   )
 
   override def trigger: PluginTrigger = noTrigger
+  override def requires: Plugins = PackPlugin
 
 
 
@@ -47,7 +50,7 @@ object FlytekitScalaPlugin extends AutoPlugin {
         "org.flyte" %% "flytekit-scala" % flyteVersion.value,
         "org.flyte" % "flytekit-testing" % flyteVersion.value % Test
       ),
-    // add flyte generated services after compilation as a jar resource
+      // add flyte generated services after compilation as a jar resource
     // note that we first have to remove potentially duplicated META-INF/services
     // files to address a failure path like:
     //   $ sbt clean pack

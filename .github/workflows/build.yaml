@@ -38,7 +38,7 @@ jobs:
 
       - name: Pack with SBT
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: cd flytekit-examples-scala && sbt clean package
+        run: cd flytekit-examples-scala && sbt compile test pack
 
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}

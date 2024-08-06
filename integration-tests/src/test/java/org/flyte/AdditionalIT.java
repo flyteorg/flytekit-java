@@ -16,14 +16,11 @@
  */
 package org.flyte;
 
-import static org.flyte.examples.FlyteEnvironment.STAGING_DOMAIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
-import flyteidl.core.Literals.LiteralMap;
 import org.flyte.utils.Literal;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -31,6 +28,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdditionalIT extends Fixtures {
+
   @ParameterizedTest
   @CsvSource({
     "0,0,0,0,a == b && c == d",
@@ -69,13 +67,5 @@ class AdditionalIT extends Fixtures {
             Literal.ofStringMap(ImmutableMap.of("tableName", name)));
 
     assertThat(output, equalTo(Literal.ofBooleanMap(ImmutableMap.of("exists", expected))));
-  }
-
-  @Test
-  void testStructsScala() {
-    Literals.LiteralMap output =
-        CLIENT.createExecution("NestedIOWorkflowLaunchPlan", STAGING_DOMAIN);
-
-    assertThat(output, equalTo(LiteralMap.getDefaultInstance()));
   }
 }

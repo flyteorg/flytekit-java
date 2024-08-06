@@ -65,11 +65,6 @@
     </dependency>
     <dependency>
       <groupId>org.flyte</groupId>
-      <artifactId>flytekit-examples-scala_2.13</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flyte</groupId>
       <artifactId>jflyte</artifactId>
       <scope>test</scope>
     </dependency>

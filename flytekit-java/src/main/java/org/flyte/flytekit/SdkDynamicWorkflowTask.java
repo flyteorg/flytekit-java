@@ -93,4 +93,8 @@ public abstract class SdkDynamicWorkflowTask<InputT, OutputT>
   public int getRetries() {
     return 0;
   }
+
+  public SdkResources getResources() {
+    return SdkResources.empty();
+  }
 }

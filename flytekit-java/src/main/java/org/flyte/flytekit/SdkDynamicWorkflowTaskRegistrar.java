@@ -33,6 +33,7 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.DynamicWorkflowTaskRegistrar;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.Node;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.RetryStrategy;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
@@ -111,6 +112,11 @@ public class SdkDynamicWorkflowTaskRegistrar extends DynamicWorkflowTaskRegistra
     @Override
     public RetryStrategy getRetries() {
       return RetryStrategy.builder().retries(sdkDynamicWorkflow.getRetries()).build();
+    }
+
+    @Override
+    public Resources getResources() {
+      return sdkDynamicWorkflow.getResources().toIdl();
     }
   }
 

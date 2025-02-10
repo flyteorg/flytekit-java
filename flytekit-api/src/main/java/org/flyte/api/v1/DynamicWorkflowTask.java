@@ -26,4 +26,8 @@ public interface DynamicWorkflowTask {
   DynamicJobSpec run(Map<String, Literal> inputs);
 
   RetryStrategy getRetries();
+
+  default Resources getResources() {
+    return Resources.builder().build();
+  }
 }

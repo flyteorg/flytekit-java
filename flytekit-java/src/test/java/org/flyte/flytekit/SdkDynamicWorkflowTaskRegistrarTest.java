@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.errorprone.annotations.Var;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.flyte.api.v1.Binding;
@@ -30,6 +31,7 @@ import org.flyte.api.v1.DynamicWorkflowTask;
 import org.flyte.api.v1.Literal;
 import org.flyte.api.v1.OutputReference;
 import org.flyte.api.v1.Primitive;
+import org.flyte.api.v1.Resources;
 import org.flyte.api.v1.Scalar;
 import org.flyte.api.v1.TaskIdentifier;
 import org.flyte.api.v1.TypedInterface;
@@ -70,6 +72,14 @@ class SdkDynamicWorkflowTaskRegistrarTest {
                 .inputs(SdkLiteralTypes.integers().asSdkType("n").getVariableMap())
                 .outputs(SdkLiteralTypes.integers().asSdkType("2n").getVariableMap())
                 .build()));
+    assertThat(
+        dynWf.getResources(),
+        equalTo(
+            Resources.builder()
+                .requests(resources("0.5", "2Gi"))
+                .limits(resources("2", "5Gi"))
+                .build()));
+    ;
     var spec =
         dynWf.run(Map.of("n", Literal.ofScalar(Scalar.ofPrimitive(Primitive.ofIntegerValue(3)))));
     assertThat(spec.nodes(), hasSize(3));
@@ -103,6 +113,14 @@ class SdkDynamicWorkflowTaskRegistrarTest {
       }
       return x;
     }
+
+    @Override
+    public SdkResources getResources() {
+      return SdkResources.builder()
+          .requests(sdkResources("0.5", "2Gi"))
+          .limits(sdkResources("2", "5Gi"))
+          .build();
+    }
   }
 
   static class Mult2 extends SdkRunnableTask<SdkBindingData<Long>, SdkBindingData<Long>> {
@@ -116,5 +134,19 @@ class SdkDynamicWorkflowTaskRegistrarTest {
     public SdkBindingData<Long> run(SdkBindingData<Long> input) {
       return SdkBindingDataFactory.of(input.get() * 2);
     }
+  }
+
+  private static Map<Resources.ResourceName, String> resources(String cpu, String memory) {
+    Map<Resources.ResourceName, String> limits = new HashMap<>();
+    limits.put(Resources.ResourceName.CPU, cpu);
+    limits.put(Resources.ResourceName.MEMORY, memory);
+    return limits;
+  }
+
+  private static Map<SdkResources.ResourceName, String> sdkResources(String cpu, String memory) {
+    Map<SdkResources.ResourceName, String> limits = new HashMap<>();
+    limits.put(SdkResources.ResourceName.CPU, cpu);
+    limits.put(SdkResources.ResourceName.MEMORY, memory);
+    return limits;
   }
 }

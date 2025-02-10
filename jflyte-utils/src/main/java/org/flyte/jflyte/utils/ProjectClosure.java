@@ -577,6 +577,7 @@ public abstract class ProjectClosure {
                     "{{.taskTemplatePath}}"))
             .image(image)
             .env(emptyList())
+            .resources(task.getResources())
             .build();
 
     return TaskTemplate.builder()

@@ -116,6 +116,42 @@ public abstract class SdkTestingExecutor {
         .build();
   }
 
+  /**
+   * Creates a new {@link SdkTestingExecutor} for testing a {@link SdkDynamicWorkflowTask}.
+   * This method wraps the given dynamic workflow task and its input into a delegating workflow,
+   * allowing the task to be executed and tested in isolation.
+   *
+   * @param task the dynamic workflow task to test
+   * @param input the input to the dynamic workflow task
+   * @param outputType the expected output type of the dynamic workflow task
+   * @param <InputT> the type of the input
+   * @param <OutputT> the type of the output
+   * @return a new {@link SdkTestingExecutor} instance
+   *
+   * <p>Example usage:
+   * <pre>{@code
+   * int expected = 6;
+   *
+   * SumIfEvenDynamicWorkflowTask.Output output =
+   *     SdkTestingExecutor.of(
+   *             new SumIfEvenDynamicWorkflowTask(),
+   *             SumIfEvenDynamicWorkflowTask.Input.create(of(2), of(4)),
+   *             JacksonSdkType.of(SumIfEvenDynamicWorkflowTask.Output.class))
+   *         .withTaskOutput(
+   *             new SumTask(),
+   *             SumTask.SumInput.create(of(2), of(4)),
+   *             SumTask.SumOutput.create(of(expected)))
+   *         .execute()
+   *         .getOutputAs(JacksonSdkType.of(SumIfEvenDynamicWorkflowTask.Output.class));
+   *
+   * assertEquals(expected, output.c().get());
+   * }</pre>
+   */
+  public static <InputT, OutputT> SdkTestingExecutor of(
+      SdkDynamicWorkflowTask<InputT, OutputT> task, InputT input, SdkType<OutputT> outputType) {
+    return of(new SdkDynamicWorkflowTaskDelegatingWorkflow<>(task, input, outputType));
+  }
+
   @AutoValue
   public abstract static class Result {
     abstract Map<String, Literal> literalMap();

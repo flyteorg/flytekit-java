@@ -117,9 +117,9 @@ public abstract class SdkTestingExecutor {
   }
 
   /**
-   * Creates a new {@link SdkTestingExecutor} for testing a {@link SdkDynamicWorkflowTask}.
-   * This method wraps the given dynamic workflow task and its input into a delegating workflow,
-   * allowing the task to be executed and tested in isolation.
+   * Creates a new {@link SdkTestingExecutor} for testing a {@link SdkDynamicWorkflowTask}. This
+   * method wraps the given dynamic workflow task and its input into a delegating workflow, allowing
+   * the task to be executed and tested in isolation.
    *
    * @param task the dynamic workflow task to test
    * @param input the input to the dynamic workflow task
@@ -127,9 +127,8 @@ public abstract class SdkTestingExecutor {
    * @param <InputT> the type of the input
    * @param <OutputT> the type of the output
    * @return a new {@link SdkTestingExecutor} instance
-   *
-   * <p>Example usage:
-   * <pre>{@code
+   *     <p>Example usage:
+   *     <pre>{@code
    * int expected = 6;
    *
    * SumIfEvenDynamicWorkflowTask.Output output =

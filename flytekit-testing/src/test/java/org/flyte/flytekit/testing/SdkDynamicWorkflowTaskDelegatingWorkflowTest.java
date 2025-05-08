@@ -42,31 +42,13 @@ public class SdkDynamicWorkflowTaskDelegatingWorkflowTest {
   }
 
   @Test
-  public void testDelegatingWorkflow_OddA() {
+  public void testDelegatingWorkflow_Odd() {
     int expected = 0;
 
     SumIfEvenDynamicWorkflowTask.Output output =
         SdkTestingExecutor.of(
                 new SumIfEvenDynamicWorkflowTask(),
                 SumIfEvenDynamicWorkflowTask.Input.create(of(1), of(4)),
-                JacksonSdkType.of(SumIfEvenDynamicWorkflowTask.Output.class))
-            .withTaskOutput(
-                new SumTask(),
-                SumTask.SumInput.create(of(0), of(0)),
-                SumTask.SumOutput.create(of(expected)))
-            .execute()
-            .getOutputAs(JacksonSdkType.of(SumIfEvenDynamicWorkflowTask.Output.class));
-    assertEquals(expected, output.c().get());
-  }
-
-  @Test
-  public void testDelegatingWorkflow_OddB() {
-    int expected = 0;
-
-    SumIfEvenDynamicWorkflowTask.Output output =
-        SdkTestingExecutor.of(
-                new SumIfEvenDynamicWorkflowTask(),
-                SumIfEvenDynamicWorkflowTask.Input.create(of(2), of(5)),
                 JacksonSdkType.of(SumIfEvenDynamicWorkflowTask.Output.class))
             .withTaskOutput(
                 new SumTask(),

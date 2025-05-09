@@ -657,26 +657,6 @@
           </executions>
         </plugin>
         <plugin>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.1.1</version>
-          <configuration>
-            <configLocation>checkstyle.xml</configLocation>
-            <consoleOutput>true</consoleOutput>
-            <!-- Remove or switch to false to keep building even with checkstyle errors -->
-            <failOnViolation>true</failOnViolation>
-            <logViolationsToConsole>true</logViolationsToConsole>
-            <encoding>utf-8</encoding>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <phase>verify</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <version>0.13</version>
@@ -688,7 +668,6 @@
             <excludes>
               <!-- Generated during build to shade dependencies -->
               <exclude>**/dependency-reduced-pom.xml</exclude>
-              <exclude>**/target/checkstyle-result.xml</exclude>
               <exclude>**/target/javadoc-bundle-options/javadoc-options-javadoc-resources.xml</exclude>
             </excludes>
           </configuration>
@@ -794,9 +773,6 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>

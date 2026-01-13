@@ -64,9 +64,9 @@ public class ExecuteLocal implements Callable<Integer> {
 
     Map<String, String> env =
         ImmutableMap.of(
-            "FLYTE_INTERNAL_DOMAIN", "development",
-            "FLYTE_INTERNAL_VERSION", "test",
-            "FLYTE_INTERNAL_PROJECT", "flytetester");
+            "FLYTE_INTERNAL_TASK_DOMAIN", "development",
+            "FLYTE_INTERNAL_TASK_VERSION", "test",
+            "FLYTE_INTERNAL_TASK_PROJECT", "flytetester");
 
     Map<String, RunnableTask> runnableTasks = ExecuteLocalLoader.loadTasks(modules, env);
     Map<String, DynamicWorkflowTask> dynamicWorkflowTasks =

@@ -501,9 +501,9 @@ class LocalEngineTest {
   private static Map<String, WorkflowTemplate> loadWorkflows() {
     Map<String, String> env =
         ImmutableMap.of(
-            "FLYTE_INTERNAL_DOMAIN", "development",
-            "FLYTE_INTERNAL_VERSION", "test",
-            "FLYTE_INTERNAL_PROJECT", "flytetester");
+            "FLYTE_INTERNAL_TASK_DOMAIN", "development",
+            "FLYTE_INTERNAL_TASK_VERSION", "test",
+            "FLYTE_INTERNAL_TASK_PROJECT", "flytetester");
 
     Map<WorkflowIdentifier, WorkflowTemplate> registrarWorkflows =
         loadAll(WorkflowTemplateRegistrar.class, env);
@@ -515,9 +515,9 @@ class LocalEngineTest {
   private static Map<String, RunnableTask> loadTasks() {
     Map<String, String> env =
         ImmutableMap.of(
-            "FLYTE_INTERNAL_DOMAIN", "development",
-            "FLYTE_INTERNAL_VERSION", "test",
-            "FLYTE_INTERNAL_PROJECT", "flytetester");
+            "FLYTE_INTERNAL_TASK_DOMAIN", "development",
+            "FLYTE_INTERNAL_TASK_VERSION", "test",
+            "FLYTE_INTERNAL_TASK_PROJECT", "flytetester");
 
     Map<TaskIdentifier, RunnableTask> registrarRunnableTasks =
         loadAll(RunnableTaskRegistrar.class, env);

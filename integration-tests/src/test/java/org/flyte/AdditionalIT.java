@@ -23,12 +23,14 @@ import static org.hamcrest.Matchers.equalTo;
 import flyteidl.core.Literals;
 import flyteidl.core.Literals.LiteralMap;
 import org.flyte.utils.Literal;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+@Disabled("flyte-sandbox v1.9.1 Helm charts are broken; needs migration to flyte-sandbox-bundled")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdditionalIT extends Fixtures {
   @ParameterizedTest

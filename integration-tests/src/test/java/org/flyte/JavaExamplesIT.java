@@ -21,10 +21,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import flyteidl.core.Literals;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+@Disabled("flyte-sandbox v1.9.1 Helm charts are broken; needs migration to flyte-sandbox-bundled")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JavaExamplesIT extends Fixtures {
   @Test

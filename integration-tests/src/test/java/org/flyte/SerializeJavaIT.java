@@ -23,10 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 
+@Disabled("flyte-sandbox v1.9.1 Helm charts are broken; needs migration to flyte-sandbox-bundled")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SerializeJavaIT extends Fixtures {
   private static final String CLASSPATH = "flytekit-examples/target/lib";
@@ -36,16 +38,14 @@ class SerializeJavaIT extends Fixtures {
   @Test
   void testSerializeWorkflows() {
     try {
-      // Path must be relative to project root since jflyte runs in a container
-      // with the project root as working directory
-      String serializePath = "integration-tests/target/protos";
-      File tempDir = new File("../" + serializePath);
-      boolean created = tempDir.mkdirs();
-      if (!created && !tempDir.exists()) {
+      File current = new File("target/protos");
+      File tempDir = managed.resolve(current.getAbsolutePath()).toFile();
+      boolean created = tempDir.mkdir();
+      if (!created) {
         throw new IOException("Unable to create path");
       }
 
-      CLIENT.serializeWorkflows(CLASSPATH, serializePath);
+      CLIENT.serializeWorkflows(CLASSPATH, tempDir.getPath());
 
       boolean hasFibonacciWorkflow =
           Stream.of(tempDir.list())

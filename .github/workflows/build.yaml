@@ -36,6 +36,45 @@ jobs:
           username: ${{ secrets.FLYTE_BOT_USERNAME }}
           password: ${{ secrets.FLYTE_BOT_PAT }}
 
+      - name: Debug flyte-sandbox-bundled container
+        if: ${{ github.ref != 'refs/heads/master' }}
+        run: |
+          set -x
+          echo "=== Docker info ==="
+          docker info
+          echo "=== Pulling image ==="
+          docker pull ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4
+          echo "=== Starting container ==="
+          docker run --privileged --tmpfs /run --tmpfs /var/run \
+            --name flyte-sandbox-debug -d \
+            ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4
+          echo "=== Waiting 120s for container ==="
+          for i in $(seq 1 12); do
+            sleep 10
+            STATUS=$(docker inspect flyte-sandbox-debug --format '{{.State.Status}}' 2>/dev/null || echo "gone")
+            echo "[$((i*10))s] Container status: $STATUS"
+            if [ "$STATUS" = "exited" ] || [ "$STATUS" = "gone" ]; then
+              echo "=== Container exited early ==="
+              docker inspect flyte-sandbox-debug 2>/dev/null || true
+              break
+            fi
+          done
+          echo "=== Container logs (stdout) ==="
+          docker logs flyte-sandbox-debug 2>/dev/null | tail -100 || true
+          echo "=== Container logs (stderr) ==="
+          docker logs flyte-sandbox-debug 2>&1 >/dev/null | tail -100 || true
+          echo "=== Entrypoint log ==="
+          docker exec flyte-sandbox-debug cat /var/log/k3d-entrypoints*.log 2>/dev/null || echo "no entrypoint log"
+          echo "=== k3s process ==="
+          docker exec flyte-sandbox-debug ps aux 2>/dev/null || echo "cannot exec"
+          echo "=== kubectl get pods ==="
+          docker exec flyte-sandbox-debug kubectl get pods -A 2>/dev/null || echo "kubectl failed"
+          echo "=== Healthcheck ==="
+          docker exec flyte-sandbox-debug wget -qO- http://localhost:30080/healthcheck 2>/dev/null || echo "healthcheck failed"
+          echo "=== Cleanup ==="
+          docker stop flyte-sandbox-debug 2>/dev/null || true
+          docker rm flyte-sandbox-debug 2>/dev/null || true
+
       - name: Verify with Maven
         if: ${{ github.ref != 'refs/heads/master' }}
         run: mvn --batch-mode verify -Pci

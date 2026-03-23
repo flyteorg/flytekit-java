@@ -45,8 +45,9 @@ jobs:
           echo "=== Pulling image ==="
           docker pull ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4
           echo "=== Starting container ==="
-          echo "=== Test 1: with --cgroupns=host ==="
+          echo "=== Test: with --add-host ==="
           docker run --privileged --cgroupns=host --tmpfs /run --tmpfs /var/run \
+            --add-host "host.docker.internal:host-gateway" \
             --name flyte-sandbox-debug -d \
             ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4
           echo "=== Waiting 120s for container ==="

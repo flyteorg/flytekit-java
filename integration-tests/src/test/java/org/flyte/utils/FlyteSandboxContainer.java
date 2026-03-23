@@ -19,13 +19,13 @@ package org.flyte.utils;
 import com.github.dockerjava.api.DockerClient;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Map;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
@@ -106,15 +106,13 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
               "jsonpath={.data.100-inline-config\\.yaml}");
 
       if (patchResult.getExitCode() != 0) {
-        throw new RuntimeException(
-            "Failed to read configmap: " + patchResult.getStderr());
+        throw new RuntimeException("Failed to read configmap: " + patchResult.getStderr());
       }
 
       String config = patchResult.getStdout();
       if (config.contains("FLYTE_PLATFORM_INSECURE: true")) {
-        String patched = config.replace(
-            "FLYTE_PLATFORM_INSECURE: true",
-            "FLYTE_PLATFORM_INSECURE: 'true'");
+        String patched =
+            config.replace("FLYTE_PLATFORM_INSECURE: true", "FLYTE_PLATFORM_INSECURE: 'true'");
 
         ExecResult applyResult =
             INSTANCE.execInContainer(
@@ -126,8 +124,7 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
                     + "' --dry-run=client -o yaml | kubectl apply -f -");
 
         if (applyResult.getExitCode() != 0) {
-          throw new RuntimeException(
-              "Failed to patch configmap: " + applyResult.getStderr());
+          throw new RuntimeException("Failed to patch configmap: " + applyResult.getStderr());
         }
 
         // Restart flyte-sandbox pod to pick up the new config

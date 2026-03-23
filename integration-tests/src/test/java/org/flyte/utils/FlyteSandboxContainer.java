@@ -19,6 +19,7 @@ package org.flyte.utils;
 import com.github.dockerjava.api.DockerClient;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -84,6 +85,71 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
       Thread.currentThread().interrupt();
       throw new RuntimeException("failed to load jflyte image", e);
     }
+
+    // The sandbox manifest has FLYTE_PLATFORM_INSECURE as a YAML boolean (true)
+    // which may not be injected correctly as a string env var. Patch the configmap
+    // to use a quoted string value and restart the flyte-sandbox pod.
+    patchInsecureEnvVar();
+  }
+
+  private static void patchInsecureEnvVar() {
+    try {
+      ExecResult patchResult =
+          INSTANCE.execInContainer(
+              "kubectl",
+              "get",
+              "configmap",
+              "-n",
+              "flyte",
+              "flyte-sandbox-config",
+              "-o",
+              "jsonpath={.data.100-inline-config\\.yaml}");
+
+      if (patchResult.getExitCode() != 0) {
+        throw new RuntimeException(
+            "Failed to read configmap: " + patchResult.getStderr());
+      }
+
+      String config = patchResult.getStdout();
+      if (config.contains("FLYTE_PLATFORM_INSECURE: true")) {
+        String patched = config.replace(
+            "FLYTE_PLATFORM_INSECURE: true",
+            "FLYTE_PLATFORM_INSECURE: 'true'");
+
+        ExecResult applyResult =
+            INSTANCE.execInContainer(
+                "sh",
+                "-c",
+                "kubectl create configmap flyte-sandbox-config -n flyte"
+                    + " --from-literal='100-inline-config.yaml="
+                    + patched.replace("'", "'\"'\"'")
+                    + "' --dry-run=client -o yaml | kubectl apply -f -");
+
+        if (applyResult.getExitCode() != 0) {
+          throw new RuntimeException(
+              "Failed to patch configmap: " + applyResult.getStderr());
+        }
+
+        // Restart flyte-sandbox pod to pick up the new config
+        INSTANCE.execInContainer(
+            "kubectl", "rollout", "restart", "deployment/flyte-sandbox", "-n", "flyte");
+
+        // Wait for the rollout to complete
+        INSTANCE.execInContainer(
+            "kubectl",
+            "rollout",
+            "status",
+            "deployment/flyte-sandbox",
+            "-n",
+            "flyte",
+            "--timeout=120s");
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException("failed to patch insecure env var", e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("failed to patch insecure env var", e);
+    }
   }
 
   FlyteSandboxContainer() {
@@ -92,6 +158,9 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
     String workingDir = new File("../.").getAbsolutePath();
 
     withPrivilegedMode(true);
+
+    // k3s requires tmpfs mounts for /run and /var/run on Linux (CI)
+    withTmpFs(Map.of("/run", "", "/var/run", ""));
 
     withNetworkAliases("flyte");
 

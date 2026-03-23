@@ -36,14 +36,16 @@ class SerializeJavaIT extends Fixtures {
   @Test
   void testSerializeWorkflows() {
     try {
-      File current = new File("target/protos");
-      File tempDir = managed.resolve(current.getAbsolutePath()).toFile();
-      boolean created = tempDir.mkdir();
-      if (!created) {
+      // Path must be relative to project root since jflyte runs in a container
+      // with the project root as working directory
+      String serializePath = "integration-tests/target/protos";
+      File tempDir = new File("../" + serializePath);
+      boolean created = tempDir.mkdirs();
+      if (!created && !tempDir.exists()) {
         throw new IOException("Unable to create path");
       }
 
-      CLIENT.serializeWorkflows(CLASSPATH, tempDir.getPath());
+      CLIENT.serializeWorkflows(CLASSPATH, serializePath);
 
       boolean hasFibonacciWorkflow =
           Stream.of(tempDir.list())

@@ -60,18 +60,15 @@ jobs:
               break
             fi
           done
-          echo "=== Container logs (stdout) ==="
-          docker logs flyte-sandbox-debug 2>/dev/null | tail -100 || true
-          echo "=== Container logs (stderr) ==="
-          docker logs flyte-sandbox-debug 2>&1 >/dev/null | tail -100 || true
-          echo "=== Entrypoint log ==="
-          docker exec flyte-sandbox-debug cat /var/log/k3d-entrypoints*.log 2>/dev/null || echo "no entrypoint log"
-          echo "=== k3s process ==="
-          docker exec flyte-sandbox-debug ps aux 2>/dev/null || echo "cannot exec"
-          echo "=== kubectl get pods ==="
-          docker exec flyte-sandbox-debug kubectl get pods -A 2>/dev/null || echo "kubectl failed"
-          echo "=== Healthcheck ==="
-          docker exec flyte-sandbox-debug wget -qO- http://localhost:30080/healthcheck 2>/dev/null || echo "healthcheck failed"
+          echo "=== Container logs ==="
+          docker logs flyte-sandbox-debug 2>&1 | tail -200 || true
+          echo "=== Entrypoint log (via cp) ==="
+          docker cp flyte-sandbox-debug:/var/log/ /tmp/flyte-logs 2>/dev/null && find /tmp/flyte-logs -type f -exec echo "--- {} ---" \; -exec cat {} \; || echo "no logs to copy"
+          echo "=== /sys/fs/cgroup inside container ==="
+          docker run --rm --privileged --cgroupns=host --tmpfs /run --tmpfs /var/run \
+            --entrypoint sh \
+            ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4 \
+            -c "ls -la /sys/fs/cgroup/ && cat /sys/fs/cgroup/cgroup.controllers 2>/dev/null && echo '---' && cat /sys/fs/cgroup/cgroup.subtree_control 2>/dev/null; echo '=== running entrypoint manually ==='; sh -x /bin/k3d-entrypoint-cgroupv2.sh 2>&1; echo 'exit code:' \$?" || true
           echo "=== Cleanup ==="
           docker stop flyte-sandbox-debug 2>/dev/null || true
           docker rm flyte-sandbox-debug 2>/dev/null || true

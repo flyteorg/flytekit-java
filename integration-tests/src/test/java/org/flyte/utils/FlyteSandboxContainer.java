@@ -156,8 +156,9 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
     withPrivilegedMode(true);
 
-    // k3s requires tmpfs mounts for /run and /var/run on Linux (CI)
+    // k3s requires tmpfs mounts and cgroupns=host on Linux (CI)
     withTmpFs(Map.of("/run", "", "/var/run", ""));
+    withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withCgroupnsMode("host"));
 
     withNetworkAliases("flyte");
 

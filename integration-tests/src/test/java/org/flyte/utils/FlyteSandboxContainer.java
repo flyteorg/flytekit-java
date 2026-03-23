@@ -33,7 +33,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContainer> {
 
-  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.9.1";
+  public static final String IMAGE_NAME =
+      "ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4";
 
   public static final FlyteSandboxContainer INSTANCE =
       new FlyteSandboxContainer()
@@ -48,13 +49,14 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
   private static void startContainer() {
     INSTANCE.start();
 
-    // Flyte sandbox uses Docker in Docker, we have to copy jflyte container into inner Docker
+    // Flyte sandbox-bundled uses k3s with containerd (not Docker-in-Docker),
+    // so we use ctr to import the jflyte image into the inner containerd
     // otherwise, flytepropeller can't use the right version for pod execution
 
     DockerClient client = DockerClientFactory.instance().client();
     try (InputStream imageInputStream = client.saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
 
-      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar.gz"))) {
+      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar"))) {
         IOUtils.copy(imageInputStream, outputStream);
       }
 
@@ -64,7 +66,14 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
       ExecResult execResult =
           INSTANCE.execInContainer(
-              "docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
+              "ctr",
+              "--address",
+              "/run/k3s/containerd/containerd.sock",
+              "--namespace",
+              "k8s.io",
+              "images",
+              "import",
+              "integration-tests/target/jflyte.tar");
 
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(execResult.getStderr() + " " + execResult.getStdout());
@@ -90,17 +99,15 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
     withFileSystemBind(workingDir, workingDir, BindMode.READ_ONLY);
 
     withExposedPorts(
-        30081, // flyteadmin
-        30082, // k8s dashboard
-        30084, // minio
-        30086 // k8s api
+        30080, // envoy proxy (flyteadmin http + grpc)
+        30002 // minio
         );
 
     withReuse(true);
 
     withNetwork(FlyteSandboxNetwork.INSTANCE);
 
-    waitingFor(Wait.forLogMessage(".*Flyte is ready!.*", 1));
+    waitingFor(Wait.forHttp("/healthcheck").forPort(30080));
     withStartupTimeout(Duration.ofMinutes(5));
   }
 
@@ -110,10 +117,8 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
     logger().info("Flyte is ready!");
 
-    String consoleUri = String.format("http://%s:%d/console", getHost(), getMappedPort(30081));
-    String k8sUri = String.format("http://%s:%d", getHost(), getMappedPort(30082));
+    String consoleUri = String.format("http://%s:%d/console", getHost(), getMappedPort(30080));
 
     logger().info("Flyte UI is available at " + consoleUri);
-    logger().info("K8s dashboard is available at " + k8sUri);
   }
 }

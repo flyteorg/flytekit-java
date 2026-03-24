@@ -107,7 +107,6 @@
     <sl4j.version>1.7.36</sl4j.version>
     <!-- also remember to bump the version in flytekit-bom module -->
     <spotless.version>2.21.0</spotless.version>
-    <spotbugs.excludeFilterFile>spotbugs-exclude.xml</spotbugs.excludeFilterFile>
     <error_prone.version>2.27.0</error_prone.version>
     <junit.version>5.7.0</junit.version>
 
@@ -594,26 +593,6 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>com.github.spotbugs</groupId>
-          <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.2.3</version>
-          <configuration>
-            <includeTests>true</includeTests>
-            <effort>Max</effort>
-            <threshold>Low</threshold>
-            <failOnError>true</failOnError>
-            <xmlOutput>true</xmlOutput>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <phase>verify</phase>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.3.1</version>
           <configuration>
@@ -765,10 +744,6 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>

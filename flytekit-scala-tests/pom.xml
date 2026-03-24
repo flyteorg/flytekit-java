@@ -32,11 +32,6 @@
     macro expansion that can't be done
     in the same module.</description>
 
-  <properties>
-    <!-- spotbugs doesn't understand Scala code -->
-    <spotbugs.skip>true</spotbugs.skip>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>

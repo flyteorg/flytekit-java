@@ -29,11 +29,6 @@
   <name>Flytekit Java Examples in Scala</name>
   <description>Examples of Tasks, Workflows and Launch plans written in Scala.</description>
 
-  <properties>
-    <!-- spotbugs doesn't understand Scala code -->
-    <spotbugs.skip>true</spotbugs.skip>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>

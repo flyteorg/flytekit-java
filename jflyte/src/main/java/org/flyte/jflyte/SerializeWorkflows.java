@@ -18,7 +18,6 @@ package org.flyte.jflyte;
 
 import static org.flyte.jflyte.utils.TokenSourceFactoryLoader.getTokenSource;
 
-import com.google.errorprone.annotations.Var;
 import com.google.protobuf.ByteString;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -102,23 +101,11 @@ public class SerializeWorkflows implements Callable<Integer> {
 
   private static BiConsumer<String, ByteString> fileWriter(String folder) {
     return (filename, bytes) -> {
-      @Var FileOutputStream fos = null;
-
-      // ugly because spotbugs doesn't like try-with-resources
-      try {
-        fos = new FileOutputStream(new File(folder, filename));
+      try (FileOutputStream fos = new FileOutputStream(new File(folder, filename))) {
         bytes.writeTo(fos);
         fos.flush();
       } catch (IOException e) {
         throw new UncheckedIOException("failed to write to " + folder + "/" + filename, e);
-      } finally {
-        if (fos != null) {
-          try {
-            fos.close();
-          } catch (IOException e) {
-            // ignore, any significant error should happen during flush
-          }
-        }
       }
     };
   }

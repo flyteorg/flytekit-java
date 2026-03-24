@@ -32,10 +32,14 @@ import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
+import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.flyte.api.v1.LaunchPlan;
 import org.flyte.api.v1.LaunchPlanIdentifier;
@@ -58,13 +62,17 @@ public class FlyteAdminClient implements AutoCloseable {
   static final String TRIGGERING_PRINCIPAL = "sdk";
   static final int USER_TRIGGERED_EXECUTION_NESTING = 0;
 
+  private static final Set<Code> GRPC_RETRYABLE_CODES =
+      Stream.of(Code.UNAVAILABLE, Code.DEADLINE_EXCEEDED, Code.INTERNAL)
+          .collect(Collectors.toSet());
+
   private final AdminServiceGrpc.AdminServiceBlockingStub stub;
   private final ManagedChannel channel;
-  private final GrpcRetries retries;
+  private final Retries retries;
 
   @VisibleForTesting
   FlyteAdminClient(
-      AdminServiceGrpc.AdminServiceBlockingStub stub, ManagedChannel channel, GrpcRetries retries) {
+      AdminServiceGrpc.AdminServiceBlockingStub stub, ManagedChannel channel, Retries retries) {
     this.stub = stub;
     this.channel = channel;
     this.retries = retries;
@@ -79,7 +87,7 @@ public class FlyteAdminClient implements AutoCloseable {
     }
 
     ManagedChannel originChannel = builder.build();
-    GrpcRetries retries = GrpcRetries.create();
+    Retries retries = createGrpcRetries();
     if (tokenSource == null) {
       // In case of no tokenSource, no need to intercept the grpc call.
       return new FlyteAdminClient(
@@ -236,7 +244,7 @@ public class FlyteAdminClient implements AutoCloseable {
     return deserializeFn.apply(list.get(0));
   }
 
-  private <T> void idempotentCreate(String label, Object id, GrpcRetries.Retryable<T> retryable) {
+  private <T> void idempotentCreate(String label, Object id, Retries.Retryable<T> retryable) {
     try {
       // create operation is idempotent, so it's fine to retry
       T response = retries.retry(retryable);
@@ -250,6 +258,18 @@ public class FlyteAdminClient implements AutoCloseable {
         throw e;
       }
     }
+  }
+
+  private static Retries createGrpcRetries() {
+    return Retries.create(
+        /* maxRetries= */ 10,
+        /* maxDelayMilliseconds= */ 5_000L,
+        /* initialDelayMilliseconds= */ 250L,
+        /* sleeper= */ Thread::sleep,
+        e ->
+            e instanceof StatusRuntimeException
+                && GRPC_RETRYABLE_CODES.contains(
+                    ((StatusRuntimeException) e).getStatus().getCode()));
   }
 
   @Override

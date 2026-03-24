@@ -48,6 +48,8 @@ import flyteidl.core.Workflow;
 import flyteidl.service.AdminServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
+import io.grpc.Status.Code;
+import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
@@ -55,6 +57,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.flyte.api.v1.Binding;
 import org.flyte.api.v1.BindingData;
 import org.flyte.api.v1.CronSchedule;
@@ -84,6 +89,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class FlyteAdminClientTest {
+
+  private static final Set<Code> GRPC_RETRYABLE_CODES =
+      Stream.of(Code.UNAVAILABLE, Code.DEADLINE_EXCEEDED, Code.INTERNAL)
+          .collect(Collectors.toSet());
 
   private static final String VAR_NAME = "x";
   private static final String SCALAR = "foo";
@@ -118,7 +127,17 @@ public class FlyteAdminClientTest {
     ManagedChannel channel = GrpcUtils.buildChannel(serverName);
     client =
         new FlyteAdminClient(
-            AdminServiceGrpc.newBlockingStub(channel), channel, GrpcRetries.create());
+            AdminServiceGrpc.newBlockingStub(channel),
+            channel,
+            Retries.create(
+                /* maxRetries= */ 10,
+                /* maxDelayMilliseconds= */ 5_000L,
+                /* initialDelayMilliseconds= */ 250L,
+                /* sleeper= */ millis -> {},
+                e ->
+                    e instanceof StatusRuntimeException
+                        && GRPC_RETRYABLE_CODES.contains(
+                            ((StatusRuntimeException) e).getStatus().getCode())));
     grpcCleanup.register(build.start());
     grpcCleanup.register(channel);
   }

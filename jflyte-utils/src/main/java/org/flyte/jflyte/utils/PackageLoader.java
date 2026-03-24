@@ -22,6 +22,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,17 +86,33 @@ public class PackageLoader {
         () -> handleArtifact(fileSystems, artifact, tmp), executorService);
   }
 
+  private static final Retries IO_RETRIES =
+      Retries.create(
+          /* maxRetries= */ 5,
+          /* maxDelayMilliseconds= */ 10_000L,
+          /* initialDelayMilliseconds= */ 1_000L,
+          /* sleeper= */ Thread::sleep,
+          e -> e instanceof IOException);
+
   private static void handleArtifact(
       Map<String, FileSystem> fileSystems, Artifact artifact, Path tmp) {
     Path path = tmp.resolve(artifact.name());
     FileSystem fileSystem = FileSystemLoader.getFileSystem(fileSystems, artifact.location());
 
-    try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
-      LOG.debug("Copied {} to {}", artifact.location(), path);
+    try {
+      IO_RETRIES.retryChecked(
+          () -> {
+            try (ReadableByteChannel reader = fileSystem.reader(artifact.location())) {
+              LOG.debug("Copying {} to {}", artifact.location(), path);
 
-      Files.copy(Channels.newInputStream(reader), path);
+              Files.copy(
+                  Channels.newInputStream(reader), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+          });
     } catch (IOException e) {
       throw new UncheckedIOException(e);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }

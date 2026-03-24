@@ -31,11 +31,6 @@
   <description>Classes used by developers to build Flyte's Tasks, Workflows and Launch plans in
     Scala 2.13.</description>
 
-  <properties>
-    <!-- spotbugs doesn't understand Scala code -->
-    <spotbugs.skip>true</spotbugs.skip>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>

@@ -33,9 +33,9 @@ public abstract class ExecutionConfig {
 
   public static ExecutionConfig load() {
     return ExecutionConfig.builder()
-        .project(getenv("FLYTE_INTERNAL_PROJECT"))
-        .domain(getenv("FLYTE_INTERNAL_DOMAIN"))
-        .version(getenv("FLYTE_INTERNAL_VERSION"))
+        .project(getenv("FLYTE_INTERNAL_TASK_PROJECT"))
+        .domain(getenv("FLYTE_INTERNAL_TASK_DOMAIN"))
+        .version(getenv("FLYTE_INTERNAL_TASK_VERSION"))
         .image(getenv("FLYTE_INTERNAL_IMAGE"))
         .build();
   }

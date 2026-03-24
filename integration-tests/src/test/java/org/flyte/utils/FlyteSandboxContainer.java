@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Map;
 import org.apache.commons.compress.utils.IOUtils;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
@@ -33,7 +34,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContainer> {
 
-  public static final String IMAGE_NAME = "ghcr.io/flyteorg/flyte-sandbox:v1.9.1";
+  public static final String IMAGE_NAME =
+      "ghcr.io/flyteorg/flyte-sandbox-bundled:sha-f3ab1b7480bad4072f7ecb695660fdf47032a6c4";
 
   public static final FlyteSandboxContainer INSTANCE =
       new FlyteSandboxContainer()
@@ -48,13 +50,14 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
   private static void startContainer() {
     INSTANCE.start();
 
-    // Flyte sandbox uses Docker in Docker, we have to copy jflyte container into inner Docker
+    // Flyte sandbox-bundled uses k3s with containerd (not Docker-in-Docker),
+    // so we use ctr to import the jflyte image into the inner containerd
     // otherwise, flytepropeller can't use the right version for pod execution
 
     DockerClient client = DockerClientFactory.instance().client();
     try (InputStream imageInputStream = client.saveImageCmd(JFlyteContainer.IMAGE_NAME).exec()) {
 
-      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar.gz"))) {
+      try (OutputStream outputStream = Files.newOutputStream(Paths.get("target/jflyte.tar"))) {
         IOUtils.copy(imageInputStream, outputStream);
       }
 
@@ -64,7 +67,14 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
       ExecResult execResult =
           INSTANCE.execInContainer(
-              "docker", "load", "-i", "integration-tests/target/jflyte.tar.gz");
+              "ctr",
+              "--address",
+              "/run/k3s/containerd/containerd.sock",
+              "--namespace",
+              "k8s.io",
+              "images",
+              "import",
+              "integration-tests/target/jflyte.tar");
 
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(execResult.getStderr() + " " + execResult.getStdout());
@@ -75,6 +85,68 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
       Thread.currentThread().interrupt();
       throw new RuntimeException("failed to load jflyte image", e);
     }
+
+    // The sandbox manifest has FLYTE_PLATFORM_INSECURE as a YAML boolean (true)
+    // which may not be injected correctly as a string env var. Patch the configmap
+    // to use a quoted string value and restart the flyte-sandbox pod.
+    patchInsecureEnvVar();
+  }
+
+  private static void patchInsecureEnvVar() {
+    try {
+      ExecResult patchResult =
+          INSTANCE.execInContainer(
+              "kubectl",
+              "get",
+              "configmap",
+              "-n",
+              "flyte",
+              "flyte-sandbox-config",
+              "-o",
+              "jsonpath={.data.100-inline-config\\.yaml}");
+
+      if (patchResult.getExitCode() != 0) {
+        throw new RuntimeException("Failed to read configmap: " + patchResult.getStderr());
+      }
+
+      String config = patchResult.getStdout();
+      if (config.contains("FLYTE_PLATFORM_INSECURE: true")) {
+        String patched =
+            config.replace("FLYTE_PLATFORM_INSECURE: true", "FLYTE_PLATFORM_INSECURE: 'true'");
+
+        ExecResult applyResult =
+            INSTANCE.execInContainer(
+                "sh",
+                "-c",
+                "kubectl create configmap flyte-sandbox-config -n flyte"
+                    + " --from-literal='100-inline-config.yaml="
+                    + patched.replace("'", "'\"'\"'")
+                    + "' --dry-run=client -o yaml | kubectl apply -f -");
+
+        if (applyResult.getExitCode() != 0) {
+          throw new RuntimeException("Failed to patch configmap: " + applyResult.getStderr());
+        }
+
+        // Restart flyte-sandbox pod to pick up the new config
+        INSTANCE.execInContainer(
+            "kubectl", "rollout", "restart", "deployment/flyte-sandbox", "-n", "flyte");
+
+        // Wait for the rollout to complete
+        INSTANCE.execInContainer(
+            "kubectl",
+            "rollout",
+            "status",
+            "deployment/flyte-sandbox",
+            "-n",
+            "flyte",
+            "--timeout=120s");
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException("failed to patch insecure env var", e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("failed to patch insecure env var", e);
+    }
   }
 
   FlyteSandboxContainer() {
@@ -84,23 +156,31 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
     withPrivilegedMode(true);
 
+    // k3s requires tmpfs mounts and cgroupns=host on Linux (CI)
+    withTmpFs(Map.of("/run", "", "/var/run", ""));
+    withCreateContainerCmdModifier(
+        cmd ->
+            cmd.getHostConfig()
+                .withCgroupnsMode("host")
+                // host.docker.internal is needed by the bootstrap to template manifests;
+                // Docker Desktop adds it automatically, but Linux Docker does not
+                .withExtraHosts("host.docker.internal:host-gateway"));
+
     withNetworkAliases("flyte");
 
     withWorkingDirectory(workingDir);
     withFileSystemBind(workingDir, workingDir, BindMode.READ_ONLY);
 
     withExposedPorts(
-        30081, // flyteadmin
-        30082, // k8s dashboard
-        30084, // minio
-        30086 // k8s api
+        30080, // envoy proxy (flyteadmin http + grpc)
+        30002 // minio
         );
 
     withReuse(true);
 
     withNetwork(FlyteSandboxNetwork.INSTANCE);
 
-    waitingFor(Wait.forLogMessage(".*Flyte is ready!.*", 1));
+    waitingFor(Wait.forHttp("/healthcheck").forPort(30080));
     withStartupTimeout(Duration.ofMinutes(5));
   }
 
@@ -110,10 +190,8 @@ public class FlyteSandboxContainer extends GenericContainer<FlyteSandboxContaine
 
     logger().info("Flyte is ready!");
 
-    String consoleUri = String.format("http://%s:%d/console", getHost(), getMappedPort(30081));
-    String k8sUri = String.format("http://%s:%d", getHost(), getMappedPort(30082));
+    String consoleUri = String.format("http://%s:%d/console", getHost(), getMappedPort(30080));
 
     logger().info("Flyte UI is available at " + consoleUri);
-    logger().info("K8s dashboard is available at " + k8sUri);
   }
 }

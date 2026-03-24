@@ -64,5 +64,11 @@
     <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
   </Match>
 
+  <!-- HostConfig is always set by Testcontainers before the modifier runs -->
+  <Match>
+    <Class name="org.flyte.utils.FlyteSandboxContainer"/>
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+  </Match>
+
 </FindBugsFilter>
 

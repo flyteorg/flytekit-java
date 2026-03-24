@@ -27,9 +27,9 @@ import java.util.Map;
 abstract class SdkConfig {
 
   // VisibleForTesting
-  static final String DOMAIN_ENV_VAR = "FLYTE_INTERNAL_DOMAIN";
-  static final String PROJECT_ENV_VAR = "FLYTE_INTERNAL_PROJECT";
-  static final String VERSION_ENV_VAR = "FLYTE_INTERNAL_VERSION";
+  static final String DOMAIN_ENV_VAR = "FLYTE_INTERNAL_TASK_DOMAIN";
+  static final String PROJECT_ENV_VAR = "FLYTE_INTERNAL_TASK_PROJECT";
+  static final String VERSION_ENV_VAR = "FLYTE_INTERNAL_TASK_VERSION";
 
   public abstract String project();
 

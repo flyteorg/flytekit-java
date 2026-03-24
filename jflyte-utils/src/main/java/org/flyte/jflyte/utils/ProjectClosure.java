@@ -212,9 +212,9 @@ public abstract class ProjectClosure {
             .put("JFLYTE_DOMAIN", config.domain())
             .put("JFLYTE_PROJECT", config.project())
             .put("JFLYTE_VERSION", config.version())
-            .put("FLYTE_INTERNAL_DOMAIN", config.domain())
-            .put("FLYTE_INTERNAL_PROJECT", config.project())
-            .put("FLYTE_INTERNAL_VERSION", config.version())
+            .put("FLYTE_INTERNAL_TASK_DOMAIN", config.domain())
+            .put("FLYTE_INTERNAL_TASK_PROJECT", config.project())
+            .put("FLYTE_INTERNAL_TASK_VERSION", config.version())
             .build();
 
     // 1. load classes, and create templates

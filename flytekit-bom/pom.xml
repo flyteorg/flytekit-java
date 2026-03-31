@@ -52,13 +52,6 @@
     <url>https://github.com/flyteorg/flytekit-java</url>
   </scm>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>central</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -288,6 +281,7 @@
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
+              <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
               <autoPublish>true</autoPublish>
               <waitUntil>published</waitUntil>
             </configuration>

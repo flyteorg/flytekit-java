@@ -73,13 +73,6 @@
     <url>https://github.com/flyteorg/flytekit-java</url>
   </scm>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>central</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <properties>
     <!-- note that we can not go beyond this version
     After https://github.com/google/auto/commit/965e8932814ba79804ff8977ad346837df8c9c35#diff-c28f0ce6609b34aeb32ffc9d26613371c57ecf07d96c97ac7c6ed8ee51f16697,
@@ -842,6 +835,7 @@
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
+              <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
               <autoPublish>true</autoPublish>
               <waitUntil>published</waitUntil>
             </configuration>

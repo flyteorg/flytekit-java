@@ -41,6 +41,13 @@ jobs:
           git config --global user.email ${{ github.actor }}@users.noreply.github.com
           git config --global user.name ${{ github.actor }}
 
+      - name: Enable automatic sign-off for DCO
+        run: |
+          mkdir -p "$HOME/.config/git/hooks"
+          printf '#!/bin/bash\nif ! grep -q "^Signed-off-by:" "$1"; then\n  git interpret-trailers --in-place --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>" "$1"\nfi\n' > "$HOME/.config/git/hooks/prepare-commit-msg"
+          chmod +x "$HOME/.config/git/hooks/prepare-commit-msg"
+          git config --global core.hooksPath "$HOME/.config/git/hooks"
+
       - name: Publish to MavenCentral
         run: |
           export GPG_TTY=$(tty)

@@ -15,6 +15,11 @@
   under the License.
 -->
 
+# This repository is archived.
+
+The owners of this repository have archived this repository, and do not intend to make further updates. They now use a copy of this repository internally, but intend to
+move off of flytekit-java entirely, and not support flytekit-java with dataflow V2. 
+
 # flytekit-java
 
 [![Lifecycle](https://img.shields.io/badge/lifecycle-alpha-a0c3d2.svg)](https://img.shields.io/badge/lifecycle-alpha-a0c3d2.svg)

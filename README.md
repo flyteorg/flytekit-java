@@ -18,7 +18,7 @@
 # This repository is archived.
 
 The owners of this repository have archived this repository, and do not intend to make further updates. They now use a copy of this repository internally, but intend to
-move off of flytekit-java entirely, and not support flytekit-java with dataflow V2. 
+move off of flytekit-java entirely, and not support flytekit-java with flyte V2. 
 
 # flytekit-java
 
